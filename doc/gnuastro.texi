@@ -2014,15 +2014,18 @@ parameters and sets the radius column (@code{rcol} above, fifth column) to
 @code{5.000}, he also chooses a Moffat function for its functional
 form. Remembering how diffuse the nebula in the Andromeda constellation
 was, he decides to simulate it with a mock S@'{e}rsic index 1.0 profile. He
-wants the output to be 500 pixels by 500 pixels, so he puts the mock
-profile in the center. Looking at his drawings of it, he decides a
-reasonable effective radius for it would be 40 pixels on this image pixel
-scale, he sets the axis ratio and position angle to approximately correct
-values too and finally he sets the total magnitude of the profile to 3.44
-which he had accurately measured. Sufi also decides to truncate both the
-mock profile and PSF at 5 times the respective radius parameters. In the
-end he decides to put four stars on the four corners of the image at very
-low magnitudes as a visual scale.
+wants the output to be 499 pixels by 499 pixels, so he can put the center
+of the mock profile in the centeral pixel of the image (note that an even
+number doesn't have a central element).
+
+Looking at his drawings of it, he decides a reasonable effective radius for
+it would be 40 pixels on this image pixel scale, he sets the axis ratio and
+position angle to approximately correct values too and finally he sets the
+total magnitude of the profile to 3.44 which he had accurately
+measured. Sufi also decides to truncate both the mock profile and PSF at 5
+times the respective radius parameters. In the end he decides to put four
+stars on the four corners of the image at very low magnitudes as a visual
+scale.
 
 Using all the information above, he creates the catalog of mock profiles he
 wants in a file named @file{cat.txt} (short for catalog) using his favorite
@@ -2046,10 +2049,10 @@ $ cat cat.txt
 # Column 4: PROFILE_NAME [,str7] Radial profile's functional name
  1  0.0000   0.0000  moffat  5.000  4.765  0.0000  1.000  30.000  5.000
  2  250.00   250.00  sersic  40.00  1.000  -25.00  0.400  3.4400  5.000
- 3  50.000   50.000  point   0.000  0.000  0.0000  0.000  9.0000  0.000
- 4  450.00   50.000  point   0.000  0.000  0.0000  0.000  9.2500  0.000
- 5  50.000   450.00  point   0.000  0.000  0.0000  0.000  9.5000  0.000
- 6  450.00   450.00  point   0.000  0.000  0.0000  0.000  9.7500  0.000
+ 3  50.000   50.000  point   0.000  0.000  0.0000  0.000  6.0000  0.000
+ 4  450.00   50.000  point   0.000  0.000  0.0000  0.000  6.5000  0.000
+ 5  50.000   450.00  point   0.000  0.000  0.0000  0.000  7.0000  0.000
+ 6  450.00   450.00  point   0.000  0.000  0.0000  0.000  7.5000  0.000
 @end example
 
 @noindent
@@ -2058,7 +2061,7 @@ necessary parameters and runs MakeProfiles with the following command:
 
 @example
 
-$ astmkprof --prepforconv --mergedsize=500,500 --zeropoint=18.0 cat.txt
+$ astmkprof --prepforconv --mergedsize=499,499 --zeropoint=18.0 cat.txt
 MakeProfiles started on Sat Oct  6 16:26:56 953
   - 6 profiles read from cat.txt
   - Random number generator (RNG) type: mt19937
@@ -2089,11 +2092,18 @@ as we see when we image the sky at night. So Sufi explained to him that the
 stars will take the shape of the PSF after convolution and this is how they
 would look if we didn't have an atmosphere or an aperture when we took the
 image. The size of the image was also surprising for the student, instead
-of 500 by 500, it was 2630 by 2630 pixels. So Sufi had to explain why
-oversampling is important for parts of the image where the flux change is
-significant over a pixel. Sufi then explained to him that after convolving
-we will re-sample the image to get our originally desired size. To convolve
-the image, Sufi ran the following command:
+of 499 by 499, it was 2615 by 2615 pixels (from the command below):
+
+@example
+$ astfits cat.fits -h1 | grep NAXIS
+@end example
+
+@noindent
+So Sufi explained why oversampling is important for parts of the image
+where the flux change is significant over a pixel. Sufi then explained to
+him that after convolving we will re-sample the image to get our originally
+desired size/resolution. To convolve the image, Sufi ran the following
+command:
 
 @example
 $ astconvolve --kernel=0_cat.fits cat.fits
@@ -2139,25 +2149,35 @@ cat_convolved.fits  cat.fits
 
 $ astfits -p cat_convolved_scaled.fits | grep NAXIS
 NAXIS   =                    2 / number of data axes
-NAXIS1  =                  526 / length of data axis 1
-NAXIS2  =                  526 / length of data axis 2
+NAXIS1  =                  523 / length of data axis 1
+NAXIS2  =                  523 / length of data axis 2
 @end example
 
 @noindent
 @file{cat_convolved_scaled.fits} now has the correct pixel scale. However,
-the image is still larger than what we had wanted, it is 526
-(@mymath{500+13+13}) by 526 pixels. The student is slightly confused, so
-Sufi also re-samples the PSF with the same scale and shows him that it is
-27 (@mymath{2\times13+1}) by 27 pixels. Sufi goes on to explain how
+the image is still larger than what we had wanted, it is 523
+(@mymath{499+12+12}) by 523 pixels. The student is slightly confused, so
+Sufi also re-samples the PSF with the same scale by running
+
+@example
+$ astwarp --scale=1/5 --centeroncorner 0_cat.fits
+$ astfits -p 0_cat_scaled.fits | grep NAXIS
+NAXIS   =                    2 / number of data axes
+NAXIS1  =                   25 / length of data axis 1
+NAXIS2  =                   25 / length of data axis 2
+@end example
+
+@noindent
+Sufi notes that @mymath{25=(2\times12)+1} and goes on to explain how
 frequency space convolution will dim the edges and that is why he added the
 @option{--prepforconv} option to MakeProfiles, see @ref{If convolving
 afterwards}. Now that convolution is done, Sufi can remove those extra
 pixels using Crop with the command below. Crop's @option{--section} option
 accepts coordinates inclusively and counting from 1 (according to the FITS
-standard), so the crop's first pixel has to be 14, not 13.
+standard), so the crop region's first pixel has to be 13, not 12.
 
 @example
-$ astcrop cat_convolved_scaled.fits --section=14:*-13,14:*-13    \
+$ astcrop cat_convolved_scaled.fits --section=13:*-12,13:*-12    \
           --mode=img --zeroisnotblank
 Crop started on Sat Oct  6 17:03:24 953
   - Read metadata of 1 image.                          0.001304 seconds
@@ -2170,21 +2190,25 @@ cat_convolved.fits  cat_convolved_scaled.fits          cat.txt
 @end example
 
 @noindent
-Finally, @file{cat_convolved_scaled_cropped.fits} has the same dimensions
-as Sufi had desired in the beginning. All this trouble was certainly worth
-it because now there is no dimming on the edges of the image and the
-profile centers are more accurately sampled. The final step to simulate a
-real observation would be to add noise to the image. Sufi set the zeropoint
-magnitude to the same value that he set when making the mock profiles and
-looking again at his observation log, he had measured the background flux
-near the nebula had a magnitude of 7 that night. So using these values he
-ran MakeNoise:
+Finally, @file{cat_convolved_scaled_cropped.fits} is @mymath{499\times499}
+pixels and the mock Andromeda galaxy is centered on the central pixel (open
+the image in a FITS viewer and confirm this by zooming into the center,
+note that an even-width image wouldn't have a central pixel). This is the
+same dimensions as Sufi had desired in the beginning. All this trouble was
+certainly worth it because now there is no dimming on the edges of the
+image and the profile centers are more accurately sampled.
+
+The final step to simulate a real observation would be to add noise to the
+image. Sufi set the zeropoint magnitude to the same value that he set when
+making the mock profiles and looking again at his observation log, he had
+measured the background flux near the nebula had a magnitude of 7 that
+night. So using these values he ran MakeNoise:
 
 @example
 $ astmknoise --zeropoint=18 --background=7 --output=out.fits    \
-             cat_convolved_scaled_crop.fits
+             cat_convolved_scaled_cropped.fits
 MakeNoise started on Mon Apr  6 17:05:06 953
-  - Generator type: mt19937
+  - Generator type: ranlxs1
   - Generator seed: 1428318100
 MakeNoise finished in:  0.033491 (seconds)
 
@@ -2216,15 +2240,18 @@ variables for easier customization later. Finally, before every command, he
 added some comments (lines starting with @key{#}) for future readability.
 
 @example
-# Basic settings:
-edge=13
+edge=12
 base=cat
 
-# Remove any existing image to avoid confusion.
-rm out.fits
+# Stop running next commands if one fails.
+set -e
+
+# Remove any (possibly) existing output (from previous runs)
+# before starting.
+rm -f out.fits
 
 # Run MakeProfiles to create an oversampled FITS image.
-astmkprof --prepforconv --mergedsize=500,500 --zeropoint=18.0   \
+astmkprof --prepforconv --mergedsize=499,499 --zeropoint=18.0 \
           "$base".txt
 
 # Convolve the created image with the kernel.
@@ -2233,19 +2260,19 @@ astconvolve --kernel=0_"$base".fits "$base".fits
 # Scale the image back to the intended resolution.
 astwarp --scale=1/5 --centeroncorner "$base"_convolved.fits
 
-# Crop the edges out (dimmed during convolution). `--section' accepts
+# Crop the edges out (dimmed during convolution). ‘--section’ accepts
 # inclusive coordinates, so the start of start of the section must be
 # one pixel larger than its end.
 st_edge=$(( edge + 1 ))
-astcrop "$base"_convolved_scaled.fits --zeroisnotblank          \
-        --section=$st_edge:*-$edge,$st_edge:*-$edge
+astcrop "$base"_convolved_scaled.fits --zeroisnotblank \
+        --mode=img --section=$st_edge:*-$edge,$st_edge:*-$edge
 
 # Add noise to the image.
-astmknoise --zeropoint=18 --background=7 --output=out.fits      \
+astmknoise --zeropoint=18 --background=7 --output=out.fits \
            "$base"_convolved_scaled_cropped.fits
 
 # Remove all the temporary files.
-rm 0*.fits cat*.fits
+rm 0*.fits "$base"*.fits
 @end example
 
 @cindex Comments
@@ -2958,10 +2985,19 @@ $ astcosmiccal --config=my-cosmology.conf -z2
 
 If you need this cosmology every time you are working in a specific
 directory, you can benefit from Gnuastro's default configuration files to
-avoid having to call the @option{--config} option. Let's assume that you
-want any CosmicCalculator call you make in the @file{my-cosmology}
-directory to use these parameters. You just have to copy the above
-configuration file into a special directory and file:
+avoid having to call the @option{--config} option. These default
+configuration files (that are checked if they exist) must be placed in the
+hidden @file{.gnuastro} sub-directory of the directory you are working
+in. Their filename (within @file{.gnuastro}) must also be the same as the
+program's executable name. So in the case of CosmicCalculator, the default
+configuration file that in a given directory is
+@file{.gnuastro/astcosmiccal.conf}.
+
+Let's assume that you want any call to CosmicCalculator in the
+@file{my-cosmology} directory to use these particular parameters. You just
+have to copy the above configuration file into a @file{.gnuastro} directory
+within it. So first, we'll make the two necessary directories, then copy
+the custom configuration file into it with the proper name:
 
 @example
 $ mkdir my-cosmology
@@ -2969,9 +3005,9 @@ $ mkdir my-cosmology/.gnuastro
 $ mv my-cosmology.conf my-cosmology/.gnuastro/astcosmiccal.conf
 @end example
 
-Once you run CosmicCalculator within @file{my-cosmology} as shown below,
-you will see how your cosmology has been implemented without having to type
-anything extra on the command-line.
+Once you run CosmicCalculator within @file{my-cosmology} (as shown below),
+you will see how your customo cosmology has been implemented without having
+to type anything extra on the command-line.
 
 @example
 $ cd my-cosmology
@@ -2980,9 +3016,9 @@ $ cd ..
 @end example
 
 To further simplify the process, you can use the @option{--setdirconf}
-option. If you are already in your desired directory, calling this option
-with the others will automatically write the final values (along with
-descriptions) in @file{.gnuastro/astcosmiccal.conf}. For example the
+option. If you are already in your desired working directory, calling this
+option with the others will automatically write the final values (along
+with descriptions) in @file{.gnuastro/astcosmiccal.conf}. For example the
 commands below will make the same configuration file automatically (with
 one extra call to CosmicCalculator).
 
@@ -3407,7 +3443,7 @@ top directory clean of any files we later need.
 @example
 $ mkdir kernel config
 $ ln -s config/ .gnuastro
-$ mv kernel.fits det-kernel.fits
+$ mv kernel.fits kernel/det-kernel.fits
 $ echo "kernel kernel/det-kernel.fits" > config/astnoisechisel.conf
 $ echo "noerodequant 0.95"            >> config/astnoisechisel.conf
 $ echo "dthresh      0.2"             >> config/astnoisechisel.conf
@@ -3429,7 +3465,7 @@ pause to use NoiseChisel's multi-extension output as a demonstration for
 working with FITS extensions using Gnuastro's Fits program (see @ref{Fits}.
 
 Let's say you need to copy a HDU/extension (image or table) from one FITS
-file to another. After the command below, @file{objects.fits} file will
+file to another. After the command below, @file{detections.fits} file will
 contain only one extension: a copy of NoiseChisel's binary detection
 map. There are similar options to conveniently cut (@option{--cut}, copy,
 then remove from the input) or delete (@option{--remove}) HDUs from a FITS
@@ -3467,7 +3503,11 @@ $ astfits nc/xdf-f160w.fits -hDETECTIONS | grep DETSN
 If you just want the value of the keyword and not the full FITS keyword
 line, you can use AWK. In the example below, AWK will print the third word
 (separated by white space characters) in any line that has a first column
-value of @code{DETSN}.
+value of @code{DETSN}. Note for those reading this in PDF format: AWK's
+argument should be in single quotes (also used as apostrophe in English
+writing). Therefore, if you copy-and-paste from the PDF, you will get an
+error message. In this case, correct/re-type the @code{'} character with a
+single-quote/apostrophe.
 
 @example
 $ astfits nc/xdf-f160w.fits -h2 | awk '$1=="DETSN" @{print $3@}'
@@ -3570,8 +3610,8 @@ a name) can also be specified in plain text tables, see @ref{Gnuastro text
 table format}.}.
 
 @example
-$ asttable catalog/xdf-f160w.fits -h1 -c4 -c5
-$ asttable catalog/xdf-f160w.fits -h2 -c5 -c6
+$ asttable cat/xdf-f160w.fits -h1 -c4 -c5
+$ asttable cat/xdf-f160w.fits -h2 -c5 -c6
 @end example
 
 Finally, the comments in MakeCatalog's output (@code{COMMENT} keywords in
