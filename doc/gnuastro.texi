@@ -19853,16 +19853,18 @@ The name or number (counting from zero) of the extension containing the
 Sky value as a single number, or the file name containing a dataset
 (different values per pixel or tile). The Sky dataset is only necessary
 when @option{--subtractsky} is called or when a column directly related to
-the Sky value is requested (currently @option{--sky}).
+the Sky value is requested (currently @option{--sky}). This dataset may be
+a tessellation, with one element per tile (see @option{--oneelempertile} of
+NoiseChisel's @ref{Processing options}).
 
-When the Sky dataset is necessary and this option is not called,
-MakeCatalog will assume it is a dataset first look into the
-@option{--valuesfile} (if it is given) and then the main input file (given
-as an argument). By default the values dataset is assumed to be already Sky
-subtracted, so this dataset is not necessary for many of the columns.
+When the Sky dataset is necessary but this option is not called,
+MakeCatalog will assume it is an HDU/extension (specified by
+@option{--skyhdu}) in one of the already given files. First it will look
+for it in the @option{--valuesfile} (if it is given) and then the main
+input file (given as an argument).
 
-This dataset may be tessellation, with one element per tile (see
-@option{--oneelempertile} of @ref{Processing options}).
+By default the values dataset is assumed to be already Sky subtracted, so
+this dataset is not necessary for many of the columns.
 
 @item --skyhdu=STR
 HDU/extension of the Sky dataset, see @option{--skyfile}.
