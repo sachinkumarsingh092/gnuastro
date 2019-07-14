@@ -5139,7 +5139,6 @@ $ ./testprog > testprog.lis
 $ diff testprog.lis testprog.out    # Should have no output
 $ cmp testprog.fit testprog.std     # Should have no output
 $ rm cookbook fitscopy imcopy smem speed testprog
-$ make shared
 $ sudo make install
 @end example
 

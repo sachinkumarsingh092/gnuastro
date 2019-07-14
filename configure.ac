@@ -384,7 +384,12 @@ AS_IF([test "x$LIBCURL" = x], [],
       [LDADD="$LTLIBCURL $LDADD"])
 
 
-AC_LIB_HAVE_LINKFLAGS([cfitsio], [], [
+# Older versions of CFITSIO don't install a shared library, only a static
+# one. Eventhough we add `-lm' to LDADD, on some systems, it complains
+# about not finding basic math libraries. Therefore the configure script
+# can't find CFITSIO, eventhough it exists. The solution is to manually add
+# the math-library as a dependency of CFITSIO.
+AC_LIB_HAVE_LINKFLAGS([cfitsio], [m], [
 #include <fitsio.h>
 void junk(void) {
 int status;
