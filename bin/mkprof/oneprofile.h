@@ -29,7 +29,7 @@ int
 oneprofile_ispsf(uint8_t fcolvalue);
 
 void
-oneprof_set_prof_params(struct mkonthread *mkp);
+oneprofile_set_prof_params(struct mkonthread *mkp);
 
 void
 oneprofile_make(struct mkonthread *mkp);

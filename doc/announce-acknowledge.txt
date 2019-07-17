@@ -1,6 +1,7 @@
 Alphabetically ordered list to acknowledge in the next release.
 
 Hamed Altafi
+Roberto Baena Gallé
 Zahra Bagheri
 Leindert Boogaard
 Bruno Haible

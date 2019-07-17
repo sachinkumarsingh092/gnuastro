@@ -135,6 +135,7 @@ See the end of the file for license conditions.
   bug #56324: Column metadata not usable when input is from pipe/stdin.
   bug #56424: Warp crashes with empty string given to options.
   bug #56480: Segfault in statistics library's histogram function.
+  bug #56641: MakeProfile's center position changes based on precision.
 
 
 

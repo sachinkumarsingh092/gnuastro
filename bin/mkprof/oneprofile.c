@@ -62,19 +62,18 @@ oneprofile_center_oversampled(struct mkonthread *mkp)
 {
   struct mkprofparams *p=mkp->p;
 
-  double *dim;
   long os=p->oversample;
+  double *dim, r=1000000;
   size_t i, id=mkp->ibq->id;
   double val, pixfrac, intpart;
 
   for(i=0;i<p->ndim;++i)
     {
       dim = i==0 ? p->x : p->y;
-
       pixfrac = modf(fabs(dim[id]), &intpart);
       val     = ( os*(mkp->width[i]/2 + pixfrac)
                   + (pixfrac<0.5f ? os/2 : -1*os/2-1) );
-      mkp->center[i] = round(val*100)/100;
+      mkp->center[i] = round(val*r)/r;
     }
 }
 
@@ -515,7 +514,7 @@ oneprofile_ispsf(uint8_t fcode)
 
 /* Prepare all the parameters for any type of profile. */
 void
-oneprof_set_prof_params(struct mkonthread *mkp)
+oneprofile_set_prof_params(struct mkonthread *mkp)
 {
   struct mkprofparams *p=mkp->p;
 

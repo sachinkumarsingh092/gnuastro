@@ -320,7 +320,7 @@ mkprof_build_single(struct mkonthread *mkp, long *fpixel_i, long *lpixel_i,
      overlapping region. */
   if(p->out)
     {
-      /* Note that `fpixel_o' and `lpixel_o' were in the un-oversampled
+      /* Note that `fpixel_i' and `lpixel_o' were in the un-oversampled
          image, they are also in the FITS coordinates. */
       for(i=0;i<ndim;++i)
         {
@@ -465,20 +465,20 @@ mkprof_build(void *inparam)
   /* Make each profile that was specified for this thread. */
   for(i=0; mkp->indexs[i]!=GAL_BLANK_SIZE_T; ++i)
     {
-      /* Create a new builtqueue element with all the information. fbq
-         will be used when we want to add ibq to p->bq. It is defined
-         so we don't have to waste time traversing the ibq. Its
-         characteristic compared to the other elements of ibq is that
-         fbq->next==NULL. So to add ibq to p->bq, we just have to set
-         fbq->next=p->bq and then set p->bq to ibq.*/
+      /* Create a new builtqueue element with all the information. `fbq'
+         will be used when we want to add `ibq' to `p->bq'. It is defined
+         so we don't have to waste time traversing the `ibq'. Its
+         characteristic compared to the other elements of `ibq' is that
+         `fbq->next==NULL'. So to add ibq to p->bq, we just have to set
+         `fbq->next=p->bq' and then set `p->bq' to `ibq'.*/
       builtqueue_addempty(&mkp->ibq);
       ibq=mkp->ibq;
       id=ibq->id=mkp->indexs[i];
       if(fbq==NULL) fbq=ibq;
 
 
-      /* Write the necessary parameters for this profile into mkp.*/
-      oneprof_set_prof_params(mkp);
+      /* Write the necessary parameters for this profile into `mkp'.*/
+      oneprofile_set_prof_params(mkp);
 
 
       /* Find the bounding box size (NOT oversampled). */
