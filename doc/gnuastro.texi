@@ -241,9 +241,33 @@ New to GNU/Linux?
 Tutorials
 
 * Sufi simulates a detection::  Simulating a detection.
-* General program usage tutorial::  Usage of all programs in a good way.
+* General program usage tutorial::
 * Detecting large extended targets::  Using NoiseChisel for huge extended targets.
 * Hubble visually checks and classifies his catalog::  Visual checks on a catalog.
+
+Sufi simulates a detection
+
+* General program usage tutorial::
+
+General program usage tutorial
+
+* Calling Gnuastro's programs::  Easy way to find Gnuastro's programs.
+* Accessing documentation::     Access to manual of programs you are running.
+* Setup and data download::     Setup this template and download datasets.
+* Dataset inspection and cropping::  Crop the flat region to use in next steps.
+* Angular coverage on the sky::  Measure the field size on the sky.
+* Cosmological coverage::       Measure the field size at different redshifts.
+* Building custom programs with the library::  Easy way to build new programs.
+* Option management and configuration files::  Dealing with options and configuring them.
+* Warping to a new pixel grid::  Transforming/warping the dataset.
+* Multiextension FITS files NoiseChisel's output::  Using extensions in FITS files.
+* NoiseChisel optimization for detection::  Check NoiseChisel's operation and improve it.
+* NoiseChisel optimization for storage::  Dramatically decrease output's volume.
+* Segmentation and making a catalog::  Finding true peaks and creating a catalog.
+* Working with catalogs estimating colors::  Estimating colors using the catalogs.
+* Aperture photomery::          Doing photometry on a fixed aperture.
+* Finding reddest clumps and visual inspection::  Selecting some targets and inspecting them.
+* Citing and acknowledging Gnuastro::  How to cite and acknowledge Gnuastro in your papers.
 
 Installation
 
@@ -1878,7 +1902,7 @@ use in the example codes through the book, please see @ref{Conventions}.
 
 @menu
 * Sufi simulates a detection::  Simulating a detection.
-* General program usage tutorial::  Usage of all programs in a good way.
+* General program usage tutorial::
 * Detecting large extended targets::  Using NoiseChisel for huge extended targets.
 * Hubble visually checks and classifies his catalog::  Visual checks on a catalog.
 @end menu
@@ -2349,6 +2373,10 @@ catalog). It was nearly sunset and they had to begin preparing for the
 night's measurements on the ecliptic.
 
 
+@menu
+* General program usage tutorial::
+@end menu
+
 @node General program usage tutorial, Detecting large extended targets, Sufi simulates a detection, Tutorials
 @section General program usage tutorial
 
@@ -2359,11 +2387,10 @@ images is one of the most basic and common steps in astronomical
 analysis. Here, we will use Gnuastro's programs to get a physical scale
 (area at certain redshifts) of the field we are studying, detect objects in
 a Hubble Space Telescope (HST) image, measure their colors and identify the
-ones with the largest colors to visual inspection and their spatial
-position in the image. After this tutorial, you can also try the
-@ref{Detecting large extended targets} tutorial which goes into a little
-more detail on optimally configuring NoiseChisel (Gnuastro's detection
-tool) in special situations.
+ones with the strongest colors, do a visual inspection of these objects and
+inspect spatial position in the image. After this tutorial, you can also
+try the @ref{Detecting large extended targets} tutorial which goes into a
+little more detail on detecting very low surface brightness signal.
 
 During the tutorial, we will take many detours to explain, and practically
 demonstrate, the many capabilities of Gnuastro's programs. In the end you
@@ -2402,6 +2429,29 @@ commands). Don't simply copy and paste the commands shown here. This will
 help simulate future situations when you are processing your own datasets.
 @end cartouche
 
+
+@menu
+* Calling Gnuastro's programs::  Easy way to find Gnuastro's programs.
+* Accessing documentation::     Access to manual of programs you are running.
+* Setup and data download::     Setup this template and download datasets.
+* Dataset inspection and cropping::  Crop the flat region to use in next steps.
+* Angular coverage on the sky::  Measure the field size on the sky.
+* Cosmological coverage::       Measure the field size at different redshifts.
+* Building custom programs with the library::  Easy way to build new programs.
+* Option management and configuration files::  Dealing with options and configuring them.
+* Warping to a new pixel grid::  Transforming/warping the dataset.
+* Multiextension FITS files NoiseChisel's output::  Using extensions in FITS files.
+* NoiseChisel optimization for detection::  Check NoiseChisel's operation and improve it.
+* NoiseChisel optimization for storage::  Dramatically decrease output's volume.
+* Segmentation and making a catalog::  Finding true peaks and creating a catalog.
+* Working with catalogs estimating colors::  Estimating colors using the catalogs.
+* Aperture photomery::          Doing photometry on a fixed aperture.
+* Finding reddest clumps and visual inspection::  Selecting some targets and inspecting them.
+* Citing and acknowledging Gnuastro::  How to cite and acknowledge Gnuastro in your papers.
+@end menu
+
+@node Calling Gnuastro's programs, Accessing documentation, General program usage tutorial, General program usage tutorial
+@subsection Calling Gnuastro's programs
 A handy feature of Gnuastro is that all program names start with
 @code{ast}. This will allow your command-line processor to easily list and
 auto-complete Gnuastro's programs for you.  Try typing the following
@@ -2419,15 +2469,20 @@ the program name will auto-complete once your input characters are
 unambiguous. In short, you often don't need to type the full name of the
 program you want to run.
 
+@node Accessing documentation, Setup and data download, Calling Gnuastro's programs, General program usage tutorial
+@subsection Accessing documentation
+
 Gnuastro contains a large number of programs and it is natural to forget
 the details of each program's options or inputs and outputs. Therefore,
-before starting the analysis, let's review how you can access this book to
-refresh your memory any time you want. For example when working on the
-command-line, without having to take your hands off the keyboard. When you
-install Gnuastro, this book is also installed on your system along with all
-the programs and libraries, so you don't need an internet connection to to
-access/read it. Also, by accessing this book as described below, you can be
-sure that it corresponds to your installed version of Gnuastro.
+before starting the analysis steps of this tutorial, let's review how you
+can access this book to refresh your memory any time you want, without
+having to take your hands off the keyboard.
+
+When you install Gnuastro, this book is also installed on your system along
+with all the programs and libraries, so you don't need an internet
+connection to to access/read it. Also, by accessing this book as described
+below, you can be sure that it corresponds to your installed version of
+Gnuastro.
 
 @cindex GNU Info
 GNU Info@footnote{GNU Info is already available on almost all Unix-like
@@ -2510,7 +2565,11 @@ $ astnoisechisel --help | grep quant
 $ astnoisechisel --help | grep check
 @end example
 
-Let's start the processing. First, to keep things clean, let's create a
+@node Setup and data download, Dataset inspection and cropping, Accessing documentation, General program usage tutorial
+@subsection Setup and data download
+
+The first step in the analysis of the tutorial is to download the necessary
+input datasets. First, to keep things clean, let's create a
 @file{gnuastro-tutorial} directory and continue all future steps in it:
 
 @example
@@ -2520,16 +2579,17 @@ $ cd gnuastro-tutorial
 
 We will be using the near infra-red @url{http://www.stsci.edu/hst/wfc3,
 Wide Field Camera} dataset. If you already have them in another directory
-(for example @file{XDFDIR}), you can set the @file{download} directory to
-be a symbolic link to @file{XDFDIR} with a command like this:
+(for example @file{XDFDIR}, with the same FITS file names), you can set the
+@file{download} directory to be a symbolic link to @file{XDFDIR} with a
+command like this:
 
 @example
 $ ln -s XDFDIR download
 @end example
 
 @noindent
-If the following images aren't already present on your system, you can make
-a @file{download} directory and download them there.
+Otherwise, when the following images aren't already present on your system,
+you can make a @file{download} directory and download them there.
 
 @example
 $ mkdir download
@@ -2541,10 +2601,10 @@ $ cd ..
 @end example
 
 @noindent
-In this tutorial, we'll just use these two filters. Later, you will
-probably need to download more filters, you can use the shell's @code{for}
-loop to download them all in series (one after the other@footnote{Note that
-you only have one port to the internet, so downloading in parallel will
+In this tutorial, we'll just use these two filters. Later, you may need to
+download more filters. To do that, you can use the shell's @code{for} loop
+to download them all in series (one after the other@footnote{Note that you
+only have one port to the internet, so downloading in parallel will
 actually be slower than downloading in series.}) with one command like the
 one below for the WFC3 filters. Put this command instead of the two
 @code{wget} commands above. Recall that all the extra spaces, back-slashes
@@ -2557,37 +2617,53 @@ $ for f in f105w f125w f140w f160w; do                              \
   done
 @end example
 
-First, let's visually inspect the dataset. Let's take F160W image as an
-example. Do the steps below with the other image(s) too (and later with any
-dataset that you want to work on). It is very important to understand your
-dataset visually. Note how ds9 doesn't follow the GNU style of options
-where ``long'' and ``short'' options are preceded by @option{--} and
-@option{-} respectively (for example @option{--width} and @option{-w}, see
-@ref{Options}).
 
-Ds9's @option{-zscale} option is a good scaling to highlight the low
-surface brightness regions, and as the name suggests, @option{-zoom to fit}
-will fit the whole dataset in the window. If the window is too small,
-expand it with your mouse, then press the ``zoom'' button on the top row of
-buttons above the image, then in the row below it, press ``zoom fit''. You
-can also zoom in and out by scrolling your mouse or the respective
-operation on your touch-pad when your cursor/pointer is over the image.
+@node Dataset inspection and cropping, Angular coverage on the sky, Setup and data download, General program usage tutorial
+@subsection Dataset inspection and cropping
+
+First, let's visually inspect the datasets we downloaded in @ref{Setup and
+data download}. Let's take F160W image as an example. Do the steps below
+with the other image(s) too (and later with any dataset that you want to
+work on). It is very important to get a good visual feeling of the dataset
+you intend to use. Also, note how SAO DS9 (used here for visual inspection
+of FITS images) doesn't follow the GNU style of options where ``long'' and
+``short'' options are preceded by @option{--} and @option{-} respectively
+(for example @option{--width} and @option{-w}, see @ref{Options}).
+
+Run the command below to see the F160W image with DS9. Ds9's
+@option{-zscale} scaling is good to visually highlight the low surface
+brightness regions, and as the name suggests, @option{-zoom to fit} will
+fit the whole dataset in the window. If the window is too small, expand it
+with your mouse, then press the ``zoom'' button on the top row of buttons
+above the image. Afterwards, in the bottom row of buttons, press ``zoom
+fit''. You can also zoom in and out by scrolling your mouse or the
+respective operation on your touch-pad when your cursor/pointer is over the
+image.
 
 @example
 $ ds9 download/hlsp_xdf_hst_wfc3ir-60mas_hudf_f160w_v1_sci.fits     \
       -zscale -zoom to fit
 @end example
 
-The first thing you might notice is that the regions with no data have a
-value of zero in this image. The next thing might be that the dataset
-actually has two ``depth''s (see @ref{Quantifying measurement limits}). The
-exposure time of the deep inner region is more than 4 times of the outer
-parts. Fortunately the XDF survey webpage (above) contains the vertices of
-the deep flat WFC3-IR field. With Gnuastro's Crop program@footnote{To learn
-more about the crop program see @ref{Crop}.}, you can use those vertices to
-cutout this deep infra-red region from the larger image. We'll make a
-directory called @file{flat-ir} and keep the flat infra-red regions in that
-directory (with a `@file{xdf-}' suffix for a shorter and easier filename).
+As you hover your mouse over the image, notice how the ``Value'' and
+positional fields on the top of the ds9 window get updated. The first thing
+you might notice is that when you hover the mouse over the regions with no
+data, they have a value of zero. The next thing might be that the dataset
+actually has two ``depth''s (see @ref{Quantifying measurement
+limits}). Recall that this is a combined/reduced image of many exposures,
+and the parts that have more exposures are deeper. In particular, the
+exposure time of the deep inner region is larger than 4 times of the outer
+(more shallower) parts.
+
+To simplify the analysis in this tutorial, we'll only be working on the
+deep field, so let's crop it out of the full dataset. Fortunately the XDF
+survey webpage (above) contains the vertices of the deep flat WFC3-IR
+field. With Gnuastro's Crop program@footnote{To learn more about the crop
+program see @ref{Crop}.}, you can use those vertices to cutout this deep
+region from the larger image. But before that, to keep things organized,
+let's make a directory called @file{flat-ir} and keep the flat
+(single-depth) regions in that directory (with a `@file{xdf-}' suffix for a
+shorter and easier filename).
 
 @example
 $ mkdir flat-ir
@@ -2606,11 +2682,13 @@ filter name. Therefore, to simplify the command, and later allow work on
 more filters, we can use the shell's @code{for} loop. Notice how the two
 places where the filter names (@file{f105w} and @file{f160w}) are used
 above have been replaced with @file{$f} (the shell variable that @code{for}
-is in charge of setting) below. To generalize this for more filters later,
-you can simply add the other filter names in the first line before the
-semi-colon (@code{;}).
+will update in every loop) below. In such cases, you should generally avoid
+repeating a command manually and use loops like below. To generalize this
+for more filters later, you can simply add the other filter names in the
+first line before the semi-colon (@code{;}).
 
 @example
+$ rm flat-ir/*.fits
 $ for f in f105w f160w; do                                            \
     astcrop --mode=wcs -h0 --output=flat-ir/xdf-$f.fits               \
             --polygon="53.187414,-27.779152 : 53.159507,-27.759633 :  \
@@ -2623,8 +2701,8 @@ Please open these images and inspect them with the same @command{ds9}
 command you used above. You will see how it is nicely flat now and doesn't
 have varying depths. Another important result of this crop is that regions
 with no data now have a NaN (Not-a-Number, or a blank value) value, not
-zero. Zero is a number, and thus a meaningful value, especially when you
-later want to NoiseChisel@footnote{As you will see below, unlike most other
+zero. Zero is a number, and is thus meaningful, especially when you later
+want to NoiseChisel@footnote{As you will see below, unlike most other
 detection algorithms, NoiseChisel detects the objects from their faintest
 parts, it doesn't start with their high signal-to-noise ratio peaks. Since
 the Sky is already subtracted in many images and noise fluctuates around
@@ -2633,138 +2711,170 @@ not ignoring zero-valued pixels in this image, will cause them to part of
 the detections!}. Generally, when you want to ignore some pixels in a
 dataset, and avoid higher-level ambiguities or complications, it is always
 best to give them blank values (not zero, or some other absurdly large or
-small number).
+small number). Gnuastro has the Arithmetic program for such cases, and
+we'll introduce it during this tutorial.
+
+@node Angular coverage on the sky, Cosmological coverage, Dataset inspection and cropping, General program usage tutorial
+@subsection Angular coverage on the sky
 
 @cindex @code{CDELT}
 @cindex Coordinate scales
 @cindex Scales, coordinate
 This is the deepest image we currently have of the sky. The first thing
-that comes to mind may be this: ``How large is this field?''. The FITS
-world coordinate system (WCS) meta data standard contains the key to
-answering this question: the @code{CDELT} keyword@footnote{In the FITS
-standard, the @code{CDELT} keywords (@code{CDELT1} and @code{CDELT2} in a
-2D image) specify the scales of each coordinate. In the case of this image
-it is in units of degrees-per-pixel. See Section 8 of the
-@url{https://fits.gsfc.nasa.gov/standard40/fits_standard40aa-le.pdf, FITS
-standard} for more. In short, with the @code{CDELT} convention, rotation
-(@code{PC} or @code{CD} keywords) and scales (@code{CDELT}) are
+that comes to mind may be this: ``How large is this field on the
+sky?''. The FITS world coordinate system (WCS) meta data standard contains
+the key to answering this question: the @code{CDELT} keyword@footnote{In
+the FITS standard, the @code{CDELT} keywords (@code{CDELT1} and
+@code{CDELT2} in a 2D image) specify the scales of each coordinate. In the
+case of this image it is in units of degrees-per-pixel. See Section 8 of
+the @url{https://fits.gsfc.nasa.gov/standard40/fits_standard40aa-le.pdf,
+FITS standard} for more. In short, with the @code{CDELT} convention,
+rotation (@code{PC} or @code{CD} keywords) and scales (@code{CDELT}) are
 separated. In the FITS standard the @code{CDELT} keywords are
 optional. When @code{CDELT} keywords aren't present, the @code{PC} matrix
 is assumed to contain @emph{both} the coordinate rotation and scales. Note
 that not all FITS writers use the @code{CDELT} convention. So you might not
 find the @code{CDELT} keywords in the WCS meta data of some FITS
 files. However, all Gnuastro programs (which use the default FITS keyword
-writing format of WCSLIB), the @code{CDELT} convention is used, even if the
-input doesn't have it. So when rotation and scaling are combined and
-finding the pixel scale isn't trivial from the raw keyword values, you can
-feed the dataset to any (simple) Gnuastro program (for example
-Arithmetic). The output will have the @code{CDELT} keyword.}. With the
-commands below, we'll use it (along with the image size) to find the
-answer. The lines starting with @code{##} are just comments for you to help
-in following the steps. Don't type them on the terminal. The commands are
-intentionally repetitive in some places to better understand each step and
-also to demonstrate the beauty of command-line features like variables,
-pipes and loops. Later, if you would like to repeat this process on another
-dataset, you can just use commands 3, 7, and 9.
+writing format of WCSLIB) write their output WCS with the the @code{CDELT}
+convention, even if the input doesn't have it. If your dataset doesn't use
+the @code{CDELT} convension, you can feed it to any (simple) Gnuastro
+program (for example Arithmetic) and the output will have the @code{CDELT}
+keyword.}.
+
+With the commands below, we'll use @code{CDELT} (along with the image size)
+to find the answer. The lines starting with @code{##} are just comments for
+you to read and understand each command. Don't type them on the
+terminal. The commands are intentionally repetitive in some places to
+better understand each step and also to demonstrate the beauty of
+command-line features like history, variables, pipes and loops (which you
+will commonly use as you master the command-line).
 
 @cartouche
 @noindent
 @strong{Use shell history:} Don't forget to make effective use of your
-shell's history. This is especially convenient when you just want to make a
-small change to your previous command. Press the ``up'' key on your
-keyboard (possibly multiple times) to see your previous command(s).
+shell's history: you don't have to re-type previous command to add
+something to them. This is especially convenient when you just want to make
+a small change to your previous command. Press the ``up'' key on your
+keyboard (possibly multiple times) to see your previous command(s) and
+modify them accordingly.
 @end cartouche
 
 @example
-## (1)  See the general statistics of non-blank pixel values.
+## See the general statistics of non-blank pixel values.
 $ aststatistics flat-ir/xdf-f160w.fits
 
-## (2)  We only want the number of non-blank pixels.
+## We only want the number of non-blank pixels.
 $ aststatistics flat-ir/xdf-f160w.fits --number
 
-## (3)  Keep the result of the command above in the shell variable `n'.
+## Keep the result of the command above in the shell variable `n'.
 $ n=$(aststatistics flat-ir/xdf-f160w.fits --number)
 
-## (4)  See what is stored the shell variable `n'.
+## See what is stored the shell variable `n'.
 $ echo $n
 
-## (5)  Show all the FITS keywords of this image.
+## Show all the FITS keywords of this image.
 $ astfits flat-ir/xdf-f160w.fits -h1
 
-## (6)  The resolution (in degrees/pixel) is in the `CDELT' keywords.
-##      Only show lines that contain these characters, by feeding
-##      the output of the previous command to the `grep' program.
+## The resolution (in degrees/pixel) is in the `CDELT' keywords.
+## Only show lines that contain these characters, by feeding
+## the output of the previous command to the `grep' program.
 $ astfits flat-ir/xdf-f160w.fits -h1 | grep CDELT
 
-## (7)  Save the resolution (same in both dimensions) in the variable
-##      `r'. The last part uses AWK to print the third `field' of its
-##      input line. The first two fields were `CDELT1' and `='.
+## Since the resolution of both dimensions is (approximately) equal,
+## we'll only use one of them (CDELT1).
+$ astfits flat-ir/xdf-f160w.fits -h1 | grep CDELT1
+
+## To extract the value (third token in the line above), we'll
+## feed the output to AWK. Note that the first two tokens are
+## `CDELT1' and `='.
+$ astfits flat-ir/xdf-f160w.fits -h1 | grep CDELT1 | awk '@{print $3@}'
+
+## Save it as the shell variable `r'.
 $ r=$(astfits flat-ir/xdf-f160w.fits -h1 | grep CDELT1   \
               | awk '@{print $3@}')
 
-## (8)  Print the values of `n' and `r'.
+## Print the values of `n' and `r'.
 $ echo $n $r
 
-## (9)  Use the number of pixels (first number passed to AWK) and
-##      length of each pixel's edge (second number passed to AWK)
-##      to estimate the area of the field in arc-minutes squared.
-$ area=$(echo $n $r | awk '@{print $1 * ($2^2) * 3600@}')
+## Use the number of pixels (first number passed to AWK) and
+## length of each pixel's edge (second number passed to AWK)
+## to estimate the area of the field in arc-minutes squared.
+$ echo $n $r | awk '@{print $1 * ($2^2) * 3600@}'
 @end example
 
-The area of this field is 4.03817 (or 4.04) arc-minutes squared. Just for
-comparison, this is roughly 175 times smaller than the average moon's
-angular area (with a diameter of 30arc-minutes or half a degree).
+The output of the last command (area of this field) is 4.03817 (or
+approximately 4.04) arc-minutes squared. Just for comparison, this is
+roughly 175 times smaller than the average moon's angular area (with a
+diameter of 30arc-minutes or half a degree).
 
 @cindex GNU AWK
 @cartouche
 @noindent
-@strong{AWK for table/value processing:} AWK is a powerful and simple tool
-for text processing. Above (and further below) some simple examples are
-shown. GNU AWK (the most common implementation) comes with a free and
+@strong{AWK for table/value processing:} As you saw above AWK is a powerful
+and simple tool for text processing. You will see it often in shell
+scripts. GNU AWK (the most common implementation) comes with a free and
 wonderful @url{https://www.gnu.org/software/gawk/manual/, book} in the same
 format as this book which will allow you to master it nicely. Just like
 this manual, you can also access GNU AWK's manual on the command-line
-whenever necessary without taking your hands off the keyboard.
+whenever necessary without taking your hands off the keyboard. Just run
+@code{info awk}.
 @end cartouche
 
-This takes us to the second question that you have probably asked yourself
-when you saw the field for the first time: ``How large is this area at
-different redshifts?''. To get a feeling of the tangential area that this
-field covers at redshift 2, you can use @ref{CosmicCalculator}. In
+
+@node Cosmological coverage, Building custom programs with the library, Angular coverage on the sky, General program usage tutorial
+@subsection Cosmological coverage
+Having found the angular coverage of the dataset in @ref{Angular coverage
+on the sky}, we can now use Gnuastro to answer a more physically motivated
+question: ``How large is this area at different redshifts?''. To get a
+feeling of the tangential area that this field covers at redshift 2, you
+can use Gnuastro's CosmicCalcular program (@ref{CosmicCalculator}). In
 particular, you need the tangential distance covered by 1 arc-second as raw
-output. Combined with the field's area, we can then calculate the
-tangential distance in Mega Parsecs squared (@mymath{Mpc^2}).
+output. Combined with the field's area that was measured before, we can
+calculate the tangential distance in Mega Parsecs squared (@mymath{Mpc^2}).
 
 @example
-## Print general cosmological properties at redshift 2.
+## Print general cosmological properties at redshift 2 (for example).
 $ astcosmiccal -z2
 
 ## When given a "Specific calculation" option, CosmicCalculator
-## will just print that particular calculation. See the options
-## under this title in the output of `--help' for more.
-$ astcosmiccal --help
+## will just print that particular calculation. To see all such
+## calculations, add a `--help' token to the previous command
+## (under the same title). Note that with `--help', no processing
+## is done, so you can always simply append it to remember
+## something without modifying the command you want to run.
+$ astcosmiccal -z2 --help
 
 ## Only print the "Tangential dist. covered by 1arcsec at z (kpc)".
 ## in units of kpc/arc-seconds.
 $ astcosmiccal -z2 --arcsectandist
 
-## Convert this distance to kpc^2/arcmin^2 and save in `k'.
-$ k=$(astcosmiccal -z2 --arcsectandist | awk '@{print ($1*60)^2@}')
+## But its easier to use the short version of this option (which
+## can be appended to other short options.
+$ astcosmiccal -sz2
 
-## Multiply by the area of the field (in arcmin^2) and divide by
-## 10^6 to return value in Mpc^2.
-$ echo $k $area | awk '@{print $1 * $2 / 1e6@}'
+## Convert this distance to kpc^2/arcmin^2 and save in `k'.
+$ k=$(astcosmiccal -sz2 | awk '@{print ($1*60)^2@}')
+
+## Re-calculate the area of the dataset in arcmin^2.
+$ n=$(aststatistics flat-ir/xdf-f160w.fits --number)
+$ r=$(astfits flat-ir/xdf-f160w.fits -h1 | grep CDELT1   \
+              | awk '@{print $3@}')
+$ a=$(echo $n $r | awk '@{print $1 * ($2^2) * 3600@}')
+
+## Multiply `k' and `a' and divide by 10^6 for value in Mpc^2.
+$ echo $k $a | awk '@{print $1 * $2 / 1e6@}'
 @end example
 
 @noindent
-At redshift 2, this field therefore covers 1.07145 @mymath{Mpc^2}. If you
-would like to see how this tangential area changes with redshift, you can
-use a shell loop like below.
+At redshift 2, this field therefore covers approximately 1.07
+@mymath{Mpc^2}. If you would like to see how this tangential area changes
+with redshift, you can use a shell loop like below.
 
 @example
-$ for z in 0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0; do           \
-    k=$(astcosmiccal -z$z --arcsectandist);                      \
-    echo $z $k $area | awk '@{print $1, ($2*60)^2 * $3 / 1e6@}';   \
+$ for z in 0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0; do        \
+    k=$(astcosmiccal -sz$z);                                  \
+    echo $z $k $a | awk '@{print $1, ($2*60)^2 * $3 / 1e6@}';   \
   done
 @end example
 
@@ -2772,32 +2882,43 @@ $ for z in 0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0; do           \
 Fortunately, the shell has a useful tool/program to print a sequence of
 numbers that is nicely called @code{seq}. You can use it instead of typing
 all the different redshifts in this example. For example the loop below
-will print the same range of redshifts (between 0.5 and 5) but with
-increments of 0.1.
+will calculate and print the tangential coverage of this field across a
+larger range of redshifts (0.1 to 5) and with finer increments of 0.1.
 
 @example
-$ for z in $(seq 0.5 0.1 5); do                                  \
+$ for z in $(seq 0.1 0.1 5); do                                  \
     k=$(astcosmiccal -z$z --arcsectandist);                      \
     echo $z $k $area | awk '@{print $1, ($2*60)^2 * $3 / 1e6@}';   \
   done
 @end example
 
-This is a fast and simple way for this repeated calculation when it is only
-necessary once. However, if you commonly need this calculation and possibly
-for a larger number of redshifts, the command above can be slow. This is
-because the CosmicCalculator program has a lot of overhead. To be generic
-and easy to operate, it has to parse the command-line and all configuration
-files (see below) which contain human-readable characters and need a lot of
-processing to be ready for processing by the computer. Afterwards,
-CosmicCalculator has to check the sanity of its inputs and check which of
-its many options you have asked for. It has to do all of these for every
-redshift in the loop above.
 
-To greatly speed up the processing, you can directly access the root
-work-horse of CosmicCalculator without all that overhead. Using Gnuastro's
-library, you can write your own tiny program particularly designed for this
-exact calculation (and nothing else!). To do that, copy and paste the
-following C program in a file called @file{myprogram.c}.
+@node Building custom programs with the library, Option management and configuration files, Cosmological coverage, General program usage tutorial
+@subsection Building custom programs with the library
+In @ref{Cosmological coverage}, we repeated a certain calculation/output of
+a program multiple times using the shell's @code{for} loop. This simple way
+repeating a calculation is great when it is only necessary once. However,
+if you commonly need this calculation and possibly for a larger number of
+redshifts at higher precision, the command above can be slow (try it out to
+see).
+
+This slowness of the repeated calls to a generic program (like
+CosmicCalculator), is because it can have a lot of overhead on each
+call. To be generic and easy to operate, it has to parse the command-line
+and all configuration files (see @ref{Option management and configuration
+files}) which contain human-readable characters and need a lot of
+pre-processing to be ready for processing by the computer. Afterwards,
+CosmicCalculator has to check the sanity of its inputs and check which of
+its many options you have asked for. All the this pre-processing takes as
+much time as the high-level calculation you are requesting, and it has to
+re-do all of these for every redshift in your loop.
+
+To greatly speed up the processing, you can directly access the core
+work-horse of CosmicCalculator without all that overhead by designing your
+custom program for this job. Using Gnuastro's library, you can write your
+own tiny program particularly designed for this exact calculation (and
+nothing else!). To do that, copy and paste the following C program in a
+file called @file{myprogram.c}.
 
 @example
 #include <math.h>
@@ -2834,67 +2955,82 @@ main(void)
 @end example
 
 @noindent
-To greatly simplify the compilation, linking and running of simple C
-programs like this that use Gnuastro's library, Gnuastro has
-@ref{BuildProgram}. This program is designed to manage Gnuastro's
-dependencies, compile and link the program and then run the new program. To
-build, @emph{and run} the program above, use the following command:
+Then run the following command to compile your program and run it.
 
 @example
 $ astbuildprog myprogram.c
 @end example
 
-Did you notice how much faster this was compared to the shell loop we wrote
-above? You might have noticed that a new file called @file{myprogram} is
-also created in the directory. This is the compiled program that was
-created and run by the command above (its in binary machine code format,
-not human-readable any more). You can run it again to get the same results
-with a command like this:
+@noindent
+In the command above, you used Gnuastro's BuildProgram program. Its job is
+to greatly simplify the compilation, linking and running of simple C
+programs that use Gnuastro's library (like this one). BuildProgram is
+designed to manage Gnuastro's dependencies, compile and link your custom
+program and then run it.
+
+Did you notice how your custom program was much faster than the repeated
+calls to CosmicCalculator in the previous section? You might have noticed
+that a new file called @file{myprogram} is also created in the
+directory. This is the compiled program that was created and run by the
+command above (its in binary machine code format, not human-readable any
+more). You can run it again to get the same results with a command like
+this:
 
 @example
 $ ./myprogram
 @end example
 
-The efficiency of @file{myprogram} compared to CosmicCalculator is because
-in the latter, the requested processing is comparable to the necessary
-overheads. For other programs that take large input datasets and do
-complicated processing on them, the overhead is usually negligible compared
-to the processing. In such cases, the libraries are only useful if you want
-a different/new processing compared to the functionalities in Gnuastro's
-existing programs.
+The efficiency of your custom @file{myprogram} compared to repeated calls
+to CosmicCalculator is because in the latter, the requested processing is
+comparable to the necessary overheads. For other programs that take large
+input datasets and do complicated processing on them, the overhead is
+usually negligible compared to the processing. In such cases, the libraries
+are only useful if you want a different/new processing compared to the
+functionalities in Gnuastro's existing programs.
 
-Gnuastro has a large library which is heavily used by all the programs. In
-other words, the library is like the skeleton of Gnuastro. For the full
-list of available functions classified by context, please see @ref{Gnuastro
-library}. Gnuastro's library and BuildProgram are created to make it easy
-for you to use these powerful features as you like. This gives you a high
-level of creativity, while also providing efficiency and
+Gnuastro has a large library which is used extensively by all the
+programs. In other words, the library is like the skeleton of Gnuastro. For
+the full list of available functions classified by context, please see
+@ref{Gnuastro library}. Gnuastro's library and BuildProgram are created to
+make it easy for you to use these powerful features as you like. This gives
+you a high level of creativity, while also providing efficiency and
 robustness. Several other complete working examples (involving images and
 tables) of Gnuastro's libraries can be see in @ref{Library demo
-programs}. Let's stop the discussion on libraries at this point in this
-tutorial and get back to Gnuastro's already built programs which were the
-main purpose of this tutorial.
+programs}.
 
+But for this tutorial, let's stop discussing the libraries at this point in
+and get back to Gnuastro's already built programs which don't need any
+programming. But before continuing, let's clean up the files we don't need
+any more:
+
+@example
+$ rm myprogram*
+@end example
+
+
+@node Option management and configuration files, Warping to a new pixel grid, Building custom programs with the library, General program usage tutorial
+@subsection Option management and configuration files
 None of Gnuastro's programs keep a default value internally within their
-code. However, when you ran CosmicCalculator with the @option{-z2} option
-above, it completed its processing and printed results. So where did the
-``default'' cosmological parameter values (like the matter density and etc)
-come from?  The values come from the command-line or a configuration file
-(see @ref{Configuration file precedence}).
+code. However, when you ran CosmicCalculator only with the @option{-z2}
+option (not specifying the cosmological parameters) in @ref{Cosmological
+coverage}, it completed its processing and printed results. Where did the
+necessary cosmological parameters (like the matter density and etc) that
+are necessary for its calculations come from? Fast reply: the values come
+from a configuration file (see @ref{Configuration file precedence}).
 
-CosmicCalculator has a small set of parameters/options. Therefore, let's
-use it to discuss configuration files (see @ref{Configuration
+CosmicCalculator is a small program with a limited set of
+parameters/options. Therefore, let's use it to discuss configuration files
+in Gnuastro (for more, you can always see @ref{Configuration
 files}). Configuration files are an important part of all Gnuastro's
 programs, especially the ones with a large number of options, so its
 important to understand this part well .
 
-Once you get comfortable with configuration files, you can easily do the
-same for the options of all Gnuastro programs (for example,
-NoiseChisel). Therefore configuration files will be useful for it when you
-use different datasets (with different noise properties or in different
-research contexts). The configuration of each program (besides its version)
-is vital for the reproducibility of your results, so it is important to
-manage them properly.
+Once you get comfortable with configuration files here, you can make good
+use of them in all Gnuastro programs (for example, NoiseChisel). For
+example, to do optimal detection on various datasets, you can have
+configuration files for different noise properties. The configuration of
+each program (besides its version) is vital for the reproducibility of your
+results, so it is important to manage them properly.
 
 As we saw above, the full list of the options in all Gnuastro programs can
 be seen with the @option{--help} option. Try calling it with
@@ -2909,7 +3045,7 @@ $ astcosmiccal --help
 @noindent
 The options that need a value have an @key{=} sign after their long version
 and @code{FLT}, @code{INT} or @code{STR} for floating point numbers,
-integer numbers and strings (filenames for example) respectively. All
+integer numbers, and strings (filenames for example) respectively. All
 options have a long format and some have a short format (a single
 character), for more see @ref{Options}.
 
@@ -2917,33 +3053,50 @@ When you are using a program, it is often necessary to check the value the
 option has just before the program starts its processing. In other words,
 after it has parsed the command-line options and all configuration
 files. You can see the values of all options that need one with the
-@option{--printparams} or @code{-P} option that is common to all programs
-(see @ref{Common options}). In the command below, try replacing @code{-P}
-with @option{--printparams} to see how both do the same operation.
+@option{--printparams} or @code{-P} option. @option{--printparams} is
+common to all programs (see @ref{Common options}). In the command below,
+try replacing @code{-P} with @option{--printparams} to see how both do the
+same operation.
 
 @example
 $ astcosmiccal -P
 @end example
 
 Let's say you want a different Hubble constant. Try running the following
-command to see how the Hubble constant in the output of the command above
-has changed. Afterwards, delete the @option{-P} and add a @option{-z2} to
-see the results with the new cosmology (or configuration).
+command (just adding @option{--H0=70} after the command above) to see how
+the Hubble constant in the output of the command above has changed.
 
 @example
 $ astcosmiccal -P --H0=70
+@end example
+
+@noindent
+Afterwards, delete the @option{-P} and add a @option{-z2} to see the
+calculations with the new cosmology (or configuration).
+
+@example
+$ astcosmiccal --H0=70 -z2
 @end example
 
 From the output of the @code{--help} option, note how the option for Hubble
 constant has both short (@code{-H}) and long (@code{--H0}) formats. One
 final note is that the equal (@key{=}) sign is not mandatory. In the short
 format, the value can stick to the actual option (the short option name is
-just one character after-all and thus easily identifiable) and in the long
+just one character after-all, thus easily identifiable) and in the long
 format, a white-space character is also enough.
 
 @example
 $ astcosmiccal -H70    -z2
 $ astcosmiccal --H0 70 -z2 --arcsectandist
+@end example
+
+@noindent
+When an option dosn't need a value, and has a short format (like
+@option{--arcsectandist}), you can easily append it @emph{before} other
+short options. So the last command above can also be written as:
+
+@example
+$ astcosmiccal --H0 70 -sz2
 @end example
 
 Let's assume that in one project, you want to only use rounded cosmological
@@ -2955,17 +3108,18 @@ $ astcosmiccal --H0=70 --olambda=0.7 --omatter=0.3 -z2
 @end example
 
 But having to type these extra options every time you run CosmicCalculator
-will be prone to errors (typos in particular) and also will be frustrating
-and slow. Therefore in Gnuastro, you can put all the options and their
-values in a ``Configuration file'' and tell the programs to read the option
-values from there.
+will be prone to errors (typos in particular), frustrating and
+slow. Therefore in Gnuastro, you can put all the options and their values
+in a ``Configuration file'' and tell the programs to read the option values
+from there.
 
-Let's create a configuration file. In your favorite text editor, make a
+Let's create a configuration file... With your favorite text editor, make a
 file named @file{my-cosmology.conf} (or @file{my-cosmology.txt}, the suffix
-doesn't matter) which contains the following lines. One space between the
-option value and name is enough, the values are just under each other to
-help in readability. Also note that you can only use long option names in
-configuration files.
+doesn't matter, but a more descriptive suffix like @file{.conf} is
+recommended). Then put the following lines inside of it. One space between
+the option value and name is enough, the values are just under each other
+to help in readability. Also note that you can only use long option names
+in configuration files.
 
 @example
 H0       70
@@ -2977,27 +3131,28 @@ omatter  0.3
 You can now tell CosmicCalculator to read this file for option values
 immediately using the @option{--config} option as shown below. Do you see
 how the output of the following command corresponds to the option values in
-@file{my-cosmology.conf} (previous command)?
+@file{my-cosmology.conf}, and is therefore identical to the previous
+command?
 
 @example
 $ astcosmiccal --config=my-cosmology.conf -z2
 @end example
 
-If you need this cosmology every time you are working in a specific
-directory, you can benefit from Gnuastro's default configuration files to
-avoid having to call the @option{--config} option. These default
-configuration files (that are checked if they exist) must be placed in the
-hidden @file{.gnuastro} sub-directory of the directory you are working
-in. Their filename (within @file{.gnuastro}) must also be the same as the
-program's executable name. So in the case of CosmicCalculator, the default
-configuration file that in a given directory is
+But still, having to type @option{--config=my-cosmology.conf} everytime is
+annoying, isn't it? If you need this cosmology every time you are working
+in a specific directory, you can use Gnuastro's default configuration file
+names and avoid having to type it manually.
+
+The default configuration files (that are checked if they exist) must be
+placed in the hidden @file{.gnuastro} sub-directory (in the same directory
+you are running the program). Their file name (within @file{.gnuastro})
+must also be the same as the program's executable name. So in the case of
+CosmicCalculator, the default configuration file in a given directory is
 @file{.gnuastro/astcosmiccal.conf}.
 
-Let's assume that you want any call to CosmicCalculator in the
-@file{my-cosmology} directory to use these particular parameters. You just
-have to copy the above configuration file into a @file{.gnuastro} directory
-within it. So first, we'll make the two necessary directories, then copy
-the custom configuration file into it with the proper name:
+Let's do this. We'll first make a directory for our custom cosmology, then
+build a @file{.gnuastro} within it. Finally, we'll copy the custom
+configuration file there:
 
 @example
 $ mkdir my-cosmology
@@ -3006,27 +3161,27 @@ $ mv my-cosmology.conf my-cosmology/.gnuastro/astcosmiccal.conf
 @end example
 
 Once you run CosmicCalculator within @file{my-cosmology} (as shown below),
-you will see how your customo cosmology has been implemented without having
+you will see how your custom cosmology has been implemented without having
 to type anything extra on the command-line.
 
 @example
 $ cd my-cosmology
-$ astcosmiccal -z2
+$ astcosmiccal -P
 $ cd ..
 @end example
 
 To further simplify the process, you can use the @option{--setdirconf}
 option. If you are already in your desired working directory, calling this
 option with the others will automatically write the final values (along
-with descriptions) in @file{.gnuastro/astcosmiccal.conf}. For example the
-commands below will make the same configuration file automatically (with
-one extra call to CosmicCalculator).
+with descriptions) in @file{.gnuastro/astcosmiccal.conf}. For example try
+the commands below:
 
 @example
 $ mkdir my-cosmology2
 $ cd my-cosmology2
+$ astcosmiccal -P
 $ astcosmiccal --H0 70 --olambda=0.7 --omatter=0.3 --setdirconf
-$ astcosmiccal -z2
+$ astcosmiccal -P
 $ cd ..
 @end example
 
@@ -3038,34 +3193,55 @@ before. Finally, there are also system-wide configuration files that can be
 used to define the option values for all users on a system. See
 @ref{Configuration file precedence} for a more detailed discussion.
 
-We are now ready to start processing the downloaded images. Since these
-datasets are already aligned, you don't need to align them to make sure the
-pixel grid covers the same region in all inputs. Gnuastro's Warp program
-has features for such pixel-grid warping (see @ref{Warp}). Therefore, just
-for a demonstration, let's assume one image needs to be rotated by 20
-degrees to correspond to the other. To do that, you can run the following
-command:
+We'll stop the discussion on configuration files here, but you can always
+read about them in @ref{Configuration files}. Before continuing the
+tutorial, let's delete the two extra directories that we don't need any
+more:
+
+@example
+$ rm -rf my-cosmology*
+@end example
+
+
+@node Warping to a new pixel grid, Multiextension FITS files NoiseChisel's output, Option management and configuration files, General program usage tutorial
+@subsection Warping to a new pixel grid
+We are now ready to start processing the downloaded images. The XDF
+datasets we are using here are already aligned to the same pixel
+grid. However, warping to a different/matched pixel grid is commonly needed
+before higher-level analysis when you are using datasets from different
+instruments. So let's have a look at Gnuastro's features warping features
+here.
+
+Gnuastro's Warp program should be used for warping the pixel-grid (see
+@ref{Warp}). For example, try rotating one of the images by 20 degrees:
 
 @example
 $ astwarp flat-ir/xdf-f160w.fits --rotate=20
 @end example
 
 @noindent
-Open the output and see it. If your final image is already aligned with RA
-and Dec, you can simply use the @option{--align} option and let Warp
-calculate the necessary rotation and apply it.
+Open the output (@file{xdf-f160w_rotated.fits}) and see how it is
+rotated. If your final image is already aligned with RA and Dec, you can
+simply use the @option{--align} option and let Warp calculate the necessary
+rotation and apply it. For example, try aligning the rotated image back to
+the standard orientation (just note that because of the two rotations, the
+NaN parts of the image are larger now):
 
-Warp can generally be used for any kind of pixel grid manipulation
-(warping). For example the outputs of the commands below will respectively
-have larger pixels (new resolution being one quarter the original
-resolution), get shifted by 2.8 (by sub-pixel), get a shear of 2, and be
-tilted (projected). After running each, please open the output file and see
-the effect.
+@example
+$ astwarp xdf-f160w_rotated.fits --align
+@end example
+
+Warp can generally be used for many kinds of pixel grid manipulation
+(warping), not just rotations. For example the outputs of the commands
+below will respectively have larger pixels (new resolution being one
+quarter the original resolution), get shifted by 2.8 (by sub-pixel), get a
+shear of 2, and be tilted (projected). Run each of them and open the output
+file to see the effect, they will become handy for you in the future.
 
 @example
 $ astwarp flat-ir/xdf-f160w.fits --scale=0.25
 $ astwarp flat-ir/xdf-f160w.fits --translate=2.8
-$ astwarp flat-ir/xdf-f160w.fits --shear=2
+$ astwarp flat-ir/xdf-f160w.fits --shear=0.2
 $ astwarp flat-ir/xdf-f160w.fits --project=0.001,0.0005
 @end example
 
@@ -3081,12 +3257,16 @@ $ astwarp flat-ir/xdf-f160w.fits --rotate=20 --scale=0.25
 If you have multiple warps, do them all in one command. Don't warp them in
 separate commands because the correlated noise will become too strong. As
 you see in the matrix that is printed when you run Warp, it merges all the
-warps into a single warping matrix (see @ref{Warping basics} and
-@ref{Merging multiple warpings}) and simply applies that just once. Recall
-that since this is done through matrix multiplication, order matters in the
-separate operations. In fact through Warp's @option{--matrix} option, you
-can directly request your desired final warp and don't have to break it up
-into different warps like above (see @ref{Invoking astwarp}).
+warps into a single warping matrix (see @ref{Merging multiple warpings})
+and simply applies that (mixes the pixel values) just once. However, if you
+run Warp multiple times, the pixels will be mixed multiple times, creating
+a strong artificial blur/smoothing, or stronger correlated noise.
+
+Recall that the merging of multiple warps is done through matrix
+multiplication, therefore order matters in the separate operations. At a
+lower level, through Warp's @option{--matrix} option, you can directly
+request your desired final warp and don't have to break it up into
+different warps like above (see @ref{Invoking astwarp}).
 
 Fortunately these datasets are already aligned to the same pixel grid, so
 you don't actually need the files that were just generated. You can safely
@@ -3099,20 +3279,25 @@ can simply delete with a generic command like below.
 $ rm *.fits
 @end example
 
-@noindent
-To detect the signal in the image (separate interesting pixels from noise),
-we'll run NoiseChisel (@ref{NoiseChisel}):
+
+@node Multiextension FITS files NoiseChisel's output, NoiseChisel optimization for detection, Warping to a new pixel grid, General program usage tutorial
+@subsection Multiextension FITS files (NoiseChisel's output)
+Having completed a review of the basics in the previous sections, we are
+now ready to separate the signal (galaxies or stars) from the background
+noise in the image. We will be using the results of @ref{Dataset inspection
+and cropping}, so be sure you already have them. Gnuastro has NoiseChisel
+for this job. But NoiseChisel's output is a multi-extension FITS file,
+therefore to better understand how to use NoiseChisel, let's take a look at
+multi-extension FITS files and how you can interact with them.
+
+In the FITS format, each extension contains a separate dataset (image in
+this case). You can get basic information about the extensions in a FITS
+file with Gnuastro's Fits program (see @ref{Fits}). To start with, let's
+run NoiseChisel without any options, then use Gnuastro's FITS program to
+inspect the number of extensions in this file.
 
 @example
 $ astnoisechisel flat-ir/xdf-f160w.fits
-@end example
-
-NoiseChisel's output is a single FITS file containing multiple
-extensions. In the FITS format, each extension contains a separate dataset
-(image in this case). You can get basic information about the extensions in
-a FITS file with Gnuastro's Fits program (see @ref{Fits}):
-
-@example
 $ astfits xdf-f160w_detected.fits
 @end example
 
@@ -3121,13 +3306,12 @@ extensions and the first (counting from zero, with name
 @code{NOISECHISEL-CONFIG}) is empty: it has value of @code{0} in the last
 column (which shows its size). The first extension in all the outputs of
 Gnuastro's programs only contains meta-data: data about/describing the
-datasets within (all) the output's extension(s). This allows the first
-extension to keep meta-data about all the extensions and is recommended by
-the FITS standard, see @ref{Fits} for more. This generic meta-data (for the
-whole file) is very important for being able to reproduce this same result
-later.
+datasets within (all) the output's extensions. This is recommended by the
+FITS standard, see @ref{Fits} for more. In the case of Gnuastro's programs,
+this generic zero-th/meta-data extension (for the whole file) contains all
+the configuration options of the program that created the file.
 
-The second extension of NoiseChisel's output (numbered 1 and named
+The second extension of NoiseChisel's output (numbered 1, named
 @code{INPUT-NO-SKY}) is the Sky-subtracted input that you provided. The
 third (@code{DETECTIONS}) is NoiseChisel's main output which is a binary
 image with only two possible values for all pixels: 0 for noise and 1 for
@@ -3139,26 +3323,28 @@ your computer, its numeric datatype an unsigned 8-bit integer (or
 for the input on a tile grid and were calculated over the undetected
 regions (for more on the importance of the Sky value, see @ref{Sky value}).
 
-Reproducing your results later (or checking the configuration of the
-program that produced the dataset at a later time during your higher-level
-analysis) is very important in any research. Therefore, Let's first take a
-closer look at the @code{NOISECHISEL-CONFIG} extension. But first, we'll
-run NoiseChisel with @option{-P} to see the option values in a format we
-are already familiar with (to help in the comparison).
+Metadata regarding how the analysis was done (or a dataset was created) is
+very important for higher-level analysis and reproducibility. Therefore,
+Let's first take a closer look at the @code{NOISECHISEL-CONFIG}
+extension. If you specify a special header in the FITS file, Gnuastro's
+Fits program will print the header keywords (metadata) of that
+extension. You can either specify the HDU/extension counter (starting from
+0), or name. Therefore, the two commands below are identical for this file:
 
 @example
-$ astnoisechisel -P
 $ astfits xdf-f160w_detected.fits -h0
+$ astfits xdf-f160w_detected.fits -hNOISECHISEL-CONFIG
 @end example
 
 The first group of FITS header keywords are standard keywords (containing
 the @code{SIMPLE} and @code{BITPIX} keywords the first empty line). They
 are required by the FITS standard and must be present in any FITS
-extension. The second group contain the input file and all the options with
-their values in that run of NoiseChisel. Finally, the last group contain
-the date and version information of Gnuastro and its dependencies. The
-``versions and date'' group of keywords are present in all Gnuastro's FITS
-extension outputs, for more see @ref{Output FITS files}.
+extension. The second group contains the input file and all the options
+with their values in that run of NoiseChisel. Finally, the last group
+contains the date and version information of Gnuastro and its
+dependencies. The ``versions and date'' group of keywords are present in
+all Gnuastro's FITS extension outputs, for more see @ref{Output FITS
+files}.
 
 Note that if a keyword name is larger than 8 characters, it is preceded by
 a @code{HIERARCH} keyword and that all keyword names are in capital
@@ -3175,6 +3361,12 @@ typing.
 $ astnoisechisel -P                   | grep    snminarea
 $ astfits xdf-f160w_detected.fits -h0 | grep -i snminarea
 @end example
+
+@noindent
+The metadata (that is stored in the output) can later be used to exactly
+reproduce/understand your result, even if you have lost/forgot the command
+you used to create the file. This feature is present in all of Gnuastro's
+programs, not just NoiseChisel.
 
 @cindex DS9
 @cindex GNOME
@@ -3204,30 +3396,59 @@ region. Just have in mind that NoiseChisel's job is @emph{only} detection
 (separating signal from noise), We'll do segmentation on this result later
 to find the individual galaxies/peaks over the detected pixels.
 
+Each HDU/extension in a FITS file is an independent dataset (image or
+table) which you can delete from the FITS file, or copy/cut to another
+file. For example, with the command below, you can copy NoiseChisel's
+@code{DETECTIONS} HDU/extension to another file:
+
+@example
+$ astfits xdf-f160w_detected.fits --copy=DETECTIONS -odetections.fits
+@end example
+
+There are similar options to conveniently cut (@option{--cut}, copy, then
+remove from the input) or delete (@option{--remove}) HDUs from a FITS file
+also. See @ref{HDU manipulation} for more.
+
+
+
+@node NoiseChisel optimization for detection, NoiseChisel optimization for storage, Multiextension FITS files NoiseChisel's output, General program usage tutorial
+@subsection NoiseChisel optimization for detection
+In @ref{Multiextension FITS files NoiseChisel's output}, we ran NoiseChisel
+and reviewed NoiseChisel's output format. Now that you have a better
+feeling for multi-extension FITS files, let's optimize NoiseChisel for this
+particular dataset.
+
 One good way to see if you have missed any signal (small galaxies, or the
 wings of brighter galaxies) is to mask all the detected pixels and inspect
 the noise pixels. For this, you can use Gnuastro's Arithmetic program (in
-particular its @code{where} operator, see @ref{Arithmetic operators}). With
-the command below, all detected pixels (in the @code{DETECTIONS} extension)
-will be set to NaN in the output (@file{nc-masked.fits}). To make the
-command easier to read/write, let's just put the file name in a shell
-variable (@code{img}) first. A shell variable's value can be retrieved by
-adding a @code{$} before its name.
+particular its @code{where} operator, see @ref{Arithmetic operators}). The
+command below will produce @file{mask-det.fits}. In it, all the pixels in
+the @code{INPUT-NO-SKY} extension that are flagged 1 in the
+@code{DETECTIONS} extension (dominated by signal, not noise) will be set to
+NaN.
+
+Since the various extensions are in the same file, for each dataset we need
+the file and extension name. To make the command easier to
+read/write/understand, let's use shell variables: `@code{in}' will be used
+for the Sky-subtracted input image and `@code{det}' will be used for the
+detection map. Recall that a shell variable's value can be retrieved by
+adding a @code{$} before its name, also note that the double quotations are
+necessary when we have white-space characters in a variable name (like this
+case).
 
 @example
-$ img=xdf-f160w_detected.fits
-$ astarithmetic $img $img nan where -hINPUT-NO-SKY -hDETECTIONS      \
-                --output=mask-det.fits
+$ in="xdf-f160w_detected.fits -hINPUT-NO-SKY"
+$ det="xdf-f160w_detected.fits -hDETECTIONS"
+$ astarithmetic $in $det nan where --output=mask-det.fits
 @end example
 
 @noindent
-To invert the result (only keep the values of detected pixels), you can
-flip the detected pixel values (from 0 to 1 and vice-versa) by adding a
-@code{not} after the second @code{$img}:
+To invert the result (only keep the detected pixels), you can flip the
+detection map (from 0 to 1 and vice-versa) by adding a `@code{not}' after
+the second @code{$det}:
 
 @example
-$ astarithmetic $img $img not nan where -hINPUT-NO-SKY -hDETECTIONS  \
-                --output=mask-sky.fits
+$ astarithmetic $in $det not nan where --output=mask-sky.fits
 @end example
 
 Looking again at the detected pixels, we see that there are thin
@@ -3266,7 +3487,8 @@ $ astnoisechisel --help | grep check
 Let's check the overall detection process to get a better feeling of what
 NoiseChisel is doing with the following command. To learn the details of
 NoiseChisel in more detail, please see
-@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
+@url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}. Also
+see @ref{NoiseChisel changes after publication}.
 
 @example
 $ astnoisechisel flat-ir/xdf-f160w.fits --checkdetection
@@ -3275,10 +3497,18 @@ $ astnoisechisel flat-ir/xdf-f160w.fits --checkdetection
 The check images/tables are also multi-extension FITS files.  As you saw
 from the command above, when check datasets are requested, NoiseChisel
 won't go to the end. It will abort as soon as all the extensions of the
-check image are ready. Try listing the extensions of the output with
-@command{astfits} and then opening them with @command{ds9} as we done
-above. In order to understand the parameters and their biases (especially
-as you are starting to use Gnuastro, or running it a new dataset), it is
+check image are ready. Please list the extensions of the output with
+@command{astfits} and then opening it with @command{ds9} as we done
+above. If you have read the paper, you will see why there are so many
+extensions in the check image.
+
+@example
+$ astfits xdf-f160w_detcheck.fits
+$ ds9 -mecube xdf-f160w_detcheck.fits -zscale -zoom to fit
+@end example
+
+In order to understand the parameters and their biases (especially as you
+are starting to use Gnuastro, or running it a new dataset), it is
 @emph{strongly} encouraged to play with the different parameters and use
 the respective check images to see which step is affected by your changes
 and how, for example see @ref{Detecting large extended targets}.
@@ -3290,8 +3520,8 @@ already present here (a relatively early stage in the processing). Such
 connections at the lowest surface brightness limits usually occur when the
 dataset is too smoothed. Because of correlated noise, the dataset is
 already artificially smoothed, therefore further smoothing it with the
-default kernel may be the problem. Therefore, one solution is to use a
-sharper kernel (NoiseChisel's first step in its processing).
+default kernel may be the problem. One solution is thus to use a sharper
+kernel (NoiseChisel's first step in its processing).
 
 By default NoiseChisel uses a Gaussian with full-width-half-maximum (FWHM)
 of 2 pixels. We can use Gnuastro's MakeProfiles to build a kernel with FWHM
@@ -3318,36 +3548,47 @@ Looking at the @code{OPENED_AND_LABELED} extension, we see that the thin
 connections between smaller peaks has now significantly decreased. Going
 two extensions/steps ahead (in the first @code{HOLES-FILLED}), you can see
 that during the process of finding false pseudo-detections, too many holes
-have been filled: see how the many of the brighter galaxies are connected?
+have been filled: do you see how the many of the brighter galaxies are
+connected? At this stage all holes are filled, irrespective of their size.
 
 Try looking two extensions ahead (in the first @code{PSEUDOS-FOR-SN}), you
 can see that there aren't too many pseudo-detections because of all those
 extended filled holes. If you look closely, you can see the number of
-pseudo-detections in the result NoiseChisel prints (around 4000). This is
+pseudo-detections in the result NoiseChisel prints (around 5000). This is
 another side-effect of correlated noise. To address it, we should slightly
-increase the pseudo-detection threshold (@option{--dthresh}, run with
-@option{-P} to see its default value):
+increase the pseudo-detection threshold (before changing
+@option{--dthresh}, run with @option{-P} to see the default value):
+
+@example
+$ astnoisechisel flat-ir/xdf-f160w.fits --kernel=kernel.fits \
+                 --dthresh=0.1 --checkdetection
+@end example
+
+Before visually inspecting the check image, you can already see the effect
+of this change in NoiseChisel's command-line output: notice how the number
+of pseudos has increased to more than 6000. Open the check image now and
+have a look, you can see how the pseudo-detections are distributed much
+more evenly in the image.
+
+@cartouche
+@noindent
+@strong{Maximize the number of pseudo-detecitons:} For a new noise-pattern
+(different instrument), play with @code{--dthresh} until you get a maximal
+number of pseudo-detections (the total number of pseudo-detections is
+printed on the command-line when you run NoiseChisel).
+@end cartouche
+
+The signal-to-noise ratio of pseudo-detections define NoiseChisel's
+reference for removing false detections, so they are very important to get
+right. Let's have a look at their signal-to-noise distribution with
+@option{--checksn}.
 
 @example
 $ astnoisechisel flat-ir/xdf-f160w.fits --kernel=kernel.fits  \
-                 --dthresh=0.2 --checkdetection
+                 --dthresh=0.1 --checkdetection --checksn
 @end example
 
-Before visually inspecting the check image, you can see the effect of this
-change in NoiseChisel's command-line output: notice how the number of
-pseudos has increased to roughly 5500. Open the check image now and have a
-look, you can see how the pseudo-detections are distributed much more
-evenly in the image. The signal-to-noise ratio of pseudo-detections define
-NoiseChisel's reference for removing false detections, so they are very
-important to get right. Let's have a look at their signal-to-noise
-distribution with @option{--checksn}.
-
-@example
-$ astnoisechisel flat-ir/xdf-f160w.fits --kernel=kernel.fits  \
-                 --dthresh=0.2 --checkdetection --checksn
-@end example
-
-The output @file{xdf-f160w_detsn.fits} file contains two extensions for the
+The output (@file{xdf-f160w_detsn.fits}) contains two extensions for the
 pseudo-detections over the undetected (sky) regions and those over
 detections. The first column is the pseudo-detection label which you can
 see in the respective@footnote{The first @code{PSEUDOS-FOR-SN} in
@@ -3355,12 +3596,12 @@ see in the respective@footnote{The first @code{PSEUDOS-FOR-SN} in
 undetected regions and the second is for those over detected regions.}
 @code{PSEUDOS-FOR-SN} extension of @file{xdf-f160w_detcheck.fits}. You can
 see the table columns with the first command below and get a feeling for
-its distribution with the second command. We'll discuss the two Table and
-Statistics programs later.
+its distribution with the second command (the two Table and Statistics
+programs will be discussed later in the tutorial)
 
 @example
-$ asttable xdf-f160w_detsn.fits
-$ aststatistics xdf-f160w_detsn.fits -c2
+$ asttable xdf-f160w_detsn.fits -hSKY_PSEUDODET_SN
+$ aststatistics xdf-f160w_detsn.fits -hSKY_PSEUDODET_SN -c2
 @end example
 
 The correlated noise is again visible in this pseudo-detection
@@ -3370,7 +3611,7 @@ the difference between the three 0.99, 0.95 and 0.90 quantiles with this
 command:
 
 @example
-$ aststatistics xdf-f160w_detsn.fits -c2                        \
+$ aststatistics xdf-f160w_detsn.fits -hSKY_PSEUDODET_SN -c2      \
                 --quantile=0.99 --quantile=0.95 --quantile=0.90
 @end example
 
@@ -3381,14 +3622,15 @@ detections). With the @command{aststatistics} command above, you see that a
 small number of extra false detections (impurity) in the final result
 causes a big change in completeness (you can detect more lower
 signal-to-noise true detections). So let's loosen-up our desired purity
-level and then mask the detected pixels like before to see if we have
-missed anything.
+level, remove the check-image options, and then mask the detected pixels
+like before to see if we have missed anything.
 
 @example
 $ astnoisechisel flat-ir/xdf-f160w.fits --kernel=kernel.fits  \
-                 --dthresh=0.2 --snquant=0.95
-$ img=xdf-f160w_detected.fits
-$ astarithmetic $img $img nan where -h1 -h2 --output=mask-det.fits
+                 --dthresh=0.1 --snquant=0.95
+$ in="xdf-f160w_detected.fits -hINPUT-NO-SKY"
+$ det="xdf-f160w_detected.fits -hDETECTIONS"
+$ astarithmetic $in $det nan where --output=mask-det.fits
 @end example
 
 Overall it seems good, but if you play a little with the color-bar and look
@@ -3407,34 +3649,14 @@ will see many of those sharp objects are now detected.
 
 @example
 $ astnoisechisel flat-ir/xdf-f160w.fits --kernel=kernel.fits     \
-                 --noerodequant=0.95 --dthresh=0.2 --snquant=0.95
+                 --noerodequant=0.95 --dthresh=0.1 --snquant=0.95
 @end example
 
-This seems to be fine and we can continue with our analysis. Before finally
-running NoiseChisel, let's just see how you can have all the raw outputs of
-NoiseChisel (Detection map and Sky and Sky Standard deviation) in a highly
-compressed format for archivability. For example the Sky-subtracted input
-is a redundant dataset: you can always generate it by subtracting the Sky
-from the input image. With the commands below you can turn the default
-NoiseChisel output that is larger than 100 megabytes in this case into
-about 200 kilobytes by removing all the redundant information in it, then
-compressing it:
-
-@example
-$ astnoisechisel flat-ir/xdf-f160w.fits --oneelempertile --rawoutput
-$ gzip --best xdf-f160w_detected.fits
-@end example
-
-You can open @file{xdf-f160w_detected.fits.gz} directly in SAO DS9 or feed
-it to any of Gnuastro's programs without having to uncompress
-it. Higher-level programs that take NoiseChisel's output as input can also
-deal with this compressed image where the Sky and its Standard deviation
-are one pixel-per-tile.
-
-To avoid having to write these options on every call to NoiseChisel, we'll
-just make a configuration file in a visible @file{config} directory. Then
-we'll define the hidden @file{.gnuastro} directory (that all Gnuastro's
-programs will look into for configuration files) as a symbolic link to the
+This seems to be fine and we can continue with our analysis. To avoid
+having to write these options on every call to NoiseChisel, we'll just make
+a configuration file in a visible @file{config} directory. Then we'll
+define the hidden @file{.gnuastro} directory (that all Gnuastro's programs
+will look into for configuration files) as a symbolic link to the
 @file{config} directory. Finally, we'll write the finalized values of the
 options into NoiseChisel's standard configuration file within that
 directory. We'll also put the kernel in a separate directory to keep the
@@ -3443,11 +3665,11 @@ top directory clean of any files we later need.
 @example
 $ mkdir kernel config
 $ ln -s config/ .gnuastro
-$ mv kernel.fits kernel/det-kernel.fits
-$ echo "kernel kernel/det-kernel.fits" > config/astnoisechisel.conf
-$ echo "noerodequant 0.95"            >> config/astnoisechisel.conf
-$ echo "dthresh      0.2"             >> config/astnoisechisel.conf
-$ echo "snquant      0.95"            >> config/astnoisechisel.conf
+$ mv kernel.fits kernel/noisechisel.fits
+$ echo "kernel kernel/noisechisel.fits" > config/astnoisechisel.conf
+$ echo "noerodequant 0.95"             >> config/astnoisechisel.conf
+$ echo "dthresh      0.1"              >> config/astnoisechisel.conf
+$ echo "snquant      0.95"             >> config/astnoisechisel.conf
 @end example
 
 @noindent
@@ -3460,84 +3682,90 @@ $ astnoisechisel flat-ir/xdf-f160w.fits --output=nc/xdf-f160w.fits
 $ astnoisechisel flat-ir/xdf-f105w.fits --output=nc/xdf-f105w.fits
 @end example
 
-Before continuing with the higher-level processing of this dataset, let's
-pause to use NoiseChisel's multi-extension output as a demonstration for
-working with FITS extensions using Gnuastro's Fits program (see @ref{Fits}.
 
-Let's say you need to copy a HDU/extension (image or table) from one FITS
-file to another. After the command below, @file{detections.fits} file will
-contain only one extension: a copy of NoiseChisel's binary detection
-map. There are similar options to conveniently cut (@option{--cut}, copy,
-then remove from the input) or delete (@option{--remove}) HDUs from a FITS
-file also.
+@node NoiseChisel optimization for storage, Segmentation and making a catalog, NoiseChisel optimization for detection, General program usage tutorial
+@subsection NoiseChisel optimization for storage
 
-@example
-$ astfits nc/xdf-f160w.fits --copy=DETECTIONS -odetections.fits
-@end example
-
-NoiseChisel puts some general information on its outputs in the FITS header
-of the respective extension. To see the full list of keywords in an
-extension, you can again use the Fits program like above. But instead of
-HDU manipulation options, give it the HDU you are interested in with
-@option{-h}. You can also give the HDU number (as listed in the output
-above), for example @option{-h2} instead of @option{-hDETECTIONS}.
+As we showed before (in @ref{Multiextension FITS files NoiseChisel's
+output}), NoiseChisel's output is a multi-extension FITS file with several
+images the same size as the input. As the input datasets get larger this
+output can become hard to manage and waste a lot of storage
+space. Fortunately there is a solution to this problem (which is also
+useful for Segment's outputs). But first, let's have a look at the volume
+of NoiseChisel's output from @ref{NoiseChisel optimization for detection}
+(fast answer, its larger than 100 mega-bytes):
 
 @example
-$ astfits nc/xdf-f160w.fits -hDETECTIONS
+$ ls -lh nc/xdf-f160w.fits
 @end example
 
-@cindex GNU Grep
-The @code{DETSN} keyword in NoiseChisel's @code{DETECTIONS} extension
-contains the true pseudo-detection signal-to-noise ratio that was found by
-NoiseChisel on the dataset. It is not easy to find it in the middle of all
-the other keywords printed by the command above (especially in files that
-have many more keywords). To fix the problem, you can pipe the output of
-the command above into @code{grep} (a program for matching lines which is
-available on almost all Unix-like operating systems).
+Two options can drastically decrease NoiseChisel's output file size: 1)
+With the @option{--rawoutput} option, NoiseChisel won't create a
+Sky-subtracted input. After all, it is redundant: you can always generate
+it by subtracting the Sky from the input image (which you have in your
+database) using the Arithmetic program. 2) With the
+@option{--oneelempertile}, you can tell NoiseChisel to store its Sky and
+Sky standard deviation results with one pixel per tile (instead of many
+pixels per tile).
 
 @example
-$ astfits nc/xdf-f160w.fits -hDETECTIONS | grep DETSN
+$ astnoisechisel flat-ir/xdf-f160w.fits --oneelempertile --rawoutput
 @end example
 
-@cindex GNU Grep
-If you just want the value of the keyword and not the full FITS keyword
-line, you can use AWK. In the example below, AWK will print the third word
-(separated by white space characters) in any line that has a first column
-value of @code{DETSN}. Note for those reading this in PDF format: AWK's
-argument should be in single quotes (also used as apostrophe in English
-writing). Therefore, if you copy-and-paste from the PDF, you will get an
-error message. In this case, correct/re-type the @code{'} character with a
-single-quote/apostrophe.
+@noindent
+The output is now just under 8 mega byes! But you can even be more
+efficient in space by compressing it. Try the command below to see how
+NoiseChisel's output has now shrunk to about 250 kilobyes while keeping all
+the necessary information as the original 100 mega-byte output.
 
 @example
-$ astfits nc/xdf-f160w.fits -h2 | awk '$1=="DETSN" @{print $3@}'
+$ gzip --best xdf-f160w_detected.fits
+$ ls -lh xdf-f160w_detected.fits.gz
 @end example
 
+We can get this wonderful level of compression because NoiseChisel's output
+is binary with only two values: 0 and 1. Compression algorithms are highly
+optimized in such scenarios.
+
+You can open @file{xdf-f160w_detected.fits.gz} directly in SAO DS9 or feed
+it to any of Gnuastro's programs without having to uncompress
+it. Higher-level programs that take NoiseChisel's output can also deal with
+this compressed image where the Sky and its Standard deviation are one
+pixel-per-tile.
+
+
+
+@node Segmentation and making a catalog, Working with catalogs estimating colors, NoiseChisel optimization for storage, General program usage tutorial
+@subsection Segmentation and making a catalog
 The main output of NoiseChisel is the binary detection map
-(@code{DETECTIONS} extension), which only has two values of 1 or 0. This is
-useful when studying the noise, but hardly of any use when you actually
-want to study the targets/galaxies in the image, especially in such a deep
-field where the detection map of almost everything is connected. To find
-the galaxies over the detections, we'll use Gnuastro's @ref{Segment}
-program:
+(@code{DETECTIONS} extension, see @ref{NoiseChisel optimization for
+detection}). which only has two values of 1 or 0. This is useful when
+studying the noise, but hardly of any use when you actually want to study
+the targets/galaxies in the image, especially in such a deep field where
+the detection map of almost everything is connected. To find the galaxies
+over the detections, we'll use Gnuastro's @ref{Segment} program:
 
 @example
-$ rm *.fits
 $ mkdir seg
 $ astsegment nc/xdf-f160w.fits -oseg/xdf-f160w.fits
 @end example
 
 Segment's operation is very much like NoiseChisel (in fact, prior to
-version 0.6, it was part of NoiseChisel), for example the output is a
+version 0.6, it was part of NoiseChisel). For example the output is a
 multi-extension FITS file, it has check images and uses the undetected
 regions as a reference. Please have a look at Segment's multi-extension
-output with @command{ds9} to get a good feeling of what it has done. Like
-NoiseChisel, the first extension is the input. The @code{CLUMPS} extension
-shows the true ``clumps'' with values that are @mymath{\ge1}, and the
-diffuse regions labeled as @mymath{-1}. In the @code{OBJECTS} extension, we
-see that the large detections of NoiseChisel (that may have contained many
-galaxies) are now broken up into separate labels. see @ref{Segment} for
-more.
+output with @command{ds9} to get a good feeling of what it has done.
+
+@example
+$ ds9 -mecube seg/xdf-f160w.fits -zscale -zoom to fit
+@end example
+
+Like NoiseChisel, the first extension is the input. The @code{CLUMPS}
+extension shows the true ``clumps'' with values that are @mymath{\ge1}, and
+the diffuse regions labeled as @mymath{-1}. In the @code{OBJECTS}
+extension, we see that the large detections of NoiseChisel (that may have
+contained many galaxies) are now broken up into separate labels. see
+@ref{Segment} for more.
 
 Having localized the regions of interest in the dataset, we are ready to do
 measurements on them with @ref{MakeCatalog}. Besides the IDs, we want to
@@ -3561,69 +3789,6 @@ From the printed statements on the command-line, you see that MakeCatalog
 read all the extensions in Segment's output for the various measurements it
 needed.
 
-The output of the MakeCatalog command above is a FITS table. The two clump
-and object catalogs are available in the two extensions of the single FITS
-file@footnote{MakeCatalog can also output plain text tables. However, in
-the plain text format you can only have one table per file. Therefore, if
-you also request measurements on clumps, two plain text tables will be
-created (suffixed with @file{_o.txt} and @file{_c.txt}).}. Let's inspect
-the separate extensions with the Fits program like before (as shown
-below). Later, we'll inspect the table in each extension with Gnuastro's
-Table program (see @ref{Table}). Note that we could have used
-@option{-hOBJECTS} and @option{-hCLUMPS} instead of @option{-h1} and
-@option{-h2} respectively.
-
-@example
-$ astfits  cat/xdf-f160w.fits              # Extension information
-$ asttable cat/xdf-f160w.fits -h1 --info   # Objects catalog info.
-$ asttable cat/xdf-f160w.fits -h1          # Objects catalog columns.
-$ asttable cat/xdf-f160w.fits -h2 -i       # Clumps catalog info.
-$ asttable cat/xdf-f160w.fits -h2          # Clumps catalog columns.
-@end example
-
-As you see above, when given a specific table (file name and extension),
-Table will print the full contents of all the columns. To see basic
-information about each column (for example name, units and comments),
-simply append a @option{--info} (or @option{-i}).
-
-To print the contents of special column(s), just specify the column
-number(s) (counting from @code{1}) or the column name(s) (if they have
-one). For example, if you just want the magnitude and signal-to-noise ratio
-of the clumps (in @option{-h2}), you can get it with any of the following
-commands
-
-@example
-$ asttable cat/xdf-f160w.fits -h2 -c5,6
-$ asttable cat/xdf-f160w.fits -h2 -c5,SN
-$ asttable cat/xdf-f160w.fits -h2 -c5         -c6
-$ asttable cat/xdf-f160w.fits -h2 -cMAGNITUDE -cSN
-@end example
-
-In the example above, the clumps catalog has two ID columns (one for the
-over-all clump ID and one for the ID of the clump in its host object),
-while the objects catalog only has one ID column. Therefore, the location
-of the magnitude column differs between the object and clumps catalog. So
-if you want to specify the columns by number, you will need to change the
-numbers when viewing the clump and objects catalogs. This is a useful
-advantage of having/using column names@footnote{Column meta-data (including
-a name) can also be specified in plain text tables, see @ref{Gnuastro text
-table format}.}.
-
-@example
-$ asttable cat/xdf-f160w.fits -h1 -c4 -c5
-$ asttable cat/xdf-f160w.fits -h2 -c5 -c6
-@end example
-
-Finally, the comments in MakeCatalog's output (@code{COMMENT} keywords in
-the FITS headers, or lines starting with @code{#} in plain text) contain
-some important information about the input dataset that can be useful (for
-example pixel area or per-pixel surface brightness limit). For example have
-a look at the output of this command:
-
-@example
-$ astfits cat/xdf-f160w.fits -h1 | grep COMMENT
-@end example
-
 To calculate colors, we also need magnitude measurements on the F105W
 filter. However, the galaxy properties might differ between the filters
 (which is the whole purpose behind measuring colors). Also, the noise
@@ -3638,12 +3803,12 @@ same pixels on both images.
 
 The F160W image is deeper, thus providing better detection/segmentation,
 and redder, thus observing smaller/older stars and representing more of the
-mass in the galaxies. We will thus use the pixel labels generated on the
-F160W filter, but do the measurements on the F105W filter (using the
-@option{--valuesfile} option) in the command below. Notice how the only
-difference between this call to MakeCatalog and the previous one is
-@option{--valuesfile}, the value given to @code{--zeropoint} and the output
-name.
+mass in the galaxies. To generate the F105W catalog, we will thus use the
+pixel labels generated on the F160W filter, but do the measurements on the
+F105W filter (using MakeCatalog's @option{--valuesfile} option). Notice how
+the only difference between this call to MakeCatalog and the previous one
+is @option{--valuesfile}, the value given to @code{--zeropoint} and the
+output name.
 
 @example
 $ astmkcatalog seg/xdf-f160w.fits --ids --ra --dec --magnitude --sn \
@@ -3662,6 +3827,68 @@ hard-to-deblend and low signal-to-noise diffuse regions, they are more
 robust for calculating the colors (compared to objects). Therefore from
 this step onward, we'll continue with clumps.
 
+Finally, the comments in MakeCatalog's output (@code{COMMENT} keywords in
+the FITS headers, or lines starting with @code{#} in plain text) contain
+some important information about the input datasets and other useful info
+(for example pixel area or per-pixel surface brightness limit). You can see
+them with this command:
+
+@example
+$ astfits cat/xdf-f160w.fits -h1 | grep COMMENT
+@end example
+
+
+@node Working with catalogs estimating colors, Aperture photomery, Segmentation and making a catalog, General program usage tutorial
+@subsection Working with catalogs (estimating colors)
+The output of the MakeCatalog command above is a FITS table (see
+@ref{Segmentation and making a catalog}). The two clump and object catalogs
+are available in the two extensions of the single FITS
+file@footnote{MakeCatalog can also output plain text tables. However, in
+the plain text format you can only have one table per file. Therefore, if
+you also request measurements on clumps, two plain text tables will be
+created (suffixed with @file{_o.txt} and @file{_c.txt}).}. Let's see the
+extensions and their basic properties with the Fits program:
+
+@example
+$ astfits  cat/xdf-f160w.fits              # Extension information
+@end example
+
+Now, let's inspect the table in each extension with Gnuastro's Table
+program (see @ref{Table}). Note that we could have used @option{-hOBJECTS}
+and @option{-hCLUMPS} instead of @option{-h1} and @option{-h2}
+respectively.
+
+@example
+$ asttable cat/xdf-f160w.fits -h1 --info   # Objects catalog info.
+$ asttable cat/xdf-f160w.fits -h1          # Objects catalog columns.
+$ asttable cat/xdf-f160w.fits -h2 -i       # Clumps catalog info.
+$ asttable cat/xdf-f160w.fits -h2          # Clumps catalog columns.
+@end example
+
+As you see above, when given a specific table (file name and extension),
+Table will print the full contents of all the columns. To see the basic
+metadata about each column (for example name, units and comments), simply
+append a @option{--info} (or @option{-i}) to the command.
+
+To print the contents of special column(s), just specify the column
+number(s) (counting from @code{1}) or the column name(s) (if they have
+one). For example, if you just want the magnitude and signal-to-noise ratio
+of the clumps (in @option{-h2}), you can get it with any of the following
+commands
+
+@example
+$ asttable cat/xdf-f160w.fits -h2 -c5,6
+$ asttable cat/xdf-f160w.fits -h2 -c5,SN
+$ asttable cat/xdf-f160w.fits -h2 -c5         -c6
+$ asttable cat/xdf-f160w.fits -h2 -cMAGNITUDE -cSN
+@end example
+
+Using column names instead of numbers has many advantages: 1) you don't
+have to worry about the order of columns in the table. 2) It acts as a
+documentation in the script. Column meta-data (including a name) aren't
+just limited to FITS tables and can also be used in plain text tables, see
+@ref{Gnuastro text table format}.
+
 We can finally calculate the colors of the objects from these two
 datasets. If you inspect the contents of the two catalogs, you'll notice
 that because they were both derived from the same segmentation maps, the
@@ -3676,15 +3903,15 @@ the options relating to each catalog are placed under it for easy
 understanding. You give Match two catalogs (from the two different filters
 we derived above) as argument, and the HDUs containing them (if they are
 FITS files) with the @option{--hdu} and @option{--hdu2} options. The
-@option{--ccol1} and @option{--ccol2} options specify which columns should
-be matched with which in the two catalogs. With @option{--aperture} you
-specify the acceptable error (radius in 2D), in the same units as the
-columns (see below for why we have requested an aperture of 0.35
-arcseconds, or less than 6 HST pixels).
+@option{--ccol1} and @option{--ccol2} options specify the
+coordinate-columns which should be matched with which in the two
+catalogs. With @option{--aperture} you specify the acceptable error (radius
+in 2D), in the same units as the columns (see below for why we have
+requested an aperture of 0.35 arcseconds, or less than 6 HST pixels).
 
-The @option{--outcols} is a very convenient feature in Match: you can use
-it to specify which columns from the two catalogs you want in the output
-(merge two input catalogs into one). If the first character is an
+The @option{--outcols} of Match is a very convenient feature in Match: you
+can use it to specify which columns from the two catalogs you want in the
+output (merge two input catalogs into one). If the first character is an
 `@key{a}', the respective matched column (number or name, similar to Table
 above) in the first catalog will be written in the output table. When the
 first character is a `@key{b}', the respective column from the second
@@ -3701,24 +3928,21 @@ $ astmatch cat/xdf-f160w.fits           cat/xdf-f105w.fits         \
            --output=cat/xdf-f160w-f105w.fits
 @end example
 
-By default (when @option{--quiet} isn't called), the Match program will
-just print the number of matched rows in the standard output. If you have a
-look at your input catalogs, this should be the same as the number of rows
-in them. Let's have a look at the columns in the matched catalog:
+Let's have a look at the columns in the matched catalog:
 
 @example
 $ asttable cat/xdf-f160w-f105w.fits -i
 @end example
 
-Indeed, its exactly the columns we wanted. There is just one confusion
-however: there are two @code{MAGNITUDE} and @code{SN} columns. Right now,
-you know that the first one was from the F160W filter, and the second was
-for F105W. But in one hour, you'll start doubting your self: going through
-your command history, trying to answer this question: ``which magnitude
-corresponds to which filter?''. You should never torture your future-self
-(or colleagues) like this! So, let's rename these confusing columns in the
-matched catalog. The FITS standard for tables stores the column names in
-the @code{TTYPE} header keywords, so let's have a look:
+Indeed, its exactly the columns we wanted: there are two @code{MAGNITUDE}
+and @code{SN} columns. The first is from the F160W filter, the second is
+from the F105W. Right now, you know this. But in one hour, you'll start
+doubting your self: going through your command history, trying to answer
+this question: ``which magnitude corresponds to which filter?''. You should
+never torture your future-self (or colleagues) like this! So, let's rename
+these confusing columns in the matched catalog. The FITS standard for
+tables stores the column names in the @code{TTYPE} header keywords, so
+let's have a look:
 
 @example
 $ astfits cat/xdf-f160w-f105w.fits -h1 | grep TTYPE
@@ -3735,14 +3959,14 @@ $ astfits cat/xdf-f160w-f105w.fits -h1                          \
 $ asttable cat/xdf-f160w-f105w.fits -i
 @end example
 
-
-If you noticed, when running Match, the previous command, we also asked for
-@option{--log}. Many Gnuastro programs have this option to provide some
-detailed information on their operation in case you are curious. Here, we
-are using it to justify the value we gave to @option{--aperture}. Even
-though you asked for the output to be written in the @file{cat} directory,
-a listing of the contents of your current directory will show you an extra
-@file{astmatch.fits} file. Let's have a look at what columns it contains.
+If you noticed, when running Match, we also asked for a log file
+(@option{--log}). Many Gnuastro programs have this option to provide some
+detailed information on their operation in case you are curious or want to
+debug something. Here, we are using it to justify the value we gave to
+@option{--aperture}. Even though you asked for the output to be written in
+the @file{cat} directory, a listing of the contents of your current
+directory will show you an extra @file{astmatch.fits} file. Let's have a
+look at what columns it contains.
 
 @example
 $ ls
@@ -3786,14 +4010,14 @@ Gnuastro has a simple program for basic statistical analysis. The command
 below will print some basic information about the distribution (minimum,
 maximum, median and etc), along with a cute little ASCII histogram to
 visually help you understand the distribution on the command-line without
-the need for a graphic user interface (see @ref{Invoking
-aststatistics}). This ASCII histogram can be useful when you just want some
-coarse and general information on the input dataset. It is also useful when
-working on a server (where you may not have graphic user interface), and
-finally, its fast.
+the need for a graphic user interface. This ASCII histogram can be useful
+when you just want some coarse and general information on the input
+dataset. It is also useful when working on a server (where you may not have
+graphic user interface), and finally, its fast.
 
 @example
 $ aststatistics astmatch.fits -cMATCH_DIST
+$ rm astmatch.fits
 @end example
 
 The units of this column are the same as the columns you gave to Match: in
@@ -3801,28 +4025,34 @@ degrees. You see that while almost all the objects matched very nicely, the
 maximum distance is roughly 0.31 arcseconds. This is why we asked for an
 aperture of 0.35 arcseconds when doing the match.
 
-We can now use AWK to find the colors. We'll ask AWK to only use rows that
-don't have a NaN magnitude in either filter@footnote{This can happen even
-on the reference image. It is because of the current way clumps are defined
-in Segment when they are placed on strong gradients. It is because of high
-``river'' values on such gradients. See @ref{Segment changes after
-publication}. To avoid this problem, you can currently ask for the
-@option{--brighntessnoriver} output column.}. We will also ignore columns
-which don't have reliable F105W measurement (with a S/N less than
+Gnuastro's Table program can also be used to measure the colors using the
+command below. As before, the @option{-c1,2} option will tell Table to
+print the first two columns. With the @option{--range=SN_F160W,7,inf} we
+only keep the rows that have a F160W signal-to-noise ratio larger than
 7@footnote{The value of 7 is taken from the clump S/N threshold in F160W
-(where the clumps were defined).}).
+(where the clumps were defined).}.
+
+Finally, for estimating the colors, we use Table's column arithmetic
+feature. It uses the same notation as the Arithmetic program (see
+@ref{Reverse polish notation}), with almost all the same operators (see
+@ref{Arithmetic operators}). You can use column arithmetic in any output
+column, just put the value in double quotations and start the value with
+@code{arith} (followed by a space) like below. In column-arithmetic, you
+can identify columns by number or name, see @ref{Column arithmetic}.
 
 @example
-$ asttable cat/xdf-f160w-f105w.fits -cMAG_F160W,MAG_F105W,SN_F105W  \
-           | awk '$1!="nan" && $2!="nan" && $3>7 @{print $2-$1@}'     \
-           > f105w-f160w.txt
+$ asttable cat/xdf-f160w-f105w.fits -ocat/f105w-f160w.fits \
+           -c1,2,RA,DEC,"arith MAG_F105W MAG_F160W -"      \
+           --range=SN_F160W,7,inf
 @end example
 
-You can inspect the distribution of colors with the Statistics program
-again:
+@noindent
+You can inspect the distribution of colors with the Statistics program. But
+first, let's give the color column a proper name.
 
 @example
-$ aststatistics f105w-f160w.txt -c1
+$ astfits cat/f105w-f160w.fits --update=TTYPE5,COLOR_F105W_F160W
+$ aststatistics cat/f105w-f160w.fits -cCOLOR_F105W_F160W
 @end example
 
 You can later use Gnuastro's Statistics program with the
@@ -3833,22 +4063,27 @@ just want a specific measure, for example the mean, median and standard
 deviation, you can ask for them specifically with this command:
 
 @example
-$ aststatistics f105w-f160w.txt -c1 --mean --median --std
+$ aststatistics cat/f105w-f160w.fits -cCOLOR_F105W_F160W \
+                --mean --median --std
 @end example
 
+
+@node Aperture photomery, Finding reddest clumps and visual inspection, Working with catalogs estimating colors, General program usage tutorial
+@subsection Aperture photomery
 Some researchers prefer to have colors in a fixed aperture for all the
-objects. The colors we calculated above used a different segmentation map
-for each object. This might not satisfy some science cases. So, let's make
-a fixed aperture catalog. To make an catalog from fixed apertures, we
+objects. The colors we calculated in @ref{Working with catalogs estimating
+colors} used a different segmentation map for each object. This might not
+satisfy some science cases. To make a catalog from fixed apertures, we
 should make a labeled image which has a fixed label for each aperture. That
 labeled image can be given to MakeCatalog instead of Segment's labeled
 detection image.
 
 @cindex GNU AWK
-To generate the apertures catalog, we'll first read the positions from
-F160W catalog and set the other parameters of each profile to be a fixed
-circle of radius 5 pixels (we want all apertures to be identical in this
-scenario).
+To generate the apertures catalog we'll use Gnuastro's MakeProfiles (see
+@ref{MakeProfiles}). We'll first read the clump positions from the F160W
+catalog, then use AWK to set the other parameters of each profile to be a
+fixed circle of radius 5 pixels (recall that we want all apertures to be
+identical in this scenario).
 
 @example
 $ rm *.fits *.txt
@@ -3857,14 +4092,15 @@ $ asttable cat/xdf-f160w.fits -hCLUMPS -cRA,DEC                    \
            > apertures.txt
 @end example
 
-We can now feed this catalog into MakeProfiles to build the apertures for
-us. See @ref{Invoking astmkprof} for a description of the options. The most
-important for this particular job is @option{--mforflatpix}, it tells
-MakeProfiles that the values in the magnitude column should be used for
-each pixel of a flat profile. Without it, MakeProfiles would build the
-profiles such that the @emph{sum} of the pixels of each profile would have
-a @emph{magnitude} (in log-scale) of the value given in that column (what
-you would expect when simulating a galaxy for example).
+We can now feed this catalog into MakeProfiles using the command below to
+build the apertures over the image. The most important option for this
+particular job is @option{--mforflatpix}, it tells MakeProfiles that the
+values in the magnitude column should be used for each pixel of a flat
+profile. Without it, MakeProfiles would build the profiles such that the
+@emph{sum} of the pixels of each profile would have a @emph{magnitude} (in
+log-scale) of the value given in that column (what you would expect when
+simulating a galaxy for example). See @ref{Invoking astmkprof} for details
+on the options.
 
 @example
 $ astmkprof apertures.txt --background=flat-ir/xdf-f160w.fits     \
@@ -3900,48 +4136,63 @@ $ astmkcatalog apertures.fits -h1 --zeropoint=26.27        \
 @end example
 
 This catalog has the same number of rows as the catalog produced from
-clumps, therefore similar to how we found colors, you can compare the
-aperture and clump magnitudes for example. You can also change the filter
-name and zeropoint magnitudes and run this command again to have the fixed
-aperture magnitude in the F160W filter and measure colors on apertures.
+clumps in @ref{Working with catalogs estimating colors}. Therefore similar
+to how we found colors, you can compare the aperture and clump magnitudes
+for example.
 
+You can also change the filter name and zeropoint magnitudes and run this
+command again to have the fixed aperture magnitude in the F160W filter and
+measure colors on apertures.
+
+
+@node Finding reddest clumps and visual inspection, Citing and acknowledging Gnuastro, Aperture photomery, General program usage tutorial
+@subsection Finding reddest clumps and visual inspection
 @cindex GNU AWK
-As a final step, let's go back to the original clumps-based catalogs we
-generated before. We'll find the objects with the strongest color and make
-a cutout to inspect them visually and finally, we'll see how they are
-located on the image.
-
-First, let's see what the objects with a color more than two magnitudes
-look like. As you see, this is very much like the command above for
-selecting the colors, only instead of printing the color, we'll print the
-RA and Dec. With the command below, the positions of all lines with a color
-more than 1.5 will be put in @file{reddest.txt}
+As a final step, let's go back to the original clumps-based color
+measurement we generated in @ref{Working with catalogs estimating
+colors}. We'll find the objects with the strongest color and make a cutout
+to inspect them visually and finally, we'll see how they are located on the
+image. With the command below, we'll select the reddest objects (those with
+a color larger than 1.5):
 
 @example
-$ asttable cat/xdf-f160w-f105w.fits                                \
-           -cMAG_F160W,MAG_F105W,SN_F105W,RA,DEC                   \
-           | awk '$1!="nan" && $2!="nan" && $2-$1>1.5 && $3>7      \
-                  @{print $4,$5@}' > reddest.txt
+$ asttable cat/f105w-f160w.fits --range=COLOR_F105W_F160W,1.5,inf
 @end example
 
-We can now feed @file{reddest.txt} into Gnuastro's crop to see what these
-objects look like. To keep things clean, we'll make a directory called
-@file{crop-red} and ask Crop to save the crops in this directory. We'll
-also add a @file{-f160w.fits} suffix to the crops (to remind us which image
-they came from). The width of the crops will be 15 arcseconds.
+We want to crop the F160W image around each of these objects, but we need a
+unique identifier for them first. We'll define this identifier using the
+object and clump labels (with an underscore between them) and feed the
+output of the command above to AWK to generate a catalog. Note that since
+we are making a plain text table, we'll define the column metadata manually
+(see @ref{Gnuastro text table format}).
+
+@example
+$ echo "# Column 1: ID [name, str10] Object ID" > reddest.txt
+$ asttable cat/f105w-f160w.fits --range=COLOR_F105W_F160W,1.5,inf \
+           | awk '@{printf("%d_%-10d %f %f\n", $1, $2, $3, $4)@}' \
+           >> reddest.txt
+@end example
+
+We can now feed @file{reddest.txt} into Gnuastro's Crop program to see what
+these objects look like. To keep things clean, we'll make a directory
+called @file{crop-red} and ask Crop to save the crops in this
+directory. We'll also add a @file{-f160w.fits} suffix to the crops (to
+remind us which image they came from). The width of the crops will be 15
+arcseconds.
 
 @example
 $ mkdir crop-red
-$ astcrop --mode=wcs --coordcol=3 --coordcol=4 flat-ir/xdf-f160w.fits \
-          --catalog=reddest.txt --width=15/3600,15/3600               \
+$ astcrop flat-ir/xdf-f160w.fits --mode=wcs --namecol=ID \
+          --catalog=reddest.txt --width=15/3600,15/3600  \
           --suffix=-f160w.fits --output=crop-red
 @end example
 
-Like the MakeProfiles command above, you might notice that the crops aren't
-made in order. This is because each crop is independent of the rest,
-therefore crops are done in parallel, and parallel operations are
-asynchronous. In the command above, you can change @file{f160w} to
-@file{f105w} to make the crops in both filters.
+You can see all the cropped FITS files in the @file{crop-red}
+directory. Like the MakeProfiles command in @ref{Aperture photomery}, you
+might notice that the crops aren't made in order. This is because each crop
+is independent of the rest, therefore crops are done in parallel, and
+parallel operations are asynchronous. In the command above, you can change
+@file{f160w} to @file{f105w} to make the crops in both filters.
 
 To view the crops more easily (not having to open ds9 for each image), you
 can convert the FITS crops into the JPEG format with a shell loop like
@@ -3956,19 +4207,7 @@ $ cd ..
 @end example
 
 You can now use your general graphic user interface image viewer to flip
-through the images more easily. On GNOME, you can use the ``Eye of GNOME''
-image viewer (with executable name of @file{eog}). Run the command below to
-open the first one (if you aren't using GNOME, use the command of your
-image viewer instead of @code{eog}):
-
-@example
-$ eog 1-f160w.jpg
-@end example
-
-In Eye of GNOME, you can flip through the images and compare them visually
-more easily by pressing the @key{<SPACE>} key. Of course, the flux ranges
-have been chosen generically here for seeing the fainter parts. Therefore,
-brighter objects will be fully black.
+through the images more easily, or import them into your papers/reports.
 
 @cindex GNU Parallel
 The @code{for} loop above to convert the images will do the job in series:
@@ -3995,11 +4234,11 @@ convert your catalog into a ``region file'' to feed into DS9. To do that,
 you can use AWK again as shown below.
 
 @example
-$ awk 'BEGIN@{print "# Region file format: DS9 version 4.1";     \
-             print "global color=green width=2";                \
-             print "fk5";@}                                      \
-       @{printf "circle(%s,%s,1\")\n", $1, $2;@}' reddest.txt     \
-       > reddest.reg
+$ awk 'BEGIN@{print "# Region file format: DS9 version 4.1";      \
+             print "global color=green width=2";                 \
+             print "fk5";@}                                       \
+       !/^#/@{printf "circle(%s,%s,1\") # text=@{%s@}\n",$2,$3,$1;@}'\
+      reddest.txt > reddest.reg
 @end example
 
 This region file can be loaded into DS9 with its @option{-regions} option
@@ -4012,6 +4251,9 @@ $ ds9 -mecube seg/xdf-f160w.fits -zscale -zoom to fit    \
       -regions load all reddest.reg
 @end example
 
+
+@node Citing and acknowledging Gnuastro,  , Finding reddest clumps and visual inspection, General program usage tutorial
+@subsection Citing and acknowledging Gnuastro
 In conclusion, we hope this extended tutorial has been a good starting
 point to help in your exciting research. If this book or any of the
 programs in Gnuastro have been useful for your research, please cite the

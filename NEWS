@@ -18,6 +18,10 @@ See the end of the file for license conditions.
      with the warnings, you can use the new `--quietmmap' option to disable
      them.
 
+  Book:
+   - General program usage tutorial divided into subsections for easier
+     readability.
+
   Arithmetic:
    - `unique' operator removes all duplicate (and blank) elements from the
      dataset and returns a single-dimension output, containing only the
