@@ -141,6 +141,7 @@ See the end of the file for license conditions.
   bug #56480: Segfault in statistics library's histogram function.
   bug #56641: MakeProfile's center position changes based on precision.
   bug #56635: Update tutorial 3 with bug-fixed NoiseChisel.
+  bug #56662: Converting -R to -Wl,-R causes a crash in configure on macOS.
 
 
 

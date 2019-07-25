@@ -466,9 +466,21 @@ AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_LIBGIT2], [$has_libgit2],
 AS_IF([test "x$has_libgit2" = "x1"], [], [anywarnings=yes])
 AC_SUBST(HAVE_LIBGIT2, [$has_libgit2])
 
-# Report the final linking flags and put them in the Makefiles.
-AC_SUBST(CONFIG_LDADD, [$LDADD])
-AS_ECHO(["linking flags ... $LDADD"])
+
+
+
+
+# See if the compiler supports `-Wl,-R' (we'll just temporarily test with
+# the system's `/lib' directory). Note that in the message, we are saying
+# `-Wl-R' because a comma will conflict with Autoconf and things after it
+# won't be printed.
+orig_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -Wl,-R/lib"
+AC_MSG_CHECKING(if linker supports -Wl-R)
+AC_LINK_IFELSE([AC_LANG_PROGRAM(void junk(void){})],
+               [AC_MSG_RESULT(yes); link_with_wlr=yes],
+               [AC_MSG_RESULT(no);  link_with_wlr=no])
+LDFLAGS="$orig_LDFLAGS"
 
 
 
@@ -489,9 +501,12 @@ for t in $LDADD; do
     l=`AS_ECHO([$t]) | sed "s/^\-L//"`
     r=`AS_ECHO([$t]) | sed "s/^\-R//"`
 
-    # If we have an `-R' option, then convert it to an option that the
-    # compiler can take in (and then pass to the linker).
-    AS_IF([test "x$t" = "x$r"], [toadd="$t"], [toadd="-Wl,$t"])
+    # If we have an `-R' option, and the linker works with `-Wl,-R', then
+    # convert it to an option that the compiler can take in (and then pass
+    # to the linker).
+    AS_IF([test x$link_with_wlr = xyes],
+          [AS_IF([test "x$t" = "x$r"], [toadd="$t"], [toadd="-Wl,$t"])],
+          [toadd="$t"])
     nldadd="$nldadd $toadd"
 
     # When `t' and `d' are the same, we aren't interested! But when they
@@ -520,12 +535,6 @@ for t in $LDADD; do
           ])
 done
 
-# For a check.
-#echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
-#echo "nldadd: $nldadd"
-#echo "ldpath: $ldpath"
-#echo "nldpath: $nldpath"
-
 # Update LD_LIBRARY_PATH, also in the Makefiles.
 AS_IF([test "x$nldpath" = x], [],
       [
@@ -540,6 +549,10 @@ AS_IF([test "x$nldpath" = x], [],
 # properly.
 orig_LDFLAGS="$LDFLAGS"
 LDFLAGS="$nldadd $LDFLAGS"
+
+# Report the final linking flags and put them in the Makefiles.
+AC_SUBST(CONFIG_LDADD, [$LDADD])
+AS_ECHO(["linking flags (LDADD) ... $LDADD"])
 
 
 
@@ -1019,7 +1032,8 @@ AM_CONDITIONAL([COND_WARP],        [test $enable_warp = yes])
 
 
 
-# Reset the LIBS variable for writing the Makefiles.
+# Reset LDFLAGS to the initial value BEFORE generating the Makefiles (so
+# the modified value doesn't get written into them).
 LDFLAGS="$orig_LDFLAGS"
 
 
