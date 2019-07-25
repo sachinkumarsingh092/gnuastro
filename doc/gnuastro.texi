@@ -29210,12 +29210,21 @@ both polygons have to be sorted in an anti-clock-wise manner.
 @node Qsort functions, Permutations, Polygons, Gnuastro library
 @subsection Qsort functions (@file{qsort.h})
 
+@cindex @code{qsort}
 When sorting a dataset is necessary, the C programming language provides
 the @code{qsort} (Quick sort) function. @code{qsort} is a generic function
 which allows you to sort any kind of data structure (not just a single
 array of numbers). To define ``greater'' and ``smaller'' (for sorting),
 @code{qsort} needs another function, even for simple numerical types. The
 functions introduced in this section are to passed onto @code{qsort}.
+
+@cindex NaN
+Note that larger and smaller operators are not defined on NaN
+elements. Therefore, if the input array is a floating point type, and
+contains NaN values, the relevant functions of this section are going to
+put the NaN elements at the end of the list (after the sorted non-NaN
+elements), irrespective of the requested sorting order (increasing or
+decreasing).
 
 The first class of functions below (with @code{TYPE} in their names) can be
 used for sorting a simple numeric array. Just replace @code{TYPE} with the

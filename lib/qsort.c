@@ -22,6 +22,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <config.h>
 
+#include <math.h>
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -30,6 +31,31 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/qsort.h>
 
 
+/*****************************************************************/
+/**********                  Macros               ****************/
+/*****************************************************************/
+/* When one or both elements are NaN, the simple comparison, like `(tb >
+   ta) - (tb < ta)', will give 0 (as if the elements are equal). However,
+   some preference has to be given to the NaN element in a comparison,
+   otherwise the output is not going to be reasonable. We also don't want
+   to check NaNs on every comparison (it will slow down the processing).
+
+   So we'll exploit the fact that when there comparison result doesn't
+   equal zero, we don't have any NaNs and this `COMPARE_FLOAT_POSTPROCESS'
+   macro is called only when the comparison gives zero. Being larger or
+   smaller isn't defined for NaNs, so we'll just put them in the end of the
+   sorted list whether it is sorted by decreasing or increasing mode.*/
+#define COMPARE_FLOAT_POSTPROCESS (                                     \
+   isnan(ta) && isnan(tb)                                               \
+   ? 0                                /* Both NaN, define as equal. */  \
+   /* One is NaN, one isn't. */                                         \
+   : ( isnan(ta)                                                        \
+       ? 1                         /* First is NaN, set as smaller. */  \
+       : ( isnan(tb)                                                    \
+           ? -1                    /* Second is NaN, set as larger. */  \
+           : 0 )                      /* None are NaN, set as equal.*/  \
+       )                                                                \
+)
 
 
 
@@ -120,7 +146,6 @@ gal_qsort_uint64_i(const void *a, const void *b)
   return ( *(uint64_t *)a - *(uint64_t *)b );
 }
 
-
 int
 gal_qsort_int64_d(const void *a, const void *b)
 {
@@ -138,7 +163,8 @@ gal_qsort_float32_d(const void *a, const void *b)
 {
   float ta=*(float*)a;
   float tb=*(float*)b;
-  return (tb > ta) - (tb < ta);
+  int out=(tb > ta) - (tb < ta);
+  return out ? out : COMPARE_FLOAT_POSTPROCESS;
 }
 
 int
@@ -146,7 +172,8 @@ gal_qsort_float32_i(const void *a, const void *b)
 {
   float ta=*(float*)a;
   float tb=*(float*)b;
-  return (ta > tb) - (ta < tb);
+  int out=(ta > tb) - (ta < tb);
+  return out ? out : COMPARE_FLOAT_POSTPROCESS;
 }
 
 int
@@ -154,7 +181,8 @@ gal_qsort_float64_d(const void *a, const void *b)
 {
   double ta=*(double*)a;
   double tb=*(double*)b;
-  return (tb > ta) - (tb < ta);
+  int out=(tb > ta) - (tb < ta);
+  return out ? out : COMPARE_FLOAT_POSTPROCESS;
 }
 
 int
@@ -162,7 +190,8 @@ gal_qsort_float64_i(const void *a, const void *b)
 {
   double ta=*(double*)a;
   double tb=*(double*)b;
-  return (ta > tb) - (ta < tb);
+  int out=(ta > tb) - (ta < tb);
+  return out ? out : COMPARE_FLOAT_POSTPROCESS;
 }
 
 
@@ -323,7 +352,8 @@ gal_qsort_index_single_float32_d(const void *a, const void *b)
 {
   float ta=((float *)(gal_qsort_index_single))[ *(size_t *)a ];
   float tb=((float *)(gal_qsort_index_single))[ *(size_t *)b ];
-  return (tb > ta) - (tb < ta);
+  int out=(tb > ta) - (tb < ta);
+  return out ? out : COMPARE_FLOAT_POSTPROCESS;
 }
 
 int
@@ -331,7 +361,8 @@ gal_qsort_index_single_float32_i(const void *a, const void *b)
 {
   float ta=((float *)(gal_qsort_index_single))[ *(size_t *)a ];
   float tb=((float *)(gal_qsort_index_single))[ *(size_t *)b ];
-  return (ta > tb) - (ta < tb);
+  int out=(ta > tb) - (ta < tb);
+  return out ? out : COMPARE_FLOAT_POSTPROCESS;
 }
 
 int
@@ -339,7 +370,8 @@ gal_qsort_index_single_float64_d(const void *a, const void *b)
 {
   double ta=((double *)(gal_qsort_index_single))[ *(size_t *)a ];
   double tb=((double *)(gal_qsort_index_single))[ *(size_t *)b ];
-  return (tb > ta) - (tb < ta);
+  int out=(tb > ta) - (tb < ta);
+  return out ? out : COMPARE_FLOAT_POSTPROCESS;
 }
 
 int
@@ -347,7 +379,8 @@ gal_qsort_index_single_float64_i(const void *a, const void *b)
 {
   double ta=((double *)(gal_qsort_index_single))[ *(size_t *)a ];
   double tb=((double *)(gal_qsort_index_single))[ *(size_t *)b ];
-  return (ta > tb) - (ta < tb);
+  int out=(ta > tb) - (ta < tb);
+  return out ? out : COMPARE_FLOAT_POSTPROCESS;
 }
 
 int
@@ -362,7 +395,8 @@ gal_qsort_index_multi_d(const void *a, const void *b)
   float tb=B->values[ B->index ];
 
   /* Return the result. */
-  return (tb > ta) - (tb < ta);
+  int out=(tb > ta) - (tb < ta);
+  return out ? out : COMPARE_FLOAT_POSTPROCESS;
 }
 
 int
@@ -377,5 +411,6 @@ gal_qsort_index_multi_i(const void *a, const void *b)
   float tb=B->values[ B->index ];
 
   /* Return the result. */
-  return (ta > tb) - (ta < tb);
+  int out=(ta > tb) - (ta < tb);
+  return out ? out : COMPARE_FLOAT_POSTPROCESS;
 }
