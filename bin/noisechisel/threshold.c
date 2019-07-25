@@ -577,9 +577,9 @@ void
 threshold_quantile_find_apply(struct noisechiselparams *p)
 {
   char *msg;
+  size_t nval;
   gal_data_t *num;
   struct timeval t1;
-  size_t nval, nblank;
   struct qthreshparams qprm;
   struct gal_options_common_params *cp=&p->cp;
   struct gal_tile_two_layer_params *tl=&cp->tl;
@@ -660,10 +660,6 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
         }
     }
 
-  /* A small sanity check. */
-  nblank=gal_blank_number(qprm.erode_th, 1);
-  if( nblank > qprm.erode_th->size-cp->interpnumngb )
-    threshold_good_error(qprm.erode_th->size-nblank, 0, cp->interpnumngb);
 
   /* Remove outliers if requested. */
   if(p->outliersigma!=0.0)

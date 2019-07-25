@@ -330,7 +330,7 @@ dimension_collapse_sanity_check(gal_data_t *in, gal_data_t *weight,
   /* The requested dimension to collapse cannot be larger than the input's
      number of dimensions. */
   if( c_dim > (in->ndim-1) )
-    error(EXIT_FAILURE, 0, "%s: the input has %zu dimensions, but you have "
+    error(EXIT_FAILURE, 0, "%s: the input has %zu dimension(s), but you have "
           "asked to collapse dimension %zu", __func__, in->ndim, c_dim);
 
   /* If there is no blank value, there is no point in calculating the

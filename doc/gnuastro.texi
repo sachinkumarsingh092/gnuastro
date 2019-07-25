@@ -243,7 +243,6 @@ Tutorials
 * Sufi simulates a detection::  Simulating a detection.
 * General program usage tutorial::
 * Detecting large extended targets::  Using NoiseChisel for huge extended targets.
-* Hubble visually checks and classifies his catalog::  Visual checks on a catalog.
 
 Sufi simulates a detection
 
@@ -268,6 +267,11 @@ General program usage tutorial
 * Aperture photomery::          Doing photometry on a fixed aperture.
 * Finding reddest clumps and visual inspection::  Selecting some targets and inspecting them.
 * Citing and acknowledging Gnuastro::  How to cite and acknowledge Gnuastro in your papers.
+
+Detecting large extended targets
+
+* NoiseChisel optimization::    Optimize NoiseChisel to dig very deep.
+* Achieved surface brightness level::  Measure how much you detected.
 
 Installation
 
@@ -1834,14 +1838,13 @@ command-line environment) effectively for your research.
 
 In @ref{Sufi simulates a detection}, we'll start with a
 fictional@footnote{The two historically motivated tutorials (@ref{Sufi
-simulates a detection} and @ref{Hubble visually checks and classifies his
-catalog}) are not intended to be a historical reference (the historical
-facts of this fictional tutorial used Wikipedia as a reference). This form
-of presenting a tutorial was influenced by the PGF/TikZ and Beamer
-manuals. They are both packages in in @TeX{} and @LaTeX{}, the first is a
-high-level vector graphic programming environment, while with the second
-you can make presentation slides. On a similar topic, there are also some
-nice words of wisdom for Unix-like systems called
+simulates a detection} is not intended to be a historical reference (the
+historical facts of this fictional tutorial used Wikipedia as a
+reference). This form of presenting a tutorial was influenced by the
+PGF/TikZ and Beamer manuals. They are both packages in in @TeX{} and
+@LaTeX{}, the first is a high-level vector graphic programming environment,
+while with the second you can make presentation slides. On a similar topic,
+there are also some nice words of wisdom for Unix-like systems called
 @url{http://catb.org/esr/writings/unix-koans, Rootless Root}. These also
 have a similar style but they use a mythical figure named Master Foo. If
 you already have some experience in Unix-like systems, you will definitely
@@ -1874,7 +1877,7 @@ and can only try one of the tutorials, we recommend this one.
 @ref{Detecting large extended targets} deals with a major problem in
 astronomy: effectively detecting the faint outer wings of bright (and
 large) nearby galaxies to extremely low surface brightness levels (roughly
-1/20th of the local noise level in the example discussed). Besides the
+one quarter of the local noise level in the example discussed). Besides the
 interesting scientific questions in these low-surface brightness features,
 failure to properly detect them will bias the measurements of the
 background objects and the survey's noise estimates. This is an important
@@ -1882,12 +1885,6 @@ issue, especially in wide surveys. Because bright/large galaxies and
 stars@footnote{Stars also have similarly large and extended wings due to
 the point spread function, see @ref{PSF}.}, cover a significant fraction of
 the survey area.
-
-Finally, in @ref{Hubble visually checks and classifies his catalog}, we go
-into the historical/fictional world again to see how Hubble could have used
-Gnuastro's programs to visually check and classify a sample of galaxies
-which ultimately lead him to the ``Hubble fork'' classification of galaxy
-morphologies.
 
 In these tutorials, we have intentionally avoided too many cross references
 to make it more easy to read. For more information about a particular
@@ -1904,7 +1901,6 @@ use in the example codes through the book, please see @ref{Conventions}.
 * Sufi simulates a detection::  Simulating a detection.
 * General program usage tutorial::
 * Detecting large extended targets::  Using NoiseChisel for huge extended targets.
-* Hubble visually checks and classifies his catalog::  Visual checks on a catalog.
 @end menu
 
 
@@ -4275,7 +4271,7 @@ $ astnoisechisel --cite
 
 
 
-@node Detecting large extended targets, Hubble visually checks and classifies his catalog, General program usage tutorial, Tutorials
+@node Detecting large extended targets,  , General program usage tutorial, Tutorials
 @section Detecting large extended targets
 
 The outer wings of large and extended objects can sink into the noise very
@@ -4362,41 +4358,53 @@ directory clean.
 $ bunzip2 r.fits.bz2
 @end example
 
-Let's see how NoiseChisel operates on it with its default parameters:
+
+@menu
+* NoiseChisel optimization::    Optimize NoiseChisel to dig very deep.
+* Achieved surface brightness level::  Measure how much you detected.
+@end menu
+
+@node NoiseChisel optimization, Achieved surface brightness level, Detecting large extended targets, Detecting large extended targets
+@subsection NoiseChisel optimization
+In @ref{Detecting large extended targets} we downladed the single exposure
+SDSS image. Let's see how NoiseChisel operates on it with its default
+parameters:
 
 @example
 $ astnoisechisel r.fits -h0
 @end example
 
-As described in @ref{NoiseChisel output}, NoiseChisel's default output is a
-multi-extension FITS file. A method to view them effectively and easily is
-discussed in @ref{Viewing multiextension FITS images}. For more on tweaking
-NoiseChisel and optimizing its output for archiving or sending to
-colleagues, see the NoiseChisel part of the previous tutorial in
-@ref{General program usage tutorial}.
+As described in @ref{Multiextension FITS files NoiseChisel's output},
+NoiseChisel's default output is a multi-extension FITS file. Open the
+output @file{r_detected.fits} file and have a look at the extensions, the
+first extension is only meta-data and contains NoiseChisel's configuration
+parameters. The rest are the Sky-subtracted input, the detection map, Sky
+values and Sky standard deviation.
 
-Open the output @file{r_detected.fits} file and have a look at the
-extensions, the first extension is only meta-data and contains
-NoiseChisel's configuration parameters. The rest are the Sky-subtracted
-input, the detection map, Sky values and Sky standard deviation.
+@example
+$ ds9 -mecube r_detected.fits -zscale -zoom to fit
+@end example
 
-Flipping through the extensions in a FITS viewer (for example SAO DS9), you
-will see that the Sky-subtracted image looks reasonable (there are no major
-artifacts due to bad Sky subtraction compared to the input). The second
+Flipping through the extensions in a FITS viewer, you will see that the
+first image (Sky-subtracted image) looks reasonable: there are no major
+artifacts due to bad Sky subtraction compared to the input. The second
 extension also seems reasonable with a large detection map that covers the
 whole of NGC5195, but also extends beyond towards the bottom of the
-image. Try going back and forth between the @code{DETECTIONS} and
-@code{SKY} extensions, you will notice that there is still significant
+image.
+
+Now try fliping between the @code{DETECTIONS} and @code{SKY} extensions.
+In the @code{SKY} extension, you'll notice that there is still significant
 signal beyond the detected pixels. You can tell that this signal belongs to
 the galaxy because the far-right side of the image is dark and the brighter
-tiles (that weren't interpolated) are surrounding the detected pixels.
+tiles are surrounding the detected pixels.
 
 The fact that signal from the galaxy remains in the Sky dataset shows that
-you haven't done a good detection. Generally, any time your target is much
-larger than the tile size and the signal is almost flat (like this case),
-this @emph{will} happen. Therefore, when there are large objects in the
-dataset, @strong{the best place} to check the accuracy of your detection is
-the estimated Sky image.
+you haven't done a good detection. The @code{SKY} extension must not
+contain any light around the galaxy. Generally, any time your target is
+much larger than the tile size and the signal is almost flat (like this
+case), this @emph{will} happen. Therefore, when there are large objects in
+the dataset, @strong{the best place} to check the accuracy of your
+detection is the estimated Sky image.
 
 When dominated by the background, noise has a symmetric
 distribution. However, signal is not symmetric (we don't have negative
@@ -4411,9 +4419,9 @@ However, skewness is only a proxy for signal when the signal has structure
 (varies per pixel). Therefore, when it is approximately constant over a
 whole tile, or sub-set of the image, the signal's effect is just to shift
 the symmetric center of the noise distribution to the positive and there
-won't be any skewness (major difference between the mean and median): this
+won't be any skewness (major difference between the mean and median). This
 positive@footnote{In processed images, where the Sky value can be
-over-estimated, this constant shift can be negative.}  shift that preserves
+over-estimated, this constant shift can be negative.} shift that preserves
 the symmetric distribution is the Sky value. When there is a gradient over
 the dataset, different tiles will have different constant
 shifts/Sky-values, for example see Figure 11 of
@@ -4439,9 +4447,9 @@ $ astnoisechisel r.fits -h0 --checkqthresh
 @end example
 
 Notice how this option doesn't allow NoiseChisel to finish. NoiseChisel
-aborted after finding the quantile thresholds. When you call any of
-NoiseChisel's @option{--check*} options, by default, it will abort as soon
-as all the check steps have been written in the check file (a
+aborted after finding and applying the quantile thresholds. When you call
+any of NoiseChisel's @option{--check*} options, by default, it will abort
+as soon as all the check steps have been written in the check file (a
 multi-extension FITS file). This allows you to focus on the problem you
 wanted to check as soon as possible (you can disable this feature with the
 @option{--continueaftercheck} option).
@@ -4457,12 +4465,12 @@ have a new dataset in front of you. Robust data analysis is an art,
 therefore a good scientist must first be a good artist.
 
 The first extension of @file{r_qthresh.fits} (@code{CONVOLVED}) is the
-convolved input image where the threshold(s) is defined and applied. For
-more on the effect of convolution and thresholding, see Sections 3.1.1 and
-3.1.2 of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa
-[2015]}. The second extension (@code{QTHRESH_ERODE}) has a blank value for
-all the pixels of any tile that was identified as having significant
-signal. The next two extensions (@code{QTHRESH_NOERODE} and
+convolved input image where the threshold(s) is(are) defined and
+applied. For more on the effect of convolution and thresholding, see
+Sections 3.1.1 and 3.1.2 of @url{https://arxiv.org/abs/1505.01664, Akhlaghi
+and Ichikawa [2015]}. The second extension (@code{QTHRESH_ERODE}) has a
+blank value for all the pixels of any tile that was identified as having
+significant signal. The next two extensions (@code{QTHRESH_NOERODE} and
 @code{QTHRESH_EXPAND}) are the other two quantile thresholds that are
 necessary in NoiseChisel's later steps. Every step in this file is repeated
 on the three thresholds.
@@ -4476,8 +4484,8 @@ galaxy have been removed in this step. For more on the outlier rejection
 algorithm, see the latter half of @ref{Quantifying signal in a tile}.
 
 However, the default outlier rejection parameters weren't enough, and when
-you play with the color-bar, you see that the faintest parts of the galaxy
-outskirts still remain. Therefore have two strategies for approaching this
+you play with the color-bar, you still see a strong gradient around the
+outer tidal feature of the galaxy. You have two strategies for fixing this
 problem: 1) Increase the tile size to get more accurate measurements of
 skewness. 2) Strengthen the outlier rejection parameters to discard more of
 the tiles with signal. Fortunately in this image we have a sufficiently
@@ -4501,114 +4509,220 @@ directly feed the convolved image and avoid convolution. For more on
 
 To identify the skewness caused by the flat NGC 5195 and M51 tidal features
 on the tiles under it, we thus have to choose a tile size that is larger
-than the gradient of the signal. Let's try a 100 by 100 tile size:
+than the gradient of the signal. Let's try a tile size of 75 by 75 pixels:
 
 @example
-$ astnoisechisel r.fits -h0 --tilesize=100,100 --checkqthresh
+$ astnoisechisel r.fits -h0 --tilesize=75,75 --checkqthresh
 @end example
 
 You can clearly see the effect of this increased tile size: the tiles are
-much larger (@mymath{\times4} in area) and when you look into
-@code{VALUE1_NO_OUTLIER}, you see that almost all the tiles under the
-galaxy have been discarded and we are only left with tiles in the
-right-most part of the image. The next group of extensions (those ending
-with @code{_INTERP}), give a value to all blank tiles based on the nearest
-tiles with a measurement. The following group of extensions (ending with
-@code{_SMOOTH}) have smoothed the interpolated image to avoid sharp cuts on
-tile edges.
+much larger and when you look into @code{VALUE1_NO_OUTLIER}, you see that
+almost all the previous tiles under the galaxy have been discarded and we
+only have a few tiles on the edge with a gradient. So let's define a smore
+strict condition to keep tiles:
 
-Inspecting @code{THRESH1_SMOOTH}, you can see that there is no longer any
-significant gradient and no major signature of NGC 5195 exists. But before
-finishing the quantile threshold, let's have a closer look at the final
-extension (@code{QTHRESH-APPLIED}) which is thresholded image. Slide the
-dynamic range in your FITS viewer so 0 valued pixels are black and all
-non-zero pixels are white. You will see that the black holes are not evenly
-distributed. Those that follow the tail of NGC 5195 are systematically
-smaller than those in the far-right of the image. This suggests that we can
-decrease the quantile threshold (@code{--qthresh}) even further: there is
-still signal down there!
+@example
+$ astnoisechisel r.fits -h0 --tilesize=75,75 --meanmedqdiff=0.001 \
+                 --checkqthresh
+@end example
+
+After constraining @code{--meanmedqdiff}, NoiseChisel stopped with a
+different error. Please read it: at the start, it says that only 6 tiles
+passed the constraint while you have asked for 9. The @file{r_qthresh.fits}
+image also only has 8 extensions (not the original 15). Take a look at the
+initially selected tiles and those after outlier rejection. You can see the
+place of the tiles that passed. They seem to be in the good place (very far
+away from the M51 group and its tidal feature. Using the 6 nearest
+neighbors is also not too bad. So let's decrease the number of neighboring
+tiles for interpolation so NoiseChisel can continue:
+
+@example
+$ astnoisechisel r.fits -h0 --tilesize=75,75 --meanmedqdiff=0.001 \
+                 --interpnumngb=6 --checkqthresh
+@end example
+
+The next group of extensions (those ending with @code{_INTERP}), give a
+value to all blank tiles based on the nearest tiles with a measurement. The
+following group of extensions (ending with @code{_SMOOTH}) have smoothed
+the interpolated image to avoid sharp cuts on tile edges. Inspecting
+@code{THRESH1_SMOOTH}, you can see that there is no longer any significant
+gradient and no major signature of NGC 5195 exists.
+
+We can now remove @option{--checkqthresh} and let NoiseChisel proceed with
+its detection. Also, similar to the argument in @ref{NoiseChisel
+optimization for detection}, in the command above, we set the
+pseudo-detection signal-to-noise ratio quantile (@option{--snquant}) to
+0.95.
 
 @example
 $ rm r_qthresh.fits
-$ astnoisechisel r.fits -h0 --tilesize=100,100 --qthresh=0.2
+$ astnoisechisel r.fits -h0 --tilesize=75,75 --meanmedqdiff=0.001 \
+                 --interpnumngb=6 --snquant=0.95
 @end example
 
-Since the quantile threshold of the previous command was satisfactory, we
-finally removed @option{--checkqthresh} to let NoiseChisel proceed until
-completion. Looking at the @code{DETECTIONS} extension of NoiseChisel's
-output, we see the right-ward edges in particular have many holes that are
-fully surrounded by signal and the signal stretches out in the noise very
-thinly. This suggests that there is still signal that can be detected. You
-can confirm this guess by looking at the @code{SKY} extension to see that
-indeed, we still have traces of the galaxy outskirts there. Therefore, we
-should dig deeper into the noise.
+Looking at the @code{DETECTIONS} extension of NoiseChisel's output, we see
+the right-ward edges in particular have many holes that are fully
+surrounded by signal and the signal stretches out in the noise very thinly
+(the size of the holes increases as we go out). This suggests that there is
+still signal that can be detected. You can confirm this guess by looking at
+the @code{SKY} extension to see that indeed, there is a clear footprint of
+the M51 group in the Sky image (which is not good!). Therefore, we should
+dig deeper into the noise.
 
-Let's decrease the growth quantile (for larger/deeper growth into the
-noise, with @option{--detgrowquant}) and increase the size of holes that
-can be filled (if they are fully surrounded by signal, with
-@option{--detgrowmaxholesize}).
+With the @option{--detgrowquant} option, NoiseChisel will use the
+detections as seeds and grow them in to the noise. Its value is the
+ultimate limit of the growth in units of quantile (between 0 and
+1). Therefore @option{--detgrowquant=1} means no growth and
+@option{--detgrowquant=0.5} means an ultimate limit of the Sky level (which
+is usually too much!). Try running the previous command with various values
+(from 0.6 to higher values) to see this option's effect. For this
+particularly huge galaxy (with signal that extends very gradually into the
+noise), we'll set it to @option{0.65}:
 
 @example
-$ astnoisechisel r.fits -h0 --tilesize=100,100 --qthresh=0.2          \
-                 --detgrowquant=0.65 --detgrowmaxholesize=10000
+$ astnoisechisel r.fits -h0 --tilesize=75,75 --meanmedqdiff=0.001 \
+                 --interpnumngb=6 --snquant=0.95 --detgrowquant=0.65
 @end example
 
-Looking into the output, we now clearly see that the tidal features of M51
-and NGC 5195 are detected nicely in the same direction as expected (towards
-the bottom right side of the image). However, as discussed above, the best
-measure of good detection is the noise, not the detections themselves. So
-let's look at the Sky and its Standard deviation. The Sky still has a very
-faint shadow of the galaxy outskirts (the values on the left are very
-slightly larger than those on the right).
+Beyond this level (smaller @option{--detgrowquant} values), you see the
+smaller background galaxies starting to create thin spider-leg-like
+features, showing that we are following correlated noise for too much.
 
-Let's calculate this gradient as a function of noise. First we'll collapse
-the image along the second (vertical) FITS dimension to have a 1D
-array. Then we'll calculate the top and bottom values of this array and
-define that as the gradient. Then we'll estimate the mean standard
-deviation over the image and divide it by the first value. The first two
-commands are just for demonstration of the collapsed dataset:
+Now, when you look at the @code{DETECTIONS} extension, you see the wings of
+the galaxy being detected much farther out, But you also see many holes
+which are clearly just caused by noise. After growing the objects,
+NoiseChisel also allows you to fill such holes when they are smaller than a
+certain size through the @option{--detgrowmaxholesize} option. In this
+case, a maximum area/size of 10,000 pixels seems to be good:
+
+@example
+$ astnoisechisel r.fits -h0 --tilesize=75,75 --meanmedqdiff=0.001    \
+                 --interpnumngb=6 --snquant=0.95 --detgrowquant=0.65 \
+                 --detgrowmaxholesize=10000
+@end example
+
+The detection looks good now, but when you look in to the @code{SKY}
+extension, you still clearly still see a footprint of the galaxy. We'll
+leave it as an exercise for you to play with NoiseChisel further and
+improve the detected pixels.
+
+So, we'll just stop with one last tool NoiseChisel gives you to get a
+slightly better estimation of the Sky: @option{--minskyfrac}. On each tile,
+NoiseChisel will only measure the Sky-level if the fraction of undetected
+pixels is larger than the value given to this option. To avoid the edges of
+the galaxy, we'll set it to @option{0.9}. Therefore, tiles that are covered
+by detected pixels for more than @mymath{10\%} of their area are ignored.
+
+@example
+$ astnoisechisel r.fits -h0 --tilesize=75,75 --meanmedqdiff=0.001    \
+                 --interpnumngb=6 --snquant=0.95 --detgrowquant=0.65 \
+                 --detgrowmaxholesize=10000 --minskyfrac=0.9
+@end example
+
+The footprint of the galaxy still exists in the @code{SKY} extension, but
+it has decreased in significance now. Let's calculate the significance of
+the undetected gradient, in units of noise. Since the gradient is roughly
+along the horizontal axis, we'll collapse the image along the second
+(vertical) FITS dimension to have a 1D array (a table column, see its
+values with the second command).
 
 @example
 $ astarithmetic r_detected.fits 2 collapse-mean -hSKY -ocollapsed.fits
 $ asttable collapsed.fits
-$ skydiff=$(astarithmetic r_detected.fits 2 collapse-mean set-i   \
-                          i maxvalue i minvalue - -hSKY -q)
-$ echo $skydiff
-$ std=$(aststatistics r_detected.fits -hSKY_STD --mean)
-$ echo $std
-$ echo "$std $skydiff" | awk '@{print $1/$2@}'
 @end example
 
-This gradient in the Sky (output of first command below) is much less (by
-more than 20 times) than the standard deviation (final extension). So we
-can stop configuring NoiseChisel at this point in the tutorial. We leave
-further configuration for a more accurate detection to you as an exercise.
-
-In this shallow image, this extent may seem too far deep into the noise for
-visual confirmation. Therefore, if the statistical argument above, to
-justify the reality of this extended structure, hasn't convinced you, see
-the deep images of this system in @url{https://arxiv.org/abs/1501.04599,
-Watkins et al. [2015]}, or a 12 hour deep image of this system (with a
-12-inch telescope): @url{https://i.redd.it/jfqgpqg0hfk11.jpg}@footnote{The
-image is taken from this Reddit discussion:
-@url{https://www.reddit.com/r/Astronomy/comments/9d6x0q/12_hours_of_exposure_on_the_whirlpool_galaxy/}}.
-
-Now that we know this detection is real, let's measure how deep we carved
-the signal out of noise. For this measurement, we'll need to estimate the
-average flux on the outer edges of the detection. Fortunately all this can
-be done with a few simple commands (and no higher-level language
-mini-environments) using @ref{Arithmetic} and @ref{MakeCatalog}. First,
-let's give a separate label to all the connected pixels of NoiseChisel's
-detection map:
+We can now calculate the minimum and maximum values of this array and
+define their difference (in units of noise) as the gradient:
 
 @example
-$ astarithmetic r_detected.fits 2 connected-components -hDETECTIONS \
-                -olabeled.fits
+$ grad=$(astarithmetic r_detected.fits 2 collapse-mean set-i   \
+                       i maxvalue i minvalue - -hSKY -q)
+$ echo $grad
+$ std=$(aststatistics r_detected.fits -hSKY_STD --mean)
+$ echo $std
+$ astarithmetic -q $grad $std /
 @end example
 
-Of course, you can find the the label of the main galaxy visually, but to
-have a little more fun, lets do this automatically. The M51 group detection
-is by far the largest detection in this image. We can thus easily find the
+The undetected gradient (@code{grad} above) is thus roughly a quarter of
+the noise. But don't forget that this is per-pixel: individually its small,
+but it extends over millions of pixels, so the total flux may still be
+relevant.
+
+When looking at the raw input shallow image, you don't see anything so far
+out of the galaxy. You might just think that ``this is all noise, I have
+just dug too deep and I'm following systematics''! If you feel like this,
+have a look at the deep images of this system in
+@url{https://arxiv.org/abs/1501.04599, Watkins et al. [2015]}, or a 12 hour
+deep image of this system (with a 12-inch telescope):
+@url{https://i.redd.it/jfqgpqg0hfk11.jpg}@footnote{The image is taken from
+this Reddit discussion:
+@url{https://www.reddit.com/r/Astronomy/comments/9d6x0q/12_hours_of_exposure_on_the_whirlpool_galaxy/}}. In
+these deepr images you see that the outer edges of the M51 group clearly
+follow this exact structure, below in @ref{Achieved surface brightness
+level}, we'll measure the exact level.
+
+As the gradient in the @code{SKY} extension shows, and the deep images
+cited above confirm, the galaxy's signal extends even beyond this. But this
+is already far deeper than what most (if not all) other tools can detect.
+Therefore, we'll stop configuring NoiseChisel at this point in the tutorial
+and let you play with it a little more while reading more about it in
+@ref{NoiseChisel}.
+
+After finishing this tutorial please go through the NoiseChisel paper and
+its options and play with them to further decrease the gradient. This will
+greatly help you get a good feeling of the options. When you do find a
+better configuration, please send it to us and we'll mention your name here
+with your suggested configuration. Don't forget that good data analysis is
+an art, so like a sculptor, master your chisel for a good result.
+
+@cartouche
+@noindent
+@strong{This NoiseChisel configuration is NOT GENERIC:} Don't use this
+configuration blindly on another image. As you saw above, the reason we
+chose this particular configuration for NoiseChisel to detect the wings of
+the M51 group was strongly influenced by the noise properties of this
+particular image. So as long as your image noise has similar properties
+(from the same data-reduction step of the same database), you can use this
+configuration on any image. For images from other instruments, or
+higher-level/reduced SDSS products, please follow a similar logic to what
+was presented here and find the best configuation yourself.
+@end cartouche
+
+@cartouche
+@noindent
+@strong{Smart NoiseChisel:} As you saw during this section, there is a
+clear logic behind the optimal paramter value for each dataset. Therfore,
+we plan to capabilities to (optionally) automate some of the choices made
+here based on the actual dataset, please join us in doing this if you are
+interested. However, given the many problems in existing ``smart''
+solutions, such automatic changing of the configuration may cause more
+problems than they solve. So even when they are implemented, we would
+strongly recommend quality checks for a robust analysis.
+@end cartouche
+
+@node Achieved surface brightness level,  , NoiseChisel optimization, Detecting large extended targets
+@subsection Achieved surface brightness level
+In @ref{NoiseChisel optimization} we showed how to customize NoiseChisel
+for a single-exposure SDSS image of the M51 group. let's measure how deep
+we carved the signal out of noise. For this measurement, we'll need to
+estimate the average flux on the outer edges of the detection. Fortunately
+all this can be done with a few simple commands (and no higher-level
+language mini-environments like Python or IRAF) using @ref{Arithmetic} and
+@ref{MakeCatalog}.
+
+@cindex Opening
+First, let's separate each detected region, or give a unique label/counter
+to all the connected pixels of NoiseChisel's detection map:
+
+@example
+$ det="r_detected.fits -hDETECTIONS"
+$ astarithmetic $det 2 connected-components -olabeled.fits
+@end example
+
+You can find the the label of the main galaxy visually (by opening the
+image and hovering your mouse over the M51 group's label). But to have a
+little more fun, lets do this automatically. The M51 group detection is by
+far the largest detection in this image, this allows us to find the
 ID/label that corresponds to it. We'll first run MakeCatalog to find the
 area of all the detections, then we'll use AWK to find the ID of the
 largest object and keep it as a shell variable (@code{id}):
@@ -4620,36 +4734,43 @@ $ echo $id
 @end example
 
 To separate the outer edges of the detections, we'll need to ``erode'' the
-detections. We'll erode two times (one time would be too thin for such a
-huge object), using a maximum connectivity of 2 (8-connected
+M51 group detection. We'll erode thre times (to have more pixels and thus
+less scatter), using a maximum connectivity of 2 (8-connected
 neighbors). We'll then save the output in @file{eroded.fits}.
 
 @example
-$ astarithmetic r_detected.fits 0 gt 2 erode -hDETECTIONS -oeroded.fits
+$ astarithmetic labeled.fits $id eq 2 erode 2 erode 2 erode \
+                -oeroded.fits
 @end example
 
 @noindent
-We should now just keep the pixels that have the ID of the M51 group, but a
-value of 0 in @file{erode.fits}. We'll keep the output in
-@file{boundary.fits}.
+In @file{labeled.fits}, we can now set all the 1-valued pixels of
+@file{eroded.fits} to 0 using Arithmetic's @code{where} operator added to
+the previous command. We'll need the pixels of the M51 group in
+@code{labeled.fits} two times: once to do the erosion, another time to find
+the outer pixel layer. To do this (and be efficient and more readable)
+we'll use the @code{set-i} operator. In the command below, it will
+save/set/name the pixels of the M51 group as the `@code{i}'. In this way we
+can use it any number of times afterwards, while only reading it from disk
+and finding M51's pixels once.
 
 @example
-$ astarithmetic labeled.fits $id eq eroded.fits 0 eq and          \
-                -g1 -oboundary.fits
+$ astarithmetic labeled.fits $id eq set-i i \
+                i 2 erode 2 erode 2 erode 0 where -oedge.fits
 @end example
 
 Open the image and have a look. You'll see that the detected edge of the
-M51 group is now clearly visible. You can use @file{boundary.fits} to mark
+M51 group is now clearly visible. You can use @file{edge.fits} to mark
 (set to blank) this boundary on the input image and get a visual feeling of
 how far it extends:
 
 @example
-$ astarithmetic r.fits boundary.fits nan where -ob-masked.fits -h0
+$ astarithmetic r.fits edge.fits nan where -ob-masked.fits -h0
 @end example
 
 To quantify how deep we have detected the low-surface brightness regions,
 we'll use the command below. In short it just divides all the non-zero
-pixels of @file{boundary.fits} in the Sky subtracted input (first extension
+pixels of @file{edge.fits} in the Sky subtracted input (first extension
 of NoiseChisel's output) by the pixel standard deviation of the same
 pixel. This will give us a signal-to-noise ratio image. The mean value of
 this image shows the level of surface brightness that we have achieved.
@@ -4658,7 +4779,7 @@ You can also break the command below into multiple calls to Arithmetic and
 create temporary files to understand it better. However, if you have a look
 at @ref{Reverse polish notation} and @ref{Arithmetic operators}, you should
 be able to easily understand what your computer does when you run this
-command@footnote{@file{boundary.fits} (extension @code{1}) is a binary (0
+command@footnote{@file{edge.fits} (extension @code{1}) is a binary (0
 or 1 valued) image. Applying the @code{not} operator on it, just flips all
 its pixels. Through the @code{where} operator, we are setting all the newly
 1-valued pixels in @file{r_detected.fits} (extension @code{INPUT-NO-SKY})
@@ -4669,38 +4790,37 @@ the @code{meanvalue} operator, we are taking the mean value of all the
 non-blank pixels and reporting that as a single number.}.
 
 @example
-$ astarithmetic r_detected.fits boundary.fits not nan where \
-                r_detected.fits /                           \
-                meanvalue                                   \
-                -hINPUT-NO-SKY -h1 -hSKY_STD --quiet
+$ edge="edge.fits -h1"
+$ skystd="r_detected.fits -hSKY_STD"
+$ skysub="r_detected.fits -hINPUT-NO-SKY"
+$ astarithmetic $skysub $skystd / $edge not nan where       \
+                meanvalue --quiet
 @end example
 
-@noindent
-The outer wings where therefore non-parametrically detected until
-@mymath{\rm{S/N}\approx0.05}!
-
 @cindex Surface brightness
-This is very good! But the signal-to-noise ratio is a relative measurement.
-Let's also measure the depth of our detection in absolute surface
-brightness units; or magnitudes per square arcseconds. To find out, we'll
-first need to calculate how many pixels of this image are in one
+We have thus detected the wings of the M51 group down to roughly 1/4th of
+the noise level in this image! But the signal-to-noise ratio is a relative
+measurement. Let's also measure the depth of our detection in absolute
+surface brightness units; or magnitudes per square arcseconds. To find out,
+we'll first need to calculate how many pixels of this image are in one
 arcsecond-squared. Fortunately the world coordinate system (or WCS) meta
 data of Gnuastro's output FITS files (in particular the @code{CDELT}
 keywords) give us this information.
 
 @example
-$ n=$(astfits r_detected.fits -h1                                     \
-              | awk '/CDELT1/ @{p=1/($3*3600); print p*p@}')
-$ echo $n
+$ pixscale=$(astfits r_detected.fits -h1                           \
+                    | awk '/CDELT1/ @{p=1/($3*3600); print p*p@}')
+$ echo $pixscale
 @end example
 
 @noindent
-Now, let's calculate the average sky-subtracted flux in the border region
-per pixel.
+Note that we multiplied the value by 3600 so we work in units of
+arc-seconds not degrees. Now, let's calculate the average sky-subtracted
+flux in the border region per pixel.
 
 @example
-$ f=$(astarithmetic r_detected.fits boundary.fits not nan where set-i \
-                    i sumvalue i numvalue / -q -hINPUT-NO-SKY)
+$ f=$(astarithmetic r_detected.fits edge.fits not nan where set-i \
+                    i sumvalue i numbervalue / -q -hINPUT-NO-SKY)
 $ echo $f
 @end example
 
@@ -4717,12 +4837,12 @@ correct for this.
 
 @example
 $ z=24.80
-$ echo "$n $f $z" | awk '@{print -2.5*log($1*$2)/log(10)+$3@}'
---> 30.0646
+$ echo "$pixscale $f $z" | awk '@{print -2.5*log($1*$2)/log(10)+$3@}'
+--> 28.2989
 @end example
 
-This shows that on a single-exposure SDSS image, we have reached a surface
-brightness limit of roughly 30 magnitudes per arcseconds squared!
+On a single-exposure SDSS image, we have reached a surface brightness limit
+fainter than 28 magnitudes per arcseconds squared!
 
 In interpreting this value, you should just have in mind that NoiseChisel
 works based on the contiguity of signal in the pixels. Therefore the larger
@@ -4733,29 +4853,10 @@ in this image was larger/smaller than this, or if the image was
 larger/smaller, or if we had used a different configuration, we would go
 deeper/shallower.
 
-@cartouche
-@noindent
-@strong{The NoiseChisel configuration found here is NOT GENERIC for any
-large object:} As you saw above, the reason we chose this particular
-configuration for NoiseChisel to detect the wings of the M51 group was
-strongly influenced by this particular object in this particular
-image. When low surface brightness signal takes over such a large fraction
-of your dataset (and you want to accurately detect/account for it), to make
-sure that it is successfully detected, you will need some manual checking,
-intervention, or customization. In other words, to make sure that your
-noise measurements are least affected by the signal@footnote{In the future,
-we may add capabilities to optionally automate some of the choices made
-here, please join us in doing this if you are interested. However, given
-the many problems in existing ``smart'' solutions, such automatic changing
-of the configuration may cause more problems than they solve. So even when
-they are implemented, we would strongly recommend manual checks and
-intervention for a robust analysis.}.
-@end cartouche
-
 To avoid typing all these options every time you run NoiseChisel on this
 image, you can use Gnuastro's configuration files, see @ref{Configuration
-files}. For an applied example of setting/using them, see @ref{General
-program usage tutorial}.
+files}. For an applied example of setting/using them, see @ref{Option
+management and configuration files}.
 
 To continue your analysis of such datasets with extended emission, you can
 use @ref{Segment} to identify all the ``clumps'' over the diffuse regions:
@@ -4892,13 +4993,14 @@ reading of the command, we'll define the shell variable @code{i} for the
 image name and save the output in @file{masked.fits}.
 
 @example
-$ i=r_detected_segmented.fits
-$ astarithmetic $i $i 0 gt nan where -hINPUT -hCLUMPS -omasked.fits
+$ in="r_detected_segmented.fits -hINPUT"
+$ clumps="r_detected_segmented.fits -hCLUMPS"
+$ astarithmetic $in $clumps 0 gt nan where -oclumps-masked.fits
 @end example
 
-Inspecting @file{masked.fits}, you can see some very diffuse peaks that
-have been missed, especially as you go farther away from the group center
-and into the diffuse wings. This is due to the fact that with this
+Inspecting @file{clumps-masked.fits}, you can see some very diffuse peaks
+that have been missed, especially as you go farther away from the group
+center and into the diffuse wings. This is due to the fact that with this
 configuration, we have focused more on the sharper clumps. To put the focus
 more on diffuse clumps, you can use a wider convolution kernel. Using a
 larger kernel can also help in detecting the existing clumps to fainter
@@ -4911,282 +5013,24 @@ smaller peaks on the wings. Please continue playing with Segment's
 configuration to obtain a more complete result (while keeping reasonable
 purity). We'll finish the discussion on finding true clumps at this point.
 
-The properties of the background objects can then easily be measured using
-@ref{MakeCatalog}. To measure the properties of the background objects
-(detected as clumps over the diffuse region), you shouldn't mask the
-diffuse region. When measuring clump properties with @ref{MakeCatalog}, the
-ambient flux (from the diffuse region) is calculated and subtracted. If the
-diffuse region is masked, its effect on the clump brightness cannot be
-calculated and subtracted.
+The properties of the clumps within M51, or the background objects can then
+easily be measured using @ref{MakeCatalog}. To measure the properties of
+the background objects (detected as clumps over the diffuse region), you
+shouldn't mask the diffuse region. When measuring clump properties with
+@ref{MakeCatalog} and using the @option{--clumpscat}, the ambient flux
+(from the diffuse region) is calculated and subtracted. If the diffuse
+region is masked, its effect on the clump brightness cannot be calculated
+and subtracted.
 
-To keep this tutorial short, we'll stop here. See @ref{General program
-usage tutorial} and @ref{Segment} for more on using Segment, producing
+To keep this tutorial short, we'll stop here. See @ref{Segmentation and
+making a catalog} and @ref{Segment} for more on using Segment, producing
 catalogs with MakeCatalog and using those catalogs.
 
-Finally, if this book or any of the programs in Gnuastro have been useful
-for your research, please cite the respective papers, and acknowledge the
-funding agencies that made all of this possible. All Gnuastro programs have
-a @option{--cite} option to facilitate the citation and
-acknowledgment. Just note that it may be necessary to cite additional
-papers for different programs, so please try it out on all the programs
-that you used, for example:
-
-@example
-$ astmkcatalog --cite
-$ astnoisechisel --cite
-@end example
 
 
 
 
-@node Hubble visually checks and classifies his catalog,  , Detecting large extended targets, Tutorials
-@section Hubble visually checks and classifies his catalog
 
-@cindex Edwin Hubble
-In 1924 Hubble@footnote{Edwin Powell Hubble (1889 -- 1953 A.D.) was an
-American astronomer who can be considered as the father of
-extra-galactic astronomy, by proving that some nebulae are too distant
-to be within the Galaxy. He then went on to show that the universe
-appears to expand and also done a visual classification of the
-galaxies that is known as the Hubble fork.} announced his discovery
-that some of the known nebulous objects are too distant to be within
-the the Milky Way (or Galaxy) and that they were probably distant
-Galaxies@footnote{Note that at that time, ``Galaxy'' was a proper noun
-used to refer to the Milky way. The concept of a galaxy as we define
-it today had not yet become common. Hubble played a major role in
-creating today's concept of a galaxy.} in their own right. He had also
-used them to show that the redshift of the nebulae increases with
-their distance. So now he wants to study them more accurately to see
-what they actually are. Since they are nebulous or amorphous, they
-can't be modeled (like stars that are always a point) easily. So there
-is no better way to distinguish them than to visually inspect them and
-see if it is possible to classify these nebulae or not.
-
-@cartouche
-@noindent
-@strong{No default dataset in this tutorial:} Unfortunately there is no
-input dataset for this tutorial. We will add a dataset and corresponding
-table to smoothly run this tutorial later. But until then, you can use the
-final catalog that you produced in @ref{General program usage
-tutorial}. The start of this tutorial has some overlaps with the ending of
-@ref{General program usage tutorial}. You can just select some of the
-brighter sources to make it shorter and more manageable.
-@end cartouche
-
-Hubble has stored all the FITS images of the objects he wants to visually
-inspect in his @file{/mnt/data/images} directory. He has also stored his
-catalog of extra-galactic nebulae in
-@file{/mnt/data/catalogs/extragalactic.txt}. Any normal user on his
-GNU/Linux system (including himself) only has read access to the contents
-of the @file{/mnt/data} directory. He has done this by running this command
-as root:
-
-@example
-# chmod -R 755 /mnt/data
-@end example
-
-@noindent
-Hubble has done this intentionally to avoid mistakenly deleting or
-modifying the valuable images he has taken at Mount Wilson while he is
-working as an ordinary user. Retaking all those images and data is
-simply not an option. In fact they are also in another hard disk
-(@file{/dev/sdb1}). So if the hard disk which stores his GNU/Linux
-distribution suddenly malfunctions due to work load, his data is not
-in harms way. That hard disk is only mounted to this directory when he
-wants to use it with the command:
-
-@example
-# mount /dev/sdb1 /mnt/data
-@end example
-
-@noindent
-In short, Hubble wants to keep his data safe and fortunately by
-default Gnuastro allows for this.  Hubble creates a temporary
-@file{visualcheck} directory in his home directory for this check. He
-runs the following commands to make the directory and change to
-it@footnote{The @code{pwd} command is short for ``Print Working
-Directory'' and @code{ls} is short for ``list'' which shows the
-contents of a directory.}:
-
-@example
-$ mkdir ~/visualcheck
-$ cd ~/visualcheck
-$ pwd
-/home/edwin/visualcheck
-$ ls
-@end example
-
-Hubble has multiple images in @file{/mnt/data/images}, some of his targets
-might be on the edges of an image and so several images need to be stitched
-to give a good view of them. Also his extra-galactic targets belong to
-various pointings in the sky, so they are not in one large
-image. Gnuastro's Crop is just the program he wants. The catalog in
-@file{extragalactic.txt} is a plain text file which stores the basic
-information of all his known 200 extra-galactic nebulae. If you don't have
-any particular catalog and accompanying image, you can use one the Hubble
-Space Telescope F160W catalog that we produced in @ref{General program
-usage tutorial} along with the accompanying image (specify the exact image
-name, not @file{/mnt/data/images/*.fits}). You can select the brightest
-galaxies for an easier classification.
-
-@cindex WCS
-@cindex World coordinate system
-In its second column, the catalog has each object's Right Ascension (the
-first column is a label he has given to each object), and in the third, the
-object's declination (which he specifies with the @option{--coordcol}
-option). Also, since the coordinates are in the world coordinate system
-(WCS, not pixel positions) units, he adds @option{--mode=wcs}.
-
-@example
-$ astcrop --coordcol=2 --coordcol=3 /mnt/data/images/*.fits     \
-          --mode=wcs /mnt/data/catalogs/extragalactic.txt
-Crop started on Tue Jun  14 10:18:11 1932
-  ---- ./4_crop.fits                  1 1
-  ---- ./2_crop.fits                  1 1
-  ---- ./1_crop.fits                  1 1
-[[[ Truncated middle of list ]]]
-  ---- ./198_crop.fits                1 1
-  ---- ./195_crop.fits                1 1
-  - 200 images created.
-  - 200 were filled in the center.
-  - 0 used more than one input.
-Crop finished in:  2.429401 (seconds)
-@end example
-
-
-@cindex Asynchronous thread allocation
-@noindent
-Hubble already knows that thread allocation to the the CPU cores is
-asynchronous. Hence each time you run it, the order of which job gets done
-first differs. When using Crop the order of outputs is irrelevant since
-each crop is independent of the rest. This is why the crops are not
-necessarily created in the same input order. He is satisfied with the
-default width of the outputs (which he inspected by running @code{$ astcrop
--P}). If he wanted a different width for the cropped images, he could do
-that with the @option{--wwidth} option which accepts a value in
-arc-seconds.  When he lists the contents of the directory again he finds
-his 200 objects as separate FITS images.
-
-@example
-$ ls
-1_crop.fits 2_crop.fits ... 200_crop.fits
-@end example
-
-@cindex GNU Parallel
-The FITS image format was not designed for efficient/fast viewing, but
-mainly for accurate storing of the data. So he chooses to convert the
-cropped images to a more common image format to view them more quickly and
-easily through standard image viewers (which load much faster than FITS
-image viewer). JPEG is one of the most recognized image formats that is
-supported by most image viewers. Fortunately Gnuastro has just such a tool
-to convert various types of file types to and from each other:
-ConvertType. Hubble has already heard of GNU Parallel from one of his
-colleagues at Mount Wilson Observatory. It allows multiple instances of a
-command to be run simultaneously on the system, so he uses it in
-conjunction with ConvertType to convert all the images to JPEG.
-@example
-$ parallel astconvertt -ojpg ::: *_crop.fits
-@end example
-
-@pindex eog
-@cindex Eye of GNOME
-For his graphical user interface Hubble is using GNOME which is the default
-in most distributions in GNU/Linux. The basic image viewer in GNOME is the
-Eye of GNOME, which has the executable file name @command{eog}
-@footnote{Eye of GNOME is only available for users of the GNOME graphical
-desktop environment which is the default in most GNU/Linux
-distributions. If you use another graphical desktop environment, replace
-@command{eog} with any other image viewer.}. Since he has used it before,
-he knows that once it opens an image, he can use the @key{ENTER} or
-@key{SPACE} keys on the keyboard to go to the next image in the directory
-or the @key{Backspace} key to go the previous image. So he opens the image
-of the first object with the command below and with his cup of coffee in
-his other hand, he flips through his targets very fast to get a good
-initial impression of the morphologies of these extra-galactic nebulae.
-
-@example
-$ eog 1_crop.jpg
-@end example
-
-@cindex GNU Bash
-@cindex GNU Emacs
-@cindex Spiral galaxies
-@cindex Elliptical galaxies
-Hubble's cup of coffee is now finished and he also got a nice general
-impression of the shapes of the nebulae. He tentatively/mentally
-classified the objects into three classes while doing the visual
-inspection. One group of the nebulae have a very simple elliptical
-shape and seem to have no internal special structure, so he gives them
-code 1. Another clearly different class are those which have spiral
-arms which he associates with code 2 and finally there seems to be a
-class of nebulae in between which appear to have a disk but no spiral
-arms, he gives them code 3.
-
-Now he wants to know how many of the nebulae in his extra-galactic sample
-are within each class. Repeating the same process above and writing the
-results on paper is very time consuming and prone to errors. Fortunately
-Hubble knows the basics of GNU Bash shell programming, so he writes the
-following short script with a loop to help him with the job. After all,
-computers are made for us to operate and knowing basic shell programming
-gives Hubble this ability to creatively operate the computer as he
-wants. So using GNU Emacs@footnote{This can be done with any text editor}
-(his favorite text editor) he puts the following text in a file named
-@file{classify.sh}.
-
-@example
-for name in *.jpg
-do
-    eog $name &
-    processid=$!
-    echo -n "$name belongs to class: "
-    read class
-    echo $name $class >> classified.txt
-    kill $processid
-done
-@end example
-
-@cindex Gedit
-@cindex GNU Emacs
-Fortunately GNU Emacs or even simpler editors like Gedit (part of the
-GNOME graphical user interface) will display the variables and shell
-constructs in different colors which can really help in understanding
-the script. Put simply, the @code{for} loop gets the name of each JPEG
-file in the directory this script is run in and puts it in
-@code{name}. In the shell, the value of a variable is used by putting
-a @code{$} sign before the variable name. Then Eye of GNOME is run on
-the image in the background to show him that image and its process ID
-is saved internally (this is necessary to close Eye of GNOME
-later). The shell then prompts the user to specify a class and after
-saving it in @code{class}, it prints the file name and the given class
-in the next line of a file named @file{classified.txt}. To make the
-script executable (so he can run it later any time he wants) he runs:
-
-@example
-$ chmod +x classify.sh
-@end example
-
-@noindent
-Now he is ready to do the classification, so he runs the script:
-
-@example
-$ ./classify.sh
-@end example
-
-@noindent
-In the end he can delete all the JPEG and FITS files along with Crop's log
-file with the following short command. The only files remaining are the
-script and the result of the classification.
-
-@example
-$ rm *.jpg *.fits astcrop.txt
-$ ls
-classified.txt   classify.sh
-@end example
-
-@noindent
-He can now use @file{classified.txt} as input to a plotting program to
-plot the histogram of the classes and start making interpretations
-about what these nebulous objects that are outside of the Galaxy are.
 
 
 
@@ -9557,8 +9401,8 @@ make a mock galaxy image, you need to feed in the properties of each galaxy
 into @ref{MakeProfiles} for it do the inverse of the process above and make
 a simulated image from a catalog, see @ref{Sufi simulates a detection}. In
 other cases, you can feed a table into @ref{Crop} and it will crop out
-regions centered on the positions within the table, see @ref{Hubble
-visually checks and classifies his catalog}. So to end this relatively long
+regions centered on the positions within the table, see @ref{Finding
+reddest clumps and visual inspection}. So to end this relatively long
 introduction, tables play a very important role in astronomy, or generally
 all branches of data analysis.
 
@@ -12349,8 +12193,8 @@ interpreted as the center of a crop with a width of @option{--width} pixels
 along each dimension. The columns can contain any floating point value. The
 value to @option{--output} option is seen as a directory which will host
 (the possibly multiple) separate crop files, see @ref{Crop output} for
-more. For a tutorial using this feature, please see @ref{Hubble visually
-checks and classifies his catalog}.
+more. For a tutorial using this feature, please see @ref{Finding reddest
+clumps and visual inspection}.
 
 @item Center of a single crop (on the command-line)
 The center of the crop is given on the command-line with the
@@ -12595,7 +12439,7 @@ When in catalog mode, Crop will run in parallel unless you set
 when multiple outputs are created with threads, the outputs will not be
 created in the same order. This is because the threads are asynchronous and
 thus not started in order. This has no effect on each output, see
-@ref{Hubble visually checks and classifies his catalog} for a tutorial on
+@ref{Finding reddest clumps and visual inspection} for a tutorial on
 effectively using this feature.
 
 @menu

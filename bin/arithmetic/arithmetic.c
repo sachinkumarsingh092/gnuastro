@@ -758,20 +758,24 @@ arithmetic_collapse(struct arithmeticparams *p, char *token, int operator)
 
   /* Small sanity check. */
   if( dimension->ndim!=1 || dimension->size!=1)
-    error(EXIT_FAILURE, 0, "First popped operand of `collapse-*' operators "
+    error(EXIT_FAILURE, 0, "first popped operand of `collapse-*' operators "
           "(dimension to collapse) must be a single number (single-element, "
           "one-dimensional dataset). But it has %zu dimension(s) and %zu "
           "element(s).", dimension->ndim, dimension->size);
   if(dimension->type==GAL_TYPE_FLOAT32 || dimension->type==GAL_TYPE_FLOAT64)
-    error(EXIT_FAILURE, 0, "First popped operand of `collapse-*' operators "
+    error(EXIT_FAILURE, 0, "first popped operand of `collapse-*' operators "
           "(dimension to collapse) must have an integer type, but it has "
           "a floating point type (`%s')", gal_type_name(dimension->type,1));
   dimension=gal_data_copy_to_new_type_free(dimension, GAL_TYPE_LONG);
   dim=((long *)(dimension->array))[0];
   if(dim<0 || dim==0)
-    error(EXIT_FAILURE, 0, "First popped operand of `collapse-*' operators "
+    error(EXIT_FAILURE, 0, "first popped operand of `collapse-*' operators "
           "(dimension to collapse) must be positive (larger than zero), it "
           "is %ld", dim);
+  if(dim > input->ndim)
+    error(EXIT_FAILURE, 0, "input dataset to `%s' has %zu dimension(s), "
+          "but you have asked to collapse along dimension %zu", token,
+          input->ndim, dim);
 
 
   /* If a WCS structure has been read, we'll need to pass it to
