@@ -251,82 +251,6 @@ AC_MSG_RESULT( $path_warning )
 
 
 
-# GAL_LIBCHECK([$LIBNAME], [libname], [-lname])
-# ---------------------------------------------
-#
-# Custom macro to correct LIBS and LD_LIBRARY_PATH when necessary.
-#   1) LIB<NAME> output of AC_LIB_HAVE_LINKFLAGS (e.g., `LIBGSL').
-#   2) lib<name> of the library (e.g., `libgsl').
-#   3) Full list of libraries to link with (e.g., `-lgsl -lgslcblas').
-#
-# To understand this, have in mind that when the library can be linked in
-# the standard search path without conflict, the output of
-# `AC_LIB_HAVE_LINKFLAGS' is going to be the actual linking command (like
-# `-lgsl -lgslcblas'). Otherwise, it will actually return the absolute
-# shared library address (for example `/some/directory/libgsl.so').
-#
-# So when `AC_LIB_HAVE_LINKFLAGS' returns a string containing `lib<name>',
-# it has found the shared library and we must add its directory to
-# LD_LIBRARY_PATH.
-AC_DEFUN([GAL_LIBCHECK],
-[
-  n=`AS_ECHO([$1]) | grep $2`;
-  AS_IF([test "x$n" = x],
-        [LIBS="$1 $LIBS"],
-        [
-          # Go through all the tokens of `AC_LIB_HAVE_LINKFLAGS'.
-          for token in $1; do
-            d="";
-
-            # See if this token has `lib<name' in it. If it does, then
-            # we'll have to extract the directory.
-            a=`AS_ECHO([$token]) | grep $2`
-            AS_IF([test "x$a" = x], [],
-                  [
-                    # Use `lib<name>' as a delimiter to extract the
-                    # library (the first token will be the library's
-                    # directory).
-                    n=`AS_ECHO([$token]) | sed 's/\/'$2'/ /g'`
-                    for b in $n; do d=$b; break; done
-                  ])
-
-             # If a directory was found, then stop parsing tokens.
-             AS_IF([test "x$d" = x], [], [break])
-          done;
-
-          # Add the necessary linking flags to LIBS with the proper `-L'
-          # (when necessary) to find them.
-          AS_IF( [ test "x$d" = x ],
-                 [LIBS="$3 $LIBS"],
-                 [LIBS="-L$d $3 $LIBS"] )
-
-          # Add the directory to LD_LIBRARY_PATH (if necessary). Go
-          # through all the directories in LD_LIBRARY_PATH and if the
-          # library doesn't exist add it to the end.
-          nldp="";
-          exists=0;
-          for i in `AS_ECHO(["$LD_LIBRARY_PATH"]) | sed "s/:/ /g"`; do
-            AS_IF([test "x$d" = "x$i"],[exists=1])
-            AS_IF([test "x$nldp" = x],[nldp=$i],[nldp="$nldp:$i"])
-          done
-
-          # If the directory doesn't already exist in LD_LIBRARY_PATH, then
-          # add it.
-          AS_IF([test $exists = 0],
-                [
-                  nldp="$nldp:$d"
-                  AS_IF([test "x$ldlibpathnew" = x],
-                        [ldlibpathnew="$d"],
-                        [ldlibpathnew="$ldlibpathnew:$d"])
-                ])
-          LD_LIBRARY_PATH=$nldp
-        ])
-])
-
-
-
-
-
 # Libraries
 # ---------
 #
@@ -1120,23 +1044,6 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO(["    a \`./' before it's name. Run the following command after"])
                AS_ECHO(["    installing Gnuastro to learn more about PATH:"])
                AS_ECHO(["        $ info gnuastro \"Installation directory\""])
-               AS_ECHO([]) ])
-
-        # Notice about run-time linking.
-        AS_IF([test "x$nldpath" = x], [],
-              [AS_ECHO(["  - After installation, to run Gnuastro's programs, your run-time"])
-               AS_ECHO(["    link path (LD_LIBRARY_PATH) needs to contain the following "])
-               AS_ECHO(["    directory(s):"])
-               AS_ECHO(["        $nldpath"])
-               AS_ECHO(["    If there is more than one directory, they are separated with a"])
-               AS_ECHO(["    colon (':'). You can check the current value with:"])
-               AS_ECHO(["        echo \$LD_LIBRARY_PATH"])
-               AS_ECHO(["    If not present, add this line in your shell's startup script"])
-               AS_ECHO(["    (for example '~/.bashrc'):"])
-               AS_ECHO(["        export LD_LIBRARY_PATH=\"\$LD_LIBRARY_PATH:$nldpath\""])
-               AS_ECHO(["    This worning won't cause any problems during the rest of Gnuastro's"])
-               AS_ECHO(["    build and installation. But you'll need it later, when you are using"])
-               AS_ECHO(["    Gnuastro."])
                AS_ECHO([]) ])
       ]
      )

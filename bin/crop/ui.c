@@ -937,6 +937,7 @@ ui_preparations(struct cropparams *p)
       if(p->mode==IMGCROP_MODE_WCS) wcsmode_check_prepare(p, img);
     }
 
+
   /* Polygon cropping is currently only supported on 2D */
   if(p->imgs->ndim!=2 && p->polygon)
     error(EXIT_FAILURE, 0, "%s: polygon cropping is currently only "
