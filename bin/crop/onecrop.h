@@ -35,28 +35,28 @@ struct onecropparams
   struct   cropparams *p;
 
   /* About input image. */
-  size_t          in_ind;  /* Index of this image in the input names.  */
-  fitsfile       *infits;  /* Pointer to the input FITS image.         */
-  long         fpixel[2];  /* Position of first pixel in input image.  */
-  long         lpixel[2];  /* Position of last pixel in input image.   */
-  double       *ipolygon;  /* Input image based polygon vertices.      */
+  size_t              in_ind;  /* Index of this image in the input names.  */
+  fitsfile           *infits;  /* Pointer to the input FITS image.         */
+  long        fpixel[MAXDIM];  /* Position of first pixel in input image.  */
+  long        lpixel[MAXDIM];  /* Position of last pixel in input image.   */
+  double           *ipolygon;  /* Input image based polygon vertices.      */
 
   /* Output (cropped) image. */
-  size_t         out_ind;  /* Index of this crop in the output list.   */
-  double        world[2];  /* World coordinates of crop center.        */
-  double        sized[2];  /* Width and height of image in degrees.    */
-  double      corners[8];  /* RA and Dec of this crop's four sides.    */
-  double  equatorcorr[2];  /* Crop crosses the equator, see wcsmode.c. */
-  fitsfile      *outfits;  /* Pointer to the output FITS image.        */
+  size_t             out_ind;  /* Index of this crop in the output list.   */
+  double       world[MAXDIM];  /* World coordinates of crop center.        */
+  double       sized[MAXDIM];  /* Width and height of image in degrees.    */
+  double         corners[24];  /* RA and Dec of this crop's corners.       */
+  double      equatorcorr[2];  /* Crop crosses the equator, see wcsmode.c. */
+  fitsfile          *outfits;  /* Pointer to the output FITS image.        */
 
   /* For log */
-  char             *name;  /* Filename of crop.                        */
-  size_t          numimg;  /* Number of images used to make this crop. */
-  unsigned char centerfilled; /* ==1 if the center is filled.          */
+  char                 *name;  /* Filename of crop.                        */
+  size_t              numimg;  /* Number of images used to make this crop. */
+  unsigned char centerfilled;  /* ==1 if the center is filled.             */
 
   /* Thread parameters. */
-  size_t         *indexs;  /* Indexs to be used in this thread.        */
-  pthread_barrier_t   *b;  /* pthread barrier to keep threads waiting. */
+  size_t             *indexs;  /* Indexs to be used in this thread.        */
+  pthread_barrier_t       *b;  /* pthread barrier to keep threads waiting. */
 };
 
 void

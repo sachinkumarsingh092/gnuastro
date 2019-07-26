@@ -66,7 +66,7 @@ const char *
 argp_program_bug_address = PACKAGE_BUGREPORT;
 
 static char
-args_doc[] = "[Crop-identifiers] ASTRdata ...";
+args_doc[] = "[Crop-Identifier] ASTRdata ...";
 
 const char
 doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will create cutouts, "
@@ -359,9 +359,9 @@ ui_read_check_only_options(struct cropparams *p)
          given, so we only need to check one of the two in each couple. */
       if(p->coordcol==NULL)
         error(EXIT_FAILURE, 0, "no crop center columns given to read from "
-              "the input catalog (`%s'). Please use `--coordcol' two times "
-              "to specify the column keeping the center position the "
-              "respective dimension.\n\n"
+              "the input catalog (`%s'). Please use `--coordcol' several "
+              "times (depending on dimensionality) to specify the column "
+              "keeping the center position the respective dimension.\n\n"
               "For more information on how to select columns in Gnuastro, "
               "please run the following command:\n\n"
               "    $ info gnuastro \"Selecting table columns\"", p->catname);
@@ -797,7 +797,6 @@ ui_prepare_center(struct cropparams *p)
 
 
 
-
 /* Add all the columns of the log file. Just note that since this is a
    linked list, we have to add them in the opposite order. */
 static void
@@ -938,6 +937,12 @@ ui_preparations(struct cropparams *p)
       if(p->mode==IMGCROP_MODE_WCS) wcsmode_check_prepare(p, img);
     }
 
+  /* Polygon cropping is currently only supported on 2D */
+  if(p->imgs->ndim!=2 && p->polygon)
+    error(EXIT_FAILURE, 0, "%s: polygon cropping is currently only "
+          "supported on 2D datasets (images), not %zuD datasets",
+          p->imgs->name, p->imgs->ndim);
+
 
   /* Unify central crop methods into `p->centercoords'. */
   if(p->catname || p->center)
@@ -1057,7 +1062,6 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct cropparams *p)
           gal_timing_report(NULL, msg, 1);
         }
     }
-
 }
 
 

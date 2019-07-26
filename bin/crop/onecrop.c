@@ -79,15 +79,17 @@ onecrop_parse_section(struct cropparams *p, size_t *dsize,
   int add;
   long read;
   char *tailptr;
+  long naxes[MAXDIM];
   char forl='f', *pt=p->section;
-  long naxes[2]={dsize[1], dsize[0]};
-  size_t i, dim=0, ndim=p->imgs->ndim;
+  size_t i, ndim=p->imgs->ndim, dim=0;
+
 
   /* When the user asks for a section of the dataset, then the cropped
      region is not defined by its center. So it makes no sense to later
      check if the center is blank or not. Hence, we will over-write it with
      zero. */
   p->checkcenter=0;
+
 
   /* Initialize the fpixel and lpixel arrays (note that `section' is only
      defined in image mode, so there will only be one element in `imgs'. */
@@ -168,6 +170,7 @@ onecrop_parse_section(struct cropparams *p, size_t *dsize,
         lpixel[dim] = add ? naxes[dim]+read : read;
       pt=tailptr;
     }
+
 
   /* Make sure the first pixel is located before/below the last pixel. */
   for(i=0;i<ndim;++i)
@@ -298,7 +301,7 @@ onecrop_parse_polygon(struct cropparams *p)
 
 
 
-void
+static void
 onecrop_ipolygon_fl(double *ipolygon, size_t nvertices, long *fpixel,
                     long *lpixel)
 {
@@ -514,14 +517,14 @@ onecrop_flpixel(struct onecropparams *crp)
     {
 
     case IMGCROP_MODE_IMG:
-      if(p->section)            /* Defined by section. */
+      if(p->section)            /* Defined by section.    */
         onecrop_parse_section(p, dsize, fpixel, lpixel);
-      else if(p->polygon)       /* Defined by polygon. */
+      else if(p->polygon)       /* Defined by a polygon.  */
         {
           if(p->outpolygon==0)
             onecrop_ipolygon_fl(p->ipolygon, p->nvertices, fpixel, lpixel);
         }
-      else
+      else                      /* Defined by its center. */
         {
           for(i=0;i<ndim;++i) center[i] = p->centercoords[i][crp->out_ind];
           gal_box_border_from_center(center, ndim, p->iwidth, fpixel, lpixel);
@@ -592,9 +595,9 @@ onecrop_make_array(struct onecropparams *crp, long *fpixel_i,
   long naxes[MAXDIM];
   char *outname=crp->name;
   int status=0, type=crp->p->type;
-  size_t i, ndim=crp->p->imgs->ndim;
   char **strarr, cpname[FLEN_KEYWORD];
   gal_data_t *rkey=gal_data_array_calloc(1);
+  size_t i, ndim=crp->p->imgs->ndim, totsize;
   char *cp, *cpf, blankrec[80], titlerec[80];
   struct inputimgs *img=&crp->p->imgs[crp->in_ind];
 
@@ -671,7 +674,8 @@ onecrop_make_array(struct onecropparams *crp, long *fpixel_i,
                       crp->p->blankptrwrite, "Pixels with no data.",
                       &status) )
       gal_fits_io_error(status, "adding Blank");
-  if(fits_write_null_img(ofp, 1, naxes[0]*naxes[1], &status))
+  totsize = naxes[0]*naxes[1] * (ndim==3?naxes[2]:1);
+  if(fits_write_null_img(ofp, 1, totsize, &status))
     gal_fits_io_error(status, "writing null array");
 
 
@@ -738,7 +742,7 @@ onecrop(struct onecropparams *crp)
   size_t i, j, cropsize=1, ndim=img->ndim;
   char region[FLEN_VALUE], regionkey[FLEN_KEYWORD];
   long fpixel_o[MAXDIM], lpixel_o[MAXDIM], inc[MAXDIM];
-  long naxes[MAXDIM], fpixel_i[MAXDIM] , lpixel_i[MAXDIM];
+  long naxes[MAXDIM], fpixel_i[MAXDIM], lpixel_i[MAXDIM];
 
   /* Fill the `naxes' and `inc' arrays. */
   for(i=0;i<ndim;++i)
@@ -755,7 +759,6 @@ onecrop(struct onecropparams *crp)
   memcpy(lpixel_i, crp->lpixel, ndim*sizeof *lpixel_i);
 
 
-
   /* Find the overlap and apply it if there is any overlap. */
   if( gal_box_overlap(naxes, fpixel_i, lpixel_i, fpixel_o, lpixel_o, ndim) )
     {
@@ -767,7 +770,7 @@ onecrop(struct onecropparams *crp)
 
 
       /* Allocate an array to keep the desired crop region, then read
-         the desired pixels onto it. */
+         the desired pixels into it. */
       status=0;
       for(i=0;i<ndim;++i) cropsize *= ( lpixel_i[i] - fpixel_i[i] + 1 );
       array=gal_pointer_allocate(p->type, cropsize, 0, __func__, "array");
@@ -790,6 +793,11 @@ onecrop(struct onecropparams *crp)
          outside of it.*/
       if(p->polygon)
         {
+          /* A small sanity check until this part supports 3D. */
+          if(ndim!=2)
+            error(EXIT_FAILURE, 0, "%s: polygons only implemented in 2D",
+                  __func__);
+
           /* In WCS mode, crp->ipolygon was allocated and filled in
              wcspolygonflpixel (wcsmode.c). */
           if(p->mode==IMGCROP_MODE_IMG) crp->ipolygon=p->ipolygon;
@@ -868,15 +876,24 @@ onecrop_center_filled(struct onecropparams *crp)
   fitsfile *ofp=crp->outfits;
   int status=0, anynul=0, type;
   long checkcenter=p->checkcenter;
-  long naxes[2], fpixel[2], lpixel[2], inc[2]={1,1};
+  long naxes[3], fpixel[3], lpixel[3], inc[3]={1,1,1};
 
   /* If checkcenter is zero, then don't check. */
   if(checkcenter==0) return GAL_BLANK_UINT8;
 
   /* Get the final size of the output image. */
   gal_fits_img_info(ofp, &type, &ndim, &dsize, NULL, NULL);
-  naxes[0]=dsize[1];
-  naxes[1]=dsize[0];
+  if(ndim==2)
+    {
+      naxes[0]=dsize[1];
+      naxes[1]=dsize[0];
+    }
+  else
+    {
+      naxes[0]=dsize[2];
+      naxes[1]=dsize[1];
+      naxes[2]=dsize[0];
+    }
 
   /* Get the size and range of the central region to check. The +1 is
      because in FITS, counting begins from 1, not zero. It might happen
@@ -885,10 +902,23 @@ onecrop_center_filled(struct onecropparams *crp)
      full image to check. */
   size = ( (naxes[0]>checkcenter ? checkcenter : naxes[0])
            * (naxes[1]>checkcenter ? checkcenter : naxes[1]) );
-  fpixel[0] = naxes[0]>checkcenter ? (naxes[0]/2+1)-checkcenter/2 : 1;
-  fpixel[1] = naxes[1]>checkcenter ? (naxes[1]/2+1)-checkcenter/2 : 1;
-  lpixel[0] = naxes[0]>checkcenter ? (naxes[0]/2+1)+checkcenter/2 : naxes[0];
-  lpixel[1] = naxes[1]>checkcenter ? (naxes[1]/2+1)+checkcenter/2 : naxes[1];
+  fpixel[0] = naxes[0]>checkcenter ? ((naxes[0]/2+1)-checkcenter/2) : 1;
+  fpixel[1] = naxes[1]>checkcenter ? ((naxes[1]/2+1)-checkcenter/2) : 1;
+  lpixel[0] = ( naxes[0]>checkcenter
+                ? ((naxes[0]/2+1)+checkcenter/2) : naxes[0] );
+  lpixel[1] = ( naxes[1]>checkcenter
+                ? ((naxes[1]/2+1)+checkcenter/2) : naxes[1] );
+
+
+  /* For the third dimension. */
+  if(ndim==3)
+    {
+      size *= (naxes[2]>checkcenter ? checkcenter : naxes[2]);
+      fpixel[2] = naxes[2]>checkcenter ? ((naxes[2]/2+1)-checkcenter/2) : 1;
+      lpixel[2] = ( naxes[2]>checkcenter
+                    ? ((naxes[2]/2+1)+checkcenter/2) : naxes[2] );
+    }
+
 
   /* For a check:
   printf("naxes: %ld, %ld\nfpixel: (%ld, %ld)\nlpixel: (%ld, %ld)\n"

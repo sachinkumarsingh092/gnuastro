@@ -420,8 +420,8 @@ crop(struct cropparams *p)
           __func__, nt*sizeof *crp);
 
 
-  /* Distribute the indexs into the threads (this is needed even if we
-     only have one object where p->cs0 is not defined): */
+  /* Distribute the indexs into the threads (for clarity, this is needed
+     even if we only have one object). */
   gal_threads_dist_in_threads(p->catname ? p->numout : 1, nt,
                               &indexs, &thrdcols);
 

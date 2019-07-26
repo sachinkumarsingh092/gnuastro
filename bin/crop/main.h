@@ -40,7 +40,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Macros */
 #define LOGFILENAME             PROGRAM_EXEC".log"
 #define FILENAME_BUFFER_IN_VERB 30
-#define MAXDIM                  2
+#define MAXDIM                  3
 
 
 /* Modes to interpret coordinates. */
@@ -66,8 +66,8 @@ struct inputimgs
   struct wcsprm     *wcs;  /* WCS structure of each input image.          */
   char           *wcstxt;  /* Text output of each WCS.                    */
   int           nwcskeys;  /* Number of keywords in the header WCS.       */
-  double      corners[8];  /* RA and Dec of this image corners (within).  */
-  double        sized[2];  /* Width and height of image in degrees.       */
+  double     corners[24];  /* WCS of corners (24: for 3D, 8: for 2D).     */
+  double   sized[MAXDIM];  /* Width and height of image in degrees.       */
   double  equatorcorr[2];  /* If image crosses the equator, see wcsmode.c.*/
 };
 
@@ -93,7 +93,7 @@ struct cropparams
   char                *catname;  /* Name of input catalog.                */
   char                 *cathdu;  /* HDU of catalog if its a FITS file.    */
   char                *namecol;  /* Filename (without suffix) of crop col.*/
-  gal_list_str_t     *coordcol;  /* Column in catalog with coordinates.   */
+  gal_list_str_t     *coordcol;  /* Column in cat containing coordinates. */
   char                *section;  /* Section string.                       */
   char                *polygon;  /* Input string of polygon vertices.     */
   uint8_t           outpolygon;  /* ==1: Keep the inner polygon region.   */
@@ -101,14 +101,14 @@ struct cropparams
   /* Internal */
   size_t                 numin;  /* Number of input images.               */
   size_t                numout;  /* Number of output images.              */
-  double        **centercoords;  /* The center coordinates.               */
+  double        **centercoords;  /* A 1D array for the center position.   */
   size_t           checkcenter;  /* width of a box to check for zeros     */
   char                  **name;  /* filename of crop in row.              */
   double             *wpolygon;  /* Array of WCS polygon vertices.        */
   double             *ipolygon;  /* Array of image polygon vertices.      */
   size_t             nvertices;  /* Number of polygon vertices.           */
-  long               iwidth[2];  /* Image mode width (in pixels).         */
-  double             *pixscale;  /* Resolution in each dimension.         */
+  long          iwidth[MAXDIM];  /* Image mode width (in pixels).         */
+  double             *pixscale;  /* Raw resolution in each dimension.     */
   time_t               rawtime;  /* Starting time of the program.         */
   int            outnameisfile;  /* Output filename is a directory.       */
   int                     type;  /* Type of output(s).                    */

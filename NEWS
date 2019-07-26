@@ -23,6 +23,13 @@ See the end of the file for license conditions.
      dataset and returns a single-dimension output, containing only the
      unique values in the dataset.
 
+  Crop:
+   - Can also crop 3D datasets (data cubes). A 3D crop has the same syntax
+     as the old 2D mode, only when the dataset is 3D, three coordinates
+     (values, ranges or catalog-columns) should be given to the relevant
+     option. Just note that `--polygon' crops are still not supported in
+     3D.
+
   CosmicCalculator:
    --obsline: alternative way to set the used redshift. With this option
      instead of explicitly giving the redshift, you can give a rest-frame

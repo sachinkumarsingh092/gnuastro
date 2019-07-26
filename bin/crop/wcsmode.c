@@ -56,9 +56,13 @@ wcsmode_check_prepare(struct cropparams *p, struct inputimgs *img)
 {
   double *pixscale;
   struct wcsprm *wcs=img->wcs;
-  int i, status[4]={0,0,0,0}, ncorners=4;
   size_t *dsize=img->dsize, ndim=img->ndim;
-  double imgcrd[8], phi[4], theta[4], pixcrd[8];
+
+  /* For two dimensions, we have four corners (2 numbers for each) and for
+     three dimensions we have 8 corners (3 numbers for each), so we'll just
+     assume the largest. */
+  int i, status[8]={0,0,0,0,0,0,0,0}, ncorners=0;
+  double imgcrd[24], phi[8], theta[8], pixcrd[24];
 
 
   /* Check if the image is aligned with the WCS coordinates. Note that
@@ -125,10 +129,30 @@ wcsmode_check_prepare(struct cropparams *p, struct inputimgs *img)
 
   /* Set the coordinates of the dataset's corners. Note that `dsize' is in
      C order, while pixcrd is in FITS order.*/
-  pixcrd[0] = 1;          pixcrd[1] = 1;
-  pixcrd[2] = dsize[1];   pixcrd[3] = 1;
-  pixcrd[4] = 1;          pixcrd[5] = dsize[0];
-  pixcrd[6] = dsize[1];   pixcrd[7] = dsize[0];
+  switch(ndim)
+    {
+    case 2:
+      ncorners=4;
+      pixcrd[0] = 1;          pixcrd[1] = 1;
+      pixcrd[2] = dsize[1];   pixcrd[3] = 1;
+      pixcrd[4] = 1;          pixcrd[5] = dsize[0];
+      pixcrd[6] = dsize[1];   pixcrd[7] = dsize[0];
+      break;
+    case 3:
+      ncorners=8;
+      pixcrd[0]  = 1;         pixcrd[1]  = 1;         pixcrd[2]  = 1;
+      pixcrd[3]  = dsize[2];  pixcrd[4]  = 1;         pixcrd[5]  = 1;
+      pixcrd[6]  = 1;         pixcrd[7]  = dsize[1];  pixcrd[8]  = 1;
+      pixcrd[9]  = dsize[2];  pixcrd[10] = dsize[1];  pixcrd[11] = 1;
+      pixcrd[12] = 1;         pixcrd[13] = 1;         pixcrd[14] = dsize[0];
+      pixcrd[15] = dsize[2];  pixcrd[16] = 1;         pixcrd[17] = dsize[0];
+      pixcrd[18] = 1;         pixcrd[19] = dsize[1];  pixcrd[20] = dsize[0];
+      pixcrd[21] = dsize[2];  pixcrd[22] = dsize[1];  pixcrd[23] = dsize[0];
+      break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: %zu dimensional datasets not supported",
+            __func__, ndim);
+    }
 
 
   /* Get the coordinates of the corners of the dataset in WCS.  */
@@ -146,9 +170,19 @@ wcsmode_check_prepare(struct cropparams *p, struct inputimgs *img)
   /* Fill in the size of the dataset in WCS from the first pixel in the
      image. Note that `dsize' is in C axises, while the `pixscale',
      `corners' and `sized' are in FITS axises. */
-  img->sized[0] = ( img->dsize[1] * p->pixscale[0]
-                    / cos( img->corners[1] * M_PI / 180 ) );
-  img->sized[1] = img->dsize[0] * p->pixscale[1];
+  if(ndim==2)
+    {
+      img->sized[0] = ( img->dsize[1] * p->pixscale[0]
+                        / cos( img->corners[1] * M_PI / 180 ) );
+      img->sized[1] = img->dsize[0] * p->pixscale[1];
+    }
+  else /* 3D */
+    {
+      img->sized[0] = ( img->dsize[2] * p->pixscale[0]             /* RA  */
+                        / cos( img->corners[1] * M_PI / 180 ) );
+      img->sized[1] = img->dsize[1] * p->pixscale[1];              /* Dec */
+      img->sized[2] = img->dsize[0] * p->pixscale[2];              /* 3D  */
+    }
 
 
   /* In case the image crosses the equator, we will calculate these values
@@ -170,14 +204,32 @@ wcsmode_check_prepare(struct cropparams *p, struct inputimgs *img)
 
   /* Just to check:
   printf("\n\n%s:\n", img->name);
-  printf("(%.10f, %.10f)\n"
-         "(%.10f, %.10f)\n"
-         "(%.10f, %.10f)\n"
-         "(%.10f, %.10f)\n\n",
-         img->corners[0], img->corners[1],
-         img->corners[2], img->corners[3],
-         img->corners[4], img->corners[5],
-         img->corners[6], img->corners[7]);
+  if(ndim==2)
+    printf("(%.10f, %.10f)\n"
+           "(%.10f, %.10f)\n"
+           "(%.10f, %.10f)\n"
+           "(%.10f, %.10f)\n\n",
+           img->corners[0], img->corners[1],
+           img->corners[2], img->corners[3],
+           img->corners[4], img->corners[5],
+           img->corners[6], img->corners[7]);
+  else
+    printf("(%.10f, %.10f, %.10f)\n"
+           "(%.10f, %.10f, %.10f)\n"
+           "(%.10f, %.10f, %.10f)\n"
+           "(%.10f, %.10f, %.10f)\n"
+           "(%.10f, %.10f, %.10f)\n"
+           "(%.10f, %.10f, %.10f)\n"
+           "(%.10f, %.10f, %.10f)\n"
+           "(%.10f, %.10f, %.10f)\n\n",
+           img->corners[0],  img->corners[1],  img->corners[2],
+           img->corners[3],  img->corners[4],  img->corners[5],
+           img->corners[6],  img->corners[7],  img->corners[8],
+           img->corners[9],  img->corners[10], img->corners[11],
+           img->corners[12], img->corners[13], img->corners[14],
+           img->corners[15], img->corners[16], img->corners[17],
+           img->corners[18], img->corners[19], img->corners[20],
+           img->corners[21], img->corners[22], img->corners[23] );
   exit(0);
   */
 }
@@ -219,12 +271,18 @@ wcsmode_crop_corners(struct onecropparams *crp)
   size_t i, ndim=p->imgs->ndim;
   double minra=FLT_MAX, mindec=FLT_MAX;
   double maxra=-FLT_MAX, maxdec=-FLT_MAX;
-  double r, d, dr, h[MAXDIM], hr[MAXDIM];
+  double r, d, l, dr, h[MAXDIM], hr[MAXDIM];
   size_t rmini=-1, rmaxi=-1, dmini=-1, dmaxi=-1;
 
   /* Set the four corners of the WCS region. */
   if(p->polygon)
     {
+      /* A small sanity check. */
+      if(ndim!=2)
+        error(EXIT_FAILURE, 0, "%s: polygon crops are currently only "
+              "supported on 2D datasets, the input dataset is %zuD",
+              __func__, ndim);
+
       /* Find their minimum and maximum values. */
       for(i=0;i<p->nvertices;++i)
         {
@@ -245,6 +303,7 @@ wcsmode_crop_corners(struct onecropparams *crp)
       /* Set the RA and Dec to use as center. */
       r=crp->world[0]=p->centercoords[0][crp->out_ind];
       d=crp->world[1]=p->centercoords[1][crp->out_ind];
+      if(ndim==3) l=crp->world[2]=p->centercoords[2][crp->out_ind];
 
 
       /* Calculate the declination in radians for easy readability. */
@@ -254,20 +313,55 @@ wcsmode_crop_corners(struct onecropparams *crp)
          also calculate it in radians. */
       hr[0] = ( h[0] = ((double *)(p->width->array))[0] / 2 ) * M_PI / 180;
       hr[1] = ( h[1] = ((double *)(p->width->array))[1] / 2 ) * M_PI / 180;
+      if(ndim==3)
+        h[2] = ((double *)(p->width->array))[2] / 2;
 
       /* Set the corners of this crop. */
-      crp->corners[0] = r+h[0]/cos(dr-hr[1]);
-      crp->corners[1] = d-h[1];                   /* Bottom left.  */
+      switch(ndim)
+        {
+        case 2:
+          crp->corners[0] = r+h[0]/cos(dr-hr[1]);
+          crp->corners[1] = d-h[1];                   /* Bottom left.  */
 
-      crp->corners[2] = r-h[0]/cos(dr-hr[1]);
-      crp->corners[3] = d-h[1];                   /* Bottom Right. */
+          crp->corners[2] = r-h[0]/cos(dr-hr[1]);
+          crp->corners[3] = d-h[1];                   /* Bottom Right. */
 
-      crp->corners[4] = r+h[0]/cos(dr+hr[1]);
-      crp->corners[5] = d+h[1];                   /* Top Left.     */
+          crp->corners[4] = r+h[0]/cos(dr+hr[1]);
+          crp->corners[5] = d+h[1];                   /* Top Left.     */
 
-      crp->corners[6] = r-h[0]/cos(dr+hr[1]);
-      crp->corners[7] = d+h[1];                   /* Top Right.    */
+          crp->corners[6] = r-h[0]/cos(dr+hr[1]);
+          crp->corners[7] = d+h[1];                   /* Top Right.    */
+          break;
+
+        case 3:
+          /* Note that the third dimension is assumed to be independent of
+             the first two. So the first two coordinates of its corners in
+             the front and back (on the two faces in the third dimension),
+             are equal.  */
+          crp->corners[0]  = crp->corners[12] = r+h[0]/cos(dr-hr[1]);
+          crp->corners[1]  = crp->corners[13] = d-h[1];
+          crp->corners[2]  = l-h[2];                /* Bottom left front. */
+
+          crp->corners[3]  = crp->corners[15] = r-h[0]/cos(dr-hr[1]);
+          crp->corners[4]  = crp->corners[16] = d-h[1];
+          crp->corners[5]  = l-h[2];                /* Bottom right front.*/
+
+          crp->corners[6]  = crp->corners[18] = r+h[0]/cos(dr+hr[1]);
+          crp->corners[7]  = crp->corners[19] = d+h[1];
+          crp->corners[8]  = l-h[2];                /* Top Left front.    */
+
+          crp->corners[9]  = crp->corners[21] = r-h[0]/cos(dr+hr[1]);
+          crp->corners[10] = crp->corners[22] = d+h[1];
+          crp->corners[11] = l-h[2];                /* Top right front.   */
+
+          crp->corners[14] = l+h[2];                /* Bottom left back.  */
+          crp->corners[17] = l+h[2];                /* Bottom right back. */
+          crp->corners[20] = l+h[2];                /* Top left back.     */
+          crp->corners[23] = l+h[2];                /* Top right back.     */
+          break;
+        }
     }
+
 
   /* Set the bottom width and height of the crop in degrees. Note that the
      width changes as the height changes, so here we want the height and
@@ -282,10 +376,12 @@ wcsmode_crop_corners(struct onecropparams *crp)
   rmini = ndim;                 /* First element in second corner. */
   rmaxi = 0;                    /* First element.                  */
   dmini = 1;                    /* Second element.                 */
-  dmaxi = 5;                    /* Second element in third corner. */
+  dmaxi = ndim==2 ? 5 : 7;      /* Second element in third corner. */
   crp->sized[0]=( (crp->corners[rmaxi]-crp->corners[rmini])
                   / cos(crp->corners[dmini]*M_PI/180) );
   crp->sized[1]=crp->corners[dmaxi]-crp->corners[dmini];
+  if(ndim==3)
+    crp->sized[2] = crp->corners[14] - crp->corners[2];
 
 
   /* In case the crop crosses the equator, then we need these two
@@ -300,16 +396,40 @@ wcsmode_crop_corners(struct onecropparams *crp)
       crp->equatorcorr[1]=crp->sized[0]*cos(crp->corners[1]*M_PI/180);
     }
 
+
   /* Just to check:
-  printf("\n\n%g, %g:\n", r, d);
-  printf("\t(%.10f, %.10f)\n"
-         "\t(%.10f, %.10f)\n"
-         "\t(%.10f, %.10f)\n"
-         "\t(%.10f, %.10f)\n\n",
-         crp->corners[0], crp->corners[1],
-         crp->corners[2], crp->corners[3],
-         crp->corners[4], crp->corners[5],
-         crp->corners[6], crp->corners[7]);
+  if(ndim==2)
+    {
+      printf("\n\n%g, %g:\n", r, d);
+      printf("\t(%.10f, %.10f)\n"
+             "\t(%.10f, %.10f)\n"
+             "\t(%.10f, %.10f)\n"
+             "\t(%.10f, %.10f)\n\n",
+             crp->corners[0], crp->corners[1],
+             crp->corners[2], crp->corners[3],
+             crp->corners[4], crp->corners[5],
+             crp->corners[6], crp->corners[7]);
+    }
+  else
+    {
+      printf("\n\n%g, %g, %g:\n", r, d, l);
+      printf("\t(%.10f, %.10f, %g)\n"
+             "\t(%.10f, %.10f, %g)\n"
+             "\t(%.10f, %.10f, %g)\n"
+             "\t(%.10f, %.10f, %g)\n"
+             "\t(%.10f, %.10f, %g)\n"
+             "\t(%.10f, %.10f, %g)\n"
+             "\t(%.10f, %.10f, %g)\n"
+             "\t(%.10f, %.10f, %g)\n\n",
+             crp->corners[0],  crp->corners[1],  crp->corners[2],
+             crp->corners[3],  crp->corners[4],  crp->corners[5],
+             crp->corners[6],  crp->corners[7],  crp->corners[8],
+             crp->corners[9],  crp->corners[10], crp->corners[11],
+             crp->corners[12], crp->corners[13], crp->corners[14],
+             crp->corners[15], crp->corners[16], crp->corners[17],
+             crp->corners[18], crp->corners[19], crp->corners[20],
+             crp->corners[21], crp->corners[22], crp->corners[23] );
+    }
   exit(0);
   */
 }
@@ -481,6 +601,11 @@ point_in_dataset(double *p, double *i, double *s, double *c, size_t ndim)
 {
   double n;
 
+  /* If there is a third dimension, then first check that. Note that the
+     third dimension is assumed to be indendent of the first two. */
+  if(ndim==3 && ( p[2]<i[2] || p[2]>i[2]+s[2] ) )
+    return 0;
+
   /* In the RA and Dec checks, first check the declination. If it is not in
      range, you can safely return 0. */
   if(p[1]>=i[1] && p[1]<=i[1]+s[1])
@@ -538,7 +663,7 @@ wcsmode_overlap(struct onecropparams *crp)
   s=p->imgs[crp->in_ind].sized;
   i=p->imgs[crp->in_ind].corners;
   c=p->imgs[crp->in_ind].equatorcorr;
-  fd=(d=crp->corners) + 8;
+  fd=(d=crp->corners) + (ndim==2 ? 8 : 24);
   do
     {
       /* As long as one of the crop corners are in the image, we know there
@@ -554,7 +679,7 @@ wcsmode_overlap(struct onecropparams *crp)
   s=crp->sized;
   i=crp->corners;
   c=crp->equatorcorr;
-  fd=(d=p->imgs[crp->in_ind].corners) + 8;
+  fd=(d=p->imgs[crp->in_ind].corners) + (ndim==2 ? 8 : 24);
   do
     {
       if( point_in_dataset(d, i, s, c, ndim) ) return 1;
