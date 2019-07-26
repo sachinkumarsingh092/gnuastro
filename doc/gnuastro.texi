@@ -241,8 +241,8 @@ New to GNU/Linux?
 Tutorials
 
 * Sufi simulates a detection::  Simulating a detection.
-* General program usage tutorial::
-* Detecting large extended targets::  Using NoiseChisel for huge extended targets.
+* General program usage tutorial::  Tutorial on many programs in generic scenario.
+* Detecting large extended targets::  NoiseChisel for huge extended targets.
 
 Sufi simulates a detection
 
@@ -1899,8 +1899,8 @@ use in the example codes through the book, please see @ref{Conventions}.
 
 @menu
 * Sufi simulates a detection::  Simulating a detection.
-* General program usage tutorial::
-* Detecting large extended targets::  Using NoiseChisel for huge extended targets.
+* General program usage tutorial::  Tutorial on many programs in generic scenario.
+* Detecting large extended targets::  NoiseChisel for huge extended targets.
 @end menu
 
 
