@@ -7,6 +7,12 @@ See the end of the file for license conditions.
 
 ** New features
 
+  Installation:
+   - With the the following options at configure time, its possible to
+     build Gnuastro without the optional libraries (even if they are
+     present on the host system): `--without-libjpeg', `--without-libtiff',
+     `--without-libgit2'.
+
   All programs:
    - When an array is memory-mapped to non-volatile space (like the
      HDD/SSD), a warning/message is printed that shows the file name and

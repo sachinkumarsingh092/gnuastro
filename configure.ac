@@ -340,14 +340,19 @@ AS_IF([test "x$LIBWCS" = x],
       [LDADD="$LTLIBWCS $LDADD"; LIBS="$LIBWCS $LIBS"])
 
 
-AC_LIB_HAVE_LINKFLAGS([jpeg], [], [
+AC_ARG_WITH([libjpeg],
+            [AS_HELP_STRING([--without-libjpeg],
+                            [disable support for libjpeg])],
+            [], [with_libjpeg=yes])
+AS_IF([test "x$with_libjpeg" != xno],
+      [ AC_LIB_HAVE_LINKFLAGS([jpeg], [], [
 #include <stdio.h>
 #include <stdlib.h>
 #include <jpeglib.h>
 void junk(void) {
   struct jpeg_decompress_struct cinfo;
   jpeg_create_decompress(&cinfo);
-}  ])
+} ]) ])
 AS_IF([test "x$LIBJPEG" = x],
       [missing_optional_lib=yes; has_libjpeg=no; anywarnings=yes],
       [LDADD="$LTLIBJPEG $LDADD"; LIBS="$LIBJPEG $LIBS"])
@@ -359,14 +364,18 @@ AM_CONDITIONAL([COND_HASLIBJPEG], [test "x$has_libjpeg" = "xyes"])
 # the LZMA library. But if libtiff hasn't been linked with it and its
 # present, there is no problem, the linker will just pass over it. So we
 # don't need to stop the build if this fails.
-AC_LIB_HAVE_LINKFLAGS([lzma], [], [#include <lzma.h>])
+AC_ARG_WITH([libtiff],
+            [AS_HELP_STRING([--without-libtiff],
+                            [disable support for libtiff])],
+            [], [with_libtiff=yes])
+AS_IF([test "x$with_libtiff" != xno],
+      [ AC_LIB_HAVE_LINKFLAGS([lzma], [], [#include <lzma.h>])
+        AC_LIB_HAVE_LINKFLAGS([tiff], [], [
+#include <tiffio.h>
+void junk(void) {TIFF *tif=TIFFOpen("junk", "r");} ])
+      ])
 AS_IF([test "x$LIBLZMA" = x], [],
       [LDADD="$LTLIBLZMA $LDADD"; LIBS="$LIBLZMA $LIBS"])
-
-AC_LIB_HAVE_LINKFLAGS([tiff], [], [
-#include <tiffio.h>
-void junk(void) {TIFF *tif=TIFFOpen("junk", "r");}
-])
 AS_IF([test "x$LIBTIFF" = x],
       [missing_optional_lib=yes; has_libtiff=no; anywarnings=yes],
       [LDADD="$LTLIBTIFF $LDADD"; LIBS="$LIBTIFF $LIBS"])
@@ -375,10 +384,15 @@ AM_CONDITIONAL([COND_HASLIBTIFF], [test "x$has_libtiff" = "xyes"])
 
 # Check libgit2. Note that very old versions of libgit2 don't have the
 # `git_libgit2_init' function.
-AC_LIB_HAVE_LINKFLAGS([git2], [], [
+AC_ARG_WITH([libgit2],
+            [AS_HELP_STRING([--without-libgit2],
+                            [disable support for libgit2])],
+            [], [with_libgit2=yes])
+AS_IF([test "x$with_libgit2" != xno],
+      [ AC_LIB_HAVE_LINKFLAGS([git2], [], [
 #include <git2.h>
-void junk(void) {git_libgit2_init();}
-])
+void junk(void) {git_libgit2_init();} ])
+      ])
 AS_IF([test "x$LIBGIT2" = x],
       [missing_optional_lib=yes; has_libgit2=0],
       [LDADD="$LTLIBGIT2 $LDADD"; LIBS="$LIBGIT2 $LIBS"])
@@ -966,23 +980,26 @@ AS_IF([test x$enable_guide_message = xyes],
         AS_IF([test "x$has_libjpeg" = "xno"],
               [dependency_notice=yes
                AS_ECHO(["  - libjpeg (http://ijg.org), could not be linked with in your library"])
-               AS_ECHO(["    search path. If JPEG inputs/outputs are requested, the respective"])
-               AS_ECHO(["    tool will inform you and abort with an error."])
+               AS_ECHO(["    search path, or is manually disabled. If JPEG inputs/outputs are"])
+               AS_ECHO(["    requested, the respective tool will inform you and abort with an"])
+               AS_ECHO(["    error."])
                AS_ECHO([]) ])
 
         AS_IF([test "x$has_libtiff" = "xno"],
               [dependency_notice=yes
                AS_ECHO(["  - libtiff (http://libtiff.maptools.org), could not be linked with in"])
-               AS_ECHO(["    your library search path. If TIFF inputs/outputs are requested, the"])
-               AS_ECHO(["    respective tool will inform you and abort with an error."])
+               AS_ECHO(["    your library search path, or is manually disabled. If TIFF"])
+               AS_ECHO(["    inputs/outputs are requested, the respective tool will inform"])
+               AS_ECHO(["    you and abort with an error."])
                AS_ECHO([]) ])
 
         AS_IF([test "x$has_libgit2" = "x0"],
               [dependency_notice=yes
                AS_ECHO(["  - libgit2 (https://libgit2.org), could not be linked with in your"])
-               AS_ECHO(["    library search path. When present, Git's describe output will be"])
-               AS_ECHO(["    stored in the output files if Gnuastro's programs were called"])
-               AS_ECHO(["    within a Gitversion controlled directory to help in reproducibility."])
+               AS_ECHO(["    library search path, or is manually disabled. When present, Git's"])
+               AS_ECHO(["    describe output will be stored in the output files if Gnuastro's"])
+               AS_ECHO(["    programs were called within a Gitversion controlled directory to"])
+               AS_ECHO(["    help in reproducibility."])
                AS_ECHO([]) ])
 
         AS_IF([test "x$usable_libtool" = "xno"],

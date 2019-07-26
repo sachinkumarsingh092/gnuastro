@@ -5345,7 +5345,7 @@ to learn more about libraries.
 
 @item libgit2
 @cindex Git
-@cindex libgit2
+@pindex libgit2
 @cindex Version control systems
 Git is one of the most common version control systems (see @ref{Version
 controlled source}). When @file{libgit2} is present, and Gnuastro's
@@ -6312,6 +6312,13 @@ Do not build or install the program named @file{progname}. This is
 very similar to the @option{--enable-progname}, but will build and
 install all the other programs except this one.
 
+@cartouche
+@noindent
+@strong{Note:} If some programs are enabled and some are disabled, it
+is equivalent to simply enabling those that were enabled. Listing the
+disabled programs is redundant.
+@end cartouche
+
 @item --enable-gnulibcheck
 @cindex GNU C library
 @cindex Gnulib: GNU Portability Library
@@ -6344,15 +6351,32 @@ programs). For people who are not yet fully accustomed to this build
 system, these guidelines can be very useful and encouraging. However, if
 you find those messages annoying, use this option.
 
+@item --without-libgit2
+@cindex Git
+@pindex libgit2
+@cindex Version control systems
+Build Gnuastro without libgit2 (for including Git commit hashes in output
+files), see @ref{Optional dependencies}. libgit2 is an optional dependency,
+with this option, Gnuastro will ignore any possibly existing libgit2 that
+may already be on the system.
+
+@item --without-libjpeg
+@pindex libjpeg
+@cindex JPEG format
+Build Gnuastro without libjpeg (for reading/writing to JPEG files), see
+@ref{Optional dependencies}. libjpeg is an optional dependency, with this
+option, Gnuastro will ignore any possibly existing libjpeg that may already
+be on the system.
+
+@item --without-libtiff
+@pindex libtiff
+@cindex TIFF format
+Build Gnuastro without libtiff (for reading/writing to TIFF files), see
+@ref{Optional dependencies}. libtiff is an optional dependency, with this
+option, Gnuastro will ignore any possibly existing libtiff that may already
+be on the system.
 
 @end vtable
-
-@cartouche
-@noindent
-@strong{Note:} If some programs are enabled and some are disabled, it
-is equivalent to simply enabling those that were enabled. Listing the
-disabled programs is redundant.
-@end cartouche
 
 The tests of some programs might depend on the outputs of the tests of
 other programs. For example MakeProfiles is one the first programs to be
