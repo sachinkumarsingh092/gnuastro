@@ -347,18 +347,21 @@ has_gslcblas=yes
 missing_mandatory=no
 missing_optional_lib=no
 
+# Keep the original LIBS to re-set in the end.
+orig_LIBS="$LIBS"
+
 # Order is important here.
 AC_LIB_HAVE_LINKFLAGS([m], [], [#include <math.h>])
 AS_IF([test "x$LIBM" = x],
       [missing_mandatory=yes; has_cmath=no],
-      [LDADD="$LIBM $LDADD"])
+      [LDADD="$LIBM $LDADD"; LIBS="$LIBM $LIBS"])
 
 AC_LIB_HAVE_LINKFLAGS([gsl], [gslcblas], [
 #include <gsl/gsl_rng.h>
 void junk(void) { gsl_rng_env_setup(); } ])
 AS_IF([test "x$LIBGSL" = x],
       [missing_mandatory=yes; has_gsl=no; has_gslcblas=no],
-      [LDADD="$LTLIBGSL $LDADD"])
+      [LDADD="$LTLIBGSL $LDADD"; LIBS="$LIBGSL $LIBS"])
 
 
 # Since version 0.42, if `libcurl' is installed, CFITSIO will link with it
@@ -376,12 +379,12 @@ AS_IF([test "x$LIBGSL" = x],
 # these extra libraries here.
 AC_LIB_HAVE_LINKFLAGS([z], [], [#include <zlib.h>])
 AS_IF([test "x$LIBZ" = x], [],
-      [LDADD="$LTLIBZ $LDADD"])
+      [LDADD="$LTLIBZ $LDADD"; LIBS="$LIBZ $LIBS"])
 
 
 AC_LIB_HAVE_LINKFLAGS([curl], [], [#include <curl/curl.h>])
 AS_IF([test "x$LIBCURL" = x], [],
-      [LDADD="$LTLIBCURL $LDADD"])
+      [LDADD="$LTLIBCURL $LDADD"; LIBS="$LIBCURL $LIBS"])
 
 
 # Older versions of CFITSIO don't install a shared library, only a static
@@ -389,7 +392,7 @@ AS_IF([test "x$LIBCURL" = x], [],
 # about not finding basic math libraries. Therefore the configure script
 # can't find CFITSIO, eventhough it exists. The solution is to manually add
 # the math-library as a dependency of CFITSIO.
-AC_LIB_HAVE_LINKFLAGS([cfitsio], [m], [
+AC_LIB_HAVE_LINKFLAGS([cfitsio], [], [
 #include <fitsio.h>
 void junk(void) {
 int status;
@@ -397,7 +400,7 @@ fitsfile *f;
 ffopen(&f, "junk", READONLY, &status);} ])
 AS_IF([test "x$LIBCFITSIO" = x],
       [missing_mandatory=yes; has_cfitsio=no],
-      [LDADD="$LTLIBCFITSIO $LDADD"])
+      [LDADD="$LTLIBCFITSIO $LDADD"; LIBS="$LIBCFITSIO $LIBS"])
 
 
 AC_LIB_HAVE_LINKFLAGS([wcs], [], [
@@ -410,7 +413,7 @@ wcspih(header, 1, 0, 0, &nreject, &nwcs, &wcs);
 } ])
 AS_IF([test "x$LIBWCS" = x],
       [missing_mandatory=yes; has_wcslib=no],
-      [LDADD="$LTLIBWCS $LDADD"])
+      [LDADD="$LTLIBWCS $LDADD"; LIBS="$LIBWCS $LIBS"])
 
 
 AC_LIB_HAVE_LINKFLAGS([jpeg], [], [
@@ -422,11 +425,8 @@ void junk(void) {
   jpeg_create_decompress(&cinfo);
 }  ])
 AS_IF([test "x$LIBJPEG" = x],
-      [missing_optional_lib=yes; has_libjpeg=no],
-      [LDADD="$LTLIBJPEG $LDADD"])
-AS_IF([test "x$has_libjpeg" = "xyes"],
-      [AC_DEFINE([HAVE_LIBJPEG], [], [Has libjpeg])],
-      [anywarnings=yes])
+      [missing_optional_lib=yes; has_libjpeg=no; anywarnings=yes],
+      [LDADD="$LTLIBJPEG $LDADD"; LIBS="$LIBJPEG $LIBS"])
 AM_CONDITIONAL([COND_HASLIBJPEG], [test "x$has_libjpeg" = "xyes"])
 
 
@@ -437,18 +437,15 @@ AM_CONDITIONAL([COND_HASLIBJPEG], [test "x$has_libjpeg" = "xyes"])
 # don't need to stop the build if this fails.
 AC_LIB_HAVE_LINKFLAGS([lzma], [], [#include <lzma.h>])
 AS_IF([test "x$LIBLZMA" = x], [],
-      [LDADD="$LTLIBLZMA $LDADD"])
+      [LDADD="$LTLIBLZMA $LDADD"; LIBS="$LIBLZMA $LIBS"])
 
 AC_LIB_HAVE_LINKFLAGS([tiff], [], [
 #include <tiffio.h>
 void junk(void) {TIFF *tif=TIFFOpen("junk", "r");}
 ])
 AS_IF([test "x$LIBTIFF" = x],
-      [missing_optional_lib=yes; has_libtiff=no],
-      [LDADD="$LTLIBTIFF $LDADD"])
-AS_IF([test "x$has_libtiff" = "xyes"],
-      [AC_DEFINE([HAVE_LIBTIFF], [], [Has libtiff])],
-      [anywarnings=yes])
+      [missing_optional_lib=yes; has_libtiff=no; anywarnings=yes],
+      [LDADD="$LTLIBTIFF $LDADD"; LIBS="$LIBTIFF $LIBS"])
 AM_CONDITIONAL([COND_HASLIBTIFF], [test "x$has_libtiff" = "xyes"])
 
 
@@ -460,99 +457,10 @@ void junk(void) {git_libgit2_init();}
 ])
 AS_IF([test "x$LIBGIT2" = x],
       [missing_optional_lib=yes; has_libgit2=0],
-      [LDADD="$LTLIBGIT2 $LDADD"])
+      [LDADD="$LTLIBGIT2 $LDADD"; LIBS="$LIBGIT2 $LIBS"])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_LIBGIT2], [$has_libgit2],
                    [libgit2 is installed on the system])
 AS_IF([test "x$has_libgit2" = "x1"], [], [anywarnings=yes])
-AC_SUBST(HAVE_LIBGIT2, [$has_libgit2])
-
-
-
-
-
-# See if the compiler supports `-Wl,-R' (we'll just temporarily test with
-# the system's `/lib' directory). Note that in the message, we are saying
-# `-Wl-R' because a comma will conflict with Autoconf and things after it
-# won't be printed.
-orig_LDFLAGS="$LDFLAGS"
-LDFLAGS="$LDFLAGS -Wl,-R/lib"
-AC_MSG_CHECKING(if linker supports -Wl-R)
-AC_LINK_IFELSE([AC_LANG_PROGRAM(void junk(void){})],
-               [AC_MSG_RESULT(yes); link_with_wlr=yes],
-               [AC_MSG_RESULT(no);  link_with_wlr=no])
-LDFLAGS="$orig_LDFLAGS"
-
-
-
-
-
-# Corrections to linking flags
-# ----------------------------
-# Deduce two important values from the linking flags:
-#   1) To pass to the compiler (then the linker) _within the configure_
-#      script through `LDFLAGS' (below), we need to change the `-R...'
-#      option to `-Wl,-R...'.
-#   2) We need to add the library directory(s) to LD_LIBRARY_PATH.
-nldadd=""
-ldpath=""
-nldpath=""
-for t in $LDADD; do
-    # Remove the `-L' or `-R' components of the token.
-    l=`AS_ECHO([$t]) | sed "s/^\-L//"`
-    r=`AS_ECHO([$t]) | sed "s/^\-R//"`
-
-    # If we have an `-R' option, and the linker works with `-Wl,-R', then
-    # convert it to an option that the compiler can take in (and then pass
-    # to the linker).
-    AS_IF([test x$link_with_wlr = xyes],
-          [AS_IF([test "x$t" = "x$r"], [toadd="$t"], [toadd="-Wl,$t"])],
-          [toadd="$t"])
-    nldadd="$nldadd $toadd"
-
-    # When `t' and `d' are the same, we aren't interested! But when they
-    # are different, we are on a directory to add.
-    AS_IF([test "x$t" = "x$l"], [],
-          [
-            # Go through all the directories in LD_LIBRARY_PATH and
-            # re-write it (so we can be sure it doesn't end in `:'). Also,
-            # see if the given directory exists or not.
-            exists=0;
-            for i in `AS_ECHO(["$LD_LIBRARY_PATH"]) | sed "s/:/ /g"`; do
-              AS_IF([test "x$l" = "x$i"],[exists=1])
-              AS_IF([test "x$ldpath" = x],[ldpath=$i],[ldpath="$ldppath:$i"])
-            done
-
-            # If the directory doesn't already exist in LD_LIBRARY_PATH,
-            # then add it to the newly-written LD_LIBRARY_PATH (`ldpath'),
-            # and also to the only-new list of paths (`nldpath').
-            AS_IF([test $exists = 0],
-                  [
-                    AS_IF([test "x$ldpath" = x], [ldpath=$l],
-                          [ldpath="$ldpath:$l"])
-                    AS_IF([test "x$nldpath" = x], [nldpath="$l"],
-                          [nldpath="$nldpath:$l"])
-                  ])
-          ])
-done
-
-# Update LD_LIBRARY_PATH, also in the Makefiles.
-AS_IF([test "x$nldpath" = x], [],
-      [
-        anywarnings=yes
-        LD_LIBRARY_PATH="$ldpath"
-        AC_SUBST(LD_LIBRARY_PATH, [$LD_LIBRARY_PATH])
-      ])
-
-# Temporarily (until the end of the configure script), set `LIBS' (which is
-# automatically used in all program building commands) to
-# `LDADD'. Otherwise some tests may fail because of not being called
-# properly.
-orig_LDFLAGS="$LDFLAGS"
-LDFLAGS="$nldadd $LDFLAGS"
-
-# Report the final linking flags and put them in the Makefiles.
-AC_SUBST(CONFIG_LDADD, [$LDADD])
-AS_ECHO(["linking flags (LDADD) ... $LDADD"])
 
 
 
@@ -1032,9 +940,12 @@ AM_CONDITIONAL([COND_WARP],        [test $enable_warp = yes])
 
 
 
-# Reset LDFLAGS to the initial value BEFORE generating the Makefiles (so
-# the modified value doesn't get written into them).
-LDFLAGS="$orig_LDFLAGS"
+# Reset LIBS to the initial value BEFORE generating the Makefiles (so the
+# modified value doesn't get written into them). Then report the final
+# linking flags and put them in the Makefiles.
+LIBS="$orig_LIBS"
+AC_SUBST(CONFIG_LDADD, [$LDADD])
+AS_ECHO(["linking flags (LDADD) ... $LDADD"])
 
 
 
