@@ -3966,24 +3966,8 @@ look at what columns it contains.
 
 @example
 $ ls
-$ asttable astmatch.log -i
+$ asttable astmatch.fits -i
 @end example
-
-@c********************************
-@c We'll merge them into one table using the @command{paste} program
-@c on the command-line. But, we only want the magnitude from the F105W
-@c dataset, so we'll only pull out the @code{MAGNITUDE} and @code{SN}
-@c column. The output of @command{paste} will have each line of both catalogs
-@c merged into a single line.
-
-@c @example
-@c $ asttable cat/xdf-f160w.fits -h2                > xdf-f160w.txt
-@c $ asttable cat/xdf-f105w.fits -h2 -cMAGNITUDE,SN > xdf-f105w.txt
-@c $ paste xdf-f160w.txt xdf-f105w.txt              > xdf-f160w-f105w.txt
-@c @end example
-
-@c Open @file{xdf-f160w-f105w.txt} to see how @command{paste} has operated.
-@c ********************************
 
 @cindex Flux-weighted
 @cindex SED, Spectral Energy Distribution
