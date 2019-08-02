@@ -914,10 +914,11 @@ gal_label_grow_indexs(gal_data_t *labels, gal_data_t *indexs, int withrivers,
   /* The basic idea is this: after growing, not all the blank pixels are
      necessarily filled, for example the pixels might belong to two regions
      above the growth threshold. So the pixels in between them (which are
-     below the threshold will not ever be able to get a label). Therefore,
-     the safest way we can terminate the loop of growing the objects is to
-     stop it when the number of pixels left to fill in this round
-     (thisround) equals the number of blanks.
+     below the threshold will not ever be able to get a label, even if they
+     are in the indexs list). Therefore, the safest way we can terminate
+     the loop of growing the objects is to stop it when the number of
+     pixels left to fill in this round (thisround) equals the number of
+     blanks.
 
      To start the loop, we set `thisround' to one more than the number of
      indexed pixels. Note that it will be corrected immediately after the

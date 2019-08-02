@@ -119,25 +119,15 @@ See the end of the file for license conditions.
    - gal_statistics_outlier_flat_cfp: Improved implementation with new API.
    - New `quietmmap' argument added to the following functions (as the
      argument following `minmapsize'). For more, see the description above
-     of the new similarly named option to all programs.
-       - gal_array_read
-       - gal_array_read_to_type
-       - gal_array_read_one_ch
-       - gal_array_read_one_ch_to_type
-       - gal_data_alloc
-       - gal_data_initialize
-       - gal_fits_img_read
-       - gal_fits_img_read_to_type
-       - gal_fits_img_read_kernel
-       - gal_fits_tab_read
-       - gal_jpeg_read
-       - gal_label_indexs
-       - gal_list_data_add_alloc
-       - gal_match_coordinates
-       - gal_pointer_allocate_mmap
-       - gal_table_read
-       - gal_tiff_read
-       - gal_txt_image_read
+     of the new similarly named option to all programs: `gal_array_read'
+     `gal_array_read_to_type', `gal_array_read_one_ch',
+     `gal_array_read_one_ch_to_type', `gal_data_alloc',
+     `gal_data_initialize', `gal_fits_img_read',
+     `gal_fits_img_read_to_type', `gal_fits_img_read_kernel',
+     `gal_fits_tab_read', `gal_jpeg_read', `gal_label_indexs',
+     `gal_list_data_add_alloc', `gal_match_coordinates',
+     `gal_pointer_allocate_mmap', `gal_table_read', `gal_tiff_read' and
+     `gal_txt_image_read'
 
   Book:
    - The two larger tutorials ("General program usage tutorial", and
@@ -161,7 +151,7 @@ See the end of the file for license conditions.
   bug #56635: Update tutorial 3 with bug-fixed NoiseChisel.
   bug #56662: Converting -R to -Wl,-R causes a crash in configure on macOS.
   bug #56671: Bad sorting with asttable if nan is present.
-
+  bug #56709: Segment crash when input has blanks, but labels don't.
 
 
 

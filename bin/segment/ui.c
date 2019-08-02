@@ -405,7 +405,7 @@ static void
 ui_prepare_inputs(struct segmentparams *p)
 {
   int32_t *i, *ii;
-  gal_data_t *maxd, *ccin, *ccout=NULL;
+  gal_data_t *maxd, *ccin, *blankflag, *ccout=NULL;
 
   /* Read the input as a single precision floating point dataset. */
   p->input = gal_array_read_one_ch_to_type(p->inputname, p->cp.hdu,
@@ -482,6 +482,16 @@ ui_prepare_inputs(struct segmentparams *p)
               "    $ astarithmetic %s int32 -h%s\n\n", p->useddetectionname,
               p->dhdu, gal_type_name(p->olabel->type, 1),
               p->useddetectionname, p->dhdu);
+
+      /* If the input has blank values, set them to blank values in the
+         labeled image too. It doesn't matter if the labeled image has
+         blank pixels that aren't blank on the input image. */
+      if(gal_blank_present(p->input, 1))
+        {
+          blankflag=gal_blank_flag(p->input);
+          gal_blank_flag_apply(p->olabel, blankflag);
+          gal_data_free(blankflag);
+        }
 
       /* Get the maximum value of the input (total number of labels if they
          are separate). If the maximum is 1 (the image is a binary image),
