@@ -264,7 +264,7 @@ General program usage tutorial
 * NoiseChisel optimization for storage::  Dramatically decrease output's volume.
 * Segmentation and making a catalog::  Finding true peaks and creating a catalog.
 * Working with catalogs estimating colors::  Estimating colors using the catalogs.
-* Aperture photomery::          Doing photometry on a fixed aperture.
+* Aperture photometry::         Doing photometry on a fixed aperture.
 * Finding reddest clumps and visual inspection::  Selecting some targets and inspecting them.
 * Citing and acknowledging Gnuastro::  How to cite and acknowledge Gnuastro in your papers.
 
@@ -1782,14 +1782,15 @@ Kelvin, Brandon Kelly, Mohammad-Reza Khellat, Johan Knapen, Geoffry
 Krouchi, Floriane Leclercq, Alan Lefor, Guillaume Mahler, Juan Molina
 Tobar, Francesco Montanari, Dmitrii Oparin, Bertrand Pain, William Pence,
 Mamta Pommier, Bob Proulx, Teymoor Saifollahi, Elham Saremi, Yahya
-Sefidbakht, Alejandro Serrano Borlaff, Jenny Sorce, Lee Spitler, Richard
-Stallman, Michael Stein, Ole Streicher, Alfred M. Szmidt, Michel Tallon,
-Juan C. Tello, @'Eric Thi@'ebaut, Ignacio Trujillo, David Valls-Gabaud,
-Aaron Watkins, Christopher Willmer, Sara Yousefi Taemeh, Johannes Zabl. The
-GNU French Translation Team is also managing the French version of the top
-Gnuastro webpage which we highly appreciate. Finally we should thank all
-the (sometimes anonymous) people in various online forums which patiently
-answered all our small (but important) technical questions.
+Sefidbakht, Alejandro Serrano Borlaff, Zahra Sharbaf, Jenny Sorce, Lee
+Spitler, Richard Stallman, Michael Stein, Ole Streicher, Alfred M. Szmidt,
+Michel Tallon, Juan C. Tello, @'Eric Thi@'ebaut, Ignacio Trujillo, David
+Valls-Gabaud, Aaron Watkins, Michael H.F. Wilkinson, Christopher Willmer,
+Sara Yousefi Taemeh, Johannes Zabl. The GNU French Translation Team is also
+managing the French version of the top Gnuastro webpage which we highly
+appreciate. Finally we should thank all the (sometimes anonymous) people in
+various online forums which patiently answered all our small (but
+important) technical questions.
 
 All work on Gnuastro has been voluntary, but the authors are most grateful
 to the following institutions (in chronological order) for hosting us in
@@ -2035,7 +2036,7 @@ parameters and sets the radius column (@code{rcol} above, fifth column) to
 form. Remembering how diffuse the nebula in the Andromeda constellation
 was, he decides to simulate it with a mock S@'{e}rsic index 1.0 profile. He
 wants the output to be 499 pixels by 499 pixels, so he can put the center
-of the mock profile in the centeral pixel of the image (note that an even
+of the mock profile in the central pixel of the image (note that an even
 number doesn't have a central element).
 
 Looking at his drawings of it, he decides a reasonable effective radius for
@@ -2441,7 +2442,7 @@ help simulate future situations when you are processing your own datasets.
 * NoiseChisel optimization for storage::  Dramatically decrease output's volume.
 * Segmentation and making a catalog::  Finding true peaks and creating a catalog.
 * Working with catalogs estimating colors::  Estimating colors using the catalogs.
-* Aperture photomery::          Doing photometry on a fixed aperture.
+* Aperture photometry::         Doing photometry on a fixed aperture.
 * Finding reddest clumps and visual inspection::  Selecting some targets and inspecting them.
 * Citing and acknowledging Gnuastro::  How to cite and acknowledge Gnuastro in your papers.
 @end menu
@@ -2734,7 +2735,7 @@ find the @code{CDELT} keywords in the WCS meta data of some FITS
 files. However, all Gnuastro programs (which use the default FITS keyword
 writing format of WCSLIB) write their output WCS with the the @code{CDELT}
 convention, even if the input doesn't have it. If your dataset doesn't use
-the @code{CDELT} convension, you can feed it to any (simple) Gnuastro
+the @code{CDELT} convention, you can feed it to any (simple) Gnuastro
 program (for example Arithmetic) and the output will have the @code{CDELT}
 keyword.}.
 
@@ -3087,7 +3088,7 @@ $ astcosmiccal --H0 70 -z2 --arcsectandist
 @end example
 
 @noindent
-When an option dosn't need a value, and has a short format (like
+When an option doesn't need a value, and has a short format (like
 @option{--arcsectandist}), you can easily append it @emph{before} other
 short options. So the last command above can also be written as:
 
@@ -3134,7 +3135,7 @@ command?
 $ astcosmiccal --config=my-cosmology.conf -z2
 @end example
 
-But still, having to type @option{--config=my-cosmology.conf} everytime is
+But still, having to type @option{--config=my-cosmology.conf} every time is
 annoying, isn't it? If you need this cosmology every time you are working
 in a specific directory, you can use Gnuastro's default configuration file
 names and avoid having to type it manually.
@@ -3711,8 +3712,8 @@ $ astnoisechisel flat-ir/xdf-f160w.fits --oneelempertile --rawoutput
 @noindent
 The output is now just under 8 mega byes! But you can even be more
 efficient in space by compressing it. Try the command below to see how
-NoiseChisel's output has now shrunk to about 250 kilobyes while keeping all
-the necessary information as the original 100 mega-byte output.
+NoiseChisel's output has now shrunk to about 250 kilo-byes while keeping
+all the necessary information as the original 100 mega-byte output.
 
 @example
 $ gzip --best xdf-f160w_detected.fits
@@ -3834,7 +3835,7 @@ $ astfits cat/xdf-f160w.fits -h1 | grep COMMENT
 @end example
 
 
-@node Working with catalogs estimating colors, Aperture photomery, Segmentation and making a catalog, General program usage tutorial
+@node Working with catalogs estimating colors, Aperture photometry, Segmentation and making a catalog, General program usage tutorial
 @subsection Working with catalogs (estimating colors)
 The output of the MakeCatalog command above is a FITS table (see
 @ref{Segmentation and making a catalog}). The two clump and object catalogs
@@ -4048,8 +4049,8 @@ $ aststatistics cat/f105w-f160w.fits -cCOLOR_F105W_F160W \
 @end example
 
 
-@node Aperture photomery, Finding reddest clumps and visual inspection, Working with catalogs estimating colors, General program usage tutorial
-@subsection Aperture photomery
+@node Aperture photometry, Finding reddest clumps and visual inspection, Working with catalogs estimating colors, General program usage tutorial
+@subsection Aperture photometry
 Some researchers prefer to have colors in a fixed aperture for all the
 objects. The colors we calculated in @ref{Working with catalogs estimating
 colors} used a different segmentation map for each object. This might not
@@ -4125,7 +4126,7 @@ command again to have the fixed aperture magnitude in the F160W filter and
 measure colors on apertures.
 
 
-@node Finding reddest clumps and visual inspection, Citing and acknowledging Gnuastro, Aperture photomery, General program usage tutorial
+@node Finding reddest clumps and visual inspection, Citing and acknowledging Gnuastro, Aperture photometry, General program usage tutorial
 @subsection Finding reddest clumps and visual inspection
 @cindex GNU AWK
 As a final step, let's go back to the original clumps-based color
@@ -4168,7 +4169,7 @@ $ astcrop flat-ir/xdf-f160w.fits --mode=wcs --namecol=ID \
 @end example
 
 You can see all the cropped FITS files in the @file{crop-red}
-directory. Like the MakeProfiles command in @ref{Aperture photomery}, you
+directory. Like the MakeProfiles command in @ref{Aperture photometry}, you
 might notice that the crops aren't made in order. This is because each crop
 is independent of the rest, therefore crops are done in parallel, and
 parallel operations are asynchronous. In the command above, you can change
@@ -4350,7 +4351,7 @@ $ bunzip2 r.fits.bz2
 
 @node NoiseChisel optimization, Achieved surface brightness level, Detecting large extended targets, Detecting large extended targets
 @subsection NoiseChisel optimization
-In @ref{Detecting large extended targets} we downladed the single exposure
+In @ref{Detecting large extended targets} we downloaded the single exposure
 SDSS image. Let's see how NoiseChisel operates on it with its default
 parameters:
 
@@ -4376,7 +4377,7 @@ extension also seems reasonable with a large detection map that covers the
 whole of NGC5195, but also extends beyond towards the bottom of the
 image.
 
-Now try fliping between the @code{DETECTIONS} and @code{SKY} extensions.
+Now try flipping between the @code{DETECTIONS} and @code{SKY} extensions.
 In the @code{SKY} extension, you'll notice that there is still significant
 signal beyond the detected pixels. You can tell that this signal belongs to
 the galaxy because the far-right side of the image is dark and the brighter
@@ -4502,7 +4503,7 @@ $ astnoisechisel r.fits -h0 --tilesize=75,75 --checkqthresh
 You can clearly see the effect of this increased tile size: the tiles are
 much larger and when you look into @code{VALUE1_NO_OUTLIER}, you see that
 almost all the previous tiles under the galaxy have been discarded and we
-only have a few tiles on the edge with a gradient. So let's define a smore
+only have a few tiles on the edge with a gradient. So let's define a more
 strict condition to keep tiles:
 
 @example
@@ -4641,7 +4642,7 @@ deep image of this system (with a 12-inch telescope):
 @url{https://i.redd.it/jfqgpqg0hfk11.jpg}@footnote{The image is taken from
 this Reddit discussion:
 @url{https://www.reddit.com/r/Astronomy/comments/9d6x0q/12_hours_of_exposure_on_the_whirlpool_galaxy/}}. In
-these deepr images you see that the outer edges of the M51 group clearly
+these deeper images you see that the outer edges of the M51 group clearly
 follow this exact structure, below in @ref{Achieved surface brightness
 level}, we'll measure the exact level.
 
@@ -4669,13 +4670,13 @@ particular image. So as long as your image noise has similar properties
 (from the same data-reduction step of the same database), you can use this
 configuration on any image. For images from other instruments, or
 higher-level/reduced SDSS products, please follow a similar logic to what
-was presented here and find the best configuation yourself.
+was presented here and find the best configuration yourself.
 @end cartouche
 
 @cartouche
 @noindent
 @strong{Smart NoiseChisel:} As you saw during this section, there is a
-clear logic behind the optimal paramter value for each dataset. Therfore,
+clear logic behind the optimal parameter value for each dataset. Therefore,
 we plan to capabilities to (optionally) automate some of the choices made
 here based on the actual dataset, please join us in doing this if you are
 interested. However, given the many problems in existing ``smart''
@@ -4718,7 +4719,7 @@ $ echo $id
 @end example
 
 To separate the outer edges of the detections, we'll need to ``erode'' the
-M51 group detection. We'll erode thre times (to have more pixels and thus
+M51 group detection. We'll erode three times (to have more pixels and thus
 less scatter), using a maximum connectivity of 2 (8-connected
 neighbors). We'll then save the output in @file{eroded.fits}.
 
@@ -7872,7 +7873,7 @@ By default, the name of the created file, and its size (in bytes) is
 printed by the program when it is created and later, when its
 deleted/freed. These messages are useful to the user who has enough RAM,
 but has forgot to increase the value to @code{--minmapsize} (this is often
-the case). To supress/disable such messages, use the @code{--quietmmap}
+the case). To suppress/disable such messages, use the @code{--quietmmap}
 option.
 
 When this option has a value of @code{0} (zero, strongly discouraged, see
@@ -23172,7 +23173,7 @@ option which has the units along with a short description.
 The redshift that was used in this run. In many cases this is the main
 input parameter to CosmicCalculator, but it is useful in others. For
 example in combination with @option{--obsline} (where you give an observed
-and restframe wavelength and would like to know the redshift), or if you
+and rest-frame wavelength and would like to know the redshift), or if you
 want to run CosmicCalculator in a loop while changing the redshift and you
 want to keep the redshift value.
 
