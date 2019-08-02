@@ -954,9 +954,11 @@ detection_remove_false_initial(struct noisechiselparams *p,
       e_th=p->exp_thresh_full->array;
       do                                    /* Growth is necessary later.  */
         {                                   /* So there is no need to set  */
-          if(*l!=GAL_BLANK_INT32)           /* the labels image, but we    */
-            {                               /* have to count the number of */
-              *b = newlabels[ *l ] > 0;     /* pixels to (possibly) grow.  */
+          if(*l==GAL_BLANK_INT32)           /* the labels image, but we    */
+            *b=GAL_BLANK_UINT8;             /* have to count the number of */
+          else                              /* pixels to (possibly) grow.  */
+            {
+              *b = newlabels[ *l ] > 0;
               if( *b==0 && *arr>*e_th )
                 ++p->numexpand;
             }
@@ -964,11 +966,11 @@ detection_remove_false_initial(struct noisechiselparams *p,
         }
       while(++l<lf);
 
+
       /* If there aren't any pixels to later expand, then reset the labels
          (remove false detections in the labeled image). */
       if(p->numexpand==0)
         {
-          b=workbin->array;
           l=p->olabel->array;
           do if(*l!=GAL_BLANK_INT32) *l = newlabels[ *l ]; while(++l<lf);
         }
