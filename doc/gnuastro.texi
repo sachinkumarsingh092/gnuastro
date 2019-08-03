@@ -629,7 +629,7 @@ Gnuastro library
 * Convolution functions::       Library functions to do convolution.
 * Interpolation::               Interpolate (over blank values possibly).
 * Git wrappers::                Wrappers for functions in libgit2.
-* Spectral lines library::
+* Spectral lines library::      Functions for operating on Spectral lines.
 * Cosmology library::           Cosmological calculations.
 
 Multithreaded programming (@file{threads.h})
@@ -24190,7 +24190,7 @@ documentation will correspond to your installed version.
 * Convolution functions::       Library functions to do convolution.
 * Interpolation::               Interpolate (over blank values possibly).
 * Git wrappers::                Wrappers for functions in libgit2.
-* Spectral lines library::
+* Spectral lines library::      Functions for operating on Spectral lines.
 * Cosmology library::           Cosmological calculations.
 @end menu
 
