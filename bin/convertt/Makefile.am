@@ -23,13 +23,17 @@
 AM_LDFLAGS = -L\$(top_builddir)/lib
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib -I\$(top_srcdir)/lib
 
+if COND_NORPATH
+  MAYBE_NORPATH = $(CONFIG_LDADD)
+endif
 
 
 ## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astconvertt
 
 ## Reason for linking with `libgnu' described in `bin/TEMPLATE/Makefile.am'.
-astconvertt_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro
+astconvertt_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro \
+                    $(MAYBE_NORPATH)
 
 astconvertt_SOURCES = main.c ui.c convertt.c color.c
 

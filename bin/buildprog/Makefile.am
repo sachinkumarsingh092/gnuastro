@@ -29,13 +29,17 @@ AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib -I\$(top_srcdir)/lib \
               -DLIBDIR=\"$(libdir)\" -DINCLUDEDIR=\"$(includedir)\"      \
               -DEXEEXT=\"$(EXEEXT)\"
 
+if COND_NORPATH
+  MAYBE_NORPATH = $(CONFIG_LDADD)
+endif
 
 
 ## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astbuildprog
 
 ## Reason for linking with `libgnu' described in `bin/TEMPLATE/Makefile.am'.
-astbuildprog_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro
+astbuildprog_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro \
+                     $(MAYBE_NORPATH)
 
 # Basic program sources.
 astbuildprog_SOURCES = main.c ui.c buildprog.c

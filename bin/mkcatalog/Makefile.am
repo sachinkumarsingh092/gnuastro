@@ -23,13 +23,17 @@
 AM_LDFLAGS = -L\$(top_builddir)/lib
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib -I\$(top_srcdir)/lib
 
+if COND_NORPATH
+  MAYBE_NORPATH = $(CONFIG_LDADD)
+endif
 
 
 ## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astmkcatalog
 
 ## Reason for linking with `libgnu' described in `bin/TEMPLATE/Makefile.am'.
-astmkcatalog_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro
+astmkcatalog_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro \
+                     $(MAYBE_NORPATH)
 
 astmkcatalog_SOURCES = main.c ui.c mkcatalog.c columns.c upperlimit.c parse.c
 

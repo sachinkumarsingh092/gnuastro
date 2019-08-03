@@ -883,6 +883,7 @@ AM_CONDITIONAL([COND_WARP],        [test $enable_warp = yes])
 # linking flags and put them in the Makefiles.
 LIBS="$orig_LIBS"
 AC_SUBST(CONFIG_LDADD, [$LDADD])
+AM_CONDITIONAL([COND_NORPATH], [test "x$enable_rpath" = "xno"])
 AS_ECHO(["linking flags (LDADD) ... $LDADD"])
 
 
