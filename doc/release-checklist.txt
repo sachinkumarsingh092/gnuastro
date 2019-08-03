@@ -21,7 +21,7 @@ all the commits needed for this release have been completed.
    added in the `THANKS' file since the last stable release (to add in the
    book), you can use this command:
 
-     $ git diff gnuastro_vP.P..HEAD THANKS
+       $ git diff gnuastro_vP.P..HEAD THANKS
 
 
  - Build the Debian distribution (just for a test) and correct any build or
