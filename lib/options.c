@@ -582,7 +582,7 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
   size_t minmapsize=-1;
 
   /* If we have an empty string, just return NULL. */
-  if(*string=='\0') return NULL;
+  if(string==NULL || *string=='\0') return NULL;
 
   /* Go through the input character by character. */
   while(string && *c!='\0')

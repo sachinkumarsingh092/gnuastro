@@ -279,10 +279,10 @@ ui_parse_obsline(struct argp_option *option, char *arg,
       obsline=gal_options_parse_list_of_numbers(arg, filename, lineno);
 
       /* Only one number must be given as second argument. */
-      if(obsline->size!=1)
-        error(EXIT_FAILURE, 0, "too many values (%zu) given to `--obsline'. "
-              "Only two values (line name/wavelengh, and observed wavelengh) "
-              "must be given", obsline->size+1);
+      if(obsline==NULL || obsline->size!=1)
+        error(EXIT_FAILURE, 0, "Wrong format given to `--obsline'. Only "
+              "two values (line name/wavelengh, and observed wavelengh) "
+              "must be given to it");
 
       /* If a wavelength is given directly as a number (not a name), then
          put that number in a second element of the array. */

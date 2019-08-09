@@ -3,6 +3,21 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 Copyright (C) 2015-2019 Free Software Foundation, Inc.
 See the end of the file for license conditions.
 
+* Noteworthy changes in release X.X (library X.X.X) (XXXX-XX-XX) [stable]
+
+** New features
+
+** Removed features
+
+** Changed features
+
+** Bugs fixed
+  bug #56736: CosmicCalculator crash when a single value given to --obsline
+
+
+
+
+
 * Noteworthy changes in release 0.10 (library 8.0.0) (2019-08-03) [stable]
 
 ** New features
