@@ -120,6 +120,7 @@ ui_initialize_options(struct arithmeticparams *p,
   struct gal_options_common_params *cp=&p->cp;
 
   /* Set the necessary common parameters structure. */
+  cp->program_struct     = p;
   cp->poptions           = program_options;
   cp->program_name       = PROGRAM_NAME;
   cp->program_exec       = PROGRAM_EXEC;

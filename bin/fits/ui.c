@@ -99,6 +99,7 @@ ui_initialize_options(struct fitsparams *p,
 
   /* Set the necessary common parameters structure. */
   cp->keep               = 1;
+  cp->program_struct     = p;
   cp->poptions           = program_options;
   cp->program_name       = PROGRAM_NAME;
   cp->program_exec       = PROGRAM_EXEC;
