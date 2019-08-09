@@ -23242,6 +23242,15 @@ The critical density at given redshift in grams per centimeter-cube
 The comoving volume in Megaparsecs cube (Mpc@mymath{^3}) until the desired
 redshift based on the input parameters.
 
+@item -i STR/FLT
+@itemx --lineatz=STR/FLT
+The wavelength of the specified line at the redshift given to
+CosmicCalculator. The line can be specified either by its inside Gnuastro
+(see description of @option{--obsline} in @ref{CosmicCalculator input
+options}), or directly as a number. In the former case (when a name is
+given), the units are in Angstroms. In the latter (when a number is given),
+its the same units of the given number.
+
 @end table
 
 

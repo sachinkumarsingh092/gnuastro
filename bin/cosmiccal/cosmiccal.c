@@ -255,6 +255,10 @@ cosmiccal(struct cosmiccalparams *p)
                                                         p->oradiation));
             break;
 
+          case UI_KEY_LINEATZ:
+            printf("%g ", gal_list_f64_pop(&p->specific_arg)*(1+p->redshift));
+            break;
+
           default:
             error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
                   "fix the problem. The code %d is not recognized as a "

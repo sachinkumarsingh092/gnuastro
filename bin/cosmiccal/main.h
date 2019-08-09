@@ -55,6 +55,7 @@ struct cosmiccalparams
 
   /* Outputs. */
   gal_list_i32_t     *specific; /* Codes for single row calculations.   */
+  gal_list_f64_t *specific_arg; /* Possible arguments for single calcs. */
 
   /* Internal: */
   time_t               rawtime; /* Starting time of the program.        */

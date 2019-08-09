@@ -301,6 +301,21 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET,
       ui_add_to_single_value,
     },
+    {
+      "lineatz",
+      UI_KEY_LINEATZ,
+      "STR/FLT",
+      0,
+      "Wavelength of given line at chosen redshift",
+      UI_GROUP_SPECIFIC,
+      &p->specific,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_add_to_single_value,
+    },
+
 
 
     {0}

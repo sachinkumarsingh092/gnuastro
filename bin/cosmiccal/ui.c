@@ -200,6 +200,10 @@ static void *
 ui_add_to_single_value(struct argp_option *option, char *arg,
                       char *filename, size_t lineno, void *params)
 {
+  int linecode;
+  double *dptr, val=NAN;
+  struct cosmiccalparams *p = (struct cosmiccalparams *)params;
+
   /* In case of printing the option values. */
   if(lineno==-1)
     error(EXIT_FAILURE, 0, "currently the options to be printed in one row "
@@ -212,18 +216,43 @@ ui_add_to_single_value(struct argp_option *option, char *arg,
 
   /* If this option is given in a configuration file, then `arg' will not
      be NULL and we don't want to do anything if it is `0'. */
-  if(arg)
+  switch(option->key)
     {
-      /* Make sure the value is only `0' or `1'. */
-      if( arg[1]!='\0' && *arg!='0' && *arg!='1' )
-        error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `--%s' "
-                      "option takes no arguments. In a configuration "
-                      "file it can only have the values `1' or `0', "
-                      "indicating if it should be used or not",
-                      option->name);
+    /* Options with arguments. */
+    case UI_KEY_LINEATZ:
+      /* Make sure an argument is given. */
+      if(arg==NULL)
+        error(EXIT_FAILURE, 0, "option `--lineatz' needs an argument");
 
-      /* Only proceed if the (possibly given) argument is 1. */
-      if(arg[0]=='0' && arg[1]=='\0') return NULL;
+      /* If the argument is a number, read it, if not, see if its a known
+         specral line name. */
+      dptr=&val;
+      if( gal_type_from_string((void **)(&dptr), arg, GAL_TYPE_FLOAT64) )
+        {
+          linecode=gal_speclines_line_code(arg);
+          if(linecode==GAL_SPECLINES_INVALID)
+            error(EXIT_FAILURE, 0, "`%s' not a known spectral line name",
+                  arg);
+          val=gal_speclines_line_angstrom(linecode);
+        }
+      gal_list_f64_add(&p->specific_arg, val);
+      break;
+
+    /* Options without arguments. */
+    default:
+      if(arg)
+        {
+          /* Make sure the value is only `0' or `1'. */
+          if( arg[1]!='\0' && *arg!='0' && *arg!='1' )
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `--%s' "
+                          "option takes no arguments. In a configuration "
+                          "file it can only have the values `1' or `0', "
+                          "indicating if it should be used or not",
+                          option->name);
+
+          /* Only proceed if the (possibly given) argument is 1. */
+          if(arg[0]=='0' && arg[1]=='\0') return NULL;
+        }
     }
 
   /* Add this option to the print list and return. */
@@ -409,6 +438,7 @@ ui_preparations(struct cosmiccalparams *p)
      control reaches here, the list is finalized. So we should just reverse
      it so the user gets values in the same order they requested them. */
   gal_list_i32_reverse(&p->specific);
+  gal_list_f64_reverse(&p->specific_arg);
 }
 
 

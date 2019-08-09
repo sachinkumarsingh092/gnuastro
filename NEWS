@@ -7,6 +7,11 @@ See the end of the file for license conditions.
 
 ** New features
 
+  CosmicCalculator:
+   --lineatz: return the observed wavelength of a line if it was emitted at
+     the redshift given to CosmicCalculator. You can either use known line
+     names, or directly give a number as any emitted line's wavelength.
+
 ** Removed features
 
 ** Changed features
