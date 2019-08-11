@@ -17,7 +17,8 @@ See the end of the file for license conditions.
 ** Changed features
 
 ** Bugs fixed
-  bug #56736: CosmicCalculator crash when a single value given to --obsline
+  bug #56736: CosmicCalculator crash when a single value given to --obsline.
+  bug #56747: ConvertType's SLS colormap has black pixels which should be orange.
 
 
 
