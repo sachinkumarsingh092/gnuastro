@@ -2049,9 +2049,19 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
              out of the loop. Normally, `oldstd' should be larger than std,
              because the possible outliers have been removed. If it is not,
              it means that we have clipped too much and must stop anyway,
-             so we don't need an absolute value on the difference! */
-          if( bytolerance && num>0 && ((oldstd - *std) / *std) < param )
-            { gal_data_free(meanstd); gal_data_free(median_d); break; }
+             so we don't need an absolute value on the difference!
+
+             Note that when all the elements are identical after the clip,
+             `std' will be zero. In this case we shouldn't calculate the
+             tolerance (because it will be infinity and thus lager than the
+             requested tolerance level value).*/
+          if( bytolerance && num>0 )
+            if( *std==0 || ((oldstd - *std) / *std) < param )
+              {
+                if(*std==0) {oldmed=*med; oldstd=*std; oldmean=*mean;}
+                gal_data_free(meanstd);   gal_data_free(median_d);
+                break;
+              }
 
           /* Clip all the elements outside of the desired range: since the
              array is sorted, this means to just change the starting
