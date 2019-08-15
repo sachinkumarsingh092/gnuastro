@@ -113,8 +113,8 @@ table_range(struct tableparams *p)
 
       /* Find all the bad elements (smaller than the minimum, larger than
          the maximum or blank) so we can flag them. */
-      ltmin=gal_arithmetic(GAL_ARITHMETIC_OP_LT, 1, numok,   ref,   min);
-      gemax=gal_arithmetic(GAL_ARITHMETIC_OP_GE, 1, numok,   ref,   max);
+      ltmin=gal_arithmetic(GAL_ARITHMETIC_OP_LT, 1, numok, ref, min);
+      gemax=gal_arithmetic(GAL_ARITHMETIC_OP_GE, 1, numok, ref, max);
       blmask = ( gal_blank_present(ref, 1)
                  ? gal_arithmetic(GAL_ARITHMETIC_OP_ISBLANK, 1, 0, ref)
                  : NULL );

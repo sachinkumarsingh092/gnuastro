@@ -12013,9 +12013,11 @@ aren't included.
 @item -r STR,FLT:FLT
 @itemx --range=STR,FLT:FLT
 Only print the output rows that have a value within the given range in the
-@code{STR} column (can be a name or counter). For example with
-@code{--range=sn,5:20} the output's columns will only contain rows that
-have a value between 5 and 20 in the @code{sn} column (not case-sensitive).
+@code{STR} column (can be a name or counter). Note that the range is only
+inclusive in the lower-limit. For example with @code{--range=sn,5:20} the
+output's columns will only contain rows that have a value in the @code{sn}
+column (not case-sensitive) that is greater or equal to 5, and less than
+20.
 
 This option can be called multiple times (different ranges for different
 columns) in one run of the Table program. This is very useful for selecting
