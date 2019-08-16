@@ -81,6 +81,7 @@ struct arithmeticparams
   gal_data_t       refdata;  /* Container for information of the data.  */
   char          *globalhdu;  /* Single HDU for all inputs.              */
   uint8_t      onedasimage;  /* Write 1D outputs as an image not table. */
+  uint8_t     onedonstdout;  /* Write 1D outputs on stdout, not table.  */
   gal_data_t        *named;  /* List containing variables.              */
   size_t      tokencounter;  /* Counter for finding place in tokens.    */
 

@@ -13267,8 +13267,9 @@ operand. The unique elements of the dataset will be stored in a
 single-dimensional dataset.
 
 Recall that by default, single-dimensional datasets are stored as a table
-column in the output. But you can use @option{--onedasimage} to store them
-as a single-dimensional FITS array/image.
+column in the output. But you can use @option{--onedasimage} or
+@option{--onedonstdout} to respectively store them as a single-dimensional
+FITS array/image, or to print them on the standard output.
 
 @item erode
 @cindex Erosion
@@ -13720,7 +13721,8 @@ default, when the output is 1D, Arithmetic will write it as a table, not an
 image/array. The format of the output table (plain text or FITS ASCII or
 binary) can be set with the @option{--tableformat} option, see @ref{Input
 output options}). You can disable this feature (write 1D arrays as FITS
-images/arrays) with the @option{--onedasimage} option.
+images/arrays, or to the standard output) with the @option{--onedasimage}
+or @option{--onedonstdout} options.
 
 See @ref{Common options} for a review of the options in all Gnuastro
 programs. Arithmetic just redefines the @option{--hdu} and
@@ -13791,6 +13793,12 @@ HDU/extension to read the WCS within the file given to
 When final dataset to write as output only has one dimension, write it as a
 FITS image/array. By default, if the output is 1D, it will be written as a
 table, see above.
+
+@item -s
+@itemx --onedonstdout
+When final dataset to write as output only has one dimension, print it on
+the standard output, not in a file. By default, if the output is 1D, it
+will be written as a table, see above.
 
 @item -D
 @itemx --dontdelete

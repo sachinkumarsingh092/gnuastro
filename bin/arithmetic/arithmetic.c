@@ -1247,7 +1247,8 @@ reversepolish(struct arithmeticparams *p)
          will be freed while freeing `data'. */
       data->wcs=p->refdata.wcs;
       if(data->ndim==1 && p->onedasimage==0)
-        gal_table_write(data, NULL, p->cp.tableformat, p->cp.output,
+        gal_table_write(data, NULL, p->cp.tableformat,
+                        p->onedonstdout ? NULL : p->cp.output,
                         "ARITHMETIC", 0);
       else
         gal_fits_img_write(data, p->cp.output, NULL, PROGRAM_NAME);

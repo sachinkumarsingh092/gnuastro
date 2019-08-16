@@ -85,6 +85,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "onedonstdout",
+      UI_KEY_ONEDONSTDOUT,
+      0,
+      0,
+      "Write 1D output on stdout, not in a table.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->onedonstdout,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
     {0}
   };
