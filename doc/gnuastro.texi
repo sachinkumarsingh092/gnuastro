@@ -24779,7 +24779,7 @@ This function can be used to fill in arrays of numbers from strings (in an
 already allocated data structure), or add nodes to a linked list (if the
 type is a list type). For an array, you have to pass the pointer to the
 @code{i}th element where you want the value to be stored, for example
-@code{&(array[i]}).
+@code{&(array[i])}.
 
 If the string was successfully parsed to the requested type, this function
 will return a @code{0} (zero), otherwise it will return @code{1}
