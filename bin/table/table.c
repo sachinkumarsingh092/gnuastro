@@ -215,6 +215,22 @@ table_sort(struct tableparams *p)
                       p->cp.minmapsize, p->cp.quietmmap, NULL, NULL, NULL);
   sf=(s=perm->array)+perm->size; do *s=c++; while(++s<sf);
 
+  /* For string columns, print a descriptive message. Note that some FITS
+     tables were found that do actually have numbers stored in string
+     types! */
+  if(p->sortcol->type==GAL_TYPE_STRING)
+    error(EXIT_FAILURE, 0, "sort column has a string type, but it can "
+          "(currently) only work on numbers.\n\n"
+          "TIP: if you know the columns contents are all numbers that are "
+          "just stored as strings, you can use this program to save the "
+          "table as a text file, modify the column meta-data (for example "
+          "to type `i32' or `f32' instead of `strN'), then use this "
+          "program again to save it as a FITS table.\n\n"
+          "For more on column metadata in plain text format, please run "
+          "the following command (or see the `Gnuastro text table format "
+          "section of the book/manual):\n\n"
+          "    $ info gnuastro \"gnuastro text table format\"");
+
   /* Set the proper qsort function. */
   if(p->descending)
     switch(p->sortcol->type)
