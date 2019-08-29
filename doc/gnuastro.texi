@@ -2733,7 +2733,7 @@ is assumed to contain @emph{both} the coordinate rotation and scales. Note
 that not all FITS writers use the @code{CDELT} convention. So you might not
 find the @code{CDELT} keywords in the WCS meta data of some FITS
 files. However, all Gnuastro programs (which use the default FITS keyword
-writing format of WCSLIB) write their output WCS with the the @code{CDELT}
+writing format of WCSLIB) write their output WCS with the @code{CDELT}
 convention, even if the input doesn't have it. If your dataset doesn't use
 the @code{CDELT} convention, you can feed it to any (simple) Gnuastro
 program (for example Arithmetic) and the output will have the @code{CDELT}
@@ -3011,7 +3011,7 @@ None of Gnuastro's programs keep a default value internally within their
 code. However, when you ran CosmicCalculator only with the @option{-z2}
 option (not specifying the cosmological parameters) in @ref{Cosmological
 coverage}, it completed its processing and printed results. Where did the
-necessary cosmological parameters (like the matter density and etc) that
+necessary cosmological parameters (like the matter density, etc) that
 are necessary for its calculations come from? Fast reply: the values come
 from a configuration file (see @ref{Configuration file precedence}).
 
@@ -3569,7 +3569,7 @@ more evenly in the image.
 
 @cartouche
 @noindent
-@strong{Maximize the number of pseudo-detecitons:} For a new noise-pattern
+@strong{Maximize the number of pseudo-detections:} For a new noise-pattern
 (different instrument), play with @code{--dthresh} until you get a maximal
 number of pseudo-detections (the total number of pseudo-detections is
 printed on the command-line when you run NoiseChisel).
@@ -3989,7 +3989,7 @@ can have different shapes/morphologies in different filters.
 
 Gnuastro has a simple program for basic statistical analysis. The command
 below will print some basic information about the distribution (minimum,
-maximum, median and etc), along with a cute little ASCII histogram to
+maximum, median, etc), along with a cute little ASCII histogram to
 visually help you understand the distribution on the command-line without
 the need for a graphic user interface. This ASCII histogram can be useful
 when you just want some coarse and general information on the input
@@ -4704,7 +4704,7 @@ $ det="r_detected.fits -hDETECTIONS"
 $ astarithmetic $det 2 connected-components -olabeled.fits
 @end example
 
-You can find the the label of the main galaxy visually (by opening the
+You can find the label of the main galaxy visually (by opening the
 image and hovering your mouse over the M51 group's label). But to have a
 little more fun, lets do this automatically. The M51 group detection is by
 far the largest detection in this image, this allows us to find the
@@ -5385,7 +5385,7 @@ Bootstrapping is only necessary if you have decided to obtain the full
 version controlled history of Gnuastro, see @ref{Version controlled source}
 and @ref{Bootstrapping}. Using the version controlled source enables you to
 always be up to date with the most recent development work of Gnuastro (bug
-fixes, new functionalities, improved algorithms and etc). If you have
+fixes, new functionalities, improved algorithms, etc). If you have
 downloaded a tarball (see @ref{Downloading the source}), then you can
 ignore this subsection.
 
@@ -5395,7 +5395,7 @@ level tools that are used by a large collection of Unix-like operating
 systems programs, therefore they are most probably already available in
 your system. If they are not already installed, you should be able to
 easily find them in any GNU/Linux distribution package management system
-(@command{apt-get}, @command{yum}, @command{pacman} and etc). The short
+(@command{apt-get}, @command{yum}, @command{pacman}, etc). The short
 names in parenthesis in @command{typewriter} font after the package name
 can be used to search for them in your package manager. For the GNU
 Portability Library, GNU Autoconf Archive and @TeX{} Live, it is
@@ -5524,7 +5524,7 @@ $ su
 @item ImageMagick (@command{imagemagick})
 @cindex ImageMagick
 ImageMagick is a wonderful and robust program for image manipulation on the
-command-line. @file{bootsrap} uses it to convert the book images into the
+command-line. @file{bootstrap} uses it to convert the book images into the
 formats necessary for the various book formats.
 
 @end table
@@ -5594,7 +5594,7 @@ tarball compression format is with the
 tarball}. Therefore, the package manager commands below also contain Lzip.
 
 @table @asis
-@item @command{apt-get} (Debian-based OSs: Debian, Ubuntu, Linux Mint, and etc)
+@item @command{apt-get} (Debian-based OSs: Debian, Ubuntu, Linux Mint, etc)
 @cindex Debian
 @cindex Ubuntu
 @cindex Linux Mint
@@ -5624,7 +5624,7 @@ is the most recent version.
 
 
 @item @command{dnf}
-@itemx @command{yum} (Red Hat-based OSs: Red Hat, Fedora, CentOS, Scientific Linux, and etc)
+@itemx @command{yum} (Red Hat-based OSs: Red Hat, Fedora, CentOS, Scientific Linux, etc)
 @cindex RHEL
 @cindex Fedora
 @cindex CentOS
@@ -7326,7 +7326,7 @@ All the programs in Gnuastro share a set of common behavior mainly to do
 with user interaction to facilitate their usage and development. This
 includes how to feed input datasets into the programs, how to configure
 them, specifying the outputs, numerical data types, treating columns of
-information in tables and etc. This chapter is devoted to describing this
+information in tables, etc. This chapter is devoted to describing this
 common behavior in all programs. Because the behaviors discussed here are
 common to several programs, they are not repeated in each program's
 description.
@@ -8205,7 +8205,7 @@ Here is one example of how this option can be used in conjunction with the
 results of this command: @command{astnoisechisel image.fits --snquant=0.95}
 (along with various options set in various configuration files). You can
 save the state of NoiseChisel and reproduce that exact result on
-@file{image.fits} later by following these steps (the the extra spaces, and
+@file{image.fits} later by following these steps (the extra spaces, and
 @key{\}, are only for easy readability, if you want to try it out, only one
 space between each token is enough).
 
@@ -9298,7 +9298,7 @@ currently formatted in the @code{float64} type. Operations involving
 floating point or larger integer types are significantly slower than
 integer or smaller-width types respectively. In the latter case, it also
 requires much more (by 8 or 4 times in the example above) storage space. So
-when you confront such situations and want to store/archive/transfter the
+when you confront such situations and want to store/archive/transfer the
 data, it is best convert them to the most efficient type.
 
 The short and long names for the recognized numeric data types in Gnuastro
@@ -9624,7 +9624,7 @@ infinity values respectively and will be stored as a floating point, so
 they are acceptable.}.
 
 When a formatting problem occurs (for example you have specified the wrong
-type code, see below), or the the column was already given meta-data in a
+type code, see below), or the column was already given meta-data in a
 previous comment, or the column number is larger than the actual number of
 columns in the table (the non-commented or empty lines), then the comment
 information line will be ignored.
@@ -10797,7 +10797,7 @@ This is a very useful option for operations on the FITS date values, for
 example sorting FITS files by their dates, or finding the time difference
 between two FITS files. The advantage of working with the Unix epoch time
 is that you don't have to worry about calendar details (for example the
-number of days in different months, or leap years, and etc).
+number of days in different months, or leap years, etc).
 @end table
 
 
@@ -10841,7 +10841,7 @@ the night separating two months (like the night starting on March 31st and
 going into April 1st), or two years (like the night starting on December
 31st 2018 and going into January 1st, 2019). To account for such
 situations, it is necessary to keep track of how many days are in a month,
-and leap years, and etc.
+and leap years, etc.
 
 @cindex Unix epoch time
 @cindex Time, Unix epoch
@@ -11697,7 +11697,7 @@ format is PDF or EPS, ConvertType will use the PostScript optimization that
 allows setting the pixel values per bit, not byte (@ref{Recognized file
 formats}). This can greatly help reduce the file size. However, when
 @option{--fluxlow} or @option{--fluxhigh} are called, this optimization is
-disabeled: even though there are only two values (is binary), the
+disabled: even though there are only two values (is binary), the
 difference between them does not correspond to the full contrast of black
 and white.
 
@@ -12965,7 +12965,7 @@ explanation under @command{sqrt} for more.
 
 @item minvalue
 Minimum (non-blank) value in the top operand on the stack, so
-``@command{a.fits minvalue}'' will push the the minimum pixel value in this
+``@command{a.fits minvalue}'' will push the minimum pixel value in this
 image onto the stack. Therefore this operator is mainly intended for data
 (for example images), if the top operand is a number, this operator just
 returns it without any change. So note that when this operator acts on a
@@ -13218,7 +13218,7 @@ operators on the returned dataset.
 @cindex World Coordinate System (WCS)
 If any WCS is present, the returned dataset will also lack the respective
 dimension in its WCS matrix. Therefore, when the WCS is important for later
-processing, be sure that the input is aligned with the respective axises:
+processing, be sure that the input is aligned with the respective axes:
 all non-diagonal elements in the WCS matrix are zero.
 
 @cindex IFU
@@ -13350,7 +13350,7 @@ Less than: If the second popped (or left operand in infix notation, see
 operand, then this function will return a value of 1, otherwise it will
 return a value of 0. If both operands are images, then all the pixels will
 be compared with their counterparts in the other image. If only one operand
-is an image, then all the pixels will be compared with the the single value
+is an image, then all the pixels will be compared with the single value
 (number) of the other operand. Finally if both are numbers, then the output
 is also just one number (0 or 1). When the output is not a single number,
 it will be stored as an @code{unsigned char} type.
@@ -13575,7 +13575,7 @@ $ astarithmetic image.fits set-a a 2 x
 The name can be any string, but avoid strings ending with standard filename
 suffixes (for example @file{.fits})@footnote{A dataset name like
 @file{a.fits} (which can be set with @command{set-a.fits}) will cause
-confusion in the the initial parser of Arithmetic. It will assume this name
+confusion in the initial parser of Arithmetic. It will assume this name
 is a FITS file, and if it is used multiple times, Arithmetic will abort,
 complaining that you haven't provided enough HDUs.}.
 
@@ -13806,7 +13806,7 @@ Don't delete the output file, or files given to the @code{tofile} or
 @code{tofilefree} operators, if they already exist. Instead append the
 desired datasets to the extensions that already exist in the respective
 file. Note it doesn't matter if the final output file name is given with
-the the @option{--output} option, or determined automatically.
+the @option{--output} option, or determined automatically.
 
 Arithmetic treats this option differently from its default operation in
 other Gnuastro programs (see @ref{Input output options}). If the output
@@ -14909,7 +14909,7 @@ or even more dimensions since each dimension is by definition
 independent. Previously we defined @mymath{l} as the continuous
 variable in 1D and the inverse of the period in its direction to be
 @mymath{\omega}. Let's show the second spatial direction with
-@mymath{m} the the inverse of the period in the second dimension with
+@mymath{m} the inverse of the period in the second dimension with
 @mymath{\nu}. The Fourier transform in 2D (see @ref{Fourier
 transform}) can be written as:
 
@@ -17649,7 +17649,7 @@ option.
 Use this file as the convolved image and don't do convolution (ignore
 @option{--kernel}). NoiseChisel will just check the size of the given
 dataset is the same as the input's size. If a wrong image (with the same
-size) is given to this option, the results (errors, bugs, and etc) are
+size) is given to this option, the results (errors, bugs, etc) are
 unpredictable. So please use this option with care and in a highly
 controlled environment, for example in the scenario discussed below.
 
@@ -18312,7 +18312,7 @@ you have a binary dataset: each pixel is either signal (1) or noise
 but all detections have a label of 1. Therefore while we know which pixels
 contain signal, we still can't find out how many galaxies they contain or
 which detected pixels correspond to which galaxy. At the lowest (most
-generic) level, detection is a kind of segmentation (segmenting the the
+generic) level, detection is a kind of segmentation (segmenting the
 whole dataset into signal and noise, see @ref{NoiseChisel}). Here, we'll
 define segmentation only on signal: to separate and find sub-structure
 within the detections.
@@ -19137,7 +19137,7 @@ the output catalog/table's central position column@footnote{See
 @ref{Measuring elliptical parameters} for a discussion on this and the
 derivation of positional parameters, which includes the
 center.}. Similarly, the sum of all these pixels will be the 42nd row in
-the brightness column and etc. Pixels with labels equal to, or smaller
+the brightness column, etc. Pixels with labels equal to, or smaller
 than, zero will be ignored by MakeCatalog. In other words, the number of
 rows in MakeCatalog's output is already known before running it (the
 maximum value of the labeled dataset).
@@ -19249,7 +19249,7 @@ No measurement on a real dataset can be perfect: you can only reach a
 certain level/limit of accuracy. Therefore, a meaningful (scientific)
 analysis requires an understanding of these limits for the dataset and your
 analysis tools: different datasets have different noise properties and
-different detection methods (one method/algorith/software that is run with
+different detection methods (one method/algorithm/software that is run with
 a different set of parameters is considered as a different detection
 method) will have different abilities to detect or measure certain kinds of
 signal (astronomical objects) and their properties in the dataset. Hence,
@@ -19879,7 +19879,7 @@ assume the necessary input datasets are in the file given as its argument
 necessary and the only @option{--*file} option called is
 @option{--valuesfile}, MakeCatalog will search for these datasets (with the
 default/given HDUs) in the file given to @option{--valuesfile} (before
-looking into the the main argument file).
+looking into the main argument file).
 
 When the clumps image (necessary with the @option{--clumpscat} option) is
 used, MakeCatalog looks into the (possibly existing) @code{NUMLABS} keyword
@@ -20101,7 +20101,7 @@ mandatory option and if not given (or given a value of zero in a
 dimension), the full possible range of the dataset along that dimension
 will be used. This is useful when the noise properties of the dataset vary
 gradually. In such cases, using the full range of the input dataset is
-going to bias the result. However, note that decreasing the the range of
+going to bias the result. However, note that decreasing the range of
 available positions too much will also artificially decrease the standard
 deviation of the final distribution (and thus bias the upper-limit
 measurement).
@@ -21022,7 +21022,7 @@ by @mymath{\theta} to get the new rotated coordinates of that point
 @cindex Elliptical distance
 @noindent Recall that an ellipse is defined by @mymath{(i_r/a)^2+(j_r/b)^2=1}
 and that we defined @mymath{r_{el}\equiv{a}}. Hence, multiplying all
-elements of the the ellipse definition with @mymath{r_{el}^2} we get the
+elements of the ellipse definition with @mymath{r_{el}^2} we get the
 elliptical distance at this point point located:
 @mymath{r_{el}=\sqrt{i_r^2+(j_r/q)^2}}. To place the radial profiles
 explained below over an ellipse, @mymath{f(r_{el})} is calculated based on
@@ -22267,7 +22267,7 @@ certain background flux (observationally, the @emph{Sky} value). The Sky
 value is defined to be the average flux of a region in the dataset with no
 targets. Its physical origin can be the brightness of the atmosphere (for
 ground-based instruments), possible stray light within the imaging
-instrument, the average flux of undetected targets, or etc. The Sky value
+instrument, the average flux of undetected targets, etc. The Sky value
 is thus an ideal definition, because in real datasets, what lies deep in
 the noise (far lower than the detection limit) is never known@footnote{In a
 real image, a relatively large number of very faint objects can been fully
@@ -22773,7 +22773,7 @@ l(r)=R\sin^{-1}\left({r\over R}\right)}
 @mymath{R} is just an arbitrary constant and can be directly found from
 @mymath{K}, so for cleaner equations, it is common practice to set
 @mymath{R=1}, which gives: @mymath{l(r)=\sin^{-1}r}. Also note that when
-@mymath{R=1}, then @mymath{l=\theta}. Generally, depending on the the
+@mymath{R=1}, then @mymath{l=\theta}. Generally, depending on the
 curvature, in a @emph{static} universe the proper distance can be written
 as a function of the coordinate @mymath{r} as (from now on we are assuming
 @mymath{R=1}):
@@ -22932,7 +22932,7 @@ $ astcosmiccal -z0.4 -LAg
 $ astcosmiccal -l0.7 -m0.3 -z2.1
 @end example
 
-The input parameters (for example current matter density and etc) can be
+The input parameters (for example current matter density, etc) can be
 given as command-line options or in the configuration files, see
 @ref{Configuration files}. For a definition of the different parameters,
 please see the sections prior to this. If no redshift is given,
@@ -23227,7 +23227,7 @@ The distance modulus at given redshift.
 @itemx --absmagconv
 The conversion factor (addition) to absolute magnitude. Note that this is
 practically the distance modulus added with @mymath{-2.5\log{(1+z)}} for
-the the desired redshift based on the input parameters. Once the apparent
+the desired redshift based on the input parameters. Once the apparent
 magnitude and redshift of an object is known, this value may be added with
 the apparent magnitude to give the object's absolute magnitude.
 
@@ -23343,8 +23343,8 @@ library}.
 In theory, a full operating system (or any software) can be written as one
 function. Such a software would not need any headers or linking (that are
 discussed in the subsections below). However, writing that single function
-and maintaining it (adding new features, fixing bugs, documentation and
-etc) would be a programmer or scientist's worst nightmare! Furthermore, all
+and maintaining it (adding new features, fixing bugs, documentation, etc)
+would be a programmer or scientist's worst nightmare! Furthermore, all
 the hard work that went into creating it cannot be reused in other
 software: every other programmer or scientist would have to re-invent the
 wheel. The ultimate purpose behind libraries (which come with headers and
@@ -25073,7 +25073,7 @@ on these flags. If @code{input==NULL}, then this function will return
 
 
 @deftypefun {gal_data_t *} gal_blank_flag (gal_data_t @code{*input})
-Create a dataset of the the same size as the input, but with an
+Create a dataset of the same size as the input, but with an
 @code{uint8_t} type that has a value of 1 for data that are blank and 0 for
 those that aren't.
 @end deftypefun
@@ -25472,7 +25472,7 @@ simplify the allocation (and later cleaning) of several @code{gal_data_t}s
 that are related.
 
 For example, each column in a table is usually represented by one
-@code{gal_data_t} (so it has its own name, data type, units and etc). A
+@code{gal_data_t} (so it has its own name, data type, units, etc). A
 table (with many columns) can be seen as an array of @code{gal_data_t}s
 (when the number of columns is known a-priori). The functions below are
 defined to create a cleared array of data structures and to free them when
@@ -26010,7 +26010,7 @@ in the same order that they are stored. Each integer is printed on one
 line. This function is mainly good for checking/debugging your program. For
 program outputs, its best to make your own implementation with a better,
 more user-friendly format. For example the following code snippet. You can
-also modify it to print all values in one line, and etc, depending on the
+also modify it to print all values in one line, etc, depending on the
 context of your program.
 
 @example
@@ -26115,7 +26115,7 @@ the same order that they are stored. Each integer is printed on one
 line. This function is mainly good for checking/debugging your program. For
 program outputs, its best to make your own implementation with a better,
 more user-friendly format. For example, the following code snippet. You can
-also modify it to print all values in one line, and etc, depending on the
+also modify it to print all values in one line, etc, depending on the
 context of your program.
 
 @example
@@ -26204,7 +26204,7 @@ the same order that they are stored. Each floating point number is printed
 on one line. This function is mainly good for checking/debugging your
 program. For program outputs, its best to make your own implementation with
 a better, more user-friendly format. For example, in the following code
-snippet. You can also modify it to print all values in one line, and etc,
+snippet. You can also modify it to print all values in one line, etc,
 depending on the context of your program.
 
 @example
@@ -26296,7 +26296,7 @@ the same order that they are stored. Each floating point number is printed
 on one line. This function is mainly good for checking/debugging your
 program. For program outputs, its best to make your own implementation with
 a better, more user-friendly format. For example, in the following code
-snippet. You can also modify it to print all values in one line, and etc,
+snippet. You can also modify it to print all values in one line, etc,
 depending on the context of your program.
 
 @example
@@ -26981,8 +26981,8 @@ enough, the HDU is also necessary).
 
 Both Gnuastro and CFITSIO have special identifiers for each type that they
 accept. Gnuastro's type identifiers are fully described in @ref{Library
-data types} and are usable for all kinds of datasets (images, table columns
-and etc) as part of Gnuastro's @ref{Generic data container}. However,
+data types} and are usable for all kinds of datasets (images, table columns,
+etc) as part of Gnuastro's @ref{Generic data container}. However,
 following the FITS standard, CFITSIO has different identifiers for images
 and tables. Following CFITSIO's own convention, we will use @code{bitpix}
 for image type identifiers and @code{datatype} for its internal identifiers
@@ -27202,7 +27202,7 @@ This is a very useful function for operations on the FITS date values, for
 example sorting FITS files by their dates, or finding the time difference
 between two FITS files. The advantage of working with the Unix epoch time
 is that you don't have to worry about calendar details (for example the
-number of days in different months, or leap years, and etc).
+number of days in different months, or leap years, etc).
 @end deftypefun
 
 @deftypefun void gal_fits_key_read_from_ptr (fitsfile @code{*fptr}, gal_data_t @code{*keysll}, int @code{readcomment}, int @code{readunit})
@@ -27940,7 +27940,7 @@ By default, when the dataset only has two values, this function will use
 the PostScript optimization that allows setting the pixel values per bit,
 not byte (@ref{Recognized file formats}). This can greatly help reduce the
 file size. However, when @option{dontoptimize!=0}, this optimization is
-disabeled: even though there are only two values (is binary), the
+disabled: even though there are only two values (is binary), the
 difference between them does not correspond to the full contrast of black
 and white.
 @end deftypefun
@@ -27995,7 +27995,7 @@ By default, when the dataset only has two values, this function will use
 the PostScript optimization that allows setting the pixel values per bit,
 not byte (@ref{Recognized file formats}). This can greatly help reduce the
 file size. However, when @option{dontoptimize!=0}, this optimization is
-disabeled: even though there are only two values (is binary), the
+disabled: even though there are only two values (is binary), the
 difference between them does not correspond to the full contrast of black
 and white.
 @end deftypefun
@@ -28108,7 +28108,7 @@ points is calculated with the equation below.
 
 @dispmath {\cos(d)=\sin(d_1)\sin(d_2)+\cos(d_1)\cos(d_2)\cos(r_1-r_2)}
 
-However, since the the pixel scales are usually very small numbers, this
+However, since the pixel scales are usually very small numbers, this
 function won't use that direct formula. It will be use the
 @url{https://en.wikipedia.org/wiki/Haversine_formula, Haversine formula}
 which is better considering floating point errors:
@@ -28135,7 +28135,7 @@ list of image coordinates given the input WCS structure. @code{coords} must
 be a linked list of data structures of float64 (`double') type,
 see@ref{Linked lists} and @ref{List of gal_data_t}. The top (first
 popped/read) node of the linked list must be the first WCS coordinate (RA
-in an image usually) and etc. Similarly, the top node of the output will be
+in an image usually) etc. Similarly, the top node of the output will be
 the first image coordinate (in the FITS standard).
 
 If @code{inplace} is zero, then the output will be a newly allocated list
@@ -29349,7 +29349,7 @@ indexs. The sorting will be ordered according to the @code{values} pointer
 of @code{gal_qsort_index_multi}. Note that @code{values} must point to the
 same place in all the structures of the @code{gal_qsort_index_multi} array.
 
-This function is only useful when the the indexs of multiple arrays on
+This function is only useful when the indexs of multiple arrays on
 multiple threads are to be sorted. If your program is single threaded, or
 all the indexs belong to a single array (sorting different sub-sets of
 indexs in a single array on multiple threads), it is recommended to use
@@ -30291,7 +30291,7 @@ vice-versa. See the description of @code{gal_label_watershed} for more on
 @code{indexs}.
 
 Each ``clump'' (identified by a positive integer) is assumed to be
-surrounded by atleast one river/watershed pixel (with a non-positive
+surrounded by at least one river/watershed pixel (with a non-positive
 label). This function will parse the pixels identified in @code{indexs} and
 make a measurement on each clump and over all the river/watershed
 pixels. The number of clumps (@code{numclumps}) must be given as an input
@@ -30311,11 +30311,11 @@ tile/value will be associated to each clump based on its flux-weighted
 (only positive values) center.
 
 The main output is an internally allocated, 1-dimensional array with one
-value per label. The array information (length, type and etc) will be
+value per label. The array information (length, type, etc) will be
 written into the @code{sig} generic data container. Therefore
 @code{sig->array} must be @code{NULL} when this function is called. After
-this function, the details of the array (number of elements, type and size
-and etc) will be written in to the various components of @code{sig}, see
+this function, the details of the array (number of elements, type and size,
+etc) will be written in to the various components of @code{sig}, see
 the definition of @code{gal_data_t} in @ref{Generic data
 container}. Therefore @code{sig} must already be allocated before calling
 this function.
@@ -32735,7 +32735,7 @@ the development of Gnuastro, so please adhere to the following guidelines.
 The body should be very descriptive. Start the commit message body by
 explaining what changes your commit makes from a user's perspective (added,
 changed, or removed options, or arguments to programs or libraries, or
-modified algorithms, or new installation step, or etc).
+modified algorithms, or new installation step, etc).
 
 @item
 @cindex Mailing list: gnuastro-commits
@@ -32798,7 +32798,7 @@ Workflow:
 @item
 You can send commit patches by email as fully explained in `Pro Git'. This
 is good for your first few contributions. Just note that raw patches
-(containing only the diff) do not have any meta-data (author name, date and
+(containing only the diff) do not have any meta-data (author name, date,
 etc). Therefore they will not allow us to fully acknowledge your contributions
 as an author in Gnuastro: in the @file{AUTHORS} file and at the start of
 the PDF book. These author lists are created automatically from the version
@@ -32813,7 +32813,7 @@ try the next solution.
 
 @item
 You can have your own forked copy of Gnuastro on any hosting site you like
-(GitHub, GitLab, BitBucket, or etc) and inform us when your changes are
+(GitHub, GitLab, BitBucket, etc) and inform us when your changes are
 ready so we merge them in Gnuastro. This is more suited for people who
 commonly contribute to the code (see @ref{Forking tutorial}).
 
