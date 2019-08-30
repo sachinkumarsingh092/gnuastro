@@ -44,7 +44,13 @@ if [ -d $1/.git ]; then
     # directory. The original `.mailmap' is in the `TOP_SRCDIR', so even
     # when the source and build directories are the same, there is no
     # problem.
-    ln -s $1/.mailmap .mailmap
+    #
+    # But in case `.mailmap' already exists (for example the script is run
+    # in the top source directory not from the `doc' directory, or if a
+    # symbolic link was already created), we won't do any copying.
+    if [ -e .mailmap ]; then keepmailmap=1;
+    else                     keepmailmap=0; ln -s $1/.mailmap .mailmap;
+    fi
 
     # Do NOT test if authors.texi is newer than ../.git.  In some cases the
     # list of authors is created empty when running make in top directory
@@ -57,8 +63,8 @@ if [ -d $1/.git ]; then
                 printf("(%s, %s)@*\n", $NF, $1)}' \
         > $1/doc/authors.texi
 
-    # Clean up:
-    rm .mailmap
+    # Clean up (if necessary)
+    if [ $keepmailmap = 0 ]; then rm .mailmap; fi
 
     # Check if the authors.texi file was actually written:
     if [ ! -s $1/doc/authors.texi ]; then
