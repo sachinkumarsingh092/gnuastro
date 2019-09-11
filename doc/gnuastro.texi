@@ -17377,29 +17377,29 @@ Added features/options:
 @itemize
 
 @item
-@option{--widekernel}: NoiseChisel uses the difference between the mode and
-median to identify if a tile should be used for estimating the quantile
-thresholds (see @ref{Quantifying signal in a tile}). Until now, NoiseChisel
-would convolve an image once and estimate the proper tiles for quantile
-estimations on the convolved image. The same convolved image would later be
-used for quantile estimation. A larger kernel does increase the skewness
-(and thus difference between the mode and median, therefore helps in
-detecting the presence signal), however, it disfigures the
-shapes/morphology of the objects.
-
-This new @option{--widekernel} option (and a corresponding @option{--wkhdu}
-option to specify its HDU) option are added to solve such cases. When its
-given, the input will be convolved with both the sharp (given through the
-@option{--kernel} option) and wide kernels. The mode and median are
-calculated on the dataset that is convolved with the wider kernel, then the
-quantiles are estimated on the image convolved with the sharper kernel.
-
-@item
 The quantile difference to identify tiles with no significant signal is
 measured between the @emph{mean} and median. In the published paper, it was
 between the @emph{mode} and median. The quantile of the mean is more
 sensitive to skewness (the presence of signal), so it is preferable to the
 quantile of the mode. For more see @ref{Quantifying signal in a tile}.
+
+@item
+@option{--widekernel}: NoiseChisel uses the difference between the mean and
+median to identify if a tile should be used for estimating the quantile
+thresholds (see @ref{Quantifying signal in a tile}). Until now, NoiseChisel
+would convolve an image once and estimate the proper tiles for quantile
+estimations on the convolved image. The same convolved image would later be
+used for quantile estimation. A larger kernel does increase the skewness
+(and thus difference between the mean and median, therefore helps in
+detecting the presence signal), however, it disfigures the
+shapes/morphology of the objects.
+
+This new @option{--widekernel} option (and a corresponding @option{--wkhdu}
+option to specify its HDU) is added to solve such cases. When its
+given, the input will be convolved with both the sharp (given through the
+@option{--kernel} option) and wide kernels. The mean and median are
+calculated on the dataset that is convolved with the wider kernel, then the
+quantiles are estimated on the image convolved with the sharper kernel.
 
 @item
 Outlier rejection in quantile thresholds: When there are large galaxies or
@@ -17432,14 +17432,13 @@ the image. For more, see the description of this option in @ref{Detection
 options}.
 
 @item
-@option{dopening}: Number of openings after applying
+@option{--dopening}: Number of openings after applying
 @option{--dthresh}. For more, see the description of this option in
 @ref{Detection options}.
 
 @item
-@option{dopeningngb}: Number of openings after applying
-@option{--dthresh}. For more, see the description of this option in
-@ref{Detection options}.
+@option{--dopeningngb}: The connectivity/neighbors used in the opening of
+@option{--dopening}.
 
 @item
 @option{--holengb}: The connectivity (defined by the number of neighbors)
@@ -17454,7 +17453,7 @@ description of this option in @ref{Detection options}.
 
 @item
 @option{--snthresh}: Manually set the S/N of true pseudo-detections and
-thus avoid the need to manually identify this value. For more, see the
+thus avoid the need to automatically identify this value. For more, see the
 description of this option in @ref{Detection options}.
 
 @item
@@ -18411,7 +18410,7 @@ Segment's main algorithm and working strategy were initially defined and
 introduced in Section 3.2 of @url{https://arxiv.org/abs/1505.01664,
 Akhlaghi and Ichikawa [2015]}. Prior to Gnuastro version 0.6 (released
 2018), one program (NoiseChisel) was in charge of detection @emph{and}
-segmentation. to increase creativity and modularity, NoiseChisel's
+segmentation. To increase creativity and modularity, NoiseChisel's
 segmentation features were spun-off into a separate program (Segment). It
 is strongly recommended to read that paper for a good understanding of what
 Segment does, how it relates to detection, and how each parameter
