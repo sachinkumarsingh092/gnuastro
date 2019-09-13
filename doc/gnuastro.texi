@@ -11918,7 +11918,7 @@ $ asttable bintab.fits --sort=3 -ooutput.txt
 
 ## Subtract the first column from the second in `cat.txt' (can also
 ## be a FITS table) and keep the third and fourth columns.
-$ awk cat.txt -c"arith c2 c1 -",3,4 -ocat.fits
+$ asttable cat.txt -c"arith c2 c1 -",3,4 -ocat.fits
 @end example
 
 Table's input dataset can be given either as a file or from Standard input
