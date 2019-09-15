@@ -9259,47 +9259,64 @@ you take with the telescope is actually a string of millions of these zeros
 and ones. The space required to keep a zero or one is the smallest unit of
 storage, and is known as a @emph{bit}. However, understanding and
 manipulating this string of bits is extremely hard for most
-people. Therefore, we define packages of these bits along with a standard
-on how to interpret the bits in each package as a @emph{type}.
+people. Therefore, different standards are defined to package the bits into
+separate @emph{type}s with a fixed interpretation of the bits in each
+package.
 
 @cindex Byte
 @cindex Signed integer
 @cindex Unsigned integer
 @cindex Integer, Signed
-The most basic standard for reading the bits is integer numbers
-(@mymath{..., -2, -1, 0, 1, 2, ...}, more bits will give larger
-limits). The common integer types are 8, 16, 32, and 64 bits wide. For each
-width, there are two standards for reading the bits: signed and unsigned
-integers. In the former, negative numbers are allowed and in the latter,
-they aren't. The @code{unsigned} types thus have larger positive limits
-(one extra bit), but no negative value. When the context of your work
-doesn't involve negative numbers (for example counting, where negative is
-not defined), it is best to use the @code{unsigned} types. For full
-numerical range of all integer types, see below.
+To store numbers, the most basic standard/type is for integers
+(@mymath{..., -2, -1, 0, 1, 2, ...}).  The common integer types are 8, 16,
+32, and 64 bits wide (more bits will give larger limits). Each bit
+corresponds to a power of 2 and they are summed to create the final
+number. In the integer types, for each width there are two standards for
+reading the bits: signed and unsigned. In the `signed' convention, one bit
+is reserved for the sign (stating that the integer is positive or
+negative). The `unsigned' integers use that bit in the actual number and
+thus contain only positive numbers (starting from zero).
+
+Therefore, at the same number of bits, both signed and unsigned integers
+can allow the same number of integers, but the positive limit of the
+@code{unsigned} types is double their @code{signed} counterparts with the
+same width (at the expense of not having negative numbers). When the
+context of your work doesn't involve negative numbers (for example
+counting, where negative is not defined), it is best to use the
+@code{unsigned} types. For the full numerical range of all integer types,
+see below.
 
 Another standard of converting a given number of bits to numbers is the
-floating point standard, this standard can approximately store any real
-number with a given precision. There are two common floating point types:
-32-bit and 64-bit, for single and double precision floating point numbers
-respectively. The former is sufficient for data with less than 8
+floating point standard, this standard can @emph{approximately} store any
+real number with a given precision. There are two common floating point
+types: 32-bit and 64-bit, for single and double precision floating point
+numbers respectively. The former is sufficient for data with less than 8
 significant decimal digits (most astronomical data), while the latter is
 good for less than 16 significant decimal digits. The representation of
 real numbers as bits is much more complex than integers. If you are
-interested, you can start with the
+interested to learn more about it, you can start with the
 @url{https://en.wikipedia.org/wiki/Floating_point, Wikipedia article}.
 
-With the conversion operators in Gnuastro's Arithmetic, you can change the
-types of data to each other, which is necessary in some contexts. For
-example the program/library, that you intend to feed the data into, only
-accepts floating point values, but you have an integer image. Another
-situation that conversion can be helpful is when you know that your data
-only has values that fit within @code{int8} or @code{uint16}. However it is
-currently formatted in the @code{float64} type. Operations involving
-floating point or larger integer types are significantly slower than
-integer or smaller-width types respectively. In the latter case, it also
-requires much more (by 8 or 4 times in the example above) storage space. So
-when you confront such situations and want to store/archive/transfer the
-data, it is best convert them to the most efficient type.
+Practically, you can use Gnuastro's Arithmetic program to convert/change
+the type of an image/datacube (see @ref{Arithmetic}), or Gnuastro Table
+program to convert a table column's data type (see @ref{Column
+arithmetic}). Conversion of a dataset's type is necessary in some
+contexts. For example the program/library, that you intend to feed the data
+into, only accepts floating point values, but you have an integer
+image/column. Another situation that conversion can be helpful is when you
+know that your data only has values that fit within @code{int8} or
+@code{uint16}. However it is currently formatted in the @code{float64}
+type.
+
+The important thing to consider is that operations involving wider,
+floating point, or signed types can be significantly slower than
+smaller-width, integer, or unsigned types respectively. Note that besides
+speed, a wider type also requires much more storage space (by 4 or 8
+times). Therefore, when you confront such situations that can be optimized
+and want to store/archive/transfer the data, it is best to use the most
+efficient type. For example if your dataset (image or table column) only
+has positive integers less than 65535, store it as an unsigned 16-bit
+integer for faster processing, faster transfer, and less storage space.
 
 The short and long names for the recognized numeric data types in Gnuastro
 are listed below. Both short and long names can be used when you want to
@@ -9370,14 +9387,15 @@ floating points can accurately represent a floating point number
 
 @cartouche
 @noindent
-@strong{Some file formats don't recognize all types.} Some file formats
-don't recognize all the types, for example the FITS standard (see
-@ref{Fits}) does not define @code{uint64} in binary tables or images. When
-a type is not acceptable for output into a given file format, the
-respective Gnuastro program or library will let you know and abort. On the
-command-line, you can use the @ref{Arithmetic} program to convert the
-numerical type of a dataset, in the libraries, you can call
-@code{gal_data_copy_to_new_type}.
+@strong{Some file formats don't recognize all types.} For example the FITS
+standard (see @ref{Fits}) does not define @code{uint64} in binary tables or
+images. When a type is not acceptable for output into a given file format,
+the respective Gnuastro program or library will let you know and abort. On
+the command-line, you can convert the numerical type of an image, or table
+column into another type with @ref{Arithmetic} or @ref{Table}
+respectively. If you are writing your own program, you can use the
+@code{gal_data_copy_to_new_type()} function in Gnuastro's library, see
+@ref{Copying datasets}.
 @end cartouche
 
 
