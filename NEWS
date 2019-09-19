@@ -16,6 +16,13 @@ See the end of the file for license conditions.
      the redshift given to CosmicCalculator. You can either use known line
      names, or directly give a number as any emitted line's wavelength.
 
+  Table:
+   --equal: Output only rows that have a value equal to the given value in
+     the given column. For example `--equal=ID,2,4,5' will select only rows
+     that have a value of 2, 4 and 5 in the `ID' column.
+   --notequal: Output only rows that have a different value compared to the
+     values given to this option in the given column.
+
 ** Removed features
 
 ** Changed features

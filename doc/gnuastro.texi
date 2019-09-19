@@ -8914,7 +8914,7 @@ So by default meta-data aren't included.
 
 @item -r STR,FLT:FLT
 @itemx --range=STR,FLT:FLT
-Only print the output rows that have a value within the given range in the @code{STR} column (can be a name or counter).
+Only output rows that have a value within the given range in the @code{STR} column (can be a name or counter).
 Note that the range is only inclusive in the lower-limit.
 For example with @code{--range=sn,5:20} the output's columns will only contain rows that have a value in the @code{sn} column (not case-sensitive) that is greater or equal to 5, and less than 20.
 
@@ -8926,6 +8926,29 @@ This is good when you just want to select using one column's values, but don't n
 
 For one example of using this option, see the example under
 @option{--sigclip-median} in @ref{Invoking aststatistics}.
+
+@item -e STR,INT/FLT,...
+@itemx --equal=STR,INT/FLT,...
+Only output rows that are equal to the given number(s) in the given column.
+The first argument is the column identifier (name or number, see @ref{Selecting table columns}), after that you can specify any number of values.
+For example @option{--equal=ID,5,6,8} will only print the rows that have a value of 5, 6, or 8 in the @code{ID} column.
+This option can also be called multiple times, so @option{--equal=ID,4,5 --equal=ID,6,7} has the same effect as @option{--equal=4,5,6,7}.
+
+@cartouche
+@noindent
+@strong{Equality and floating point numbers:} Floating point numbers are only approximate values (see @ref{Numeric data types}).
+In this context, their equality depends on how the the input table was originally stored (as a plain text table or as an ASCII/binary FITS table).
+If you want to select floating point numbers, it is strongly recommended to use the @option{--range} option and set a very small interval around your desired number, don't use @option{--equal} or @option{--notequal}.
+@end cartouche
+
+@item -n STR,INT/FLT,...
+@itemx --notequal=STR,INT/FLT,...
+Only output rows that are @emph{not} equal to the given number(s) in the given column.
+The first argument is the column identifier (name or number, see @ref{Selecting table columns}), after that you can specify any number of values.
+For example @option{--notequal=ID,5,6,8} will only print the rows where the @code{ID} column doesn't have value of 5, 6, or 8.
+This option can also be called multiple times, so @option{--notequal=ID,4,5 --notequal=ID,6,7} has the same effect as @option{--notequal=4,5,6,7}.
+
+Be very careful if you want to use the non-equality with floating point numbers, see the special note under @option{--equal} for more.
 
 @item -s STR
 @item --sort=STR

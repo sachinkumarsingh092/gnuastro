@@ -1140,24 +1140,34 @@ gal_options_parse_name_and_values(struct argp_option *option, char *arg,
 
       /* Read the values and write the name. */
       dataset=gal_options_parse_list_of_numbers(values, filename, lineno);
-      dataset->name=name;
 
-      /* Add the given dataset to the end of an existing dataset. */
-      existing = *(gal_data_t **)(option->value);
-      if(existing)
+      /* If there actually was a string of numbers, then do the rest. */
+      if(dataset)
         {
-          for(tmp=existing;tmp!=NULL;tmp=tmp->next)
-            if(tmp->next==NULL) { tmp->next=dataset; break; }
+          dataset->name=name;
+
+          /* Add the given dataset to the end of an existing dataset. */
+          existing = *(gal_data_t **)(option->value);
+          if(existing)
+            {
+              for(tmp=existing;tmp!=NULL;tmp=tmp->next)
+                if(tmp->next==NULL) { tmp->next=dataset; break; }
+            }
+          else
+            *(gal_data_t **)(option->value) = dataset;
+
+          /* For a check.
+             printf("arg: %s\n", arg);
+             darray=dataset->array;
+             for(i=0;i<dataset->size;++i) printf("%f\n", darray[i]);
+             exit(0);
+          */
         }
       else
-        *(gal_data_t **)(option->value) = dataset;
-
-      /* For a check.
-      printf("arg: %s\n", arg);
-      darray=dataset->array;
-      for(i=0;i<dataset->size;++i) printf("%f\n", darray[i]);
-      exit(0);
-      */
+        error(EXIT_FAILURE, 0, "`--%s' requires a string of numbers "
+              "(separated by `,' or `:') following its first argument, "
+              "please run with `--help' for more information",
+              option->name);
 
       /* Our job is done, return NULL. */
       return NULL;

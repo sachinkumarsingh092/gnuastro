@@ -75,81 +75,207 @@ table_apply_permutation(gal_data_t *table, size_t *permutation,
 
 
 
-static void
-table_range(struct tableparams *p)
+static gal_data_t *
+table_selection_range(struct tableparams *p, gal_data_t *col)
 {
-  uint8_t *u;
-  double *rarr;
-  gal_data_t *mask;
-  struct list_range *tmp;
-  gal_data_t *ref, *perm, *range, *blmask;
-  size_t i, g, b, *s, *sf, one=1, ngood=0;
-  gal_data_t *min, *max, *ltmin, *gemax, *sum;
-
+  size_t one=1;
+  double *darr;
   int numok=GAL_ARITHMETIC_NUMOK;
   int inplace=GAL_ARITHMETIC_INPLACE;
+  gal_data_t *min=NULL, *max=NULL, *tmp, *ltmin, *gemax=NULL;
 
-  /* Allocate datasets for the necessary numbers and write them in. */
+  /* First, make sure everything is OK. */
+  if(p->range==NULL)
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us to fix the "
+          "problem at %s. `p->range' should not be NULL at this point",
+          __func__, PACKAGE_BUGREPORT);
+
+  /* Allocations. */
   min=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &one, NULL, 0, -1, 1,
                      NULL, NULL, NULL);
   max=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &one, NULL, 0, -1, 1,
                      NULL, NULL, NULL);
+
+  /* Read the range of values for this column. */
+  darr=p->range->array;
+  ((double *)(min->array))[0] = darr[0];
+  ((double *)(max->array))[0] = darr[1];
+
+  /* Move `p->range' to the next element in the list and free the current
+     one (we have already read its values and don't need it any more). */
+  tmp=p->range;
+  p->range=p->range->next;
+  gal_data_free(tmp);
+
+  /* Find all the elements outside this range (smaller than the minimum,
+     larger than the maximum or blank) as separate binary flags.. */
+  ltmin=gal_arithmetic(GAL_ARITHMETIC_OP_LT, 1, numok, col, min);
+  gemax=gal_arithmetic(GAL_ARITHMETIC_OP_GE, 1, numok, col, max);
+
+  /* Merge them both into one array. */
+  ltmin=gal_arithmetic(GAL_ARITHMETIC_OP_OR, 1, inplace, ltmin, gemax);
+
+  /* For a check.
+  {
+    size_t i;
+    uint8_t *u=ltmin->array;
+    for(i=0;i<ltmin->size;++i) printf("%zu: %u\n", i, u[i]);
+    exit(0);
+  }
+  */
+
+  /* Clean up and return. */
+  gal_data_free(gemax);
+  gal_data_free(min);
+  gal_data_free(max);
+  return ltmin;
+}
+
+
+
+
+
+static gal_data_t *
+table_selection_equal_or_notequal(struct tableparams *p, gal_data_t *col,
+                                  int e0n1)
+{
+  double *darr;
+  size_t i, one=1;
+  int numok=GAL_ARITHMETIC_NUMOK;
+  int inplace=GAL_ARITHMETIC_INPLACE;
+  gal_data_t *eq, *out=NULL, *value=NULL;
+  gal_data_t *arg = e0n1 ? p->notequal : p->equal;
+
+  /* Note that this operator is used to make the "masked" array, so when
+     `e0n1==0' the operator should be `GAL_ARITHMETIC_OP_NE' and
+     vice-versa.
+
+     For the merging with other elements, when `e0n1==0', we need the
+     `GAL_ARITHMETIC_OP_AND', but for `e0n1==1', it should be `OR'. */
+  int mergeop  = e0n1 ? GAL_ARITHMETIC_OP_OR : GAL_ARITHMETIC_OP_AND;
+  int operator = e0n1 ? GAL_ARITHMETIC_OP_EQ : GAL_ARITHMETIC_OP_NE;
+
+  /* First, make sure everything is OK. */
+  if(arg==NULL)
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us to fix the "
+          "problem at %s. `p->range' should not be NULL at this point",
+          __func__, PACKAGE_BUGREPORT);
+
+  /* Allocate space for the value. */
+  value=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &one, NULL, 0, -1, 1,
+                     NULL, NULL, NULL);
+
+  /* Go through the values given to this call of the option and flag the
+     elements. */
+  for(i=0;i<arg->size;++i)
+    {
+      darr=arg->array;
+      ((double *)(value->array))[0] = darr[i];
+      eq=gal_arithmetic(operator, 1, numok, col, value);
+      if(out)
+        {
+          out=gal_arithmetic(mergeop, 1, inplace, out, eq);
+          gal_data_free(eq);
+        }
+      else
+        out=eq;
+    }
+
+  /* For a check.
+  {
+    uint8_t *u=out->array;
+    for(i=0;i<out->size;++i) printf("%zu: %u\n", i, u[i]);
+    exit(0);
+  }
+  */
+
+  /* Move the main pointer to the next possible call of the given
+     option. With this, we can safely free `arg' at this point. */
+  if(e0n1) p->notequal=p->notequal->next;
+  else     p->equal=p->equal->next;
+
+  /* Clean up and return. */
+  gal_data_free(value);
+  gal_data_free(arg);
+  return out;
+}
+
+
+
+
+
+static void
+table_selection(struct tableparams *p)
+{
+  uint8_t *u;
+  struct list_select *tmp;
+  gal_data_t *mask, *addmask=NULL;
+  gal_data_t *sum, *perm, *blmask;
+  size_t i, g, b, *s, *sf, ngood=0;
+  int inplace=GAL_ARITHMETIC_INPLACE;
+
+  /* Allocate datasets for the necessary numbers and write them in. */
   perm=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, p->table->dsize, NULL, 0,
                       p->cp.minmapsize, p->cp.quietmmap, NULL, NULL, NULL);
   mask=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, p->table->dsize, NULL, 1,
                       p->cp.minmapsize, p->cp.quietmmap, NULL, NULL, NULL);
 
-  /* Go over all the necessary range options. */
-  range=p->range;
-  for(tmp=p->rangecol;tmp!=NULL;tmp=tmp->next)
+  /* Go over each selection criteria and remove the necessary elements. */
+  for(tmp=p->selectcol;tmp!=NULL;tmp=tmp->next)
     {
-      /* Set the minimum and maximum values. */
-      rarr=range->array;
-      ((double *)(min->array))[0] = rarr[0];
-      ((double *)(max->array))[0] = rarr[1];
+      switch(tmp->type)
+        {
+        case SELECT_TYPE_RANGE:
+          addmask=table_selection_range(p, tmp->col);
+          break;
 
-      /* Set the reference column to read values from. */
-      ref=tmp->v;
+        case SELECT_TYPE_EQUAL:
+          addmask=table_selection_equal_or_notequal(p, tmp->col, 0);
+          break;
 
-      /* Find all the bad elements (smaller than the minimum, larger than
-         the maximum or blank) so we can flag them. */
-      ltmin=gal_arithmetic(GAL_ARITHMETIC_OP_LT, 1, numok, ref, min);
-      gemax=gal_arithmetic(GAL_ARITHMETIC_OP_GE, 1, numok, ref, max);
-      blmask = ( gal_blank_present(ref, 1)
-                 ? gal_arithmetic(GAL_ARITHMETIC_OP_ISBLANK, 1, 0, ref)
-                 : NULL );
+        case SELECT_TYPE_NOTEQUAL:
+          addmask=table_selection_equal_or_notequal(p, tmp->col, 1);
+          break;
 
-      /* Merge all the flags into one array. */
-      ltmin=gal_arithmetic(GAL_ARITHMETIC_OP_OR, 1, inplace, ltmin, gemax);
-      if(blmask)
-        ltmin=gal_arithmetic(GAL_ARITHMETIC_OP_OR, 1, inplace, ltmin, blmask);
+        default:
+          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s "
+                "to fix the problem. The code %d is not a recognized "
+                "range identifier", __func__, PACKAGE_BUGREPORT,
+                tmp->type);
+        }
 
-      /* Add these flags to all previous flags. */
-      mask=gal_arithmetic(GAL_ARITHMETIC_OP_OR, 1, inplace, mask, ltmin);
+      /* Remove any blank elements. */
+      if(gal_blank_present(tmp->col, 1))
+        {
+          blmask = gal_arithmetic(GAL_ARITHMETIC_OP_ISBLANK, 1, 0, tmp->col);
+          addmask=gal_arithmetic(GAL_ARITHMETIC_OP_OR, 1, inplace,
+                                 addmask, blmask);
+          gal_data_free(blmask);
+        }
+
+      /* Add this mask array to the cumulative mask array (of all
+         selections). */
+      mask=gal_arithmetic(GAL_ARITHMETIC_OP_OR, 1, inplace, mask, addmask);
 
       /* For a check.
-      {
-        float *f=ref->array;
-        uint8_t *m=mask->array;
-        uint8_t *u=ltmin->array, *uf=u+ltmin->size;
-        printf("\n\nInput column: %s\n", ref->name ? ref->name : "No Name");
-        printf("Range: %g, %g\n", rarr[0], rarr[1]);
-        printf("%-20s%-20s%-20s\n", "Value", "This mask",
-               "Including previous");
-        do printf("%-20f%-20u%-20u\n", *f++, *u++, *m++); while(u<uf);
-        exit(0);
-      }
-      */
+         {
+           float *f=ref->array;
+           uint8_t *m=mask->array;
+           uint8_t *u=addmask->array, *uf=u+addmask->size;
+           printf("\n\nInput column: %s\n", ref->name ? ref->name : "No Name");
+           printf("Range: %g, %g\n", rarr[0], rarr[1]);
+           printf("%-20s%-20s%-20s\n", "Value", "This mask",
+           "Including previous");
+           do printf("%-20f%-20u%-20u\n", *f++, *u++, *m++); while(u<uf);
+           exit(0);
+           }
+        */
 
-      /* Clean up. */
-      gal_data_free(ltmin);
-      gal_data_free(gemax);
-
-      /* Increment pointers. */
-      range=range->next;
+      /* Final clean up. */
+      gal_data_free(addmask);
     }
 
-  /* Count the number of bad elements. */
+  /* Find the final number of elements to print. */
   sum=gal_statistics_sum(mask);
   ngood = p->table->size - ((double *)(sum->array))[0];
 
@@ -185,15 +311,13 @@ table_range(struct tableparams *p)
 
   /* Clean up. */
   i=0;
-  for(tmp=p->rangecol;tmp!=NULL;tmp=tmp->next)
-    { if(p->freerange[i]) {gal_data_free(tmp->v); tmp->v=NULL;} ++i; }
-  ui_list_range_free(p->rangecol, 0);
+  for(tmp=p->selectcol;tmp!=NULL;tmp=tmp->next)
+    { if(p->freeselect[i]) {gal_data_free(tmp->col); tmp->col=NULL;} ++i; }
+  ui_list_select_free(p->selectcol, 0);
   gal_data_free(mask);
   gal_data_free(perm);
+  free(p->freeselect);
   gal_data_free(sum);
-  gal_data_free(min);
-  gal_data_free(max);
-  free(p->freerange);
 }
 
 
@@ -349,7 +473,7 @@ void
 table(struct tableparams *p)
 {
   /* Apply a certain range (if required) to the output sample. */
-  if(p->range) table_range(p);
+  if(p->selection) table_selection(p);
 
   /* Sort it (if required). */
   if(p->sort) table_sort(p);

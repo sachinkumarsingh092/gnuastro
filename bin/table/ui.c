@@ -238,8 +238,9 @@ ui_read_check_only_options(struct tableparams *p)
       {
         /* Range needs two input numbers. */
         if(tmp->size!=2)
-          error(EXIT_FAILURE, 0, "two values (separated by comma) necessary "
-                "for `--range' in this format: `--range=COLUMN,min,max'");
+          error(EXIT_FAILURE, 0, "two values (separated by `:' or `,') are "
+                "necessary for `--range' in this format: "
+                "`--range=COLUMN,min:max'");
 
         /* The first must be smaller than the second. */
         darr=tmp->array;
@@ -247,6 +248,7 @@ ui_read_check_only_options(struct tableparams *p)
           error(EXIT_FAILURE, 0, "first value (%g) given to `--range' must "
                 "be smaller than the second (%g)", darr[0], darr[1]);
       }
+
 
   /* Make sure `--head' and `--tail' aren't given together. */
   if(p->head!=GAL_BLANK_SIZE_T && p->tail!=GAL_BLANK_SIZE_T)
@@ -292,19 +294,20 @@ ui_check_options_and_arguments(struct tableparams *p)
 
 
 /**************************************************************/
-/***************   List of range datasets   *******************/
+/************   List of row-selection requests   **************/
 /**************************************************************/
 static void
-ui_list_range_add(struct list_range **list, gal_data_t *dataset)
+ui_list_select_add(struct list_select **list, gal_data_t *col, int type)
 {
-  struct list_range *newnode;
+  struct list_select *newnode;
 
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
     error(EXIT_FAILURE, errno, "%s: allocating new node", __func__);
 
-  newnode->v=dataset;
+  newnode->col=col;
+  newnode->type=type;
   newnode->next=*list;
   *list=newnode;
 }
@@ -314,15 +317,19 @@ ui_list_range_add(struct list_range **list, gal_data_t *dataset)
 
 
 static gal_data_t *
-ui_list_range_pop(struct list_range **list)
+ui_list_select_pop(struct list_select **list, int *type)
 {
   gal_data_t *out=NULL;
-  struct list_range *tmp;
+  struct list_select *tmp;
   if(*list)
     {
+      /* Extract all the necessary components of the node. */
       tmp=*list;
-      out=tmp->v;
+      out=tmp->col;
+      *type=tmp->type;
       *list=tmp->next;
+
+      /* Delete the node. */
       free(tmp);
     }
   return out;
@@ -333,18 +340,19 @@ ui_list_range_pop(struct list_range **list)
 
 
 static void
-ui_list_range_reverse(struct list_range **list)
+ui_list_select_reverse(struct list_select **list)
 {
+  int thistype;
   gal_data_t *thisdata;
-  struct list_range *correctorder=NULL;
+  struct list_select *correctorder=NULL;
 
   /* Only do the reversal if there is more than one element. */
   if( *list && (*list)->next )
     {
       while(*list!=NULL)
         {
-          thisdata=ui_list_range_pop(list);
-          ui_list_range_add(&correctorder, thisdata);
+          thisdata=ui_list_select_pop(list, &thistype);
+          ui_list_select_add(&correctorder, thisdata, thistype);
         }
       *list=correctorder;
     }
@@ -355,14 +363,14 @@ ui_list_range_reverse(struct list_range **list)
 
 
 void
-ui_list_range_free(struct list_range *list, int freevalue)
+ui_list_select_free(struct list_select *list, int freevalue)
 {
-  struct list_range *tmp;
+  struct list_select *tmp;
   while(list!=NULL)
     {
       tmp=list->next;
       if(freevalue)
-        gal_data_free(list->v);
+        gal_data_free(list->col);
       free(list);
       list=tmp;
     }
@@ -645,7 +653,7 @@ ui_columns_prepare(struct tableparams *p)
    (starting from 0). So if we can read it as a number, we'll subtract one
    from it. */
 static size_t
-ui_check_range_sort_read_col_ind(char *string)
+ui_check_select_sort_read_col_ind(char *string)
 {
   size_t out;
   void *ptr=&out;
@@ -661,44 +669,58 @@ ui_check_range_sort_read_col_ind(char *string)
 
 
 
-/* See if the `--range' and `--sort' columns should also be added. */
+/* See if row selection or sorting needs any extra columns to be read. */
 static void
-ui_check_range_sort_before(struct tableparams *p, gal_list_str_t *lines,
-                           size_t *nrange, size_t *origoutncols,
-                           size_t *sortindout, size_t **rangeindout_out)
-{
-  size_t *rangeind=NULL;
-  size_t *rangeindout=NULL;
+ui_check_select_sort_before(struct tableparams *p, gal_list_str_t *lines,
+                            size_t *nselect, size_t *origoutncols,
+                            size_t *sortindout, size_t **selectindout_out,
+                            size_t **selecttypeout_out)
+{;
   gal_data_t *dtmp, *allcols;
   size_t sortind=GAL_BLANK_SIZE_T;
-  int tableformat, rangehasname=0;
   gal_list_sizet_t *tmp, *indexll;
   gal_list_str_t *stmp, *add=NULL;
-  size_t i, j, *s, *sf, allncols, numcols, numrows;
+  int tableformat, selecthasname=0;
+  size_t *selectind=NULL, *selecttype;
+  size_t *selectindout=NULL, *selecttypeout;
+  size_t i, j, k, *s, *sf, allncols, numcols, numrows;
+
+  /* Important note: these have to be in the same order as the `enum
+     select_types' in `main.h'. */
+  gal_data_t *select[SELECT_TYPE_NUMBER]={p->range, p->equal, p->notequal};
 
 
   /* Allocate necessary spaces. */
-  if(p->range)
+  if(p->selection)
     {
-      *nrange=gal_list_data_number(p->range);
-      rangeind=gal_pointer_allocate(GAL_TYPE_SIZE_T, *nrange, 0,
-                                    __func__, "rangeind");
-      rangeindout=gal_pointer_allocate(GAL_TYPE_SIZE_T, *nrange, 0,
-                                        __func__, "rangeindout");
-      sf=(s=rangeindout)+*nrange; do *s++=GAL_BLANK_SIZE_T; while(s<sf);
-      *rangeindout_out=rangeindout;
+      *nselect = ( gal_list_data_number(p->range)
+                   + gal_list_data_number(p->equal)
+                   + gal_list_data_number(p->notequal) );
+      selectind=gal_pointer_allocate(GAL_TYPE_SIZE_T, *nselect, 0,
+                                     __func__, "selectind");
+      selecttype=gal_pointer_allocate(GAL_TYPE_SIZE_T, *nselect, 0,
+                                      __func__, "selecttype");
+      selectindout=gal_pointer_allocate(GAL_TYPE_SIZE_T, *nselect, 0,
+                                        __func__, "selectindout");
+      selecttypeout=gal_pointer_allocate(GAL_TYPE_SIZE_T, *nselect, 0,
+                                         __func__, "selecttypeout");
+      sf=(s=selectindout)+*nselect; do *s++=GAL_BLANK_SIZE_T; while(s<sf);
+      *selectindout_out=selectindout;
+      *selecttypeout_out=selecttypeout;
     }
 
 
   /* See if the given columns are numbers or names. */
   i=0;
-  if(p->sort)  sortind  = ui_check_range_sort_read_col_ind(p->sort);
-  if(p->range)
-    for(dtmp=p->range;dtmp!=NULL;dtmp=dtmp->next)
-      {
-        rangeind[i] = ui_check_range_sort_read_col_ind(dtmp->name);
-        ++i;
-      }
+  if(p->sort)  sortind  = ui_check_select_sort_read_col_ind(p->sort);
+  if(p->selection)
+    for(k=0;k<SELECT_TYPE_NUMBER;++k)
+      for(dtmp=select[k];dtmp!=NULL;dtmp=dtmp->next)
+        {
+          selecttype[i] = k;
+          selectind[i] = ui_check_select_sort_read_col_ind(dtmp->name);
+          ++i;
+        }
 
 
   /* Get all the column information. */
@@ -714,21 +736,21 @@ ui_check_range_sort_before(struct tableparams *p, gal_list_str_t *lines,
           "number given to  `--sort' (%s)",
           gal_fits_name_save_as_string(p->filename, p->cp.hdu), numcols,
           p->sort);
-  if(p->range)
-    for(i=0;i<*nrange;++i)
-      if(rangeind[i]!=GAL_BLANK_SIZE_T && rangeind[i]>=numcols)
+  if(p->selection)
+    for(i=0;i<*nselect;++i)
+      if(selectind[i]!=GAL_BLANK_SIZE_T && selectind[i]>=numcols)
         error(EXIT_FAILURE, 0, "%s has %zu columns, less than the column "
-              "number given to  `--range' (%zu)",
+              "number given to  `--range', `--equal', or `--sort' (%zu)",
               gal_fits_name_save_as_string(p->filename, p->cp.hdu), numcols,
-              rangeind[i]);
+              selectind[i]);
 
 
   /* If any of the columns isn't specified by an index, go over the table
      information and set the index based on the names. */
-  if(p->range)
-    for(i=0;i<*nrange;++i)
-      if(rangeind[i]==GAL_BLANK_SIZE_T) { rangehasname=1; break; }
-  if( (p->sort && sortind==GAL_BLANK_SIZE_T) || rangehasname )
+  if(p->selection)
+    for(i=0;i<*nselect;++i)
+      if(selectind[i]==GAL_BLANK_SIZE_T) { selecthasname=1; break; }
+  if( (p->sort && sortind==GAL_BLANK_SIZE_T) || selecthasname )
     {
       /* For `--sort', go over all the columns if an index hasn't been set
          yet. If the input columns have a name, see if their names matches
@@ -738,46 +760,48 @@ ui_check_range_sort_before(struct tableparams *p, gal_list_str_t *lines,
           if( allcols[i].name && !strcasecmp(allcols[i].name, p->sort) )
             { sortind=i; break; }
 
-      /* Same for `--range'. Just note that here we may have multiple calls
-         to `--range'. It is thus important to loop over the values given
-         to range first, then loop over the column names from the start for
-         each new `--ran */
+      /* Same for the selection. Just note that here we may have multiple
+         calls. It is thus important to loop over the values given to range
+         first, then loop over the column names from the start for each new
+         `--ran */
       i=0;
-      if(p->range)
-        for(dtmp=p->range;dtmp!=NULL;dtmp=dtmp->next)
+      for(k=0;k<SELECT_TYPE_NUMBER;++k)
+        for(dtmp=select[k];dtmp!=NULL;dtmp=dtmp->next)
           {
-           if(rangeind[i]==GAL_BLANK_SIZE_T)
-             for(j=0;j<numcols;++j)
-               if( allcols[j].name
-                   && !strcasecmp(allcols[j].name, dtmp->name) )
-                 { rangeind[i]=j; break; }
-           ++i;
+            if(selectind[i]==GAL_BLANK_SIZE_T)
+              for(j=0;j<numcols;++j)
+                if( allcols[j].name
+                    && !strcasecmp(allcols[j].name, dtmp->name) )
+                  { selecttype[i]=k; selectind[i]=j; break; }
+            ++i;
           }
     }
 
 
-  /* Both columns must be good indexs now, if they aren't the user didn't
+  /* The columns must be good indexs now, if they don't the user didn't
      specify the name properly and the program must abort. */
   if( p->sort && sortind==GAL_BLANK_SIZE_T )
     error(EXIT_FAILURE, 0, "%s: no column named `%s' (value to `--sort') "
           "you can either specify a name or number",
           gal_fits_name_save_as_string(p->filename, p->cp.hdu), p->sort);
-  if(p->range)
+  if(p->selection)
     {
       i=0;
-      for(dtmp=p->range;dtmp!=NULL;dtmp=dtmp->next)
-        {
-          if(rangeind[i]==GAL_BLANK_SIZE_T)
-            error(EXIT_FAILURE, 0, "%s: no column named `%s' (value to "
-                  "`--range') you can either specify a name or number",
-                  gal_fits_name_save_as_string(p->filename, p->cp.hdu),
-                  dtmp->name);
-          ++i;
-        }
+      for(k=0;k<SELECT_TYPE_NUMBER;++k)
+        for(dtmp=select[k];dtmp!=NULL;dtmp=dtmp->next)
+          {
+            if(selectind[i]==GAL_BLANK_SIZE_T)
+              error(EXIT_FAILURE, 0, "%s: no column named `%s' (value to "
+                    "`--%s') you can either specify a name or number",
+                    gal_fits_name_save_as_string(p->filename, p->cp.hdu),
+                    dtmp->name,
+                    ( k==0?"range":( k==1?"equal":"notequal") ));
+            ++i;
+          }
     }
 
 
-  /* See which columns the user has asked for. */
+  /* See which columns the user has asked to output. */
   indexll=gal_table_list_of_indexs(p->columns, allcols, numcols,
                                    p->cp.searchin, p->cp.ignorecase,
                                    p->filename, p->cp.hdu, NULL);
@@ -789,47 +813,53 @@ ui_check_range_sort_before(struct tableparams *p, gal_list_str_t *lines,
   i=0;
   for(tmp=indexll; tmp!=NULL; tmp=tmp->next)
     {
-      if(p->sort  && *sortindout==GAL_BLANK_SIZE_T  && tmp->v == sortind)
+      if(p->sort && *sortindout==GAL_BLANK_SIZE_T  && tmp->v == sortind)
         *sortindout=i;
-      if(p->range)
-        for(j=0;j<*nrange;++j)
-          if(rangeindout[j]==GAL_BLANK_SIZE_T && tmp->v==rangeind[j])
-            rangeindout[j]=i;
+      if(p->selection)
+        for(j=0;j<*nselect;++j)
+          if(selectindout[j]==GAL_BLANK_SIZE_T && tmp->v==selectind[j])
+            {
+              selectindout[j]=i;
+              selecttypeout[j]=selecttype[j];
+            }
       ++i;
     }
 
 
-  /* See if any of the necessary columns (for `--sort' and `--range')
-     aren't requested as an output by the user. If there is any, such
-     columns, keep them here. */
+  /* See if any of the sorting or selection columns aren't requested as an
+     output by the user. If there is, keep their new label.
+
+     Note that the sorting and range may be requested on the same
+     column. In this case, we don't want to read the same column twice. */
   if( p->sort && *sortindout==GAL_BLANK_SIZE_T )
     { *sortindout=allncols++;  gal_list_str_add(&add, p->sort, 0); }
-
-
-  /* Note that the sorting and range may be requested on the same
-     column. In this case, we don't want to read the same column twice. */
-  if(p->range)
+  if(p->selection)
     {
       i=0;
-      for(dtmp=p->range;dtmp!=NULL;dtmp=dtmp->next)
-        {
-          if(*sortindout!=GAL_BLANK_SIZE_T
-             && rangeindout[i]==*sortindout)
-            rangeindout[i]=*sortindout;
-          else
-            {
-              if( rangeindout[i]==GAL_BLANK_SIZE_T )
-                {
-                  rangeindout[i]=allncols++;
-                  gal_list_str_add(&add, dtmp->name, 0);
-                }
-            }
-          ++i;
-        }
+      for(k=0;k<SELECT_TYPE_NUMBER;++k)
+        for(dtmp=select[k];dtmp!=NULL;dtmp=dtmp->next)
+          {
+            if(*sortindout!=GAL_BLANK_SIZE_T && selectindout[i]==*sortindout)
+              {
+                selecttypeout[i]=k;
+                selectindout[i]=*sortindout;
+              }
+            else
+              {
+                if( selectindout[i]==GAL_BLANK_SIZE_T )
+                  {
+                    selecttypeout[i]=k;
+                    selectindout[i]=allncols++;
+                    gal_list_str_add(&add, dtmp->name, 0);
+                  }
+              }
+            ++i;
+          }
     }
 
 
-  /* Add the possibly new set of columns to read. */
+  /* If any new (not requested by the user to output) columns must be read,
+     add them to the list of columns to read from the input file. */
   if(add)
     {
       gal_list_str_reverse(&add);
@@ -839,8 +869,9 @@ ui_check_range_sort_before(struct tableparams *p, gal_list_str_t *lines,
 
 
   /* Clean up. */
-  if(rangeind) free(rangeind);
   gal_list_sizet_free(indexll);
+  if(selectind) free(selectind);
+  if(selecttype) free(selecttype);
   gal_data_array_free(allcols, numcols, 0);
 }
 
@@ -849,80 +880,72 @@ ui_check_range_sort_before(struct tableparams *p, gal_list_str_t *lines,
 
 
 static void
-ui_check_range_sort_after(struct tableparams *p, size_t nrange,
-                          size_t origoutncols, size_t sortindout,
-                          size_t *rangeindout)
+ui_check_select_sort_after(struct tableparams *p, size_t nselect,
+                           size_t origoutncols, size_t sortindout,
+                           size_t *selectindout, size_t *selecttypeout)
 {
-  struct list_range *rtmp;
-  size_t i, j, *rangein=NULL;
-  gal_data_t *tmp, *last=NULL;
+  size_t i, j;
+  struct list_select *rtmp;
+  gal_data_t *tmp, *origlast=NULL;
 
   /* Allocate the necessary arrays. */
-  if(p->range)
-    {
-      rangein=gal_pointer_allocate(GAL_TYPE_UINT8, nrange, 0,
-                                   __func__, "rangein");
-      p->freerange=gal_pointer_allocate(GAL_TYPE_UINT8, nrange, 1,
-                                        __func__, "p->freerange");
-    }
+  if(p->selection)
+    p->freeselect=gal_pointer_allocate(GAL_TYPE_UINT8, nselect, 1,
+                                       __func__, "p->freeselect");
 
 
-  /* Set the proper pointers. For `rangecol' we'll need to do it separately
-     (because the orders can get confused).*/
+  /* Set some necessary pointers (last pointer of actual output table and
+     pointer to the sort column). */
   i=0;
   for(tmp=p->table; tmp!=NULL; tmp=tmp->next)
     {
-      if(i==origoutncols-1)           last=tmp;
+      if(i==origoutncols-1)        origlast=tmp;
       if(p->sort && i==sortindout) p->sortcol=tmp;
       ++i;
     }
 
 
-  /* Find the range columns. */
-  for(i=0;i<nrange;++i)
+  /* Since we can have several selection columns, we'll treat them
+     differently. */
+  for(i=0;i<nselect;++i)
     {
       j=0;
       for(tmp=p->table; tmp!=NULL; tmp=tmp->next)
         {
-          if(j==rangeindout[i])
+          if(j==selectindout[i])
             {
-              ui_list_range_add(&p->rangecol, tmp);
+              ui_list_select_add(&p->selectcol, tmp, selecttypeout[i]);
               break;
             }
           ++j;
         }
     }
-  ui_list_range_reverse(&p->rangecol);
+  ui_list_select_reverse(&p->selectcol);
 
 
-  /* Terminate the actual table where it should be terminated (by setting
-     `last->next' to NULL. */
-  last->next=NULL;
+  /* Terminate the desired output table where it should be terminated (by
+     setting `origlast->next' to NULL. */
+  origlast->next=NULL;
 
 
   /*  Also, remove any possibly existing `next' pointer for `sortcol' and
-     `rangecol'. */
+     `selectcol'. */
   if(p->sort && sortindout>=origoutncols)
     { p->sortcol->next=NULL;  p->freesort=1; }
   else p->sortin=1;
-  if(p->range)
+  if(p->selection)
     {
       i=0;
-      for(rtmp=p->rangecol;rtmp!=NULL;rtmp=rtmp->next)
+      for(rtmp=p->selectcol;rtmp!=NULL;rtmp=rtmp->next)
         {
-          if(rangeindout[i]>=origoutncols)
+          if(selectindout[i]>=origoutncols)
             {
-              rtmp->v->next=NULL;
-              p->freerange[i] = (rtmp->v==p->sortcol) ? 0 : 1;
+              rtmp->col->next=NULL;
+              p->freeselect[i] = (rtmp->col==p->sortcol) ? 0 : 1;
             }
-          else rangein[i]=1;
           ++i;
         }
     }
-
-
-  /* Clean up. */
-  if(rangein) free(rangein);
 }
 
 
@@ -935,9 +958,10 @@ ui_preparations(struct tableparams *p)
 {
   size_t *colmatch;
   gal_list_str_t *lines;
-  size_t nrange=0, origoutncols=0;
+  size_t nselect=0, origoutncols=0;
+  size_t sortindout=GAL_BLANK_SIZE_T;
   struct gal_options_common_params *cp=&p->cp;
-  size_t sortindout=GAL_BLANK_SIZE_T, *rangeindout=NULL;
+  size_t *selectindout=NULL, *selecttypeout=NULL;
 
   /* If there were no columns specified or the user has asked for
      information on the columns, we want the full set of columns. */
@@ -953,10 +977,14 @@ ui_preparations(struct tableparams *p)
   lines=gal_options_check_stdin(p->filename, p->cp.stdintimeout, "input");
 
 
-  /* If sort or range are given, see if we should read them also. */
-  if(p->range || p->sort)
-    ui_check_range_sort_before(p, lines, &nrange, &origoutncols, &sortindout,
-                               &rangeindout);
+  /* If any kind of row-selection is requested set `p->selection' to 1. */
+  p->selection = p->range || p->equal || p->notequal;
+
+  /* If row sorting or selection are requested, see if we should read any
+     extra columns. */
+  if(p->selection || p->sort)
+    ui_check_select_sort_before(p, lines, &nselect, &origoutncols, &sortindout,
+                                &selectindout, &selecttypeout);
 
 
   /* If we have any arithmetic operations, we need to make sure how many
@@ -976,11 +1004,11 @@ ui_preparations(struct tableparams *p)
   gal_list_str_free(lines, 1);
 
 
-  /* If the range and sort options are requested, keep them as separate
-     datasets. */
-  if(p->range || p->sort)
-    ui_check_range_sort_after(p, nrange, origoutncols, sortindout,
-                              rangeindout);
+  /* If row sorting or selection are requested, keep them as separate
+     datasets.*/
+  if(p->selection || p->sort)
+    ui_check_select_sort_after(p, nselect, origoutncols, sortindout,
+                               selectindout, selecttypeout);
 
 
   /* If there was no actual data in the file, then inform the user and
@@ -1019,7 +1047,8 @@ ui_preparations(struct tableparams *p)
 
   /* Clean up. */
   free(colmatch);
-  if(rangeindout) free(rangeindout);
+  if(selectindout) free(selectindout);
+  if(selecttypeout) free(selecttypeout);
 }
 
 

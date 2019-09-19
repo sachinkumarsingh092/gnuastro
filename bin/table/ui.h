@@ -30,9 +30,18 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/* Option groups particular to this program. */
+enum program_args_groups
+{
+  UI_GROUP_OUTROWS = GAL_OPTIONS_GROUP_AFTER_COMMON,
+};
+
+
+
+
 /* Available letters for short options:
 
-   a b d e f g j k l m n p t u v x y z
+   a b d f g j k l m p t u v x y z
    A B C E G H J L O Q R X Y
 */
 enum option_keys_enum
@@ -44,6 +53,8 @@ enum option_keys_enum
   UI_KEY_INFORMATION     = 'i',
   UI_KEY_COLINFOINSTDOUT = 'O',
   UI_KEY_RANGE           = 'r',
+  UI_KEY_EQUAL           = 'e',
+  UI_KEY_NOTEQUAL        = 'n',
   UI_KEY_SORT            = 's',
   UI_KEY_DESCENDING      = 'd',
   UI_KEY_HEAD            = 'H',
@@ -61,7 +72,7 @@ void
 ui_read_check_inputs_setup(int argc, char *argv[], struct tableparams *p);
 
 void
-ui_list_range_free(struct list_range *list, int freevalue);
+ui_list_select_free(struct list_select *list, int freevalue);
 
 void
 ui_free_report(struct tableparams *p);

@@ -102,14 +102,53 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+
+
+
+
+
+    /* Output Rows */
+    {
+      0, 0, 0, 0,
+      "Rows in output:",
+      UI_GROUP_OUTROWS
+    },
     {
       "range",
       UI_KEY_RANGE,
       "STR,FLT:FLT",
       0,
       "Column, and range to limit output.",
-      GAL_OPTIONS_GROUP_OUTPUT,
+      UI_GROUP_OUTROWS,
       &p->range,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_name_and_values
+    },
+    {
+      "equal",
+      UI_KEY_EQUAL,
+      "STR,FLT,FLT",
+      0,
+      "Column, values to keep in output.",
+      UI_GROUP_OUTROWS,
+      &p->equal,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_name_and_values
+    },
+    {
+      "notequal",
+      UI_KEY_NOTEQUAL,
+      "STR,FLT,FLT",
+      0,
+      "Column, values to remove from output.",
+      UI_GROUP_OUTROWS,
+      &p->notequal,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
@@ -122,7 +161,7 @@ struct argp_option program_options[] =
       "STR,INT",
       0,
       "Column name or number for sorting.",
-      GAL_OPTIONS_GROUP_OUTPUT,
+      UI_GROUP_OUTROWS,
       &p->sort,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
@@ -135,7 +174,7 @@ struct argp_option program_options[] =
       0,
       0,
       "Sort in descending order: largets first.",
-      GAL_OPTIONS_GROUP_OUTPUT,
+      UI_GROUP_OUTROWS,
       &p->descending,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
@@ -148,7 +187,7 @@ struct argp_option program_options[] =
       "INT",
       0,
       "Only output given number of top rows.",
-      GAL_OPTIONS_GROUP_OUTPUT,
+      UI_GROUP_OUTROWS,
       &p->head,
       GAL_TYPE_SIZE_T,
       GAL_OPTIONS_RANGE_GE_0,
@@ -161,14 +200,13 @@ struct argp_option program_options[] =
       "INT",
       0,
       "Only output given number of bottom rows.",
-      GAL_OPTIONS_GROUP_OUTPUT,
+      UI_GROUP_OUTROWS,
       &p->tail,
       GAL_TYPE_SIZE_T,
       GAL_OPTIONS_RANGE_GE_0,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
-
 
 
 

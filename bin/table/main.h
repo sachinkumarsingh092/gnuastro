@@ -33,14 +33,26 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define PROGRAM_EXEC   "asttable"      /* Program executable name. */
 #define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
+/* Row selection types. */
+enum select_types
+{
+ /* Different types of row-selection */
+ SELECT_TYPE_RANGE,             /* 0 by C standard */
+ SELECT_TYPE_EQUAL,
+ SELECT_TYPE_NOTEQUAL,
+
+ /* This marks the total number of row-selection criteria. */
+ SELECT_TYPE_NUMBER,
+};
 
 
 
 /* Basic structure. */
-struct list_range
+struct list_select
 {
-  gal_data_t           *v;
-  struct list_range *next;
+  gal_data_t          *col;
+  int                 type;
+  struct list_select *next;
 };
 
 struct arithmetic_token
@@ -77,6 +89,8 @@ struct tableparams
   uint8_t         information;  /* ==1: only print FITS information.    */
   uint8_t     colinfoinstdout;  /* ==1: print column metadata in CL.    */
   gal_data_t           *range;  /* Range to limit output.               */
+  gal_data_t           *equal;  /* Values to keep in output.            */
+  gal_data_t        *notequal;  /* Values to not include in output.     */
   char                  *sort;  /* Column name or number for sorting.   */
   uint8_t          descending;  /* Sort columns in descending order.    */
   size_t                 head;  /* Output only the no. of top rows.     */
@@ -89,9 +103,11 @@ struct tableparams
   int                    nwcs;  /* Number of WCS structures.            */
   gal_data_t      *allcolinfo;  /* Information of all the columns.      */
   gal_data_t         *sortcol;  /* Column to define a sorting.          */
-  struct list_range *rangecol;  /* Column to define a range.            */
+  int               selection;  /* Any row-selection is requested.      */
+  gal_data_t          *select;  /* Select rows for output.              */
+  struct list_select *selectcol; /* Column to define a range.           */
   uint8_t            freesort;  /* If the sort column should be freed.  */
-  uint8_t          *freerange;  /* If the range column should be freed. */
+  uint8_t         *freeselect;  /* If selection columns should be freed.*/
   uint8_t              sortin;  /* If the sort column is in the output. */
   time_t              rawtime;  /* Starting time of the program.        */
   gal_data_t       **colarray;  /* Array of columns, with arithmetic.   */
