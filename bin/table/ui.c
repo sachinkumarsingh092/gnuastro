@@ -681,8 +681,8 @@ ui_check_select_sort_before(struct tableparams *p, gal_list_str_t *lines,
   gal_list_sizet_t *tmp, *indexll;
   gal_list_str_t *stmp, *add=NULL;
   int tableformat, selecthasname=0;
-  size_t *selectind=NULL, *selecttype;
-  size_t *selectindout=NULL, *selecttypeout;
+  size_t *selectind=NULL, *selecttype=NULL;
+  size_t *selectindout=NULL, *selecttypeout=NULL;
   size_t i, j, k, *s, *sf, allncols, numcols, numrows;
 
   /* Important note: these have to be in the same order as the `enum
