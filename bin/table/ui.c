@@ -675,7 +675,7 @@ ui_check_select_sort_before(struct tableparams *p, gal_list_str_t *lines,
                             size_t *nselect, size_t *origoutncols,
                             size_t *sortindout, size_t **selectindout_out,
                             size_t **selecttypeout_out)
-{;
+{
   gal_data_t *dtmp, *allcols;
   size_t sortind=GAL_BLANK_SIZE_T;
   gal_list_sizet_t *tmp, *indexll;
@@ -850,7 +850,7 @@ ui_check_select_sort_before(struct tableparams *p, gal_list_str_t *lines,
                   {
                     selecttypeout[i]=k;
                     selectindout[i]=allncols++;
-                    gal_list_str_add(&add, dtmp->name, 0);
+                    gal_list_str_add(&add, dtmp->name, 1);
                   }
               }
             ++i;
