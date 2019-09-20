@@ -130,7 +130,7 @@ struct argp_option program_options[] =
     {
       "equal",
       UI_KEY_EQUAL,
-      "STR,FLT,FLT",
+      "STR,FLT[,...]",
       0,
       "Column, values to keep in output.",
       UI_GROUP_OUTROWS,
@@ -144,7 +144,7 @@ struct argp_option program_options[] =
     {
       "notequal",
       UI_KEY_NOTEQUAL,
-      "STR,FLT,FLT",
+      "STR,FLT[,...]",
       0,
       "Column, values to remove from output.",
       UI_GROUP_OUTROWS,
@@ -158,7 +158,7 @@ struct argp_option program_options[] =
     {
       "sort",
       UI_KEY_SORT,
-      "STR,INT",
+      "STR/INT",
       0,
       "Column name or number for sorting.",
       UI_GROUP_OUTROWS,
