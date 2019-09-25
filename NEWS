@@ -22,6 +22,11 @@ See the end of the file for license conditions.
      that have a value of 2, 4 and 5 in the `ID' column.
    --notequal: Output only rows that have a different value compared to the
      values given to this option in the given column.
+   - Column Arithmetic operators:
+     - `angular-distance': a new operator to easily find the angular
+       distance (along a great circle) between points in various table
+       columns, or the distances of all the points in the table rows with a
+       fixed point. See the book for examples and better explanation.
 
 ** Removed features
 

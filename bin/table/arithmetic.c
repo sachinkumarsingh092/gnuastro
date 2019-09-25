@@ -106,6 +106,7 @@ arithmetic_operator_name(int operator)
       {
       case ARITHMETIC_TABLE_OP_WCSTOIMG: out="wcstoimg"; break;
       case ARITHMETIC_TABLE_OP_IMGTOWCS: out="imgtowcs"; break;
+      case ARITHMETIC_TABLE_OP_ANGULARDISTANCE: out="angular-distance"; break;
       default:
         error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
               "the problem. %d is not a recognized operator code", __func__,
@@ -153,9 +154,11 @@ arithmetic_set_operator(struct tableparams *p, char *string,
   if( op==GAL_ARITHMETIC_OP_INVALID )
     {
       if(      !strncmp(string, "wcstoimg", 8))
-        { op=ARITHMETIC_TABLE_OP_WCSTOIMG;   *num_operands=0; }
+        { op=ARITHMETIC_TABLE_OP_WCSTOIMG; *num_operands=0; }
       else if (!strncmp(string, "imgtowcs", 8))
-        { op=ARITHMETIC_TABLE_OP_IMGTOWCS;   *num_operands=0; }
+        { op=ARITHMETIC_TABLE_OP_IMGTOWCS; *num_operands=0; }
+      else if (!strncmp(string, "angular-distance", 8))
+        { op=ARITHMETIC_TABLE_OP_ANGULARDISTANCE; *num_operands=0; }
       else
         { op=GAL_ARITHMETIC_OP_INVALID; *num_operands=GAL_BLANK_INT; }
     }
@@ -430,6 +433,68 @@ arithmetic_wcs(struct tableparams *p, gal_data_t **stack, int operator)
 
 
 
+static void
+arithmetic_angular_dist(struct tableparams *p, gal_data_t **stack, int operator)
+{
+  size_t i, j;
+  double *o, *a1, *a2, *b1, *b2;
+  gal_data_t *a, *b, *tmp, *out;
+
+  /* Pop the columns for point `b'.*/
+  tmp=arithmetic_stack_pop(stack, operator);
+  tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT64);
+  b=arithmetic_stack_pop(stack, operator);
+  b=gal_data_copy_to_new_type_free(b, GAL_TYPE_FLOAT64);
+  b->next=tmp;
+
+  /* Pop the columns for point `a'.*/
+  tmp=arithmetic_stack_pop(stack, operator);
+  tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT64);
+  a=arithmetic_stack_pop(stack, operator);
+  a=gal_data_copy_to_new_type_free(a, GAL_TYPE_FLOAT64);
+  a->next=tmp;
+
+  /* Make sure the sizes are consistant: note that one point can have a
+     single coordinate, but we don't know which one. */
+  if(a->size!=a->next->size)
+    error(EXIT_FAILURE, 0, "the sizes of the third and fourth operands "
+          "of the `%s' operator (respectively containing %zu and %zu "
+          "numbers) must be equal", arithmetic_operator_name(operator),
+          a->next->size, a->size);
+  if(b->size!=b->next->size)
+    error(EXIT_FAILURE, 0, "the sizes of the third and fourth operands "
+          "of the `%s' operator (respectively containing %zu and %zu "
+          "numbers) must be equal", arithmetic_operator_name(operator),
+          b->next->size, b->size);
+
+  /* Make the output array based on the largest size. */
+  out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1,
+                     (a->size>b->size ? &a->size : &b->size), NULL, 0,
+                     p->cp.minmapsize, p->cp.quietmmap, "angular-dist",
+                     NULL, "Angular distance between input points");
+
+  /* Measure the distances.  */
+  o=out->array;
+  a1=a->array; a2=a->next->array;
+  b1=b->array; b2=b->next->array;
+  if(a->size==1 || b->size==1) /* One of them is a single point. */
+    for(i=0;i<a->size;++i)
+      for(j=0;j<b->size;++j)
+        o[a->size>b->size?i:j] = gal_wcs_angular_distance_deg(a1[i], a2[i],
+                                                              b1[j], b2[j]);
+  else                         /* Both have the same length. */
+    for(i=0;i<a->size;++i)     /* (all were originally from the same table) */
+      o[i] = gal_wcs_angular_distance_deg(a1[i], a2[i], b1[i], b2[i]);
+
+  /* Clean up and put the output dataset onto the stack. */
+  gal_list_data_free(a);
+  gal_list_data_free(b);
+  gal_list_data_add(stack, out);
+}
+
+
+
+
 
 
 
@@ -545,6 +610,10 @@ arithmetic_operator_run(struct tableparams *p, gal_data_t **stack,
           arithmetic_wcs(p, stack, operator);
           break;
 
+        case ARITHMETIC_TABLE_OP_ANGULARDISTANCE:
+          arithmetic_angular_dist(p, stack, operator);
+          break;
+
         default:
           error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
                 "fix the problem. The operator code %d is not recognized",
@@ -605,7 +674,7 @@ arithmetic_reverse_polish(struct tableparams *p, struct column_pack *outpack)
       /* A small sanity check. */
       if(single->size==1 && p->table && single->size!=p->table->size)
         error(EXIT_FAILURE, 0, "the arithmetic operation resulted in a "
-              "a single value, but other columns have also been requested "
+              "single value, but other columns have also been requested "
               "which have more elements/rows");
 
       /* Set `single->next' to NULL so it isn't treated as a list and
@@ -642,7 +711,6 @@ arithmetic_operate(struct tableparams *p)
 {
   size_t i;
   struct column_pack *outpack;
-
 
   /* From now on, we will be looking for columns from the index in
      `colarray', so to keep things clean, we'll set all the `next' elements
