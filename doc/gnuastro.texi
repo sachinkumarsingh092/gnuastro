@@ -8397,7 +8397,7 @@ To print to the standard output, set the output name to `@file{stdout}'.
 @cindex Image
 @cindex Color
 @cindex Pixels
-@cindex Colorspace
+@cindex Colormap
 @cindex Primary colors
 Color is defined by mixing various measurements/filters.
 In digital monitors or common digital cameras, colors are displayed/stored by mixing the three basic colors of red, green and blue (RGB) with various proportions.
@@ -8417,8 +8417,8 @@ In ConvertType, you can do this by giving each separate single-channel dataset (
 
 @cindex Grayscale
 @cindex Visualization
-@cindex Colorspace, HSV
-@cindex Colorspace, gray-scale
+@cindex Colormap, HSV
+@cindex Colormap, gray-scale
 @cindex HSV: Hue Saturation Value
 As discussed above, color is not defined when a dataset/image contains a single value for each pixel.
 However, we interact with scientific datasets through monitors or printers (which allow multiple values per pixel and produce color with them).
@@ -8474,8 +8474,8 @@ One line examples:
 ## Convert an image in FITS to PDF:
 $ astconvertt image.fits --output=pdf
 
-## Similar to before, but use the SLS color map:
-$ astconvertt image.fits --colormap=sls --output=pdf
+## Similar to before, but use the Viridis color map:
+$ astconvertt image.fits --colormap=viridis --output=pdf
 
 ## Convert an image in JPEG to FITS (with multiple extensions
 ## if its color):
@@ -8605,11 +8605,17 @@ However, you can limit the range of hue (to show only a special color range) by 
 The mapping of a single-channel dataset to HSV is done through the Hue and Value elements: Lower dataset elements have lower ``value'' @emph{and} lower ``hue''.
 This creates darker colors for fainter parts, while also respecting the range of colors.
 
+@item viridis
+@cindex matplotlib
+@cindex Colormap: Viridis
+@cindex Viridis: Colormap
+Viridis is the default colormap of the popular Matplotlib module of Python and available in many other visualization tools like PGFPlots.
+
 @item sls
 @cindex DS9
 @cindex SAO DS9
 @cindex SLS Color
-@cindex Colorspace: SLS
+@cindex Colormap: SLS
 The SLS color range, taken from the commonly used @url{http://ds9.si.edu,SAO DS9}.
 The advantage of this color range is that it ranges from black to dark blue, and finishes with red and white.
 So unlike the HSV color range, it includes black and white and brighter colors (like yellow, red and white) show the larger values.

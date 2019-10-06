@@ -11,6 +11,11 @@ See the end of the file for license conditions.
    --onedonstdout: when the output is one-dimensional, print the values on
      the standard output, not into a file.
 
+  ConvertType:
+   - New `viridis' colormap (value for the `--colormap' option). This is
+     the default colormap of Python's Matplotlib, and is available in many
+     other plotting tools like LaTeX's PGFPlots.
+
   CosmicCalculator:
    --lineatz: return the observed wavelength of a line if it was emitted at
      the redshift given to CosmicCalculator. You can either use known line

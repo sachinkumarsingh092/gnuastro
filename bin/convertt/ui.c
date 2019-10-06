@@ -237,13 +237,14 @@ ui_colormap_sanity_check(struct converttparams *p)
 
   /* See how many parameters are necessary. */
   strarr=p->colormap->array;
-  if     ( !strcmp(strarr[0],"hsv" )) { ccode=COLOR_HSV;  nparams=2; }
-  else if( !strcmp(strarr[0],"sls" )) { ccode=COLOR_SLS;  nparams=0; }
+  if     ( !strcmp(strarr[0],"hsv"))     { ccode=COLOR_HSV;     nparams=2; }
+  else if( !strcmp(strarr[0],"sls"))     { ccode=COLOR_SLS;     nparams=0; }
+  else if( !strcmp(strarr[0],"viridis")) { ccode=COLOR_VIRIDIS; nparams=0; }
   else if( !strcmp(strarr[0],"gray") || !strcmp(strarr[0],"grey"))
                                       { ccode=COLOR_GRAY; nparams=0; }
   else
-    error(EXIT_FAILURE, 0, "`%s' not recognized as a color-space given "
-          "to `--monotocolor'", strarr[0]);
+    error(EXIT_FAILURE, 0, "`%s' not recognized as a colormap given "
+          "to `--colormap'", strarr[0]);
   p->colormap->status=ccode;
 
   /* Check if the proper number of parameters are given for this color
@@ -644,7 +645,7 @@ ui_prepare_input_channels(struct converttparams *p)
       if( p->colormap==NULL )
         error(EXIT_FAILURE, 0, "no colormap! When there is only one input "
               "channel, it is necessary to specify a color map. For "
-              "example `gray', `hsv', or `sls'.\n\n"
+              "example `gray', `hsv', `viridis' or `sls'.\n\n"
               "For more on ConvertType's color mapping, see the "
               "description under `--colormap' in the Gnuastro book:\n\n"
               "   $ info astconvertt");

@@ -56,6 +56,7 @@ enum colorspace_names
   COLOR_RGB,
   COLOR_HSV,
   COLOR_SLS,
+  COLOR_VIRIDIS,
   COLOR_GRAY,
 };
 
