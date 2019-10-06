@@ -742,8 +742,6 @@ color_from_mono_viridis(struct converttparams *p)
     }
   while(++f<fp);
 
-  gal_fits_img_write(R, "R.fits", NULL, NULL);
-
   /* Convert the type to unsigned char. */
   R=gal_data_copy_to_new_type_free(R, GAL_TYPE_UINT8);
   G=gal_data_copy_to_new_type_free(G, GAL_TYPE_UINT8);
