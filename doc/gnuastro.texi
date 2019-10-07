@@ -7729,6 +7729,14 @@ This is because of the unique position the first FITS extension has in the FITS 
 @item --primaryimghdu
 Copy or cut an image HDU to the zero-th HDU/extension a file that doesn't yet exist.
 This option is thus irrelevant if the output file already exists or the copied/cut extension is a FITS table.
+For example with the commands below, first we make sure that @file{out.fits} doesn't exist, then we copy the first extension of @file{in.fits} to the zero-th extension of @file{out.fits}.
+
+@example
+$ rm -f out.fits
+$ astfits in.fits --copy=1 --primaryimghdu --output=out.fits
+@end example
+
+If we hadn't used @option{--primaryimghdu}, then the zero-th extension of @file{out.fits} would have no data, and its second extension would host the copied image (just like any other output of Gnuastro).
 
 @end table
 
