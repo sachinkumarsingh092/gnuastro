@@ -32,12 +32,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Available letters for short options:
 
-   c e f i j k n p r s u v w x y z
+   e f i j k n p r s u v w x y z
    A B C E G H J Q R X Y
 */
 enum option_keys_enum
 {
   /* With short-option version. */
+  UI_KEY_CC             = 'c',
   UI_KEY_INCLUDE        = 'I',
   UI_KEY_LINKDIR        = 'L',
   UI_KEY_LINKLIB        = 'l',

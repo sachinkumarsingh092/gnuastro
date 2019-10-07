@@ -284,6 +284,15 @@ ui_preparations(struct buildprogparams *p)
   if(p->cp.output==NULL)
     p->cp.output=gal_checkset_automatic_output(&p->cp, p->sourceargs->v,
                                                EXEEXT);
+
+  /* Set the C compiler. Later we can add a check to make sure that `cc' is
+     actually in the PATH. */
+  if(p->cc==NULL)
+    {                                        /* No C compiler chosen. */
+      p->cc=getenv("CC");                    /* First check for `CC'. */
+      if(p->cc==NULL) p->cc=getenv("GCC");   /* Then check for `GCC'. */
+      if(p->cc==NULL) p->cc="gcc";           /* Default: `gcc'.       */
+    }
 }
 
 

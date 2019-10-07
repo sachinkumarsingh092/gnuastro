@@ -11,6 +11,10 @@ See the end of the file for license conditions.
    --onedonstdout: when the output is one-dimensional, print the values on
      the standard output, not into a file.
 
+  BuildProgram:
+   --cc: custom C compiler to use. Until now, `gcc' was hard-coded into the
+     source and there was no way to choose a custom C compiler.
+
   ConvertType:
    - New `viridis' colormap (value for the `--colormap' option). This is
      the default colormap of Python's Matplotlib, and is available in many

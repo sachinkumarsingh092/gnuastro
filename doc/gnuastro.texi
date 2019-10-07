@@ -1097,7 +1097,8 @@ Please take the time to have a look at the following essays and FAQs for a compl
 @cindex Linux
 @cindex GNU/Linux
 @cindex GNU C library
-@cindex GNU Compiler Collection
+@cindex GCC: GNU Compiler Collection
+@cindex GNU Compiler Collection (GCC)
 In short, the Linux kernel@footnote{In Unix-like operating systems, the kernel connects software and hardware worlds.} is built using the GNU C library (glibc) and GNU compiler collection (gcc).
 The Linux kernel software alone is just a means for other software to access the hardware resources, it is useless alone: to say ``running Linux'', is like saying ``driving your carburetor''.
 
@@ -17380,8 +17381,8 @@ When the unified product has a @code{main} function, this function is the produc
 When the product doesn't have a @code{main} function, the linker's product is a library and its exported functions can be linked to other executables (it has many entry points).
 @end enumerate
 
-@cindex GCC
-@cindex GNU Compiler Collection
+@cindex GCC: GNU Compiler Collection
+@cindex GNU Compiler Collection (GCC)
 The GNU Compiler Collection (or GCC for short) will do all three steps.
 So as a first example, from Gnuastro's source, go to @file{tests/lib/}.
 This directory contains the library tests, you can use these as some simple tutorials.
@@ -17476,8 +17477,10 @@ $ astbuildprog --onlybuild myprogram.c
 
 If BuildProgram is to run, it needs a C programming language source file as input.
 By default it will compile and link the program to build the a final executable file and run it.
+The C compiler can be chosen with the @option{--cc} option, or environment variables, please see the description of @option{--cc} for more.
 The built executable name can be set with the optional @option{--output} option.
 When no output name is set, BuildProgram will use Gnuastro's @ref{Automatic output}, and remove the suffix of the input and use that as the output name.
+
 For the full list of options that BuildProgram shares with other Gnuastro programs, see @ref{Common options}.
 You may also use Gnuastro's @ref{Configuration files} to specify other libraries/headers to use for special directories and not have to type them in every time.
 
@@ -17491,6 +17494,19 @@ When the @option{--quiet} option (see @ref{Operating mode options}) is not calle
 Once your program grows and you break it up into multiple files (which are much more easily managed with Make), you can use the linking flags of the non-quiet output in your @code{Makefile}.
 
 @table @option
+@item -c STR
+@itemx --cc=STR
+@cindex C compiler
+@cindex Compiler, C
+@cindex GCC: GNU Compiler Collection
+@cindex GNU Compiler Collection (GCC)
+C compiler to use for the compilation, if not given environment variables will be used as described in the next paragraph.
+If the compiler is in your systems's search path, you can simply give its name, for example @option{--cc=gcc}.
+If its not in your system's search path, you can give its full path, for example @option{--cc=/path/to/your/custom/cc}.
+
+If this option has no value after parsing the command-line and all configuration files (see @ref{Configuration file precedence}), then BuildProgram will look into the following environment variables in the given order @code{CC} and @code{GCC}.
+If they are also not defined, BuildProgram will ultimately default to the @command{gcc} command which is present in many systems (sometimes as a link to other compilers).
+
 @item -I STR
 @itemx --includedir=STR
 @cindex GNU CPP
@@ -17528,7 +17544,8 @@ See @ref{Linking} for a thorough introduction.
 @item -O INT/STR
 @itemx --optimize=INT/STR
 @cindex Optimization
-@cindex GNU Compiler Collection
+@cindex GCC: GNU Compiler Collection
+@cindex GNU Compiler Collection (GCC)
 Compiler optimization level: 0 (for no optimization, good debugging), 1, 2, 3 (for the highest level of optimizations).
 From the GNU Compiler Collection (GCC) manual: ``Without any optimization option, the compiler's goal is to reduce the cost of compilation and to make debugging produce the expected results.
 Statements are independent: if you stop the program with a break point between statements, you can then assign a new value to any variable or change the program counter to any other statement in the function and get exactly the results you expect from the source code.
@@ -25021,7 +25038,8 @@ functions that don't define too many variables and whose only purpose is to
 run the lower-level functions in a specific order and with checks.
 
 @cindex Optimization flag
-@cindex GNU Compiler Collection
+@cindex GCC: GNU Compiler Collection
+@cindex GNU Compiler Collection (GCC)
 In general you can be very liberal in breaking up the functions into
 smaller parts, the GNU Compiler Collection (GCC) will automatically compile
 the functions as inline functions when the optimizations are turned on. So
