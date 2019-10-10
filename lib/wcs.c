@@ -847,6 +847,10 @@ wcs_convert_sanity_check_alloc(gal_data_t *coords, struct wcsprm *wcs,
   gal_data_t *tmp;
   size_t ndim=0, firstsize=0, size=coords->size;
 
+  /* Make sure a WCS structure is actually given. */
+  if(wcs==NULL)
+    error(EXIT_FAILURE, 0, "%s: input WCS structure is NULL", func);
+
   for(tmp=coords; tmp!=NULL; tmp=tmp->next)
     {
       /* Count how many coordinates are given. */
@@ -961,13 +965,13 @@ gal_data_t *
 gal_wcs_world_to_img(gal_data_t *coords, struct wcsprm *wcs, int inplace)
 {
   gal_data_t *out;
-  int status, *stat=NULL, ncoord=coords->size, nelem=wcs->naxis;
+  int status, *stat=NULL, ncoord=coords->size, nelem;
   double *phi=NULL, *theta=NULL, *world=NULL, *pixcrd=NULL, *imgcrd=NULL;
 
   /* Some sanity checks. */
   wcs_convert_sanity_check_alloc(coords, wcs, __func__, &stat, &phi, &theta,
                                  &world, &pixcrd, &imgcrd);
-
+  nelem=wcs->naxis; /* We have to make sure a WCS is given first. */
 
   /* Write the values from the input list of separate columns into a single
      array (WCSLIB input). */
@@ -1021,12 +1025,13 @@ gal_data_t *
 gal_wcs_img_to_world(gal_data_t *coords, struct wcsprm *wcs, int inplace)
 {
   gal_data_t *out;
-  int status, *stat=NULL, ncoord=coords->size, nelem=wcs->naxis;
+  int status, *stat=NULL, ncoord=coords->size, nelem;
   double *phi=NULL, *theta=NULL, *world=NULL, *pixcrd=NULL, *imgcrd=NULL;
 
   /* Some sanity checks. */
   wcs_convert_sanity_check_alloc(coords, wcs, __func__, &stat, &phi, &theta,
                                  &world, &pixcrd, &imgcrd);
+  nelem=wcs->naxis; /* We have to make sure a WCS is given first. */
 
 
   /* Write the values from the input list of separate columns into a single
