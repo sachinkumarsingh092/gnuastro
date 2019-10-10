@@ -595,6 +595,49 @@ gal_checkset_automatic_output(struct gal_options_common_params *cp,
 
 
 
+/* Check write-ability by trying to make a temporary file. Return 0 if the
+   directory is writable, and `errno' if it isn't. We won't be using
+   `facccessat' because its not available on some systems (macOS 10.9 and
+   earlier, see https://github.com/conda-forge/staged-recipes/pull/9723
+   ). */
+static int
+checkset_directory_writable(char *dirname)
+{
+  int file_d;
+  int errnum=0;
+  char *tmpname;
+
+  /* Set the template for the temporary file (accounting for the possible
+     extra `/'). */
+  if(dirname[strlen(dirname)-1]=='/')
+    tmpname=gal_checkset_malloc_cat(dirname, "gnuastroXXXXXX");
+  else
+    tmpname=gal_checkset_malloc_cat(dirname, "/gnuastroXXXXXX");
+
+  /* Make the temporary file (with the temporary name) and open it. */
+  errno=0;
+  file_d=mkstemp(tmpname);
+
+  /* See if the file was opened (and thus created). */
+  if(file_d==-1) errnum=errno;
+  else
+    { /* The file was created, close the file. */
+      errno=0;
+      if( close(file_d) == -1 ) errnum=errno;
+      else
+        {/* The file was closed, delete it. */
+          errno=0;
+          if(unlink(tmpname)==-1) errnum=errno;
+        }
+    }
+
+  /* Return the final value. */
+  return errnum;
+}
+
+
+
+
 /* Check if dirname is actually a real directory and that we can
    actually write inside of it. To insure all conditions an actual
    file will be made */
@@ -645,26 +688,27 @@ gal_checkset_check_dir_write_add_slash(char **dirname)
 
 
 
-/* If the given directory exists and is writable, then nothing is done. If
-   it doesn't, it will be created. If it fails at creating the file, or the
-   file isn't writable it returns a non-zero value: the errno, which can be
-   directly used in `error'. */
+/* If the given directory exists and is writable, then nothing is done and
+   this function returns 0. If it doesn't, it will be created. If it fails
+   at creating the file, or the file isn't writable it returns a non-zero
+   value: the errno, which can be directly used in `error'. */
 int
 gal_checkset_mkdir(char *dirname)
 {
   int errnum=0;
   struct stat st={0};
+
+  /* See if the directory exists. */
   if( stat(dirname, &st) == -1 )
-    {
+    { /* The directory doesn't exist, try making it. */
       errno=0;
       if( mkdir(dirname, 0700) == -1 )
         errnum=errno;
     }
   else
-    {
-      errno=0;
-      if( faccessat(AT_FDCWD, dirname, W_OK, AT_EACCESS) == -1 )
-        errnum=errno;
-    }
+    /* The directory exists, see if its writable. */
+    errnum=checkset_directory_writable(dirname);
+
+  /* Return the final `errno'. */
   return errnum;
 }

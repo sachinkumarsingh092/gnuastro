@@ -45,6 +45,7 @@ See the end of the file for license conditions.
   bug #56736: CosmicCalculator crash when a single value given to --obsline.
   bug #56747: ConvertType's SLS colormap has black pixels which should be orange.
   bug #56754: Wrong sigma clipping output when many values are equal.
+  bug #56999: Compilation error on macOS 10.9 not recognizing AT_FDCWD.
 
 
 
