@@ -25,6 +25,11 @@ See the end of the file for license conditions.
      the redshift given to CosmicCalculator. You can either use known line
      names, or directly give a number as any emitted line's wavelength.
 
+  Statistics:
+   --contour: compute a contour plot which can be directly fed into the
+     PGFPlots package of LaTeX for plotting the contours. Support for more
+     formats will be added based on the need/request.
+
   Table:
    --equal: Output only rows that have a value equal to the given value in
      the given column. For example `--equal=ID,2,4,5' will select only rows
@@ -36,6 +41,9 @@ See the end of the file for license conditions.
        distance (along a great circle) between points in various table
        columns, or the distances of all the points in the table rows with a
        fixed point. See the book for examples and better explanation.
+
+  Library:
+   - gal_binary_connected_indexs: store indexs of connected components.
 
 ** Removed features
 

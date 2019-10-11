@@ -448,6 +448,97 @@ gal_binary_connected_components(gal_data_t *binary, gal_data_t **out,
 
 
 
+/* Put the indexs of connected labels in a list of `gal_data_t's, each with
+   a one-dimensional array that has the indexs of that connected
+   component.*/
+#define BINARY_CONINDEX_VAL 2
+gal_data_t *
+gal_binary_connected_indexs(gal_data_t *binary, int connectivity)
+{
+  uint8_t *b, *bf;
+  gal_data_t *lines=NULL;
+  size_t p, i, onelabnum, *onelabarr;
+  gal_list_sizet_t *Q=NULL, *onelab=NULL;
+  size_t *dinc=gal_dimension_increment(binary->ndim, binary->dsize);
+
+  /* Small sanity checks. */
+  if(binary->type!=GAL_TYPE_UINT8)
+    error(EXIT_FAILURE, 0, "%s: the input data set type must be `uint8'",
+          __func__);
+  if(binary->block)
+    error(EXIT_FAILURE, 0, "%s: currently, the input data structure to "
+          "must not be a tile", __func__);
+
+  /* Go over all the pixels and do a breadth-first search. */
+  b=binary->array;
+  for(i=0;i<binary->size;++i)
+    /* A pixel that has already been recorded is given a value of
+       `BINARY_CONINDEX_VAL'. */
+    if( b[i]==1 )
+      {
+        /* Add this pixel to the queue of pixels to work with. */
+	b[i]=BINARY_CONINDEX_VAL;
+        gal_list_sizet_add(&Q, i);
+        gal_list_sizet_add(&onelab, i);
+
+        /* While a pixel remains in the queue, continue labelling and
+           searching for neighbors. */
+        while(Q!=NULL)
+          {
+            /* Pop an element from the queue. */
+            p=gal_list_sizet_pop(&Q);
+
+            /* Go over all its neighbors and add them to the list if they
+               haven't already been labeled. */
+            GAL_DIMENSION_NEIGHBOR_OP(p, binary->ndim, binary->dsize,
+                                      connectivity, dinc,
+              {
+                if( b[nind]==1 )
+                  {
+		    b[nind]=BINARY_CONINDEX_VAL;
+                    gal_list_sizet_add(&Q, nind);
+		    gal_list_sizet_add(&onelab, nind);
+                  }
+              } );
+          }
+
+	/* Parsing has finished, put all the indexs into an array. */
+	onelabarr=gal_list_sizet_to_array(onelab, 1, &onelabnum);
+	gal_list_data_add_alloc(&lines, onelabarr, GAL_TYPE_SIZE_T, 1,
+				&onelabnum, NULL, 0, -1, 1, NULL, NULL, NULL);
+
+	/* Clean up. */
+	gal_list_sizet_free(onelab);
+	onelab=NULL;
+      }
+
+  /* Reverse the order. */
+  gal_list_data_reverse(&lines);
+
+  /* For a check
+  {
+    gal_data_t *test=lines->next;
+    size_t *b, *bf;
+    bf=(b=test->array)+test->size;
+    do printf("%zu\n", *b++);
+    while(b<bf);
+    exit(0);
+  }
+  */
+
+  /* Set all the `2' values back to `1'. */
+  bf=(b=binary->array)+binary->size;
+  do if(*b==BINARY_CONINDEX_VAL) *b=1; while(++b<bf);
+
+  /* Clean up and return the total number. */
+  free(dinc);
+  return lines;
+}
+
+
+
+
+
 /* Given an adjacency matrix (which should be binary), find the number of
    connected objects and return an array of new labels for each old
    label.  */

@@ -475,6 +475,21 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "contour",
+      UI_KEY_CONTOUR,
+      "STR",
+      0,
+      "Contour levels, save in PGFPlots format.",
+      UI_GROUP_PARTICULAR_STAT,
+      &p->contour,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_csv_float64
+    },
+
 
 
 

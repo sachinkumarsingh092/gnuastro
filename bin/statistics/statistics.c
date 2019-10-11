@@ -46,6 +46,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "ui.h"
 #include "sky.h"
+#include "contour.h"
 #include "statistics.h"
 
 
@@ -1021,6 +1022,12 @@ statistics(struct statisticsparams *p)
   if(p->sky)
     {
       sky(p);
+      print_basic_info=0;
+    }
+
+  if(p->contour)
+    {
+      contour(p);
       print_basic_info=0;
     }
 

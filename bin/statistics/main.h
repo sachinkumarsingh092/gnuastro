@@ -74,6 +74,7 @@ struct statisticsparams
   double            mirror;  /* Mirror value for hist and CFP.           */
   uint8_t              sky;  /* Find the Sky value over the image.       */
   uint8_t        sigmaclip;  /* So sigma-clipping over all dataset.      */
+  gal_data_t      *contour;  /* Levels to show contours.                 */
 
   size_t           numbins;  /* Number of bins in histogram or CFP.      */
   size_t      numasciibins;  /* Number of bins in ASCII plots.           */

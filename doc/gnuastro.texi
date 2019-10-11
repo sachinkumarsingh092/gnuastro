@@ -12639,6 +12639,19 @@ If the @option{--oneelempertile} option is called, then one element/pixel will b
 Otherwise, the output will have the same size as the input, but each element will have the value corresponding to that tile's value.
 If multiple single valued operations are called, then for each operation there will be one extension in the output FITS file.
 
+@item -R FLT[,FLT[,FLT...]]
+@itemx --contour=FLT[,FLT[,FLT...]]
+@cindex Contour
+@cindex Plot: contour
+Write the contours for the requested levels in a file ending with @file{_contour.txt}.
+It will have three columns: the first two are the coordinates of each point and the third is the level it belongs to (one of the input values).
+Each disconnected contour region will be separated by a blank line.
+This is the requested format for adding contours with PGFPlots in @LaTeX{}.
+If any other format can be useful for your work please let us know so we can add it.
+If the image has World Coordinate System information, the written coordinates will be in RA and Dec, otherwise, they will be in pixel coordinates.
+
+Note that currently, this is a very crude/simple implementation, please let us know if you find problematic situations so we can fix it.
+
 @item -y
 @itemx --sky
 Estimate the Sky value on each tile as fully described in @ref{Quantifying signal in a tile}.
@@ -23516,6 +23529,12 @@ function will abort with an error. Other than blank pixels (with a value of
 @code{GAL_BLANK_UINT8} defined in @ref{Library blank values}), all other
 non-zero pixels in @code{binary} will be considered as foreground (and will
 be labeled). Blank pixels in the input will also be blank in the output.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_binary_connected_indexs(gal_data_t @code{*binary}, int @code{connectivity})
+Build a @code{gal_data_t} linked list, where each node of the list contains an array with indexs of the connected regions.
+Therefore the arrays of each node can have a different size.
+Note that the indexs will only be calculated on the pixels with a value of 1 and internally, it will temporarily change the values to 2 (and return them back to 1 in the end).
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_binary_connected_adjacency_matrix (gal_data_t @code{*adjacency}, size_t @code{*numconnected})

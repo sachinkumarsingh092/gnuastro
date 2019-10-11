@@ -46,7 +46,7 @@ enum program_args_groups
 /* Available letters for short options:
 
    a b e f j p v w x z
-   B G J L R W X Y
+   B G J L W X Y
 */
 enum option_keys_enum
 {
@@ -70,6 +70,7 @@ enum option_keys_enum
   UI_KEY_INTERPOLATE  = 'i',
   UI_KEY_SKY          = 'y',
   UI_KEY_KERNEL       = 'k',
+  UI_KEY_CONTOUR      = 'R',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */

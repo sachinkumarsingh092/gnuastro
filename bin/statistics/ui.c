@@ -904,7 +904,7 @@ ui_preparations(struct statisticsparams *p)
   ui_out_of_range_to_blank(p);
 
   /* If we are not to work on tiles, then re-order and change the input. */
-  if(p->ontile==0 && p->sky==0)
+  if(p->ontile==0 && p->sky==0 && p->contour==NULL)
     {
       /* Only keep the elements we want. */
       gal_blank_remove(p->input);

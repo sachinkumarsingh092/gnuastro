@@ -35,9 +35,9 @@ bin_PROGRAMS = aststatistics
 aststatistics_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la \
                       -lgnuastro $(MAYBE_NORPATH)
 
-aststatistics_SOURCES = main.c ui.c sky.c statistics.c
+aststatistics_SOURCES = main.c ui.c contour.c sky.c statistics.c
 
-EXTRA_DIST = main.h authors-cite.h args.h ui.h sky.h statistics.h
+EXTRA_DIST = main.h authors-cite.h args.h ui.h sky.h statistics.h contour.h
 
 
 
