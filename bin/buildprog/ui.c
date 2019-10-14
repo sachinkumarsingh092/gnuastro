@@ -289,8 +289,12 @@ ui_preparations(struct buildprogparams *p)
      actually in the PATH. */
   if(p->cc==NULL)
     {                                        /* No C compiler chosen. */
-      p->cc=getenv("CC");                    /* First check for `CC'. */
-      if(p->cc==NULL) p->cc=getenv("GCC");   /* Then check for `GCC'. */
+      if(p->noenv==0)
+        {
+          p->cc=getenv("CC");                /* First check for `CC'. */
+          if(p->cc==NULL)
+            p->cc=getenv("GCC");             /* Then check for `GCC'. */
+        }
       if(p->cc==NULL) p->cc="gcc";           /* Default: `gcc'.       */
     }
 }

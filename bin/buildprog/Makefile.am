@@ -87,6 +87,8 @@ astbuildprog.conf: $(top_srcdir)/bin/buildprog/astbuildprog.conf.in
 	    echo " linkdir $$v" >> $@;                 \
 	  fi;                                          \
 	done
+	echo "# Build-time LDFLAGS: $(LDFLAGS)" >> $@
+	echo "# Build-time CPPFLAGS: $(CPPFLAGS)" >> $@
 
 
 

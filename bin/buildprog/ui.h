@@ -32,7 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Available letters for short options:
 
-   e f i j k n p r s u v w x y z
+   f i j k n p r s u v w x y z
    A B C E G H J Q R X Y
 */
 enum option_keys_enum
@@ -49,6 +49,7 @@ enum option_keys_enum
   UI_KEY_TAG            = 't',
   UI_KEY_DETELECOMPILED = 'd',
   UI_KEY_LA             = 'a',
+  UI_KEY_NOENV          = 'e',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */

@@ -17497,13 +17497,17 @@ $ astbuildprog --onlybuild myprogram.c
 @end example
 
 If BuildProgram is to run, it needs a C programming language source file as input.
-By default it will compile and link the program to build the a final executable file and run it.
-The C compiler can be chosen with the @option{--cc} option, or environment variables, please see the description of @option{--cc} for more.
+By default it will compile and link the given source into a final executable program and run it.
 The built executable name can be set with the optional @option{--output} option.
-When no output name is set, BuildProgram will use Gnuastro's @ref{Automatic output}, and remove the suffix of the input and use that as the output name.
+When no output name is set, BuildProgram will use Gnuastro's @ref{Automatic output} system to remove the suffix of the input source file (usually @file{.c}) and use the resulting name as the built program name.
 
 For the full list of options that BuildProgram shares with other Gnuastro programs, see @ref{Common options}.
 You may also use Gnuastro's @ref{Configuration files} to specify other libraries/headers to use for special directories and not have to type them in every time.
+
+The C compiler can be chosen with the @option{--cc} option, or environment variables, please see the description of @option{--cc} for more.
+The two common @code{LDFLAGS} and @code{CPPFLAGS} environment variables are also checked and used in the build by default.
+Using environment variables can be disabled with the @option{--noenv} option.
+Just note that BuildProgram also keeps the important flags in these environment variables in its configuration file, so in many cases, when you needed them to build Gnuastro, you won't need them in BuildProgram.
 
 The first argument is considered to be the C source file that must be compiled and linked.
 Any other arguments (non-option tokens on the command-line) will be passed onto the program when BuildProgram wants to run it.
@@ -17614,6 +17618,15 @@ Use the given @file{.la} file (Libtool control file) instead of the one that was
 The Libtool control file keeps all the necessary information for building and linking a program with a library built by Libtool.
 The default @file{prefix/lib/libgnuastro.la} keeps all the information necessary to build a program using the Gnuastro library gathered during configure time (see @ref{Installation directory} for prefix).
 This option is useful when you prefer to use another Libtool control file.
+
+@item -e
+@itemx --noenv
+@cindex @code{CC}
+@cindex @code{GCC}
+@cindex @code{LDFLAGS}
+@cindex @code{CPPFLAGS}
+Don't use environment variables in the build, just use the values given to the options.
+As described above, environment variables like @code{CC}, @code{GCC}, @code{LDFLAGS},  @code{CPPFLAGS} will be read by default and used in the build if they have been defined.
 @end table
 
 

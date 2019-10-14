@@ -12,8 +12,11 @@ See the end of the file for license conditions.
      the standard output, not into a file.
 
   BuildProgram:
+   - Will use common environment variables like LDFLAGS, CPPFLAGS and CC to
+     help in customizing the build of your program.
    --cc: custom C compiler to use. Until now, `gcc' was hard-coded into the
      source and there was no way to choose a custom C compiler.
+   --noenv: With this option, no environment variables will be read.
 
   ConvertType:
    - New `viridis' colormap (value for the `--colormap' option). This is
@@ -54,6 +57,7 @@ See the end of the file for license conditions.
   bug #56747: ConvertType's SLS colormap has black pixels which should be orange.
   bug #56754: Wrong sigma clipping output when many values are equal.
   bug #56999: Compilation error on macOS 10.9 not recognizing AT_FDCWD.
+  bug #57057: BuildProgram not using environment LDFLAGS or CPPFLAGS.
 
 
 

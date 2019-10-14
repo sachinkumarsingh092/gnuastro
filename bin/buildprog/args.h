@@ -115,6 +115,20 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
 
+    {
+      "noenv",
+      UI_KEY_NOENV,
+      0,
+      0,
+      "No env. (e.g., LDFLAGS or CPPFLAGS) in build.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->noenv,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
 
 
 
