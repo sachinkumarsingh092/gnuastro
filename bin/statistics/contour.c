@@ -84,7 +84,7 @@ contour_pgfplots(gal_data_t *edgeindexs, gal_data_t *input, float level,
   size_t *s, *sf, w=input->dsize[1];
 
   /* Go through each connected edge and add the contour positions. */
-  for(tmp=edgeindexs; tmp->next!=NULL; tmp=tmp->next)
+  for(tmp=edgeindexs; tmp!=NULL; tmp=tmp->next)
     if(tmp->size>10)
       {
         if(input->wcs)
