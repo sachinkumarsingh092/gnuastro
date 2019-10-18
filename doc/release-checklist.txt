@@ -83,7 +83,7 @@ all the commits needed for this release have been completed.
  - Update the version and build Gnuastro, all done with the `-p' option of
    `./developer-build'. But we'll give it a `pure-junk' directory so it
    doesn't actually upload the build. Then go into the build directory and
-   run `make distcheck'.
+   run `make distcheck -j8'.
 
      $ ./developer-build -p pure-junk
 
