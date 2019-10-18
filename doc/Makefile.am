@@ -24,7 +24,7 @@
 
 
 ## Set the shell
-SHELL=/bin/bash
+SHELL=/bin/sh
 
 BUILT_SOURCES = $(srcdir)/authors.texi
 
