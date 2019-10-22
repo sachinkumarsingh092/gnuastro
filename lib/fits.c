@@ -1592,6 +1592,10 @@ gal_fits_key_write_version_in_ptr(gal_fits_list_key_t **keylist, char *title,
   const char *wcslibversion_const;
 #endif
 
+  /* Small sanity check. */
+  if(fptr==NULL)
+    error(EXIT_FAILURE, 0, "%s: input FITS pointer is NULL", __func__);
+
   /* If any header keywords are specified, add them: */
   if(keylist && *keylist)
     {

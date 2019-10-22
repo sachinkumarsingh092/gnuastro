@@ -224,6 +224,10 @@ crop_mode_img(void *inparam)
       /* Crop the image. */
       onecrop(crp);
 
+      /* If there was no overlap, then no FITS pointer is created, so
+         `numimg' should be set to zero. */
+      if(crp->outfits==NULL) crp->numimg=0;
+
       /* Check the final output: */
       if(crp->numimg)
         {
@@ -235,7 +239,7 @@ crop_mode_img(void *inparam)
           status=0;
           if( fits_close_file(crp->outfits, &status) )
             gal_fits_io_error(status, "CFITSIO could not close "
-                                   "the opened file");
+                              "the opened file");
 
           /* Remove the output image if its center was not filled. */
           if(crp->centerfilled==0)
