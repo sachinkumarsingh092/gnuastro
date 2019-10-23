@@ -928,8 +928,84 @@ arithmetic_unique(struct arithmeticparams *p, char *token, int operator)
   /* Remove all blank elements. */
   gal_blank_remove(input);
 
-  /* Clean up and add the collapsed dataset to the top of the operands. */
+  /* Add the collapsed dataset to the top of the operands. */
   operands_add(p, NULL, input);
+}
+
+
+
+
+
+void
+arithmetic_add_dimension(struct arithmeticparams *p, char *token, int operator)
+{
+  gal_data_t *out=NULL;
+  gal_data_t *tmp = operands_pop(p, token);
+  size_t i, num, dsize[3], ndim=3, nbytes=0;
+
+  /* Make sure the first operand is a number. */
+  if(tmp->size!=1)
+    error(EXIT_FAILURE, 0, "first popped operand to `%s' must be a "
+          "number (specifying how many datasets to use)", token);
+
+  /* Put the value into `num'. */
+  tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_SIZE_T);
+  num=*(size_t *)(tmp->array);
+  gal_data_free(tmp);
+
+  /* Pop all the datasets and put them in a list. */
+  for(i=0;i<num;++i)
+    {
+      /* Pop the operand. */
+      tmp=operands_pop(p, token);
+
+      /* Things that differ from the first dataset and the rest. */
+      if(out) /* Not the first. */
+        {
+          /* Basic sanity checks. */
+          if(tmp->type!=out->type)
+            error(EXIT_FAILURE, 0, "the operands to `%s' have to have the "
+                  "same data type (the inputs contain atleast two types: "
+                  "`%s' and `%s')", token, gal_type_name(tmp->type, 1),
+                  gal_type_name(out->type, 1));
+          if( tmp->ndim!=out->ndim-1
+              || tmp->dsize[0]!=out->dsize[1]
+              || tmp->dsize[1]!=out->dsize[2] )
+            error(EXIT_FAILURE, 0, "the operands to `%s' have to have the "
+                  "same size", token);
+        }
+      else  /* First popped operand. */
+        {
+          /* First popped operand, do necessary basic checks here. */
+          if(tmp->ndim!=2)
+            error(EXIT_FAILURE, 0, "currently only 2-dimensional datasets "
+                  "are acceptable for `%s', please get in touch with us at "
+                  "%s so we add functionality for different dimensions",
+                  token, PACKAGE_BUGREPORT);
+
+          /* Allocate the output dataset. */
+          dsize[0]=num;
+          dsize[1]=tmp->dsize[0];
+          dsize[2]=tmp->dsize[1];
+          out = gal_data_alloc(NULL, tmp->type, ndim, dsize, NULL, 0,
+                               p->cp.minmapsize, p->cp.quietmmap, NULL,
+                               NULL, NULL);
+
+          /* Get the number of bytes in each dataset. */
+          nbytes=gal_type_sizeof(tmp->type)*tmp->size;
+        }
+
+      /* Copy the dataset into the higher-dimensional output. */
+      memcpy(gal_pointer_increment(out->array, (num-1-i)*tmp->size,
+                                   tmp->type),
+             tmp->array, nbytes);
+
+      /* Clean up. */
+      gal_data_free(tmp);
+    }
+
+  /* Put the higher-dimensional output on the operands stack. */
+  operands_add(p, NULL, out);
 }
 
 
@@ -996,6 +1072,8 @@ arithmetic_set_operator(char *string, size_t *num_operands)
         { op=ARITHMETIC_OP_COLLAPSE_NUMBER;       *num_operands=0; }
       else if (!strcmp(string, "unique"))
         { op=ARITHMETIC_OP_UNIQUE;                *num_operands=0; }
+      else if (!strcmp(string, "add-dimension"))
+        { op=ARITHMETIC_OP_ADD_DIMENSION;         *num_operands=0; }
       else
         error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
               "interpretted as a file name, named dataset, number, "
@@ -1117,6 +1195,10 @@ arithmetic_operator_run(struct arithmeticparams *p, int operator,
 
         case ARITHMETIC_OP_UNIQUE:
           arithmetic_unique(p, operator_string, operator);
+          break;
+
+        case ARITHMETIC_OP_ADD_DIMENSION:
+          arithmetic_add_dimension(p, operator_string, operator);
           break;
 
         default:

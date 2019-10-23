@@ -9905,6 +9905,25 @@ Similar to @option{collapse-sum}, but the returned dataset will have the same nu
 @item collapse-max
 Similar to @option{collapse-sum}, but the returned dataset will have the same numeric type as the input and will contain the maximum value for each pixel along the collapsed dimension.
 
+@item add-dimension
+Build a higher-dimensional dataset from all the input datasets stacked after one another (along the slowest dimension).
+The first popped operand has to be a single number.
+It is used by the operator to know how many operands it should pop from the stack (and the size of the output in the new dimension).
+The rest of the operands must have the same size and numerical data type.
+This operator currently only works for 2D input operands, please contact us if you want inputs to have different dimensions.
+
+The output's WCS (which should have a different dimensionality compared to the inputs) can be read from another file with the @option{--wcsfile} option.
+If no file is specified for the WCS, the first dataset's WCS will be used, you can later add/change the necessary WCS keywords with the FITS keyword modification features of the Fits program (see @ref{Fits}).
+
+If your datasets don't have the same type, you can use the type transformation operators of Arithmetic that are discussed below.
+Just beware of overflow if you are transforming to a smaller type, see @ref{Numeric data types}.
+
+For example if you want to put the three @file{img1.fits}, @file{img2.fits} and @file{img3.fits} images (each a 2D dataset) into one 3D datacube, you can use this command:
+
+@example
+$ astarithmetic img1.fits img2.fits img3.fits 3 add-dimension
+@end example
+
 @item unique
 Remove all duplicate (and blank) elements from the first popped operand.
 The unique elements of the dataset will be stored in a single-dimensional dataset.

@@ -8,6 +8,9 @@ See the end of the file for license conditions.
 ** New features
 
   Arithmetic:
+   - The new `add-dimension' operator will stack the popped operands in a
+     higher-dimensional dataset. For example to build a 3D cube from
+     individual 2D images/slices.
    --onedonstdout: when the output is one-dimensional, print the values on
      the standard output, not into a file.
 
