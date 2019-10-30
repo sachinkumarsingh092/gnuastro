@@ -231,6 +231,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "spectrum",
+      UI_KEY_SPECTRUM,
+      0,
+      0,
+      "Object spectrum for cube (3D) datasets.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->spectrum,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 
@@ -455,6 +468,20 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
+      "z",
+      UI_KEY_Z,
+      0,
+      0,
+      "Flux weighted center in third FITS axis.",
+      UI_GROUP_COLUMNS_POSITION_PIXEL,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
       "geox",
       UI_KEY_GEOX,
       0,
@@ -474,6 +501,20 @@ struct argp_option program_options[] =
       0,
       0,
       "Geometric center in second FITS axis.",
+      UI_GROUP_COLUMNS_POSITION_PIXEL,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "geoz",
+      UI_KEY_GEOZ,
+      0,
+      0,
+      "Geometric center in third FITS axis.",
       UI_GROUP_COLUMNS_POSITION_PIXEL,
       0,
       GAL_TYPE_INVALID,
@@ -539,6 +580,34 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
+      "minz",
+      UI_KEY_MINZ,
+      0,
+      0,
+      "Minimum third FITS axis position.",
+      UI_GROUP_COLUMNS_POSITION_PIXEL,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "maxz",
+      UI_KEY_MAXZ,
+      0,
+      0,
+      "Maximum third FITS axis position.",
+      UI_GROUP_COLUMNS_POSITION_PIXEL,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
       "clumpsx",
       UI_KEY_CLUMPSX,
       0,
@@ -567,6 +636,20 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
+      "clumpsz",
+      UI_KEY_CLUMPSZ,
+      0,
+      0,
+      "Flux.wht center of all clumps in obj. (Z).",
+      UI_GROUP_COLUMNS_POSITION_PIXEL,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
       "clumpsgeox",
       UI_KEY_CLUMPSGEOX,
       0,
@@ -586,6 +669,20 @@ struct argp_option program_options[] =
       0,
       0,
       "Geometric center of all clumps in obj. (Y).",
+      UI_GROUP_COLUMNS_POSITION_PIXEL,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "clumpsgeoz",
+      UI_KEY_CLUMPSGEOZ,
+      0,
+      0,
+      "Geometric center of all clumps in obj. (Z).",
       UI_GROUP_COLUMNS_POSITION_PIXEL,
       0,
       GAL_TYPE_INVALID,
@@ -662,6 +759,20 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
+      "w3",
+      UI_KEY_W3,
+      0,
+      0,
+      "Flux weighted center in third WCS axis.",
+      UI_GROUP_COLUMNS_POSITION_WCS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
       "geow1",
       UI_KEY_GEOW1,
       0,
@@ -681,6 +792,20 @@ struct argp_option program_options[] =
       0,
       0,
       "Geometric center in second WCS axis.",
+      UI_GROUP_COLUMNS_POSITION_WCS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "geow3",
+      UI_KEY_GEOW2,
+      0,
+      0,
+      "Geometric center in third WCS axis.",
       UI_GROUP_COLUMNS_POSITION_WCS,
       0,
       GAL_TYPE_INVALID,
@@ -718,6 +843,20 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
+      "clumpsw3",
+      UI_KEY_CLUMPSW3,
+      0,
+      0,
+      "Flux.wht center of all clumps in 3rd WCS.",
+      UI_GROUP_COLUMNS_POSITION_WCS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
       "clumpsgeow1",
       UI_KEY_CLUMPSGEOW1,
       0,
@@ -737,6 +876,20 @@ struct argp_option program_options[] =
       0,
       0,
       "Geometric center of all clumps in 2nd WCS.",
+      UI_GROUP_COLUMNS_POSITION_WCS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "clumpsgeow3",
+      UI_KEY_CLUMPSGEOW3,
+      0,
+      0,
+      "Geometric center of all clumps in 3rd WCS.",
       UI_GROUP_COLUMNS_POSITION_WCS,
       0,
       GAL_TYPE_INVALID,
@@ -1075,6 +1228,20 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
+      "areaxy",
+      UI_KEY_AREAXY,
+      0,
+      0,
+      "Projected area in first two dimentions.",
+      UI_GROUP_COLUMNS_MORPHOLOGY,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
       "clumpsarea",
       UI_KEY_CLUMPSAREA,
       0,
@@ -1108,6 +1275,20 @@ struct argp_option program_options[] =
       0,
       0,
       "Area labled region (irrespective of value).",
+      UI_GROUP_COLUMNS_MORPHOLOGY,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "geoareaxy",
+      UI_KEY_GEOAREAXY,
+      0,
+      0,
+      "Projected geoarea in first two dimensions.",
       UI_GROUP_COLUMNS_MORPHOLOGY,
       0,
       GAL_TYPE_INVALID,

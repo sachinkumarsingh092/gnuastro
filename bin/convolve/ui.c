@@ -503,16 +503,24 @@ ui_preparations(struct convolveparams *p)
   ui_read_input(p);
 
 
-  /* Currently Convolve only works on 1D and 2D datasets. */
-  if(p->input->ndim>2)
+  /* Currently Convolve only works on 1D, 2D and 3D datasets. */
+  if(p->input->ndim>3)
     error(EXIT_FAILURE, 0, "%s (hdu %s) has %zu dimensions. Currently "
-          "Convolve only operates on 1D (table column) and 2D (image) "
-          "datasets", p->filename, cp->hdu, p->input->ndim);
+          "Convolve only operates on 1D (table column, spectrum), 2D "
+          "(image), and 3D (data cube) datasets", p->filename, cp->hdu,
+          p->input->ndim);
 
 
   /* Domain-specific checks. */
   if(p->domain==CONVOLVE_DOMAIN_FREQUENCY)
     {
+      /* Check the dimensionality. */
+      if(p->input->ndim!=2)
+        error(EXIT_FAILURE, 0, "%s (hdu %s) has %zu dimensions. Frequency "
+              "domain convolution currently only operates on 2D images",
+              p->filename, cp->hdu, p->input->ndim);
+
+      /* Blank values. */
       if( gal_blank_present(p->input, 1) )
         fprintf(stderr, "\n----------------------------------------\n"
                 "######## %s WARNING ########\n"

@@ -1,0 +1,5 @@
+# Column 5: Profile [name, str8] Profile function.
+#  x   y   z     prof     r    n   p1   p2   p3   q1   q2     m    t
+1  10  5   1    sersic    20   2   45   0    0    0.5  0.25  -16   2
+2  50  50  160  sersic    10   4   20   30   40   1    0.5   -14   2
+3  80  50  80   sersic    30   1   80   50   20   0.4  0.8   -18   2

@@ -26,10 +26,45 @@ See the end of the file for license conditions.
      the default colormap of Python's Matplotlib, and is available in many
      other plotting tools like LaTeX's PGFPlots.
 
+  Convolve:
+   - Spatial domain convolution now possible on 3D data cubes (with a 3D
+     kernel).
+
   CosmicCalculator:
    --lineatz: return the observed wavelength of a line if it was emitted at
      the redshift given to CosmicCalculator. You can either use known line
      names, or directly give a number as any emitted line's wavelength.
+
+  MakeCatalog:
+   - Catalogs from 3D inputs now available, with the following new options,
+     see book for more.
+     --spectrum: label's spectrum (across the third dimension).
+     --z: Flux-weighted position in 3rd dimension.
+     --geoz: Geometric center in third FITS axis.
+     --minz: Minimum third FITS axis position.
+     --maxz: Maximum third FITS axis position.
+     --clumpsz: Flux weighted center of all clumps in object in 3rd dim.
+     --clumpsgeoz: Geometric center of all clumps in object in 3rd dim.
+     --w3: Flux weighted center in third WCS axis.
+     --geow3: Geometric center in third WCS axis.
+     --clumpsw3: Flux wheighted center of all clumps in 3rd dim.
+     --clumpsgeow3: Geometric center of all clumps in 3rd dim.
+     --areaxy: Projected area in first two dimentions.
+     --geoareaxy: Projected geoarea in first two dimensions.
+
+  MakeProfiles:
+   - Can produce mock ellipsoids in a datacube (using X-Z-X Euler angles
+     for 3D orientation), the following options have been added, see the
+     book for more details.
+     --p2col: Second Euler angle (X-Z-X order).
+     --p3col: Third Euler angle (X-Z-X order).
+     --q2col: Axis ratio (major/dim3 in 3D).
+   - The `--kernel' option can build 3D kernels, see the description of
+     this option in the book for examples and details on how to run it.
+
+  Match:
+   - Matching of catalogs now possible using 3 coordinates (on catalogs
+     generated from 3D data cubes), see book for more.
 
   Statistics:
    --contour: compute a contour plot which can be directly fed into the
@@ -50,6 +85,8 @@ See the end of the file for license conditions.
 
   Library:
    - gal_binary_connected_indexs: store indexs of connected components.
+   - gal_box_bound_ellipsoid_extent: Extent of 3D ellipsoid.
+   - gal_box_bound_ellipsoid: Bounding box for a 3D ellipsoid.
 
 ** Removed features
 

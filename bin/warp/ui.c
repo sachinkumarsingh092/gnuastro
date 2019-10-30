@@ -766,7 +766,7 @@ ui_matrix_finalize(struct warpparams *p)
     error(EXIT_FAILURE, 0, "the determinant of the given matrix "
           "is zero");
 
-  /* Note yet implemented: Check if the transformation is spatially
+  /* Not yet implemented: Check if the transformation is spatially
      invariant, in other words, if it differs between differet regions of
      the output. If it doesn't we can use this information for a more
      efficient processing. */

@@ -921,7 +921,6 @@ gal_options_parse_sizes_reverse(struct argp_option *option, char *arg,
                           "values to the `--%s' option must be positive",
                           arg, v[i], option->name);
 
-
           if(ceil(v[i]) != v[i])
             error_at_line(EXIT_FAILURE, 0, filename, lineno, "a given "
                           "value in `%s' (%g) is not an integer. The "

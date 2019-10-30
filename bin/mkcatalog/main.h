@@ -71,12 +71,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 enum objectcols
   {
     OCOL_NUMALL,         /* Number of all pixels with this label.     */
-    OCOL_NUM,            /* Number of pixels with a value.            */
+    OCOL_NUMALLXY,       /* Number of all pixels in first two dims.   */
+    OCOL_NUM,            /* Number of values used in this object.     */
+    OCOL_NUMXY,          /* Number of values in the first two dims.   */
     OCOL_SUM,            /* Sum of (value-sky) in object.             */
     OCOL_SUM_VAR,        /* Varience of sum (for brightness error).   */
     OCOL_MEDIAN,         /* Median of value in object.                */
     OCOL_VX,             /* Sum of (value-sky) * x.                   */
     OCOL_VY,             /* Sum of (value-sky) * y.                   */
+    OCOL_VZ,             /* Sum of (value-sky) * z.                   */
     OCOL_VXX,            /* Sum of (value-sky) * x * x.               */
     OCOL_VYY,            /* Sum of (value-sky) * y * y.               */
     OCOL_VXY,            /* Sum of (value-sky) * x * y.               */
@@ -86,6 +89,7 @@ enum objectcols
     OCOL_NUMWHT,         /* Number of positive pixels used for wht.   */
     OCOL_GX,             /* Geometric center of object in X.          */
     OCOL_GY,             /* Geometric center of object in Y.          */
+    OCOL_GZ,             /* Geometric center of object in Z.          */
     OCOL_GXX,            /* Second order geometric variable: X*X.     */
     OCOL_GYY,            /* Second order geometric variable: Y*Y.     */
     OCOL_GXY,            /* Second order geometric variable: X*Y.     */
@@ -98,8 +102,10 @@ enum objectcols
     OCOL_C_SUM,          /* Brightness in object clumps.              */
     OCOL_C_VX,           /* Sum of (value-sky)*x on clumps.           */
     OCOL_C_VY,           /* Sum of (value-sky)*y on obj. clumps.      */
+    OCOL_C_VZ,           /* Sum of (value-sky)*z on obj. clumps.      */
     OCOL_C_GX,           /* Geometric center of clumps in object X.   */
     OCOL_C_GY,           /* Geometric center of clumps in object Y.   */
+    OCOL_C_GZ,           /* Geometric center of clumps in object Z.   */
     OCOL_C_SUMWHT,       /* Sum of positive image pixels for wht.     */
     OCOL_C_NUMWHT,       /* Num of positive image pixels for wht.     */
 
@@ -109,7 +115,9 @@ enum objectcols
 enum clumpcols
   {
     CCOL_NUMALL,         /* Number of pixels in clump.                */
+    CCOL_NUMALLXY,       /* Number of pixels in first two dims.       */
     CCOL_NUM,            /* Number of values used in clump.           */
+    CCOL_NUMXY,          /* Number of values only in first two dims.  */
     CCOL_SUM,            /* River subtracted brightness.              */
     CCOL_SUM_VAR,        /* Variance of sum (for brightness error).   */
     CCOL_MEDIAN,         /* Median of values in clump.                */
@@ -118,6 +126,7 @@ enum clumpcols
     CCOL_RIV_SUM_VAR,    /* Variance of sum (for error measurements). */
     CCOL_VX,             /* Sum of (value-sky) * x.                   */
     CCOL_VY,             /* Sum of (value-sky) * y.                   */
+    CCOL_VZ,             /* Sum of (value-sky) * z.                   */
     CCOL_VXX,            /* Sum of flux*x*x of this clump.            */
     CCOL_VYY,            /* Sum of flux*y*y of this clump.            */
     CCOL_VXY,            /* Sum of flux*x*y of this clump.            */
@@ -127,6 +136,7 @@ enum clumpcols
     CCOL_NUMWHT,         /* Num of positive image pixels for wht.     */
     CCOL_GX,             /* Geometric center of clump in X.           */
     CCOL_GY,             /* Geometric center of clump in Y.           */
+    CCOL_GZ,             /* Geometric center of clump in Y.           */
     CCOL_GXX,            /* Second order geometric moment.            */
     CCOL_GYY,            /* Second order geometric moment.            */
     CCOL_GXY,            /* Second order geometric moment.            */
@@ -134,6 +144,8 @@ enum clumpcols
     CCOL_MAXX,           /* Maximum X value of clump.                 */
     CCOL_MINY,           /* Minimum Y value of clump.                 */
     CCOL_MAXY,           /* Maximum Y value of clump.                 */
+    CCOL_MINZ,           /* Minimum Z value of clump.                 */
+    CCOL_MAXZ,           /* Maximum Z value of clump.                 */
     CCOL_UPPERLIMIT_B,   /* Upper limit brightness.                   */
     CCOL_UPPERLIMIT_S,   /* Upper limit one-sigma value.              */
     CCOL_UPPERLIMIT_Q,   /* Quantile of object in random distribution.*/
@@ -171,6 +183,7 @@ struct mkcatalogparams
   uint8_t         subtractsky;  /* ==1: subtract the Sky from values.   */
   float           sfmagnsigma;  /* Surface brightness multiple of sigma.*/
   float             sfmagarea;  /* Surface brightness area (arcsec^2).  */
+  uint8_t            spectrum;  /* Object spectrum for 3D datasets.     */
 
   char            *upmaskfile;  /* Name of upper limit mask file.       */
   char             *upmaskhdu;  /* HDU of upper limit mask file.        */
@@ -213,6 +226,8 @@ struct mkcatalogparams
   uint8_t      uprangewarning;  /* A warning must be printed.           */
   size_t         *hostobjid_c;  /* To sort the clumps table by Obj.ID.  */
   size_t         *numclumps_c;  /* To sort the clumps table by Obj.ID.  */
+  gal_data_t   *specsliceinfo;  /* Slice information for spectra.       */
+  gal_data_t         *spectra;  /* Array of datasets containing spectra.*/
 
   char        *usedvaluesfile;  /* Ptr to final name used for values.   */
   char        *usedclumpsfile;  /* Ptr to final name used for clumps.   */

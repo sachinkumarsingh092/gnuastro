@@ -42,6 +42,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/permutation.h>
 
 #include <gnuastro-internal/timing.h>
+#include <gnuastro-internal/checkset.h>
 
 #include "main.h"
 #include "mkcatalog.h"
@@ -147,9 +148,10 @@ mkcatalog_single_object(void *in_prm)
     {
       /* For easy reading. Note that the object IDs start from one while
          the array positions start from 0. */
-      pp.ci     = NULL;
-      pp.object = tprm->indexs[i] + 1;
-      pp.tile   = &p->tiles[ tprm->indexs[i] ];
+      pp.ci       = NULL;
+      pp.object   = tprm->indexs[i] + 1;
+      pp.tile     = &p->tiles[   tprm->indexs[i] ];
+      pp.spectrum = &p->spectra[ tprm->indexs[i] ];
 
       /* Initialize the parameters for this object/tile. */
       parse_initialize(&pp);
@@ -273,12 +275,16 @@ mkcatalog_wcs_conversion(struct mkcatalogparams *p)
         {
         case UI_KEY_W1:           c=p->wcs_vo;                break;
         case UI_KEY_W2:           c=p->wcs_vo->next;          break;
+        case UI_KEY_W3:           c=p->wcs_vo->next->next;    break;
         case UI_KEY_GEOW1:        c=p->wcs_go;                break;
         case UI_KEY_GEOW2:        c=p->wcs_go->next;          break;
+        case UI_KEY_GEOW3:        c=p->wcs_go->next->next;    break;
         case UI_KEY_CLUMPSW1:     c=p->wcs_vcc;               break;
         case UI_KEY_CLUMPSW2:     c=p->wcs_vcc->next;         break;
+        case UI_KEY_CLUMPSW3:     c=p->wcs_vcc->next->next;   break;
         case UI_KEY_CLUMPSGEOW1:  c=p->wcs_gcc;               break;
         case UI_KEY_CLUMPSGEOW2:  c=p->wcs_gcc->next;         break;
+        case UI_KEY_CLUMPSGEOW3:  c=p->wcs_gcc->next->next;   break;
         }
 
       /* Copy the elements into the output column. */
@@ -301,8 +307,10 @@ mkcatalog_wcs_conversion(struct mkcatalogparams *p)
         {
         case UI_KEY_W1:           c=p->wcs_vc;                break;
         case UI_KEY_W2:           c=p->wcs_vc->next;          break;
+        case UI_KEY_W3:           c=p->wcs_vc->next->next;    break;
         case UI_KEY_GEOW1:        c=p->wcs_gc;                break;
         case UI_KEY_GEOW2:        c=p->wcs_gc->next;          break;
+        case UI_KEY_GEOW3:        c=p->wcs_gc->next->next;    break;
         }
 
       /* Copy the elements into the output column. */
@@ -606,37 +614,84 @@ sort_clumps_by_objid(struct mkcatalogparams *p)
 static void
 mkcatalog_write_outputs(struct mkcatalogparams *p)
 {
-  /*char *str;*/
+  size_t i, scounter;
+  char str[200], *fname;
   gal_list_str_t *comments;
+  int outisfits=gal_fits_name_is_fits(p->objectsout);
 
-
-  /* OBJECT catalog */
-  comments=mkcatalog_outputs_same_start(p, 0, "Detection");
-
-  /* Reverse the comments list (so it is printed in the same order here),
-     write the objects catalog and free the comments. */
-  gal_list_str_reverse(&comments);
-  gal_table_write(p->objectcols, comments, p->cp.tableformat,
-                  p->objectsout, "OBJECTS", 0);
-  gal_list_str_free(comments, 1);
-
-
-  /* CLUMPS catalog */
-  if(p->clumps)
+  /* If a catalog is to be generated. */
+  if(p->objectcols)
     {
-      /* Make the comments. */
-      comments=mkcatalog_outputs_same_start(p, 1, "Clumps");
+      /* OBJECT catalog */
+      comments=mkcatalog_outputs_same_start(p, 0, "Detection");
 
-      /* Reverse the comments and write the catalog. */
+      /* Reverse the comments list (so it is printed in the same order
+         here), write the objects catalog and free the comments. */
       gal_list_str_reverse(&comments);
-      gal_table_write(p->clumpcols, comments, p->cp.tableformat,
-                      p->clumpsout, "CLUMPS", 0);
+      gal_table_write(p->objectcols, comments, p->cp.tableformat,
+                      p->objectsout, "OBJECTS", 0);
       gal_list_str_free(comments, 1);
+
+
+      /* CLUMPS catalog */
+      if(p->clumps)
+        {
+          /* Make the comments. */
+          comments=mkcatalog_outputs_same_start(p, 1, "Clumps");
+
+          /* Write objects catalog
+             ---------------------
+
+             Reverse the comments list (so it is printed in the same order
+             here), write the objects catalog and free the comments. */
+          gal_list_str_reverse(&comments);
+          gal_table_write(p->clumpcols, comments, p->cp.tableformat,
+                          p->clumpsout, "CLUMPS", 0);
+          gal_list_str_free(comments, 1);
+        }
     }
 
+  /* Spectra. */
+  if(p->spectra)
+    {
+      /* Inform the user (Writing many FITS extensions can take
+         long). */
+      if(p->objectcols && outisfits)
+        printf("  - Catalog(s) complete, writing spectra.\n");
+
+      /* Start counting and writing the files. Note that due to some
+         conditions (for example in debugging), a `p->spectra[i]' may not
+         actually contain any data. So we'll also count the number of
+         spectra that are written. */
+      scounter=0;
+      for(i=0;i<p->numobjects;++i)
+        if(p->spectra[i].ndim>0)
+          {
+            /* Increment the written spectra-counter. */
+            ++scounter;
+
+            /* Write the spectra based on the requested format. */
+            if(outisfits)
+              {
+                /* Write the table. */
+                sprintf(str, "SPECTRUM_%zu", i+1);
+                gal_table_write(&p->spectra[i], NULL, GAL_TABLE_FORMAT_BFITS,
+                                p->objectsout, str, 0);
+              }
+            else
+              {
+                sprintf(str, "-spec-%zu.txt", i+1);
+                fname=gal_checkset_automatic_output(&p->cp, p->objectsout,
+                                                    str);
+                gal_table_write(&p->spectra[i], NULL, GAL_TABLE_FORMAT_TXT,
+                                fname, NULL, 0);
+                free(fname);
+              }
+          }
+    }
 
   /* Configuration information. */
-  if(gal_fits_name_is_fits(p->objectsout))
+  if(outisfits)
     {
       gal_fits_key_write_filename("input", p->objectsfile, &p->cp.okeys, 1);
       gal_fits_key_write_config(&p->cp.okeys, "MakeCatalog configuration",
@@ -647,14 +702,34 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
   /* Inform the user */
   if(!p->cp.quiet)
     {
-      if(p->clumpsout && strcmp(p->clumpsout,p->objectsout))
+      if(p->objectcols)
         {
-          printf("  - Output objects catalog: %s\n", p->objectsout);
-          if(p->clumps)
-            printf("  - Output clumps catalog: %s\n", p->clumpsout);
+          if(p->clumpsout && strcmp(p->clumpsout,p->objectsout))
+            {
+              printf("  - Output objects catalog: %s\n", p->objectsout);
+              if(p->clumps)
+                printf("  - Output clumps catalog: %s\n", p->clumpsout);
+            }
+          else
+            printf("  - Catalog written to %s\n", p->objectsout);
+
         }
-      else
-        printf("  - Catalog written to %s\n", p->objectsout);
+
+      if(p->spectra)
+        {
+          if(outisfits)
+            {
+              if(p->objectcols)
+                printf("  - Spectra in %zu extensions named `SPECTRUM_NN'.\n",
+                       p->numobjects);
+              else
+                printf("  - Output: %s (Spectra in %zu extensions named "
+                       "`SPECTRUM_NN').\n)", p->objectsout, p->numobjects);
+            }
+          else
+            printf("  - Spectra in %zu files with `-spec-NN.txt' suffix.\n",
+                   p->numobjects);
+        }
     }
 }
 

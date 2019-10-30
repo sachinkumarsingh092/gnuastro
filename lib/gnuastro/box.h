@@ -59,6 +59,13 @@ void
 gal_box_bound_ellipse(double a, double b, double theta_deg, long *width);
 
 void
+gal_box_bound_ellipsoid_extent(double *semiaxes, double *euler_deg,
+                              double *extent);
+
+void
+gal_box_bound_ellipsoid(double *semiaxes, double *euler_deg, long *width);
+
+void
 gal_box_border_from_center(double *center, size_t ndim, long *width,
                            long *fpixel, long *lpixel);
 

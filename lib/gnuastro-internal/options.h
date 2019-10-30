@@ -55,6 +55,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+
 /* Standard groups of options. From the Argp manual (in GNU C Library): "In
    a long help message, options are sorted alphabetically within each
    group, and the groups presented in the order 0, 1, 2, ..., N, -M, ...,

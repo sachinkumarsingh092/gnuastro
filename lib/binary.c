@@ -143,7 +143,7 @@ binary_erode_dilate_2d_8con(gal_data_t *input, unsigned char dilate0_erode1)
 
   /* Set the foreground and background values: */
   if(dilate0_erode1==0) {f=1; b=0;}
-  else         {f=0; b=1;}
+  else                  {f=0; b=1;}
 
   /* Check the 4 corners: */
   if(byt[0]==b && (byt[1]==f
@@ -221,6 +221,44 @@ binary_erode_dilate_2d_8con(gal_data_t *input, unsigned char dilate0_erode1)
 
 
 
+/* This is a general erosion and dilation function. It is less efficient
+   than the more specialized cases above. */
+static void
+binary_erode_dilate_general(gal_data_t *input, unsigned char dilate0_erode1,
+                            int connectivity)
+{
+  uint8_t f, b, *pt, *fpt, *byt=input->array;
+  size_t i, *dinc=gal_dimension_increment(input->ndim, input->dsize);
+
+  /* Do a sanity check: */
+  if(dilate0_erode1!=1 && dilate0_erode1!=0)
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can fix "
+          "this problem. The value to dilate0_erode1 is %u while it should "
+          "be 0 or 1", __func__, PACKAGE_BUGREPORT, dilate0_erode1);
+
+  /* Set the foreground and background values: */
+  if(dilate0_erode1==0) {f=1; b=0;}
+  else                  {f=0; b=1;}
+
+  /* Go over the neighbors of each pixel. */
+  for(i=0;i<input->size;++i)
+    if(byt[i]==b)
+      GAL_DIMENSION_NEIGHBOR_OP(i, input->ndim, input->dsize, connectivity,
+                                dinc,{
+                                  if(byt[i]!=GAL_BINARY_TMP_VALUE
+                                     && byt[nind]==f)
+                                    byt[i]=GAL_BINARY_TMP_VALUE;
+                                });
+
+  /* Set all the changed pixels to the proper values: */
+  fpt=(pt=byt)+input->size;
+  do *pt = *pt==GAL_BINARY_TMP_VALUE ? f : *pt; while(++pt<fpt);
+}
+
+
+
+
+
 /* Erode a binary dataset any number of times. If `inplace' is given a
    value of `1', then do the erosion within the already allocated space,
    otherwise, allocate a new array and save the result into that.
@@ -246,8 +284,8 @@ binary_erode_dilate(gal_data_t *input, size_t num, int connectivity,
 
   /* Set the dataset to work on. */
   binary = ( (inplace && input->type==GAL_TYPE_UINT8)
-             ? input :
-             gal_data_copy_to_new_type(input, GAL_TYPE_UINT8) );
+             ? input
+             : gal_data_copy_to_new_type(input, GAL_TYPE_UINT8) );
 
   /* Go over every element and do the erosion. */
   switch(binary->ndim)
@@ -262,6 +300,11 @@ binary_erode_dilate(gal_data_t *input, size_t num, int connectivity,
             error(EXIT_FAILURE, 0, "%s: %d not acceptable for connectivity "
                   "in a 2D dataset", __func__, connectivity);
           }
+      break;
+
+    case 3:
+      for(counter=0;counter<num;++counter)
+        binary_erode_dilate_general(binary, d0e1, connectivity);
       break;
 
     default:

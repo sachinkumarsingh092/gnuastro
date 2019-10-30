@@ -96,8 +96,8 @@ if COND_COSMICCAL
   cosmiccal/simpletest.sh: prepconf.sh.log
 endif
 if COND_CROP
-  MAYBE_CROP_TESTS = crop/imgcat.sh crop/wcscat.sh crop/imgcenter.sh	\
-  crop/imgcenternoblank.sh crop/section.sh crop/wcscenter.sh		\
+  MAYBE_CROP_TESTS = crop/imgcat.sh crop/wcscat.sh crop/imgcenter.sh    \
+  crop/imgcenternoblank.sh crop/section.sh crop/wcscenter.sh            \
   crop/imgpolygon.sh crop/imgoutpolygon.sh crop/wcspolygon.sh
 
   crop/imgcat.sh: mkprof/mosaic1.sh.log
@@ -130,7 +130,7 @@ if COND_MATCH
   match/merged-cols.sh: prepconf.sh.log
 endif
 if COND_MKCATALOG
-  MAYBE_MKCATALOG_TESTS = mkcatalog/detections.sh        \
+  MAYBE_MKCATALOG_TESTS = mkcatalog/detections.sh   \
   mkcatalog/objects-clumps.sh mkcatalog/aperturephot.sh
 
   mkcatalog/objects-clumps.sh: segment/segment.sh.log
@@ -139,20 +139,24 @@ if COND_MKCATALOG
                              mkprof/clearcanvas.sh.log
 endif
 if COND_MKNOISE
-  MAYBE_MKNOISE_TESTS = mknoise/addnoise.sh
+  MAYBE_MKNOISE_TESTS = mknoise/addnoise.sh mknoise/addnoise-3d.sh
 
   mknoise/addnoise.sh: warp/warp_scale.sh.log
+  mknoise/addnoise-3d.sh: mkprof/3d-cat.sh.log
 endif
 if COND_MKPROF
-  MAYBE_MKPROF_TESTS = mkprof/mosaic1.sh mkprof/mosaic2.sh	\
-  mkprof/mosaic3.sh mkprof/mosaic4.sh mkprof/radeccat.sh	\
-  mkprof/ellipticalmasks.sh mkprof/clearcanvas.sh
+  MAYBE_MKPROF_TESTS = mkprof/mosaic1.sh mkprof/mosaic2.sh         \
+  mkprof/mosaic3.sh mkprof/mosaic4.sh mkprof/radeccat.sh           \
+  mkprof/ellipticalmasks.sh mkprof/clearcanvas.sh mkprof/3d-cat.sh \
+  mkprof/3d-kernel.sh
 
+  mkprof/3d-cat.sh: prepconf.sh.log
   mkprof/mosaic1.sh: prepconf.sh.log
   mkprof/mosaic2.sh: prepconf.sh.log
   mkprof/mosaic3.sh: prepconf.sh.log
   mkprof/mosaic4.sh: prepconf.sh.log
   mkprof/radeccat.sh: prepconf.sh.log
+  mkprof/3d-kernel.sh: prepconf.sh.log
   mkprof/ellipticalmasks.sh: mknoise/addnoise.sh.log
   mkprof/clearcanvas.sh: mknoise/addnoise.sh.log
 endif
@@ -257,10 +261,10 @@ TESTS = prepconf.sh lib/multithread.sh $(MAYBE_CXX_TESTS)                  \
 
 # Files to distribute along with the tests.
 EXTRA_DIST = $(TESTS) during-dev.sh buildprog/simpleio.c crop/cat.txt     \
-  match/positions-1.txt match/positions-2.txt mkprof/mkprofcat1.txt       \
-  mkprof/ellipticalmasks.txt mkprof/clearcanvas.txt mkprof/mkprofcat2.txt \
-  mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt mkprof/radeccat.txt         \
-  statistics/stdin-input.txt table/table.txt
+  mkprof/3d-cat.txt match/positions-1.txt match/positions-2.txt           \
+  mkprof/mkprofcat1.txt mkprof/ellipticalmasks.txt mkprof/clearcanvas.txt \
+  mkprof/mkprofcat2.txt mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt       \
+  mkprof/radeccat.txt statistics/stdin-input.txt table/table.txt
 
 
 

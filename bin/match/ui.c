@@ -388,7 +388,7 @@ ui_read_columns_aperture_2d(struct matchparams *p)
 {
   size_t apersize=3;
   gal_data_t *newaper=NULL;
-  double *naper, *oaper=p->aperture->array;
+  double *naper=NULL, *oaper=p->aperture->array;
 
   /* A general sanity check: the first two elements of aperture cannot be
      zero or negative. */
@@ -400,7 +400,7 @@ ui_read_columns_aperture_2d(struct matchparams *p)
           "zero or negative");
 
   /* Will be needed in more than one case. */
-  if(p->aperture->size!=3)
+  if(p->aperture->size!=apersize)
     {
       newaper=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &apersize, NULL,
                              0, -1, 1, NULL, NULL, NULL);
@@ -432,6 +432,136 @@ ui_read_columns_aperture_2d(struct matchparams *p)
     default:
       error(EXIT_FAILURE, 0, "%zu values given to `--aperture'. In 2D, this "
             "option can only take 1, 2, or 3 values", p->aperture->size);
+    }
+
+  /* If a new aperture was defined, then replace it with the exitsting
+     one. */
+  if(newaper)
+    {
+      gal_data_free(p->aperture);
+      p->aperture=newaper;
+    }
+}
+
+
+
+
+
+/* The 3D aperture must finally have these elements.
+
+      p->aperture[0] = Major axis length.
+      p->aperture[1] = Second axis ratio.
+      p->aperture[2] = Third axis ratio.
+      p->aperture[3] = First ZXZ Euler angle rotation.
+      p->aperture[4] = Second ZXZ Euler angle rotation.
+      p->aperture[5] = Third ZXZ Euler angle rotation.   */
+static void
+ui_read_columns_aperture_3d(struct matchparams *p)
+{
+  size_t apersize=6;
+  gal_data_t *newaper=NULL;
+  double *naper=NULL, *oaper=p->aperture->array;
+
+  /* A general sanity check: the first two elements of aperture cannot be
+     zero or negative. */
+  if( oaper[0]<=0 )
+    error(EXIT_FAILURE, 0, "the first value of `--aperture' cannot be "
+          "zero or negative");
+  if( p->aperture->size>2 && (oaper[1]<=0 || oaper[2]<=0) )
+    error(EXIT_FAILURE, 0, "the second and third values of `--aperture' "
+          "cannot be zero or negative");
+
+  /* Will be needed in more than one case. */
+  if(p->aperture->size!=apersize)
+    {
+      newaper=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &apersize, NULL,
+                             0, -1, 1, NULL, NULL, NULL);
+      naper=newaper->array;
+    }
+
+  /* Different based on  */
+  switch(p->aperture->size)
+    {
+    case 1:
+      naper[0] = oaper[0];
+      naper[1] = naper[2] = 1;
+      naper[3] = naper[4] = naper[5] = 0;
+      break;
+
+    case 3:
+      /* Major axis is along the first dimension, no rotation necessary. */
+      if(oaper[0]>=oaper[1] && oaper[0]>=oaper[2])
+        {
+          naper[0] = oaper[0];
+          naper[1] = oaper[1] / oaper[0];
+          naper[2] = oaper[2] / oaper[0];
+          naper[3] = naper[4] = naper[5] = 0;
+        }
+
+      /* Major axis is along the second dimension. So we want `X' to be in
+         the direction of `y'. Therefore, just the first Eurler ZXZ
+         rotation is necessary by 90 degrees. Here is how the rotated
+         coordinates (X,Y,Z) look like (after one rotation about Z).
+
+                  |z (before)                   Z|  /Y
+                  |                              | /
+                  |                  ==>         |/
+                  .-------- y                    .------X
+                 /
+              x /
+
+         You see how the major axis (X) now lies in the second original
+         direction (y). The length along `x' is now along `Y' and the third
+         hasn't changed. Note that we are talking about the semi-axis
+         lengths (a scalar, not a vector), so +- is irrelevant. */
+      else if(oaper[1]>=oaper[0] && oaper[1]>=oaper[2])
+        {
+          naper[0] = oaper[1];
+          naper[1] = oaper[0] / oaper[1];
+          naper[2] = oaper[2] / oaper[1];
+          naper[3] = 90;
+          naper[4] = naper[5] = 0;
+        }
+
+      /* The major axis is along the third dimension. So we want `X' to
+         point in the direction of `z'. To get to that point, we need 90
+         degree rotations in all three Euler ZXZ rotations.
+
+              |z (before)     z'|  /y'            |y''                  |X
+              |                 | /               |                     |
+              |            ==>  |/        ==>     |         ==>         |
+              .------ y         .------x'         .------x'      Y------.
+             /                                   /                     /
+          x /                                z''/                    Z/
+
+         We thus see that the length along the second original direction
+         (y) doesn't change stays in the second direction (Y). But the
+         original first axis direction (x) is now represented by (Z). Note
+         that we are talking about the semi-axis lengths (a scalar, not a
+         vector), so +- is irrelevant. */
+      else
+        {
+          naper[0] = oaper[2];
+          naper[1] = oaper[1] / oaper[2];
+          naper[2] = oaper[0] / oaper[2];
+          naper[3] = naper[4] = naper[5] = 90;
+        }
+
+      break;
+
+    case 6:
+      if(oaper[1]>1 || oaper[2]>1)
+        error(EXIT_FAILURE, 0, "atleast one of the second or third values "
+              "to `--aperture' is larger than one. When size numbers are "
+              "given to this option (in 3D), the second and third are the "
+              "axis ratios (which must always be less than 1).");
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "%zu values given to `--aperture'. In 3D, this "
+            "option can only take 1, 3, or 6 values. See the description of "
+            "this option in the book for more with this command:\n\n"
+            "    $ info astmatch\n", p->aperture->size);
     }
 
   /* If a new aperture was defined, then replace it with the exitsting
@@ -489,10 +619,8 @@ ui_set_columns_sanity_check_read_aperture(struct matchparams *p)
                 p->aperture->size);
         break;
 
-      case 2:
-        ui_read_columns_aperture_2d(p);
-        break;
-
+      case 2: ui_read_columns_aperture_2d(p); break;
+      case 3: ui_read_columns_aperture_3d(p); break;
       default:
         error(EXIT_FAILURE, 0, "%zu dimensional matches are not currently "
               "supported (maximum is 2 dimensions). The number of "

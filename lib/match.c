@@ -166,10 +166,10 @@ match_coordinaes_sanity_check(gal_data_t *coord1, gal_data_t *coord2,
           gal_list_data_number(coord2));
 
 
-  /* This function currently only works on 1 and 2 dimensional inputs. */
-  if(ncoord1>2)
+  /* This function currently only works for less than 4 dimensions. */
+  if(ncoord1>3)
     error(EXIT_FAILURE, 0, "%s: %zu dimension matching requested, this "
-          "function currently only matches datasets with a maximum of 2 "
+          "function currently only matches datasets with a maximum of 3 "
           "dimensions", __func__, ncoord1);
 
   /* Check the column properties. */
@@ -180,11 +180,32 @@ match_coordinaes_sanity_check(gal_data_t *coord1, gal_data_t *coord2,
   if(aperture[0]<=0)
     error(EXIT_FAILURE, 0, "%s: the first value in the aperture (%g) cannot "
           "be zero or negative", __func__, aperture[0]);
-  if(ncoord1==2)
-    if(aperture[1]<=0 || aperture[1]>1)
-      error(EXIT_FAILURE, 0, "%s: the second value in the aperture (%g) "
-            "is the axis ratio, so it must be larger than zero and less "
-            "than 1", __func__, aperture[1]);
+  switch(ncoord1)
+    {
+    case 1:  /* We don't need any checks in a 1D match. */
+      break;
+
+    case 2:
+      if( (aperture[1]<=0 || aperture[1]>1))
+        error(EXIT_FAILURE, 0, "%s: the second value in the aperture (%g) "
+              "is the axis ratio, so it must be larger than zero and less "
+              "than 1", __func__, aperture[1]);
+      break;
+
+    case 3:
+      if(aperture[1]<=0 || aperture[1]>1 || aperture[2]<=0 || aperture[2]>1)
+        error(EXIT_FAILURE, 0, "%s: at least one of the second or third "
+              "values in the aperture (%g and %g respectively) is smaller "
+              "than zero or larger than one. In a 3D match, these are the "
+              "axis ratios, so they must be larger than zero and less than "
+              "1", __func__, aperture[1], aperture[2]);
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+            "the issue. The value %zu not recognized for `ndim'", __func__,
+            PACKAGE_BUGREPORT, ncoord1);
+    }
 }
 
 
@@ -297,6 +318,89 @@ match_coordinates_prepare(gal_data_t *coord1, gal_data_t *coord2,
 /********************************************************************/
 /*************            Coordinate matching           *************/
 /********************************************************************/
+/* Preparations for `match_coordinates_second_in_first'. */
+static void
+match_coordinates_sif_prepare(gal_data_t *A, gal_data_t *B,
+                              double *aperture, size_t ndim, double **a,
+                              double **b, double *dist, double *c,
+                              double *s, int *iscircle)
+{
+  double semiaxes[3];
+
+  /* These two are common for all dimensions. */
+  a[0]=A->array;
+  b[0]=B->array;
+
+  /* See if the aperture is a circle or not. */
+  switch(ndim)
+    {
+    case 1:
+      *iscircle = 0; /* Irrelevant for 1D. */
+      dist[0]=aperture[0];
+      break;
+
+    case 2:
+      /* Set the main coordinate arrays. */
+      a[1]=A->next->array;
+      b[1]=B->next->array;
+
+      /* See if the aperture is circular. */
+      if( (*iscircle=(aperture[1]==1)?1:0)==0 )
+        {
+          /* Using the box that encloses the aperture, calculate the
+             distance along each axis. */
+          gal_box_bound_ellipse_extent(aperture[0], aperture[0]*aperture[1],
+                                       aperture[2], dist);
+
+          /* Calculate the sin and cos of the given ellipse if necessary
+             for ease of processing later. */
+          c[0] = cos( aperture[2] * M_PI/180.0 );
+          s[0] = sin( aperture[2] * M_PI/180.0 );
+        }
+      else
+        dist[0]=dist[1]=aperture[0];
+      break;
+
+    case 3:
+      /* Set the main coordinate arrays. */
+      a[1]=A->next->array;
+      b[1]=B->next->array;
+      a[2]=A->next->next->array;
+      b[2]=B->next->next->array;
+
+      if( (*iscircle=(aperture[1]==1 && aperture[2]==1)?1:0)==0 )
+        {
+          /* Using the box that encloses the aperture, calculate the
+             distance along each axis. */
+          semiaxes[0]=aperture[0];
+          semiaxes[1]=aperture[1]*aperture[0];
+          semiaxes[2]=aperture[2]*aperture[0];
+          gal_box_bound_ellipsoid_extent(semiaxes, &aperture[3], dist);
+
+          /* Calculate the sin and cos of the given ellipse if necessary
+             for ease of processing later. */
+          c[0] = cos( aperture[3] * M_PI/180.0 );
+          s[0] = sin( aperture[3] * M_PI/180.0 );
+          c[1] = cos( aperture[4] * M_PI/180.0 );
+          s[1] = sin( aperture[4] * M_PI/180.0 );
+          c[2] = cos( aperture[5] * M_PI/180.0 );
+          s[2] = sin( aperture[5] * M_PI/180.0 );
+        }
+      else
+        dist[0]=dist[1]=dist[2]=aperture[0];
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+            "the problem. The value %zu is not recognized for ndim",
+            __func__, PACKAGE_BUGREPORT, ndim);
+    }
+}
+
+
+
+
+
 static double
 match_coordinates_elliptical_r_2d(double d1, double d2, double *ellipse,
                                   double c, double s)
@@ -311,8 +415,29 @@ match_coordinates_elliptical_r_2d(double d1, double d2, double *ellipse,
 
 
 static double
+match_coordinates_elliptical_r_3d(double *delta, double *ellipsoid,
+                                  double *c, double *s)
+{
+  double Xr, Yr, Zr;
+  double c1=c[0], s1=s[0];
+  double c2=c[1], s2=s[1];
+  double c3=c[2], s3=s[2];
+  double q1=ellipsoid[1], q2=ellipsoid[2];
+  double x=delta[0], y=delta[1], z=delta[2];
+
+  Xr = x*(  c3*c1   - s3*c2*s1 ) + y*( c3*s1   + s3*c2*c1) + z*( s3*s2 );
+  Yr = x*( -1*s3*c1 - c3*c2*s1 ) + y*(-1*s3*s1 + c3*c2*c1) + z*( c3*s2 );
+  Zr = x*(  s1*s2              ) + y*(-1*s2*c1           ) + z*( c2    );
+  return sqrt( Xr*Xr + Yr*Yr/q1/q1 + Zr*Zr/q2/q2 );
+}
+
+
+
+
+
+static double
 match_coordinates_distance(double *delta, int iscircle, size_t ndim,
-                           double *aperture, double c, double s)
+                           double *aperture, double *c, double *s)
 {
   /* For more than one dimension, we'll need to calculate the distance from
      the deltas (differences) in each dimension. */
@@ -325,7 +450,15 @@ match_coordinates_distance(double *delta, int iscircle, size_t ndim,
       return ( iscircle
                ? sqrt( delta[0]*delta[0] + delta[1]*delta[1] )
                : match_coordinates_elliptical_r_2d(delta[0], delta[1],
-                                                   aperture, c, s) );
+                                                   aperture, c[0], s[0]) );
+
+    case 3:
+      return ( iscircle
+               ? sqrt( delta[0]*delta[0]
+                       + delta[1]*delta[1]
+                       + delta[2]*delta[2] )
+               : match_coordinates_elliptical_r_3d(delta, aperture, c, s) );
+
     default:
       error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
             "the problem. The value %zu is not recognized for ndim",
@@ -356,41 +489,17 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
      redundant variables (those that equal a previous value) are only
      defined to make it easy to read the code.*/
   int iscircle=0;
-  double r, c=NAN, s=NAN;
   size_t i, ar=A->size, br=B->size;
   size_t ai, bi, blow=0, prevblow=0;
   size_t ndim=gal_list_data_number(A);
-  double dist[2]={NAN,NAN}, delta[2]={NAN,NAN};
-  double *a[2]={A->array, A->next ? A->next->array : NULL};
-  double *b[2]={B->array, B->next ? B->next->array : NULL};
+  double r, c[3]={NAN, NAN, NAN}, s[3]={NAN, NAN, NAN};
+  double dist[3]={NAN, NAN, NAN}, delta[3]={NAN, NAN, NAN};
+  double *a[3]={NULL, NULL, NULL}, *b[3]={NULL, NULL, NULL};
 
-  /* See if the aperture is a circle or not. */
-  switch(ndim)
-    {
-    case 1: iscircle = 0; /* Irrelevant for 1D. */  break;
-    case 2: iscircle = aperture[1]==1 ? 1 : 0;      break;
-    default:
-      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
-            "the problem. The value %zu is not recognized for ndim",
-            __func__, PACKAGE_BUGREPORT, ndim);
-    }
 
-  /* Preparations for the shape of the aperture. */
-  if(ndim==1 || iscircle)
-    dist[0]=dist[1]=aperture[0];
-  else
-    {
-      /* Using the box that encloses the aperture, calculate the distance
-         along each axis. */
-      gal_box_bound_ellipse_extent(aperture[0], aperture[0]*aperture[1],
-                                   aperture[2], dist);
-
-      /* Calculate the sin and cos of the given ellipse if necessary for
-         ease of processing later. */
-      c = cos( aperture[2] * M_PI/180.0 );
-      s = sin( aperture[2] * M_PI/180.0 );
-    }
-
+  /* Necessary preperations. */
+  match_coordinates_sif_prepare(A, B, aperture,  ndim, a, b, dist, c, s,
+                                &iscircle);
 
   /* For each row/record of catalog `a', make a list of the nearest records
      in catalog b within the maximum distance. Note that both catalogs are
@@ -415,7 +524,7 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
            a search here to change `blow' if necessary before doing further
            searching.*/
         for( blow=prevblow; blow<br && b[0][blow] < a[0][ai]-dist[0]; ++blow)
-          {/* This can be blank, the `for' does all we need :-). */}
+          { /* This can be blank, the `for' does all we need :-). */ }
 
 
         /* `blow' is now found for this `ai' and will be used unchanged to
@@ -440,7 +549,7 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
                coordinates have EXACTLY the same floating point value as
                each other to easily define an independent sorting in the
                second axis. */
-            if( ndim==1
+            if( ndim<2
                 || ( b[1][bi] >= a[1][ai]-dist[1]
                      && b[1][bi] <= a[1][ai]+dist[1] ) )
               {
@@ -472,11 +581,16 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
 
                    The next two problems will be solved with the list after
                    parsing of the whole catalog is complete.*/
-                for(i=0;i<ndim;++i) delta[i]=b[i][bi]-a[i][ai];
-                r=match_coordinates_distance(delta, iscircle, ndim, aperture,
-                                             c, s);
-                if(r<aperture[0])
-                  match_coordinate_add_to_sfll(&bina[ai], bi, r);
+                if( ndim<3
+                    || ( b[2][bi] >= a[2][ai]-dist[2]
+                         && b[2][bi] <= a[2][ai]+dist[2] ) )
+                  {
+                    for(i=0;i<ndim;++i) delta[i]=b[i][bi]-a[i][ai];
+                    r=match_coordinates_distance(delta, iscircle, ndim,
+                                                 aperture, c, s);
+                    if(r<aperture[0])
+                      match_coordinate_add_to_sfll(&bina[ai], bi, r);
+                  }
               }
           }
 

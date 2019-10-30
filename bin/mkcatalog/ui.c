@@ -634,11 +634,17 @@ ui_read_labels(struct mkcatalogparams *p)
   p->objects=gal_data_copy_to_new_type_free(p->objects, GAL_TYPE_INT32);
 
 
-  /* Currently MakeCatalog is only implemented for 2D images. */
-  if(p->objects->ndim!=2)
+  /* Currently MakeCatalog is only implemented for 2D images or 3D cubes. */
+  if(p->objects->ndim!=2 && p->objects->ndim!=3)
     error(EXIT_FAILURE, 0, "%s (hdu %s) has %zu dimensions, MakeCatalog "
-          "currently only supports 2D inputs", p->objectsfile, p->cp.hdu,
-          p->objects->ndim);
+          "currently only supports 2D or 3D datasets", p->objectsfile,
+          p->cp.hdu, p->objects->ndim);
+
+  /* Make sure the `--spectrum' option is not given on a 2D image.  */
+  if(p->spectrum && p->objects->ndim!=3)
+    error(EXIT_FAILURE, 0, "%s (hdu %s) has %zu dimensions, but `--spectrum' "
+          "is currently only defined on 3D datasets", p->objectsfile,
+          p->cp.hdu, p->objects->ndim);
 
   /* See if the total number of objects is given in the header keywords. */
   keys[0].name="NUMLABS";
@@ -764,6 +770,7 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
   size_t i;
 
   if(p->upperlimit) *values=1;
+  if(p->spectrum)   *values=*std=1;
 
   /* Go over all the object columns. Note that the objects and clumps (if
      the `--clumpcat' option is given) inputs are mandatory and it is not
@@ -773,12 +780,15 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
       switch(i)
         {
         case OCOL_NUMALL:             /* Only object labels. */    break;
+        case OCOL_NUMALLXY:           /* Only object labels. */    break;
         case OCOL_NUM:                *values        = 1;          break;
+        case OCOL_NUMXY:              *values        = 1;          break;
         case OCOL_SUM:                *values        = 1;          break;
         case OCOL_SUM_VAR:            *values = *std = 1;          break;
         case OCOL_MEDIAN:             *values        = 1;          break;
         case OCOL_VX:                 *values        = 1;          break;
         case OCOL_VY:                 *values        = 1;          break;
+        case OCOL_VZ:                 *values        = 1;          break;
         case OCOL_VXX:                *values        = 1;          break;
         case OCOL_VYY:                *values        = 1;          break;
         case OCOL_VXY:                *values        = 1;          break;
@@ -788,6 +798,7 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
         case OCOL_NUMWHT:             *values        = 1;          break;
         case OCOL_GX:                 /* Only object labels. */    break;
         case OCOL_GY:                 /* Only object labels. */    break;
+        case OCOL_GZ:                 /* Only object labels. */    break;
         case OCOL_GXX:                /* Only object labels. */    break;
         case OCOL_GYY:                /* Only object labels. */    break;
         case OCOL_GXY:                /* Only object labels. */    break;
@@ -800,8 +811,10 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
         case OCOL_C_SUM:              *values        = 1;          break;
         case OCOL_C_VX:               *values        = 1;          break;
         case OCOL_C_VY:               *values        = 1;          break;
+        case OCOL_C_VZ:               *values        = 1;          break;
         case OCOL_C_GX:               /* Only clump labels. */     break;
         case OCOL_C_GY:               /* Only clump labels. */     break;
+        case OCOL_C_GZ:               /* Only clump labels. */     break;
         case OCOL_C_SUMWHT:           *values        = 1;          break;
         case OCOL_C_NUMWHT:           *values        = 1;          break;
         default:
@@ -818,7 +831,9 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
         switch(i)
           {
           case CCOL_NUMALL:           /* Only clump labels. */     break;
+          case CCOL_NUMALLXY:         /* Only clump labels. */     break;
           case CCOL_NUM:              *values        = 1;          break;
+          case CCOL_NUMXY:            *values        = 1;          break;
           case CCOL_SUM:              *values        = 1;          break;
           case CCOL_SUM_VAR:          *values = *std = 1;          break;
           case CCOL_MEDIAN:           *values        = 1;          break;
@@ -827,6 +842,7 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
           case CCOL_RIV_SUM_VAR:      *values = *std = 1;          break;
           case CCOL_VX:               *values        = 1;          break;
           case CCOL_VY:               *values        = 1;          break;
+          case CCOL_VZ:               *values        = 1;          break;
           case CCOL_VXX:              *values        = 1;          break;
           case CCOL_VYY:              *values        = 1;          break;
           case CCOL_VXY:              *values        = 1;          break;
@@ -836,6 +852,7 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
           case CCOL_NUMWHT:           *values        = 1;          break;
           case CCOL_GX:               /* Only clump labels. */     break;
           case CCOL_GY:               /* Only clump labels. */     break;
+          case CCOL_GZ:               /* Only clump labels. */     break;
           case CCOL_GXX:              /* Only clump labels. */     break;
           case CCOL_GYY:              /* Only clump labels. */     break;
           case CCOL_GXY:              /* Only clump labels. */     break;
@@ -843,6 +860,8 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
           case CCOL_MAXX:             /* Only clump labels. */     break;
           case CCOL_MINY:             /* Only clump labels. */     break;
           case CCOL_MAXY:             /* Only clump labels. */     break;
+          case CCOL_MINZ:             /* Only clump labels. */     break;
+          case CCOL_MAXZ:             /* Only clump labels. */     break;
           case CCOL_UPPERLIMIT_B:     *values        = 1;          break;
           case CCOL_UPPERLIMIT_S:     *values        = 1;          break;
           case CCOL_UPPERLIMIT_Q:     *values        = 1;          break;
@@ -1395,6 +1414,91 @@ ui_one_tile_per_object(struct mkcatalogparams *p)
 
 
 
+/* When a spectrum is requested, the slice information (slice number and
+   slice WCS) is common to all different spectra. So instead of calculating
+   it every time, we'll just make it once here, then copy it for every
+   object.
+
+   The Slice information is going to be written in every spectrum. So we
+   don't want it to take too much space. Therefore, only when the number of
+   slices is less than 65535 (2^16-1), will we actually use a 32-bit
+   integer type for the slice number column.
+*/
+static void
+ui_preparations_spectrum_wcs(struct mkcatalogparams *p)
+{
+  double *xarr, *yarr, *zarr;
+  gal_data_t *x, *y, *z, *coords;
+  size_t i, numslices=p->objects->dsize[0];
+  size_t slicenumtype=numslices>=65535 ? GAL_TYPE_UINT32 : GAL_TYPE_UINT16;
+
+  /* A small sanity check. */
+  if(p->objects->ndim!=3)
+    error(EXIT_FAILURE, 0, "%s (hdu %s) is a %zuD dataset, but `--spectrum' "
+          "is currently only defined on 3D datasets", p->objectsfile,
+          p->cp.hdu, p->objects->ndim);
+
+  /* Allocate space for the slice number as well as the X and Y positions
+     for WCS conversion. Note that the `z' axis is going to be converted to
+     WCS later, so we'll just give it the basic information now.*/
+  x=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &numslices, NULL, 0,
+                   p->cp.minmapsize, p->cp.quietmmap, NULL, NULL, NULL);
+  y=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &numslices, NULL, 0,
+                   p->cp.minmapsize, p->cp.quietmmap, NULL, NULL, NULL);
+  z=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &numslices, NULL, 0,
+                   p->cp.minmapsize, p->cp.quietmmap, p->ctype[2],
+                   p->objects->wcs->cunit[2], "Slice WCS coordinates.");
+
+  /* Write values into the 3 coordinates. */
+  xarr=x->array; yarr=y->array; zarr=z->array;
+  for(i=0;i<numslices;++i) { zarr[i]=i+1; xarr[i]=yarr[i]=1; }
+
+
+  /* Convert the coordinates to WCS. We are doing this inplace to avoid too
+     much memory/speed consumption. */
+  coords=x;
+  coords->next=y;
+  coords->next->next=z;
+  gal_wcs_img_to_world(coords, p->objects->wcs, 1);
+
+  /* For a check.
+  for(i=0;i<numslices;++i)
+    printf("%g, %g, %g\n", xarr[i], yarr[i], zarr[i]);
+  exit(0);
+  */
+
+  /* Allocate the slice counter array (we are doing it again because we
+     want it to be in integer type now). */
+  p->specsliceinfo=gal_data_alloc(NULL, slicenumtype, 1, &numslices, NULL, 0,
+                                  p->cp.minmapsize, p->cp.quietmmap, "SLICE",
+                                  "counter",
+                                  "Slice number in cube (counting from 1).");
+  if(p->specsliceinfo->type==GAL_TYPE_UINT16)
+    for(i=0;i<numslices;++i) ((uint16_t *)(p->specsliceinfo->array))[i]=i+1;
+  else
+    for(i=0;i<numslices;++i) ((uint32_t *)(p->specsliceinfo->array))[i]=i+1;
+
+  /* Set the slice WCS column information. Note that `z' is now the WCS
+     coordinate value of the third dimension, and to avoid wasting extra
+     space (this column is repeated one very object's spectrum), we'll
+     convert it to a 32-bit floating point dataset. */
+  p->specsliceinfo->next=gal_data_copy_to_new_type(z, GAL_TYPE_FLOAT32);
+
+  /* For a final check.
+  gal_table_write(p->specsliceinfo, NULL, GAL_TABLE_FORMAT_BFITS,
+                  "specsliceinfo.fits", "test-debug",0);
+  */
+
+  /* Clean up. */
+  gal_data_free(x);
+  gal_data_free(y);
+  gal_data_free(z);
+}
+
+
+
+
+
 /* Sanity checks and preparations for the upper-limit magnitude. */
 static void
 ui_preparations_upperlimit(struct mkcatalogparams *p)
@@ -1451,9 +1555,9 @@ void
 ui_preparations(struct mkcatalogparams *p)
 {
   /* If no columns are requested, then inform the user. */
-  if(p->columnids==NULL)
-    error(EXIT_FAILURE, 0, "no columns requested, please run again with "
-          "`--help' for the full list of columns you can ask for");
+  if(p->columnids==NULL && p->spectrum==0)
+    error(EXIT_FAILURE, 0, "no measurements requested! Please run again "
+          "with `--help' for the possible list of measurements");
 
 
   /* Set the actual filenames to use. */
@@ -1483,6 +1587,14 @@ ui_preparations(struct mkcatalogparams *p)
 
   /* Make the tiles that cover each object. */
   ui_one_tile_per_object(p);
+
+
+  /* If a spectrum is requested, generate the two WCS columns. */
+  if(p->spectrum)
+    {
+      ui_preparations_spectrum_wcs(p);
+      p->spectra=gal_data_array_calloc(p->numobjects);
+    }
 
 
   /* Allocate the reference random number generator and seed values. It
@@ -1667,7 +1779,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkcatalogparams *p)
 void
 ui_free_report(struct mkcatalogparams *p, struct timeval *t1)
 {
-  size_t d;
+  size_t d, i;
 
   /* The temporary arrays for WCS coordinates. */
   if(p->wcs_vo ) gal_list_data_free(p->wcs_vo);
@@ -1713,8 +1825,25 @@ ui_free_report(struct mkcatalogparams *p, struct timeval *t1)
   gal_data_free(p->upmask);
   gal_data_free(p->clumps);
   gal_data_free(p->objects);
+  gal_list_data_free(p->specsliceinfo);
   if(p->upcheckout) free(p->upcheckout);
   gal_data_array_free(p->tiles, p->numobjects, 0);
+
+  /* Clean up the spectra. */
+  if(p->spectra)
+    {
+      /* Note that each element of the array is the first node in a list of
+         datasets. So we can't free the first one with
+         `gal_list_data_free', we'll delete all the nodes after it in the
+         loop. */
+      for(i=0;i<p->numobjects;++i)
+        {
+          gal_list_data_free( p->spectra[i].next );
+          p->spectra[i].next=NULL;
+          gal_data_free_contents(&p->spectra[i]);
+        }
+      gal_data_array_free(p->spectra, p->numobjects, 0);
+    }
 
   /* If the Sky or its STD image were given in tiles, then we defined a
      tile structure to deal with them. The initialization of the tile

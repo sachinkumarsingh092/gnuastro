@@ -137,12 +137,15 @@ struct mkprofparams
   char                *fcol;  /* Column specifying profile function.      */
   char                *rcol;  /* Effective radius of profile.             */
   char                *ncol;  /* Sersic index column of profile.          */
-  char                *pcol;  /* Position angle column of profile.        */
-  char                *qcol;  /* Axis ratio column of profile.            */
+  char                *pcol;  /* First Euler angle (X-Z-X order).         */
+  char               *p2col;  /* Second Euler angle (X-Z-X order).        */
+  char               *p3col;  /* Third Euler angle (X-Z-X order).         */
+  char                *qcol;  /* Axis ratio1 (major/2nd dim. radius).     */
+  char               *q2col;  /* Axis ratio2 (major/3rd dim. radius).     */
   char                *mcol;  /* Magnitude column.                        */
   char                *tcol;  /* Truncation of the profiles.              */
   uint8_t       mforflatpix;  /* mcol is flat pixel value (f is 4 or 5).  */
-  uint8_t  mcolisbrightness;  /* mcol is total brightness not magnitude.  */
+  uint8_t  mcolisbrightness;  /* mcol is total brightness, not magnitude. */
   gal_data_t         *crpix;  /* CRPIX FITS header keywords.              */
   gal_data_t         *crval;  /* CRVAL FITS header keywords.              */
   gal_data_t         *cdelt;  /* For CDELTi FITS header keywords.         */
@@ -161,11 +164,15 @@ struct mkprofparams
   size_t                num;  /* The number of profiles.                  */
   double                 *x;  /* X axis position of profile center.       */
   double                 *y;  /* Y axis position of profile center.       */
+  double                 *z;  /* Z axis position of profile center.       */
   uint8_t                *f;  /* Profile function code.                   */
   float                  *r;  /* Radius of profile.                       */
   float                  *n;  /* Index of profile.                        */
-  float                  *p;  /* Position angle of profile.               */
-  float                  *q;  /* Axis ratio of profile.                   */
+  float                 *p1;  /* First Euler angle (X-Z-X order).         */
+  float                 *p2;  /* Second Euler angle (X-Z-X order).        */
+  float                 *p3;  /* Third Euler angle (X-Z-X order).         */
+  float                 *q1;  /* Ratio of radius to second axis.          */
+  float                 *q2;  /* Ratio of radius to third axis.           */
   float                  *m;  /* Magnitude of profile.                    */
   float                  *t;  /* Truncation distance.                     */
   gsl_rng              *rng;  /* Main instance of random number generator.*/

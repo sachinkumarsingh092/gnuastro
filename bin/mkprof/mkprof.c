@@ -178,6 +178,10 @@ saveindividual(struct mkonthread *mkp)
   gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT64, "YCENTER", 0,
                         &p->y[id], 0, "Center of profile in catalog "
                         "(FITS axis 2)", 0, NULL);
+  if(ndim==3)
+    gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT64, "ZCENTER", 0,
+                          &p->z[id], 0, "Center of profile in catalog "
+                          "(FITS axis 3)", 0, NULL);
   gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "RADIUS", 0,
                         &p->r[id], 0, "Radial parameter in catalog",
                         0, NULL);
@@ -185,12 +189,33 @@ saveindividual(struct mkonthread *mkp)
     gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "PINDEX", 0,
                           &p->r[id], 0, "Index (Sersic or Moffat) of profile"
                           "in catalog", 0, NULL);
-  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "PA_DEG", 0,
-                        &p->p[id], 0, "Position angle of profile in catalog",
-                        0, "deg");
-  gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "AXISRATIO", 0,
-                        &p->q[id], 0, "Axis ratio of profile in catalog",
-                        0, NULL);
+  if(ndim==2)
+    {
+      gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "PA_DEG", 0,
+                            &p->p1[id], 0, "Position angle of profile in "
+                            "catalog", 0, "deg");
+      gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "AXISRATIO", 0,
+                            &p->q1[id], 0, "Axis ratio of profile in catalog",
+                            0, NULL);
+    }
+  else
+    {
+      gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "PA1_DEG", 0,
+                            &p->p1[id], 0, "First X-Z-X Euler angle in 3D", 0,
+                            "deg");
+      gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "PA2_DEG", 0,
+                            &p->p2[id], 0, "Second X-Z-X Euler angle in 3D", 0,
+                            "deg");
+      gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "PA3_DEG", 0,
+                            &p->p3[id], 0, "Third X-Z-X Euler angle in 3D", 0,
+                            "deg");
+      gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "AXISRATIO1", 0,
+                            &p->q1[id], 0, "Axis ratio along second dim",
+                            0, NULL);
+      gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "AXISRATIO2", 0,
+                            &p->q2[id], 0, "Axis ratio along third dim",
+                            0, NULL);
+    }
   gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "MAGNITUDE", 0,
                         &p->m[id], 0, "Magnitude of profile in catalog",
                         0, NULL);
@@ -288,7 +313,7 @@ mkprof_build_single(struct mkonthread *mkp, long *fpixel_i, long *lpixel_i,
   void *ptr;
   int needs_crop=0;
   size_t i, ind, fits_i, ndim=p->ndim;
-  size_t start_indiv[2], start_mrg[2], dsize[2], os=p->oversample;
+  size_t start_indiv[3], start_mrg[3], dsize[3], os=p->oversample;
 
   /* Make a copy of the main random number generator to use for this
      profile (in this thread). */
@@ -455,11 +480,10 @@ mkprof_build(void *inparam)
 {
   struct mkonthread *mkp=(struct mkonthread *)inparam;
   struct mkprofparams *p=mkp->p;
-
-  double center[2];
   size_t i, id, ndim=p->ndim;
   struct builtqueue *ibq, *fbq=NULL;
-  long fpixel_i[2], lpixel_i[2], fpixel_o[2], lpixel_o[2];
+  double center[3], semiaxes[3], euler_deg[3];
+  long fpixel_i[3], lpixel_i[3], fpixel_o[3], lpixel_o[3];
 
 
   /* Make each profile that was specified for this thread. */
@@ -485,8 +509,28 @@ mkprof_build(void *inparam)
       if( p->f[id] == PROFILE_POINT )
         mkp->width[0]=mkp->width[1]=1;
       else
-        gal_box_bound_ellipse(mkp->truncr, mkp->q[0]*mkp->truncr,
-                              p->p[id], mkp->width);
+        switch(ndim)
+          {
+          case 2:
+            gal_box_bound_ellipse(mkp->truncr, mkp->q[0]*mkp->truncr,
+                                  p->p1[id], mkp->width);
+            break;
+
+          case 3:
+            euler_deg[0] = p->p1[id];
+            euler_deg[1] = p->p2[id];
+            euler_deg[2] = p->p3[id];
+            semiaxes[0]  = mkp->truncr;
+            semiaxes[1]  = mkp->truncr * mkp->q[0];
+            semiaxes[2]  = mkp->truncr * mkp->q[1];
+            gal_box_bound_ellipsoid(semiaxes, euler_deg, mkp->width);
+            break;
+
+          default:
+            error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s to "
+                  "address the issue. %zu is not recognized for `ndim'",
+                  __func__, PACKAGE_BUGREPORT, ndim);
+          }
 
 
       /* Get the overlapping pixels using the starting points (NOT
@@ -495,6 +539,7 @@ mkprof_build(void *inparam)
         {
           center[0]=p->x[id];
           center[1]=p->y[id];
+          if(ndim==3) center[2]=p->z[id];
           gal_box_border_from_center(center, ndim, mkp->width, fpixel_i,
                                      lpixel_i);
           memcpy(mkp->fpixel_i, fpixel_i, ndim*sizeof *fpixel_i);

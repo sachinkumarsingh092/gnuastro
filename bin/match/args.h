@@ -145,7 +145,7 @@ struct argp_option program_options[] =
     {
       "aperture",
       UI_KEY_APERTURE,
-      "FLT[,FLT[,FLT]]",
+      "FLT[,...]",
       0,
       "Acceptable aperture for matching.",
       UI_GROUP_CATALOGMATCH,

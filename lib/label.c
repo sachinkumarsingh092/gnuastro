@@ -557,8 +557,8 @@ label_clump_significance_sanity(gal_data_t *values, gal_data_t *std,
           gal_type_name(label->type, 1));
 
   /* Dimentionality of the values dataset. */
-  if( values->ndim>2 )
-    error(EXIT_FAILURE, 0, "%s: currently only supports 1 or 2 "
+  if( values->ndim>3 )
+    error(EXIT_FAILURE, 0, "%s: currently only supports 1, 2 or 3 "
           "dimensional datasets, but a %zu-dimensional dataset is given",
           func, values->ndim);
 
@@ -660,7 +660,7 @@ label_clump_significance_raw(gal_data_t *values_d, gal_data_t *std_d,
   size_t ndim=values_d->ndim, *dsize=values_d->dsize;
 
   double *row;
-  size_t i, *a, *af, ii, coord[2];
+  size_t i, *a, *af, ii, coord[3];
   size_t nngb=gal_dimension_num_neighbors(ndim);
   int32_t nlab, *ngblabs, *label=label_d->array;
   float *values=values_d->array, *std=std_d->array;

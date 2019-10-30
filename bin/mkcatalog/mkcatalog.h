@@ -41,6 +41,7 @@ struct mkcatalog_passparams
   gsl_rng              *rng;    /* Random number generator.             */
   size_t    clumpstartindex;    /* Clump starting row in final catalog. */
   gal_data_t       *up_vals;    /* Container for upper-limit values.    */
+  gal_data_t      *spectrum;    /* Spectrum of each object.             */
 };
 
 void

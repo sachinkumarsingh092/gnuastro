@@ -800,7 +800,6 @@ gal_data_copy_to_allocated(gal_data_t *in, gal_data_t *out)
   gal_checkset_allocate_copy(in->unit,    &out->unit);
   gal_checkset_allocate_copy(in->comment, &out->comment);
 
-
   /* Do the copying. */
   switch(out->type)
     {

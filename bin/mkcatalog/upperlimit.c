@@ -295,9 +295,25 @@ upperlimit_write_comments(struct mkcatalogparams *p,
 
   if(p->uprange)
     {
-      if( asprintf(&str, "Range of random samples about target: %zu, %zu",
-                   p->uprange[1], p->uprange[0])<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      switch(p->objects->ndim)
+        {
+        case 2:
+          if( asprintf(&str, "Range of random samples about target: "
+                       "%zu, %zu", p->uprange[1], p->uprange[0])<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+          break;
+        case 3:
+          if( asprintf(&str, "Range of random samples about target: %zu, "
+                       "%zu, %zu", p->uprange[2], p->uprange[1],
+                       p->uprange[0])<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+          break;
+        default:
+          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
+                "address the problem. The value %zu is not recognized for "
+                "`p->input->ndim'", __func__, PACKAGE_BUGREPORT,
+                p->objects->ndim);
+        }
       gal_list_str_add(comments, str, 0);
     }
 
@@ -347,19 +363,21 @@ upperlimit_write_comments(struct mkcatalogparams *p,
 /* Write the values into a table for the user */
 static void
 upperlimit_write_check(struct mkcatalogparams *p, gal_list_sizet_t *check_x,
-                        gal_list_sizet_t *check_y, gal_list_f32_t *check_s)
+                       gal_list_sizet_t *check_y, gal_list_sizet_t *check_z,
+                       gal_list_f32_t *check_s)
 {
   float *sarr;
-  gal_data_t *x, *y, *s;
   char *tmp=NULL, *tmp2=NULL;
   gal_list_str_t *comments=NULL;
-  size_t *xarr, *yarr, tnum, num;
+  size_t *xarr, *yarr, *zarr=NULL, tnum, ttnum, num;
+  gal_data_t *x=NULL, *y=NULL, *z=NULL, *s=NULL; /* To avoid warnings. */
 
 
   /* Convert the lists to an array. */
   xarr=gal_list_sizet_to_array(check_x, 1, &num);
   yarr=gal_list_sizet_to_array(check_y, 1, &tnum);
-  if(tnum!=num)
+  if(check_z) zarr=gal_list_sizet_to_array(check_z, 1, &ttnum);
+  if(tnum!=num || (check_z && ttnum!=num) )
     error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
           "problem. For some reason the size of the input lists don't "
           "match (%zu, %zu)", __func__, PACKAGE_BUGREPORT, tnum, num);
@@ -377,16 +395,26 @@ upperlimit_write_check(struct mkcatalogparams *p, gal_list_sizet_t *check_x,
   y=gal_data_alloc(yarr, GAL_TYPE_SIZE_T, 1, &num, NULL, 0, p->cp.minmapsize,
                    p->cp.quietmmap, "RANDOM_Y", "pixel",
                    "Y-axis position of random footprint's first pixel.");
+  if(check_z)
+    z=gal_data_alloc(zarr, GAL_TYPE_SIZE_T, 1, &num, NULL, 0,
+                     p->cp.minmapsize, p->cp.quietmmap, "RANDOM_Z", "pixel",
+                     "Z-axis position of random footprint's first pixel.");
   s=gal_data_alloc(sarr, GAL_TYPE_FLOAT32, 1, &num, NULL, 0, p->cp.minmapsize,
                    p->cp.quietmmap, "RANDOM_SUM",
                    p->values->unit ? p->values->unit : "input-units",
                    "Sum of pixel values over random footprint.");
 
 
-  /* Convert the unsigned 64-bit values to 32-bit because the FITS table
-     format doesn't recognize 64-bit integers.*/
-  x=gal_data_copy_to_new_type_free(x, GAL_TYPE_UINT32);
-  y=gal_data_copy_to_new_type_free(y, GAL_TYPE_UINT32);
+  /* If `size_t' isn't 32-bit on this system, then convert the unsigned
+     64-bit values to 32-bit because the FITS table format doesn't
+     recognize 64-bit integers.*/
+  if( GAL_TYPE_SIZE_T != GAL_TYPE_UINT32 )
+    {
+      x=gal_data_copy_to_new_type_free(   x, GAL_TYPE_UINT32);
+      y=gal_data_copy_to_new_type_free(   y, GAL_TYPE_UINT32);
+      if(check_z)
+        z=gal_data_copy_to_new_type_free( z, GAL_TYPE_UINT32);
+    }
 
 
   /* Write exactly what object/clump this table is for. */
@@ -415,7 +443,8 @@ upperlimit_write_check(struct mkcatalogparams *p, gal_list_sizet_t *check_x,
 
   /* Define a list from the containers and write them into a table. */
   x->next=y;
-  y->next=s;
+  if(check_z) { y->next=z; z->next=s; }
+  else        { y->next=s;            }
   gal_list_str_reverse(&comments);
   gal_table_write(x, comments, p->cp.tableformat, p->upcheckout,
                   "UPPERLIMIT_CHECK", 0);
@@ -428,6 +457,7 @@ upperlimit_write_check(struct mkcatalogparams *p, gal_list_sizet_t *check_x,
   gal_data_free(x);
   gal_data_free(y);
   gal_data_free(s);
+  if(check_z) gal_data_free(z);
 }
 
 
@@ -549,10 +579,10 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
   struct gal_list_f32_t *check_s=NULL;
   size_t d, counter=0, se_inc[2], nfailed=0;
   float *V, *st_v, *uparr=pp->up_vals->array;
-  size_t min[2], max[2], increment, num_increment;
-  struct gal_list_sizet_t *check_x=NULL, *check_y=NULL;
+  size_t min[3], max[3], increment, num_increment;
   int32_t *O, *OO, *oO, *st_o, *st_oo, *st_oc, *oC=NULL;
   size_t maxfails = p->upnum * MKCATALOG_UPPERLIMIT_MAXFAILS_MULTIP;
+  struct gal_list_sizet_t *check_x=NULL, *check_y=NULL, *check_z=NULL;
   size_t *rcoord=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
                                       "rcoord");
 
@@ -668,25 +698,42 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
       else ++nfailed;
 
 
-      /* If a check is necessary, write in the values. */
+      /* If a check is necessary, write in the values (in FITS
+         coordinates). */
       if(writecheck)
         {
-          gal_list_sizet_add(&check_x, rcoord[1]+1);
-          gal_list_sizet_add(&check_y, rcoord[0]+1);
+          switch(ndim)
+            {
+            case 2:
+              gal_list_sizet_add(&check_x, rcoord[1]+1);
+              gal_list_sizet_add(&check_y, rcoord[0]+1);
+              break;
+
+            case 3:
+              gal_list_sizet_add(&check_x, rcoord[2]+1);
+              gal_list_sizet_add(&check_y, rcoord[1]+1);
+              gal_list_sizet_add(&check_z, rcoord[0]+1);
+              break;
+
+            default:
+              error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s "
+                    "to fix the problem. `ndim' value of %zu is not "
+                    "recognized", __func__, PACKAGE_BUGREPORT, ndim);
+            }
           gal_list_f32_add(&check_s, continueparse ? sum : NAN);
         }
     }
 
   /* If a check is necessary, then write the values. */
   if(writecheck)
-    upperlimit_write_check(p, check_x, check_y, check_s);
+    upperlimit_write_check(p, check_x, check_y, check_z, check_s);
 
   /* Do the measurement on the random distribution. */
   upperlimit_measure(pp, clumplab, counter==p->upnum);
 
   /* Reset the tile's array pointer, clean up and return. */
-  tile->array=tarray;
   free(rcoord);
+  tile->array=tarray;
   gal_list_f32_free(check_s);
   gal_list_sizet_free(check_x);
   gal_list_sizet_free(check_y);

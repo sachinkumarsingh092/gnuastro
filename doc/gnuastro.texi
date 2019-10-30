@@ -535,7 +535,7 @@ MakeProfiles
 
 Modeling basics
 
-* Defining an ellipse::         An ellipse on a pixelated grid.
+* Defining an ellipse and ellipsoid::  Definition of these important shapes.
 * PSF::                         Radial profiles for the PSF.
 * Stars::                       Making mock star profiles.
 * Galaxies::                    Radial profiles for galaxies.
@@ -9577,8 +9577,6 @@ When the crop was not defined by its center (see @ref{Crop modes}), or @option{-
 
 
 
-
-
 @node Arithmetic, Convolve, Crop, Data manipulation
 @section Arithmetic
 
@@ -9876,11 +9874,11 @@ So depending on the type of the input and its nature, it is recommended to use o
 If any WCS is present, the returned dataset will also lack the respective dimension in its WCS matrix.
 Therefore, when the WCS is important for later processing, be sure that the input is aligned with the respective axes: all non-diagonal elements in the WCS matrix are zero.
 
-@cindex IFU
 @cindex Data cubes
 @cindex 3D data-cubes
 @cindex Cubes (3D data)
 @cindex Narrow-band image
+@cindex IFU: Integral Field Unit
 @cindex Integral field unit (IFU)
 One common application of this operator is the creation of pseudo broad-band or narrow-band 2D images from 3D data cubes.
 For example integral field unit (IFU) data products that have two spatial dimensions (first two FITS dimensions) and one spectral dimension (third FITS dimension).
@@ -10878,7 +10876,8 @@ C(\omega)=H(\omega)\int_{-\infty}^{\infty}f(\tau)e^{-i{\omega}\tau}d\tau=H(\omeg
 @noindent
 where @mymath{F(\omega)} is the Fourier transform of @mymath{f(l)}.
 So multiplying the Fourier transform of two functions individually, we get the Fourier transform of their convolution.
-The convolution theorem also proves a relation between the convolutions in the frequency space. Let's define:
+The convolution theorem also proves a relation between the convolutions in the frequency space.
+Let's define:
 
 @dispmath{D(\omega){\equiv}F(\omega){\ast}H(\omega)}
 
@@ -14024,7 +14023,6 @@ The resulting @file{.fits.gz} file can then be fed into any of Gnuastro's progra
 
 
 
-
 @node MakeCatalog, Match, Segment, Data analysis
 @section MakeCatalog
 
@@ -14740,6 +14738,11 @@ The final group of options particular to MakeCatalog are those that specify whic
 The current measurements in MakeCatalog are those which only produce one final value for each label (for example its total brightness: a single number).
 All the different label's measurements can be written as one column in a final table/catalog that contains other columns for other similar single-number measurements.
 
+In this case, all the different label's measurements can be written as one column in a final table/catalog that contains other columns for other similar single-number measurements.
+The majority of this section is devoted to MakeCatalog's single-valued measurements.
+However, MakeCatalog can also do measurements that produce more than one value for each label.
+Currently the only such measurement is generation of spectra from 3D cubes with the @option{--spectrum} option and it is discussed in the end of this section.
+
 Command-line options are used to identify which measurements you want in the final catalog(s) and in what order.
 If any of the options below is called on the command line or in any of the configuration files, it will be included as a column in the output catalog.
 The order of the columns is in the same order as the options were seen by MakeCatalog (see @ref{Configuration file precedence}).
@@ -14776,12 +14779,20 @@ You can use @option{--weightarea} to see which was used.
 The flux weighted center of all objects and clumps along the second FITS axis (vertical when viewed in SAO ds9).
 See @option{--x}.
 
+@item -z
+@itemx --z
+The flux weighted center of all objects and clumps along the third FITS
+axis. See @option{--x}.
+
 @item --geox
 The geometric center of all objects and clumps along the first FITS axis axis.
 The geometric center is the average pixel positions irrespective of their pixel values.
 
 @item --geoy
 The geometric center of all objects and clumps along the second FITS axis axis, see @option{--geox}.
+
+@item --geoz
+The geometric center of all objects and clumps along the third FITS axis axis, see @option{--geox}.
 
 @item --minx
 The minimum position of all objects and clumps along the first FITS axis.
@@ -14795,12 +14806,22 @@ The minimum position of all objects and clumps along the second FITS axis.
 @item --maxy
 The maximum position of all objects and clumps along the second FITS axis.
 
+@item --minz
+The minimum position of all objects and clumps along the third FITS axis.
+
+@item --maxz
+The maximum position of all objects and clumps along the third FITS axis.
+
 @item --clumpsx
 [Objects] The flux weighted center of all the clumps in this object along the first FITS axis.
 See @option{--x}.
 
 @item --clumpsy
 [Objects] The flux weighted center of all the clumps in this object along the second FITS axis.
+See @option{--x}.
+
+@item --clumpsz
+[Objects] The flux weighted center of all the clumps in this object along the third FITS axis.
 See @option{--x}.
 
 @item --clumpsgeox
@@ -14810,6 +14831,10 @@ See @option{--geox}.
 @item --clumpsgeoy
 [Objects] The geometric center of all the clumps in this object along the second FITS axis.
 See @option{--geox}.
+
+@item --clumpsgeoz
+[Objects] The geometric center of all the clumps in this object along
+the third FITS axis. See @option{--geoz}.
 
 @item -r
 @itemx --ra
@@ -14833,6 +14858,11 @@ The first WCS axis is commonly used as right ascension in images.
 Flux weighted second WCS axis of all objects or clumps, see @option{--x}.
 The second WCS axis is commonly used as declination in images.
 
+@item --w3
+Flux weighted third WCS axis of all objects or clumps, see
+@option{--x}. The third WCS axis is commonly used as wavelength in integral
+field unit data cubes.
+
 @item --geow1
 Geometric center in first WCS axis of all objects or clumps, see @option{--geox}.
 The first WCS axis is commonly used as right ascension in images.
@@ -14840,6 +14870,11 @@ The first WCS axis is commonly used as right ascension in images.
 @item --geow2
 Geometric center in second WCS axis of all objects or clumps, see @option{--geox}.
 The second WCS axis is commonly used as declination in images.
+
+@item --geow3
+Geometric center in third WCS axis of all objects or clumps, see
+@option{--geox}. The third WCS axis is commonly used as wavelength in
+integral field unit data cubes.
 
 @item --clumpsw1
 [Objects] Flux weighted center in first WCS axis of all clumps in this object, see @option{--x}.
@@ -14849,6 +14884,10 @@ The first WCS axis is commonly used as right ascension in images.
 [Objects] Flux weighted declination of all clumps in this object, see @option{--x}.
 The second WCS axis is commonly used as declination in images.
 
+@item --clumpsw3
+[Objects] Flux weighted center in third WCS axis of all clumps in this object, see @option{--x}.
+The third WCS axis is commonly used as wavelength in integral field unit data cubes.
+
 @item --clumpsgeow1
 [Objects] Geometric center right ascension of all clumps in this object, see @option{--geox}.
 The first WCS axis is commonly used as right ascension in images.
@@ -14856,6 +14895,11 @@ The first WCS axis is commonly used as right ascension in images.
 @item --clumpsgeow2
 [Objects] Geometric center declination of all clumps in this object, see @option{--geox}.
 The second WCS axis is commonly used as declination in images.
+
+@item --clumpsgeow3
+[Objects] Geometric center in third WCS axis of all clumps in this object,
+see @option{--geox}. The third WCS axis is commonly used as wavelength in
+integral field unit data cubes.
 
 @item -b
 @itemx --brightness
@@ -14968,7 +15012,15 @@ This is the square root of the mean variance under the object, or the root mean 
 
 @item -a
 @itemx --area
-The raw area (number of pixels) in any clump or object independent of what pixel it lies over (if it is NaN/blank or unused for example).
+The raw area (number of pixels/voxels) in any clump or object independent of what pixel it lies over (if it is NaN/blank or unused for example).
+
+@item --areaxy
+@cindex IFU: Integral Field Unit
+@cindex Integral Field Unit
+Similar to @option{--area}, when the clump or object is projected onto the
+first two dimensions. This is only available for 3-dimensional
+datasets. When working with Integral Field Unit (IFU) datasets, this
+projection onto the first two dimensions would be a narrow-band image.
 
 @item --clumpsarea
 [Objects] The total area of all the clumps in this object.
@@ -14980,6 +15032,12 @@ The area (number of pixels) used in the flux weighted position calculations.
 The area of all the pixels labeled with an object or clump.
 Note that unlike @option{--area}, pixel values are completely ignored in this column.
 For example, if a pixel value is blank, it won't be counted in @option{--area}, but will be counted here.
+
+@item --geoareaxy
+Similar to @option{--geoarea}, when the clump or object is projected onto
+the first two dimensions. This is only available for 3-dimensional
+datasets. When working with Integral Field Unit (IFU) datasets, this
+projection onto the first two dimensions would be a narrow-band image.
 
 @item -A
 @itemx --semimajor
@@ -15015,20 +15073,58 @@ The geometric (ignoring pixel values) angle of the semi-major axis with the firs
 
 @end table
 
+@cindex 3D data-cubes
+@cindex Cubes (3D data)
+@cindex IFU: Integral Field Unit
+@cindex Integral field unit (IFU)
+@cindex Spectrum (of astronomical source)
+Above, all of MakeCatalog's single-valued measurements were listed. As
+mentioned in the start of this section, MakeCatalog can also do
+multi-valued measurements per label. Currently the only such measurement is
+the creation of spectra from 3D data cubes as discussed below:
+
+@table @option
+@item --spectrum
+Generate a spectrum (measurement along the first two FITS dimensions) for
+each label when the input dataset is a 3D data cube. With this option, a
+seprate table/spectrum will be generated for every label. If the output is
+a FITS file, each label's spectrum will be written into an extension of
+that file with a standard name of @code{SPECTRUM_NN} (the label will be
+replaced with @code{NN}). If the output is a plain text file, each label's
+spectrum will be written into a separate file with the suffix
+@file{spec-NN.txt}. See @ref{MakeCatalog output} for more on specifying
+MakeCatalog's output file.
+
+The spectra will contain one row for every slice (third FITS dimension) of
+the cube. Since the physical nature of the third dimension is different,
+two types of spectra (along with their errors) are measured: 1) Sum of
+values in each slice that only have the requested label. 2) Sum of values
+on the 2D projection of the whole label (the area of this projection can be
+requested with the @option{--areaxy} column above).
+
+Labels can overlap when they are projected onto the first two FITS
+dimensions (the spatial domain). To help separate them, MakeCatalog does a
+third measurement on each slice: the area, sum of values and error of all
+pixels that belong to other labels but overlap with the 2D projection. This
+can be used to see how reliable the emission line measurement is (on the
+projected spectra) and also if multiple lines (labeled regions) belong to
+the same physical object.
+@end table
 
 
 
 @node MakeCatalog output,  , MakeCatalog measurements, Invoking astmkcatalog
 @subsubsection MakeCatalog output
-
 After it has completed all the requested measurements (see @ref{MakeCatalog measurements}), MakeCatalog will store its measurements in table(s).
 If an output filename is given (see @option{--output} in @ref{Input output options}), the format of the table will be deduced from the name.
 When it isn't given, the input name will be appended with a @file{_cat} suffix (see @ref{Automatic output}) and its format will be determined from the @option{--tableformat} option, which is also discussed in @ref{Input output options}.
 @option{--tableformat} is also necessary when the requested output name is a FITS table (recall that FITS can accept ASCII and binary tables, see @ref{Table}).
 
-By default only a single catalog/table will be created for ``objects'', however, if @option{--clumpscat} is called, a secondary catalog/table will also be created.
+By default (when @option{--spectrum} isn't called) only a single catalog/table will be created for ``objects'', however, if @option{--clumpscat} is called, a secondary catalog/table will also be created.
 For more on ``objects'' and ``clumps'', see @ref{Segment}.
 In short, if you only have one set of labeled images, you don't have to worry about clumps (they are deactivated by default).
+
+When @option{--spectrum} is called, it is not mandatory to specify any single-valued measurement columns. In this case, the output will only be the spectra of each labeled region. See the description of @option{--spectrum} in @ref{MakeCatalog measurements}.
 
 The full list of MakeCatalog's output options are elaborated below.
 
@@ -15128,6 +15224,10 @@ $ astmatch --aperture=1/3600,2/3600 in1.fits in2.txt
 ## and DEC_D columns of the second within a 0.5 arcseconds aperture.
 $ astmatch --ccol1=RA,DEC --ccol2=RA_D,DEC_D --aperture=0.5/3600  \
            in1.fits in2.fits
+
+## Match in 3D (RA, Dec and Wavelength).
+$ astmatch --ccol1=2,3,4 --ccol2=2,3,4 -a0.5/3600,0.5/3600,5e-10 \
+           in1.fits in2.txt
 @end example
 
 Match will find the rows that are nearest to each other in two catalogs (given some coordinate columns).
@@ -15247,6 +15347,13 @@ Parameters of the aperture for matching.
 The values given to this option can be fractions, for example when the position columns are in units of degrees, @option{1/3600} can be used to ask for one arcsecond.
 The interpretation of the values depends on the requested dimensions (determined from @option{--ccol1} and @code{--ccol2}) and how many values are given to this option.
 
+When multiple objects are found within the aperture, the match is defined
+as the nearest one. In a multi-dimensional dataset, when the aperture is a
+general ellipse or ellipsoid (and not a circle or sphere), the distance is
+calculated in the elliptical space along the major axis. For the defintion
+of this distance, see @mymath{r_{el}} in @ref{Defining an ellipse and
+ellipsoid}.
+
 @table @asis
 @item 1D match
 The aperture/interval can only take one value: half of the interval around each point (maximum distance from each point).
@@ -15254,6 +15361,7 @@ The aperture/interval can only take one value: half of the interval around each 
 @item 2D match
 In a 2D match, the aperture can be a circle, an ellipse aligned in the axes or an ellipse with a rotated major axis.
 To simply the usage, you can determine the shape based on the number of free parameters for each.
+
 @table @asis
 @item 1 number
 For example @option{--aperture=2}.
@@ -15266,14 +15374,41 @@ The aperture will be an ellipse (if the two numbers are different) with the resp
 The numbers are in units of the first and second axis.
 In the example above, the semi-axis value along the first axis will be 3 (in units of the first coordinate) and along the second axis will be @mymath{4\times10^{-10}} (in units of the second coordinate).
 Such values can happen if you are comparing catalogs of a spectra for example.
-If more than one object exists in the aperture, the nearest will be found along the major axis as described in @ref{Defining an ellipse}.
+If more than one object exists in the aperture, the nearest will be found along the major axis as described in @ref{Defining an ellipse and ellipsoid}.
 
 @item 3 numbers
 For example @option{--aperture=2,0.6,30}.
 The aperture will be an ellipse (if the second value is not 1).
 The first number is the semi-major axis, the second is the axis ratio and the third is the position angle (in degrees).
-If multiple matches are found within the ellipse, the distance (to find the nearest) is calculated along the major axis in the elliptical space, see @ref{Defining an ellipse}.
+If multiple matches are found within the ellipse, the distance (to find the nearest) is calculated along the major axis in the elliptical space, see @ref{Defining an ellipse and ellipsoid}.
 @end table
+
+@item 3D match
+The aperture (matching volume) can be a sphere, an ellipsoid aligned on the three axises or a genenral ellipsoid rotated in any direction.
+To simplifythe usage, the shape can be determined based on the number of values given to this option.
+
+@table @asis
+@item 1 number
+For example @option{--aperture=3}.
+The matching volume will be a sphere of the given radius.
+The value is in the same units as the input coordinates.
+
+@item 3 numbers
+For example @option{--aperture=4,5,6e-10}.
+The aperture will be a general ellipsoid with the respective extent along each dimension.
+The numbers must be in the same units as each axis.
+This is very similar to the two number case of 2D inputs.
+See there for more.
+
+@item 6 numbers
+For example @option{--aperture=4,0.5,0.6,10,20,30}.
+The numbers represent the full general ellipsoid definition (in any orientation).
+For the definition of a general ellipsoid, see @ref{Defining an ellipse and ellipsoid}.
+The first number is the semi-major axis.
+The second and third are the two axis ratios.
+The last three are the three Euler angles in units of degrees in the ZXZ order as fully described in @ref{Defining an ellipse and ellipsoid}.
+@end table
+
 @end table
 @end table
 
@@ -15362,7 +15497,7 @@ In the subsections below, first a review of some very basic information and conc
 You can skip this subsection if you are already sufficiently familiar with these concepts.
 
 @menu
-* Defining an ellipse::         An ellipse on a pixelated grid.
+* Defining an ellipse and ellipsoid::  Definition of these important shapes.
 * PSF::                         Radial profiles for the PSF.
 * Stars::                       Making mock star profiles.
 * Galaxies::                    Radial profiles for galaxies.
@@ -15370,10 +15505,8 @@ You can skip this subsection if you are already sufficiently familiar with these
 * Oversampling::                Oversampling the model.
 @end menu
 
-
-
-@node Defining an ellipse, PSF, Modeling basics, Modeling basics
-@subsubsection Defining an ellipse
+@node Defining an ellipse and ellipsoid, PSF, Modeling basics, Modeling basics
+@subsubsection Defining an ellipse and ellipsoid
 
 @cindex Ellipse
 @cindex Axis ratio
@@ -15399,6 +15532,33 @@ In that equation, the point is rotated, here the coordinates are rotated and the
 Hence, multiplying all elements of the ellipse definition with @mymath{r_{el}^2} we get the elliptical distance at this point point located: @mymath{r_{el}=\sqrt{i_r^2+(j_r/q)^2}}.
 To place the radial profiles explained below over an ellipse, @mymath{f(r_{el})} is calculated based on the functional radial profile desired.
 
+@cindex Ellipsoid
+@cindex Euler angles
+An ellipse in 3D, or an @url{https://en.wikipedia.org/wiki/Ellipsoid, ellipsoid}, can be defined following similar principles as before.
+Labeling the major (largest) axis length as @mymath{a}, the second and third (in a right-handed coordinate system) axis lengths can be labeled as @mymath{b} and @mymath{c}.
+Hence we have two axis ratios: @mymath{q_1\equiv{b/a}} and @mymath{q_2\equiv{c/a}}.
+The orientation of the ellipsoid can be defined from the orientation of its major axis.
+There are many ways to define 3D orientation and order matters.
+So to be clear, here we use the ZXZ (or @mymath{Z_1X_2Z_3}) proper @url{https://en.wikipedia.org/wiki/Euler_angles, Euler angles} to define the 3D orientation.
+In short, when a point is rotated in this order, we first rotate it around the Z axis (third axis) by @mymath{\alpha}, then about the (rotated) X axis by @mymath{\beta} and finally about the (rotated) Z axis by @mymath{\gamma}.
+
+Following the discussion in @ref{Merging multiple warpings}, we can define the full rotation with the following matrix multiplication.
+However, here we are rotating the coordinates, not the point.
+Therefore, both the rotation angles and rotation order are reversed.
+We are also not using homogeneous coordinates (see @ref{Warping basics}) since we aren't concerned with translation in this context:
+
+@dispmath{\left[\matrix{i_r\cr j_r\cr k_r}\right] =
+          \left[\matrix{cos\gamma&sin\gamma&0\cr -sin\gamma&cos\gamma&0\cr                 0&0&1}\right]
+          \left[\matrix{1&0&0\cr      0&cos\beta&sin\beta\cr                               0&-sin\beta&cos\beta }\right]
+          \left[\matrix{cos\alpha&sin\alpha&0\cr -sin\alpha&cos\alpha&0\cr                 0&0&1}\right]
+          \left[\matrix{i_c-i\cr j_c-j\cr k_c-k}\right]   }
+
+@noindent
+Recall that an ellipsoid can be characterized with
+@mymath{(i_r/a)^2+(j_r/b)^2+(k_r/c)^2=1}, so similar to before
+(@mymath{r_{el}\equiv{a}}), we can find the ellipsoidal radius at pixel
+@mymath{(i,j,k)} as: @mymath{r_{el}=\sqrt{i_r^2+(j_r/q_1)^2+(k_r/q_2)^2}}.
+
 @cindex Breadth first search
 @cindex Inside-out construction
 @cindex Making profiles pixel by pixel
@@ -15416,7 +15576,7 @@ Everything else after that (when the pixel index and its radial profile have ent
 
 
 
-@node PSF, Stars, Defining an ellipse, Modeling basics
+@node PSF, Stars, Defining an ellipse and ellipsoid, Modeling basics
 @subsubsection Point spread function
 
 @cindex PSF
@@ -15568,7 +15728,7 @@ MacArthur et al.@footnote{MacArthur, L. A., S. Courteau, and J. A. Holtzman (200
 A pixel is the ultimate level of accuracy to gather data, we can't get any more accurate in one image, this is known as sampling in signal processing.
 However, the mathematical profiles which describe our models have infinite accuracy.
 Over a large fraction of the area of astrophysically interesting profiles (for example galaxies or PSFs), the variation of the profile over the area of one pixel is not too significant.
-In such cases, the elliptical radius (@mymath{r_{el}} of the center of the pixel can be assigned as the final value of the pixel, see @ref{Defining an ellipse}).
+In such cases, the elliptical radius (@mymath{r_{el}} of the center of the pixel can be assigned as the final value of the pixel, see @ref{Defining an ellipse and ellipsoid}).
 
 @cindex Integration over pixel
 @cindex Gradient over pixel area
@@ -15592,7 +15752,7 @@ Monte Carlo integration is first applied (which yields @mymath{F_r}), then the c
 If the fractional difference (@mymath{|F_r-F_c|/F_r}) is lower than a given tolerance level (specified with @option{--tolerance}) MakeProfiles will stop using Monte Carlo integration and only use the central pixel value.
 
 @cindex Inside-out construction
-The ordering of the pixels in this inside-out construction is based on @mymath{r=\sqrt{(i_c-i)^2+(j_c-j)^2}}, not @mymath{r_{el}}, see @ref{Defining an ellipse}.
+The ordering of the pixels in this inside-out construction is based on @mymath{r=\sqrt{(i_c-i)^2+(j_c-j)^2}}, not @mymath{r_{el}}, see @ref{Defining an ellipse and ellipsoid}.
 When the axis ratios are large (near one) this is fine.
 But when they are small and the object is highly elliptical, it might seem more reasonable to follow @mymath{r_{el}} not @mymath{r}.
 The problem is that the gradient is stronger in pixels with smaller @mymath{r} (and larger @mymath{r_{el}}) than those with smaller @mymath{r_{el}}.
@@ -15774,6 +15934,34 @@ The sections below discuss the options specific to MakeProfiles based on context
 Finally @ref{MakeProfiles output dataset} and @ref{MakeProfiles log file} discuss the outputs of MakeProfiles and how you can configure them.
 Besides these, MakeProfiles also supports all the common Gnuastro program options that are discussed in @ref{Common options}, so please flip through them is well for a more comfortable usage.
 
+When building 3D profiles, there are more degrees of freedom.
+Hence, more columns are necessary and all the values related to dimensions (for example size of dataset in each dimension and the WCS properties) must also have 3 values.
+To allow having an independent set of default values for creating 3D profiles, MakeProfiles also installs a @file{astmkprof-3d.conf} configuration file (see @ref{Configuration files}).
+You can use this for default 3D profile values.
+For example, if you installed Gnuastro with the prefix @file{/usr/local} (the default location, see @ref{Installation directory}), you can benefit from this configuration file by running MakeProfiles like the example below.
+As with all configuration files, if you want to customize a given option, call it before the configuration file.
+
+@example
+$ astmkprof --config=/usr/local/etc/astmkprof-3d.conf catalog.txt
+@end example
+
+@cindex Shell alias
+@cindex Alias, shell
+@cindex Shell startup
+@cindex Startup, shell
+To further simplify the process, you can define a shell alias in any startup file (for example @file{~/.bashrc}, see @ref{Installation directory}).
+Assuming that you installed Gnuastro in @file{/usr/local}, you can add this line to the startup file (you may put it all in one line, it is broken into two lines here for fitting within page limits).
+
+@example
+alias astmkprof-3d="astmkprof --config=/usr/local/etc/astmkprof-3d.conf"
+@end example
+
+@noindent
+Using this alias, you can call MakeProfiles with the name @command{astmkprof-3d} (instead of @command{astmkprof}).
+It will automatically load the 3D specific configuration file first, and then parse any other arguments, options or configuration files.
+You can change the default values in this 3D configuration file by calling them on the command-line as you do with @command{astmkprof}@footnote{Recall that for single-invocation options, the last command-line invocation takes precedence over all previous invocations (including those in the 3D configuration file).
+See the description of @option{--config} in @ref{Operating mode options}.}.
+
 Please see @ref{Sufi simulates a detection} for a very complete tutorial explaining how one could use MakeProfiles in conjunction with other Gnuastro's programs to make a complete simulated image of a mock galaxy.
 
 @menu
@@ -15850,7 +16038,7 @@ A fixed value will be used for all pixels less than or equal to the truncation r
 
 @item
 Radial distance profile with `@code{distance}' or `@code{7}'.
-At the lowest level, each pixel only has an elliptical radial distance given the profile's shape and orientation (see @ref{Defining an ellipse}).
+At the lowest level, each pixel only has an elliptical radial distance given the profile's shape and orientation (see @ref{Defining an ellipse and ellipsoid}).
 When this profile is chosen, the pixel's elliptical radial distance from the profile center is written as its value.
 For this profile, the value in the magnitude column (@option{--mcol}) will be ignored.
 
@@ -15867,9 +16055,30 @@ The S@'ersic index (@mymath{n}) or Moffat @mymath{\beta}.
 
 @item --pcol=STR/INT
 The position angle (in degrees) of the profiles relative to the first FITS axis (horizontal when viewed in SAO ds9).
+When building a 3D profile, this is the first Euler angle: first rotation of the ellipsoid major axis from the first FITS axis (rotating about the third axis).
+See @ref{Defining an ellipse and ellipsoid}.
+
+@item --p2col=STR/INT
+Second Euler angle (in degrees) when building a 3D ellipsoid.
+This is the second rotation of the ellipsoid major axis (following @option{--pcol}) about the (rotated) X axis.
+See @ref{Defining an ellipse and ellipsoid}.
+This column is ignored when building a 2D profile.
+
+@item --p3col=STR/INT
+Third Euler angle (in degrees) when building a 3D ellipsoid.
+This is the third rotation of the ellipsoid major axis (following @option{--pcol} and @option{--p2col}) about the (rotated) Z axis.
+See @ref{Defining an ellipse and ellipsoid}.
+This column is ignored when building a 2D profile.
 
 @item --qcol=STR/INT
 The axis ratio of the profiles (minor axis divided by the major axis in a 2D ellipse).
+When building a 3D ellipse, this is the ratio of the major axis to the semi-axis length of the second dimension (in a right-handed coordinate system).
+See @mymath{q1} in @ref{Defining an ellipse and ellipsoid}.
+
+@item --q2col=STR/INT
+The ratio of the ellipsoid major axis to the third semi-axis length (in a right-handed coordinate system) of a 3D ellipsoid.
+See @mymath{q1} in @ref{Defining an ellipse and ellipsoid}.
+This column is ignored when building a 2D profile.
 
 @item --mcol=STR/INT
 The total pixelated magnitude of the profile within the truncation radius, see @ref{Profile magnitude}.
@@ -16055,8 +16264,35 @@ Here are some examples:
 A Moffat kernel with FWHM of 3 pixels, @mymath{\beta=2.8} which is truncated at 5 times the FWHM.
 
 @item --kernel=gaussian,2,3
-A Gaussian kernel with FWHM of 2 pixels and truncated at 3 times the FWHM.
+A circular Gaussian kernel with FWHM of 2 pixels and truncated at 3 times
+the FWHM.
 @end table
+
+This option may also be used to create a 3D kernel.
+To do that, two small modifications are necessary: add a @code{-3d} (or @code{-3D}) to the profile name (for example @code{moffat-3d}) and add a number (axis-ratio along the third dimension) to the end of the parameters for all profiles except @code{point}.
+The main reason behind providing an axis ratio in the third dimension is that in 3D astronomical datasets, commonly the third dimension doesn't have the same nature (units/sampling) as the first and second.
+
+For example in IFU datacubes, the first and second dimensions are angularpositions (like RA and Dec) but the third is in units of Angstroms for wavelength.
+Because of this different nature (which also affects theprocessing), it may be necessary for the kernel to have a different extent in that direction.
+
+If the 3rd dimension axis ratio is equal to @mymath{1.0}, then the kernel will be a spheroid.
+If its smaller than @mymath{1.0}, the kernel will be button-shaped: extended less in the third dimension.
+However, when it islarger than @mymath{1.0}, the kernel will be bullet-shaped: extended more in the third dimension.
+In the latter case, the radial parameter will correspond to the length along the 3rd dimension.
+For example, let's have a look at the two examples above but in 3D:
+
+@table @option
+@item --kernel=moffat-3d,3,2.8,5,0.5
+An ellipsoid Moffat kernel with FWHM of 3 pixels, @mymath{\beta=2.8} which is truncated at 5 times the FWHM.
+The ellipsoid is circular in the first two dimensions, but in the third dimension its extent is half the first two.
+
+@item --kernel=gaussian-3d,2,3,1
+A spherical Gaussian kernel with FWHM of 2 pixels and truncated at 3 times
+the FWHM.
+@end table
+
+Ofcourse, if a specific kernel is needed that doesn't fit the constraints imposed by this option, you can always use a catalog to define any arbitrary kernel.
+Just call the @option{--individual} and @option{--nomerged} options to make sure that it is built as a separate file (individually) and no ``merged'' image of the input profiles is created.
 
 @item -x INT,INT
 @itemx --mergedsize=INT,INT
@@ -22591,6 +22827,39 @@ in the center of the box, all the values in @code{width} will be an odd
 integer.
 @end deftypefun
 
+@deftypefun void gal_box_bound_ellipsoid_extent (double @code{*semiaxes}, double @code{*euler_deg}, double @code{*extent})
+Return the maximum extent along each dimension of the given ellipsoid from
+its center. Therefore this is half the extent of the box in each
+dimension. The semi-axis lengths of the ellipsoid must be present in the 3
+element @code{semiaxis} array. The @code{euler_deg} array contains the
+three ellipsoid Euler angles in degrees. For a description of the Euler
+angles, see description of @code{gal_box_bound_ellipsoid} below. The extent
+in each dimension is in floating point format and stored in @code{extent}
+which must already be allocated before this function.
+@end deftypefun
+
+@deftypefun void gal_box_bound_ellipsoid (double @code{*semiaxes}, double @code{*euler_deg}, long @code{*width})
+Any ellipsoid can be enclosed into a rectangular volume/box. The purpose of
+this function is to give the integer size/width of that box. The semi-axes
+lengths of the ellipse must be in the @code{semiaxes} array (with three
+elements). The major axis length must be the first element of
+@code{semiaxes}. The only other condition is that the next two semi-axes
+must both be smaller than the first. The orientation of the major axis is
+defined through three proper Euler angles (ZXZ order in degrees) that are
+given in the @code{euler_deg} array. The @code{width} array will contain
+the output size in long integer type (in FITS axis order). Since the
+ellipsoid center is assumed to be in the center of the box, all the values
+in @code{width} will be an odd integer.
+
+@cindex Euler angles
+The proper Euler angles can be defined in many ways (which axes to rotate
+about). For a full description of the Euler angles, please see
+@url{https://en.wikipedia.org/wiki/Euler_angles, Wikipedia}. Here we adopt
+the ZXZ (or @mymath{Z_1X_2Z_3}) proper Euler angles were the first rotation
+is done around the Z axis, the second one about the (rotated) X axis and
+the third about the (rotated) Z axis.
+@end deftypefun
+
 @deftypefun void gal_box_border_from_center (double @code{center}, size_t @code{ndim}, long @code{*width}, long @code{*fpixel}, long @code{*lpixel})
 Given the center coordinates in @code{center} and the @code{width} (along
 each dimension) of a box, return the coordinates of the first
@@ -22941,11 +23210,11 @@ points of one catalog lie within this aperture of a point in the other, the
 nearest is defined as the match. In a 2D situation (where the input lists
 have two nodes), for the most generic case, it must have three elements:
 the major axis length, axis ratio and position angle (see @ref{Defining an
-ellipse}). If @code{aperture[1]==1}, the aperture will be a circle of
-radius @code{aperture[0]} and the third value won't be used. When the
-aperture is an ellipse, distances between the points are also calculated in
-the respective elliptical distances (@mymath{r_{el}} in @ref{Defining an
-ellipse}).
+ellipse and ellipsoid}). If @code{aperture[1]==1}, the aperture will be a
+circle of radius @code{aperture[0]} and the third value won't be used. When
+the aperture is an ellipse, distances between the points are also
+calculated in the respective elliptical distances (@mymath{r_{el}} in
+@ref{Defining an ellipse and ellipsoid}).
 
 To speed up the search, this function will sort the input coordinates by
 their first column (first axis). If @emph{both} are already sorted by their

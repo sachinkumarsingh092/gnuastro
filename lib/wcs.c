@@ -990,8 +990,9 @@ gal_wcs_world_to_img(gal_data_t *coords, struct wcsprm *wcs, int inplace)
     size_t i;
     printf("\n\n%s sanity check:\n", __func__);
     for(i=0;i<coords->size;++i)
-      printf("(%g, %g) --> (%g, %g), [stat: %d]\n", world[i*2], world[i*2+1],
-             pixcrd[i*2], pixcrd[i*2+1], stat[i]);
+      printf("(%g, %g, %g) --> (%g, %g, %g), [stat: %d]\n",
+              world[i*3],  world[i*3+1 ], world[i*3+2],
+             pixcrd[i*3], pixcrd[i*3+1], pixcrd[i*3+2], stat[i]);
   }
   */
 
@@ -1051,8 +1052,9 @@ gal_wcs_img_to_world(gal_data_t *coords, struct wcsprm *wcs, int inplace)
     size_t i;
     printf("\n\n%s sanity check:\n", __func__);
     for(i=0;i<coords->size;++i)
-      printf("(%g, %g) --> (%g, %g), [stat: %d]\n", pixcrd[i*2], pixcrd[i*2+1],
-             world[i*2],  world[i*2+1], stat[i]);
+      printf("(%g, %g, %g) --> (%g, %g, %g), [stat: %d]\n",
+             pixcrd[i*3], pixcrd[i*3+1], pixcrd[i*3+2],
+             world[i*3],  world[i*3+1],  world[i*3+2], stat[i]);
   }
   */
 

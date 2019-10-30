@@ -69,7 +69,7 @@ oneprofile_center_oversampled(struct mkonthread *mkp)
 
   for(i=0;i<p->ndim;++i)
     {
-      dim = i==0 ? p->x : p->y;
+      dim = i==0 ? p->x : (i==1 ? p->y : p->z);
       pixfrac = modf(fabs(dim[id]), &intpart);
       val     = ( os*(mkp->width[i]/2 + pixfrac)
                   + (pixfrac<0.5f ? os/2 : -1*os/2-1) );
@@ -84,7 +84,7 @@ oneprofile_center_oversampled(struct mkonthread *mkp)
 static void
 oneprofile_set_coord(struct mkonthread *mkp, size_t index)
 {
-  size_t i, coord_c[2];
+  size_t i, coord_c[3];
   uint8_t os=mkp->p->oversample;
   size_t ndim=mkp->ibq->image->ndim, *dsize=mkp->ibq->image->dsize;
 
@@ -103,18 +103,40 @@ oneprofile_set_coord(struct mkonthread *mkp, size_t index)
 
 
 /* Convert cartesian coordinates to the rotated elliptical radius. See the
-   "Defining an ellipse" section of the book for the full derivation. */
+   "Defining an ellipse and ellipsoid" section of the book for the full
+   derivation. */
 static void
 oneprofile_r_el(struct mkonthread *mkp)
 {
-  double Xr, Yr;                 /* Rotated x and y. */
-  double q=mkp->q[0];
-  double c=mkp->c[0],     s=mkp->s[0];
-  double x=mkp->coord[0], y=mkp->coord[1];
+  double Xr, Yr, Zr;                   /* Rotated x, y, z. */
+  double q1=mkp->q[0],   q2=mkp->q[1];
+  double c1=mkp->c[0],   s1=mkp->s[0];
+  double c2=mkp->c[1],   s2=mkp->s[1];
+  double c3=mkp->c[2],   s3=mkp->s[2];
+  double x=mkp->coord[0], y=mkp->coord[1], z=mkp->coord[2];
 
-  Xr = x * ( c       )     +   y * ( s );
-  Yr = x * ( -1.0f*s )     +   y * ( c );
-  mkp->r = sqrt( Xr*Xr + Yr*Yr/q/q );
+  switch(mkp->p->ndim)
+    {
+    case 2:
+      /* The parenthesis aren't necessary, but help in readability and
+         avoiding human induced bugs. */
+      Xr = x * ( c1       )     +   y * ( s1 );
+      Yr = x * ( -1.0f*s1 )     +   y * ( c1 );
+      mkp->r = sqrt( Xr*Xr + Yr*Yr/q1/q1 );
+      break;
+
+    case 3:
+      Xr = x*(  c3*c1   - s3*c2*s1 ) + y*( c3*s1   + s3*c2*c1) + z*( s3*s2 );
+      Yr = x*( -1*s3*c1 - c3*c2*s1 ) + y*(-1*s3*s1 + c3*c2*c1) + z*( c3*s2 );
+      Zr = x*(  s1*s2              ) + y*(-1*s2*c1           ) + z*( c2    );
+      mkp->r = sqrt( Xr*Xr + Yr*Yr/q1/q1 + Zr*Zr/q2/q2 );
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+            "the problem. The value %zu is not recognized for "
+            "`mkp->p->ndim'", __func__, PACKAGE_BUGREPORT, mkp->p->ndim);
+    }
 }
 
 
@@ -128,7 +150,8 @@ oneprofile_r_el(struct mkonthread *mkp)
 static float
 oneprofile_r_circle(size_t index, struct mkonthread *mkp)
 {
-  size_t i, c[2];
+
+  size_t i, c[3];
   double d, sum=0.0f;
   size_t ndim=mkp->ibq->image->ndim, *dsize=mkp->ibq->image->dsize;
 
@@ -173,9 +196,9 @@ float
 oneprofile_randompoints(struct mkonthread *mkp)
 {
   double r_before=mkp->r;
-  double range[2], sum=0.0f;
-  double coord_before[2]={mkp->coord[0], mkp->coord[1]};
+  double range[3], sum=0.0f;
   size_t i, j, numrandom=mkp->p->numrandom, ndim=mkp->p->ndim;
+  double coord_before[3]={mkp->coord[0], mkp->coord[1], mkp->coord[2]};
 
   /* Set the range in each dimension. */
   for(i=0;i<ndim;++i)
@@ -199,6 +222,7 @@ oneprofile_randompoints(struct mkonthread *mkp)
   mkp->r=r_before;
   mkp->coord[0]=coord_before[0];
   mkp->coord[1]=coord_before[1];
+  mkp->coord[2]=coord_before[2];
   return sum/numrandom;
 }
 
@@ -309,7 +333,7 @@ oneprofile_center_pix_index(struct mkonthread *mkp)
 {
   double pixfrac, intpart;
   size_t *dsize=mkp->ibq->image->dsize;
-  size_t i, coord[2], ndim=mkp->p->ndim;
+  size_t i, coord[3], ndim=mkp->p->ndim;
 
   /* Find the coordinates of the center point. Note `mkp->center' is in
      FITS coordinates, while coord must be in C coordinates (to be used in
@@ -520,7 +544,7 @@ oneprofile_set_prof_params(struct mkonthread *mkp)
 
   double sigma;
   int tp=p->tunitinp;
-  size_t id=mkp->ibq->id;
+  size_t id=mkp->ibq->id, ndim=p->ndim;
 
   /* Fill the most basic profile agnostic parameters. */
   mkp->brightness = ( p->mcolisbrightness
@@ -530,14 +554,40 @@ oneprofile_set_prof_params(struct mkonthread *mkp)
   mkp->func       = mkp->ibq->func = p->f[id];
 
 
-  /* Shifts were already multiplied with oversample. Just note that
-     p->x and p->y are in the FITS ordering, while p->shift is in C
-     ordering. */
-  mkp->q[0]       = p->q[id];
-  p->x[id]       += p->shift[1]/p->oversample;
-  p->y[id]       += p->shift[0]/p->oversample;
-  mkp->c[0]       = cos( p->p[id] * DEGREESTORADIANS );
-  mkp->s[0]       = sin( p->p[id] * DEGREESTORADIANS );
+  /* Fill in the dimension-dependent parameters. */
+  switch(ndim)
+    {
+    case 2:
+      /* Shifts were already multiplied with oversample. Just note that
+         p->x and p->y are in the FITS ordering, while p->shift is in C
+         ordering. */
+      mkp->q[0]       = p->q1[id];
+      p->x[id]       += p->shift[1]/p->oversample;
+      p->y[id]       += p->shift[0]/p->oversample;
+      mkp->c[0]       = cos( p->p1[id] * DEGREESTORADIANS );
+      mkp->s[0]       = sin( p->p1[id] * DEGREESTORADIANS );
+      break;
+
+    case 3:
+      /* See comments for 2D. */
+      mkp->q[0]       = p->q1[id];
+      mkp->q[1]       = p->q2[id];
+      p->x[id]       += p->shift[2]/p->oversample;
+      p->y[id]       += p->shift[1]/p->oversample;
+      p->z[id]       += p->shift[0]/p->oversample;
+      mkp->c[0]       = cos( p->p1[id] * DEGREESTORADIANS );
+      mkp->s[0]       = sin( p->p1[id] * DEGREESTORADIANS );
+      mkp->c[1]       = cos( p->p2[id] * DEGREESTORADIANS );
+      mkp->s[1]       = sin( p->p2[id] * DEGREESTORADIANS );
+      mkp->c[2]       = cos( p->p3[id] * DEGREESTORADIANS );
+      mkp->s[2]       = sin( p->p3[id] * DEGREESTORADIANS );
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
+            "address the problem. The value `%zu' is not recognized for "
+            "`ndim'", __func__, PACKAGE_BUGREPORT, ndim);
+    }
 
 
   /* Fill the profile-dependent parameters. */
@@ -566,6 +616,8 @@ oneprofile_set_prof_params(struct mkonthread *mkp)
           mkp->brightness   = 1.0f; /* When the PSF is a separate image, */
           p->x[id]          = 0.0f; /* it should be centered and have a  */
           p->y[id]          = 0.0f; /* total brightness of 1.0f. */
+          if(ndim==3)
+            p->z[id]        = 0.0f;
         }
       break;
 
@@ -582,6 +634,8 @@ oneprofile_set_prof_params(struct mkonthread *mkp)
           mkp->brightness   = 1.0f; /* Same as the explanations for    */
           p->x[id]          = 0.0f; /* The Moffat profile. */
           p->y[id]          = 0.0f;
+          if(ndim==3)
+            p->z[id]        = 0.0f;
         }
       break;
 
