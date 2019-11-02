@@ -28,26 +28,26 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    paper/book does for the progarm in a short line. In the following line
    put a row of `-' with the same length and then put the BibTeX.
 
-   See the `gnuastro_bibtex' variable in `lib/options' (from the top
-   Gnuastro source code directory) as an example.*/
+   This macro will be used in `gal_options_print_citation' function of
+   `lib/options.c' (from the top Gnuastro source code directory). */
 
-#define PROGRAM_BIBTEX                                                 \
-  "Description of MakeCatalog\n"                                       \
-  "--------------------------\n"                                       \
-  "@ARTICLE{2016arXiv161106387A,\n"                                    \
-  "   author = {{Akhlaghi}, M.},\n"                                    \
-  "    title = \"{Separating detection and catalog production}\",\n"   \
-  "  journal = {ASP Conf. Ser. (in press)},\n"                         \
-  "archivePrefix = \"arXiv\",\n"                                       \
-  "   eprint = {1611.06387},\n"                                        \
-  "primaryClass = \"astro-ph.IM\",\n"                                  \
-  " keywords = {Astrophysics - Instrumentation and Methods for "       \
-               "Astrophysics},\n"                                      \
-  "     year = 2016,\n"                                                \
-  "    month = nov,\n"                                                 \
-  "   adsurl = {http://adsabs.harvard.edu/abs/2016arXiv161106387A},\n" \
-  "  adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n"  \
-  "};\n"
+#define PROGRAM_BIBTEX                                                  \
+  "Description of MakeCatalog\n"                                        \
+  "--------------------------\n"                                        \
+  "@ARTICLE{makecatalog,\n"                                             \
+  "       author = {{Akhlaghi}, Mohammad},\n"                           \
+  "        title = \"{Separating Detection and Catalog Production}\",\n" \
+  "      journal = {ASPC},\n"                                           \
+  "         year = \"2019\",\n"                                         \
+  "        month = \"Oct\",\n"                                          \
+  "       volume = {521},\n"                                            \
+  "        pages = {299},\n"                                            \
+  "archivePrefix = {arXiv},\n"                                          \
+  "       eprint = {1611.06387},\n"                                     \
+  " primaryClass = {astro-ph.IM},\n"                                    \
+  "       adsurl = {https://ui.adsabs.harvard.edu/abs/2019ASPC..521..299A},\n" \
+  "      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n" \
+  "}\n"
 
 #define PROGRAM_AUTHORS "Mohammad Akhlaghi"
 

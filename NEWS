@@ -66,6 +66,21 @@ See the end of the file for license conditions.
    - Matching of catalogs now possible using 3 coordinates (on catalogs
      generated from 3D data cubes), see book for more.
 
+  NoiseChisel:
+   - arXiv:1909.11230 added in papers to cite (with the `--cite' option):
+     this paper describes the major changes made to NoiseChisel in the last
+     10 stable releases since the 2015 paper, most importantly how Segment
+     has been separated and the new growth strategy. It is therefore
+     necessary to cite it along with the initial 2015 paper when using
+     NoiseChisel.
+
+  Segment:
+   - arXiv:1909.11230 added in papers to cite (with the `--cite' option):
+     this paper describes why Segment has been separated from NoiseChisel
+     and some important updates to it compared to the 2015 paper, it is
+     therefore necessary to cite it along with that paper when using
+     Segment.
+
   Statistics:
    --contour: compute a contour plot which can be directly fed into the
      PGFPlots package of LaTeX for plotting the contours. Support for more

@@ -28,8 +28,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    paper/book does for the progarm in a short line. In the following line
    put a row of `-' with the same length and then put the BibTeX.
 
-   See the `gnuastro_bibtex' variable in `lib/options' (from the top
-   Gnuastro source code directory) as an example.*/
+   This macro will be used in `gal_options_print_citation' function of
+   `lib/options.c' (from the top Gnuastro source code directory). */
 
 #define PROGRAM_BIBTEX ""
 
