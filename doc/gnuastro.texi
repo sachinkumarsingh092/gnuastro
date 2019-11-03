@@ -259,6 +259,7 @@ General program usage tutorial
 * Aperture photometry::         Doing photometry on a fixed aperture.
 * Finding reddest clumps and visual inspection::  Selecting some targets and inspecting them.
 * Citing and acknowledging Gnuastro::  How to cite and acknowledge Gnuastro in your papers.
+* Writing scripts to automate the steps::  Scripts will greatly help in re-doing things fast.
 
 Detecting large extended targets
 
@@ -1929,6 +1930,7 @@ This will help simulate future situations when you are processing your own datas
 * Aperture photometry::         Doing photometry on a fixed aperture.
 * Finding reddest clumps and visual inspection::  Selecting some targets and inspecting them.
 * Citing and acknowledging Gnuastro::  How to cite and acknowledge Gnuastro in your papers.
+* Writing scripts to automate the steps::  Scripts will greatly help in re-doing things fast.
 @end menu
 
 @node Calling Gnuastro's programs, Accessing documentation, General program usage tutorial, General program usage tutorial
@@ -3277,7 +3279,7 @@ $ ds9 -mecube seg/xdf-f160w.fits -zscale -zoom to fit    \
 @end example
 
 
-@node Citing and acknowledging Gnuastro,  , Finding reddest clumps and visual inspection, General program usage tutorial
+@node Citing and acknowledging Gnuastro, Writing scripts to automate the steps, Finding reddest clumps and visual inspection, General program usage tutorial
 @subsection Citing and acknowledging Gnuastro
 In conclusion, we hope this extended tutorial has been a good starting point to help in your exciting research.
 If this book or any of the programs in Gnuastro have been useful for your research, please cite the respective papers, and acknowledge the funding agencies that made all of this possible.
@@ -3288,6 +3290,320 @@ Just note that it may be necessary to cite additional papers for different progr
 $ astmkcatalog --cite
 $ astnoisechisel --cite
 @end example
+
+@node Writing scripts to automate the steps,  , Citing and acknowledging Gnuastro, General program usage tutorial
+@subsection Writing scripts to automate the steps
+
+In the previous sub-sections, we went through a series of steps like downloading the necessary datasets (in @ref{Setup and data download}), detecting the objects in the image, and finally selecting a particular subset of them to inspect visually (in @ref{Finding reddest clumps and visual inspection}).
+To benefit most effectively from this subsection, please go through the previous sub-sections, and if you haven't actually done them, we recommended to do/run them before continuing here.
+
+@cindex @command{history}
+@cindex Shell history
+Each sub-section/step of the sub-sections above involved several commands on the command-line.
+Therefore, if you want to reproduce the previous results (for example to only change one part, and see its effect), you'll have to go through all the sections above and read through them again.
+If you done the commands recently, you may also have them in the history of your shell (command-line environment).
+You can see many of your previous commands on the shell (even if you have closed the terminal) with the @command{history} command, like this:
+
+@example
+$ history
+@end example
+
+@cindex GNU Bash
+Try it in your teminal to see for your self.
+By default in GNU Bash, it shows the last 500 commands.
+You can also save this ``history'' of previous commands to a file using shell redirection (to have it after your next 500 commands), with this command
+
+@example
+$ history > my-previous-commands.txt
+@end example
+
+This is a good way to temporarily keep track of every single command you ran.
+But in the middle of all the useful commands, you will have many extra commands, like tests that you did before/after the good output of a step (that you decided to continue working on), or an unrelated job you had to do in the middle of this project.
+Because of these impurities, after a few days (that you have forgot the context: tests you didn't end-up using, or unrelated jobs) reading this full history will be very frustrating.
+
+Keeping the final commands that were used in each step of an analysis is a common problem for anyone who is doing something serious with the computer.
+But simply keeping the most important commands in a text file is not enough, the small steps in the middle (like making a directory to keep the outputs of one step) are also important.
+In other words, the only way you can be sure that you are under control of your processing (and actually understand how you produced your final result) is to run the commands automatically.
+
+@cindex Shell script
+@cindex Script, shell
+Fortunately, typing commands interactively with your fingers isn't the only way to operate the shell.
+The shell can also take its orders/commands from a plain-text file, which is called a @emph{script}.
+When given a script, the shell will read it line-by-line as if you have actually typed it manually.
+
+@cindex Redirection in shell
+@cindex Shell redirection
+Let's continue with an example: try typing the commands below in your shell.
+With these commands we are making a text file (@code{a.txt}) containing a simple @mymath{3\times3} matrix, converting it to a FITS image and computing its basic statistics.
+After the first three commands open @file{a.txt} with a text editor to actually see the values we wrote in it, and after the fourth, open the FITS file to see the matrix as an image.
+@file{a.txt} is created through the shell's redirection feature: `@code{>}' overwrites the existing contents of a file, and `@code{>>}' appends the new contents after the old contents.
+
+@example
+$ echo "1 1 1" > a.txt
+$ echo "1 2 1" >> a.txt
+$ echo "1 1 1" >> a.txt
+$ astconvertt a.txt --output=a.fits
+$ aststatistics a.fits
+@end example
+
+To automate these series of commands, you should put them in a text file.
+But that text file must have to special features:
+1) It should tell the shell what program should interpret the script.
+2) The operating system should know that the file can be directly executed.
+
+@cindex Shebang
+@cindex Hashbang
+For the first, Unix-like operating systems define the @emph{shebang} concept (also known as @emph{sha-bang} or @emph{hashbang}).
+In the shebang convention, the first two characters of a file should be `@code{#!}'.
+When confronted with these characters, the script will be interpretted with the cprogram that follows.
+In this case, we want to write a shell script and the most common shell program is GNU Bash which is installed in @file{/bin/bash}.
+So the first line of your script should be `@code{#!/bin/bash}'@footnote{When the script is to be run by the same shell that is calling it (like this script), the shebang is optional.
+But it is still recommended, because it ensures that even if the user isn't using GNU Bash, the script will be run in GNU Bash: given the differences between various shells, writing truely portable shell scripts that can be run in all shell varieties isn't easy (sometimges not possible!).}.
+
+Using your favorite text editor, make a new empty file, let's call it @file{my-first-script.sh}.
+Write the GNU Bash shebang (above) as its first line
+After the shebang, copy the series of commands we ran above.
+Just note that the `@code{$}' sign at the start of every line above is the prompt of the interactive shell (you never actually typed it, remember?).
+Therefore, commands in a shell script should not start with a `@code{$}'.
+Once you add the commands, close the text editor and run the @command{cat} command to confirm its contents.
+It should look like the example below.
+Recall that you should only type the line that starts with a `@code{$}', the lines without a `@code{$}', are printed automatically on the command-line (they are the contents of your script).
+
+@example
+$ cat my-first-script.sh
+#!/bin/bash
+echo "1 1 1" > a.txt
+echo "1 2 1" >> a.txt
+echo "1 1 1" >> a.txt
+astconvertt a.txt --output=a.fits
+aststatistics a.fits
+@end example
+
+@cindex File flags
+@cindex Flags, file
+The script contents are now ready, but to run it, you should activate the script file's @emph{executable flag}.
+In Unix-like operating systems, every file has three types of flags: @emph{read} (or @code{r}), @emph{write} (or @code{w}) and @emph{execute} (or @code{x}).
+To toggle a file's flags, you should use the @command{chmod} (for ``change mode'') command.
+To activate a flag, you put a `@code{+}' before the flag character (for example @code{+x}).
+To deactivate it, you put a `@code{-}' (for example @code{-x}).
+In this case, you want to activate the script's executable flag, so you should run
+
+@example
+$ chmod +x my-first-script.sh
+@end example
+
+Your script is now ready to run/execute the series of commands.
+To run it, you should call it while specifying its location in the file system.
+Since you are currently in the same directory as the script, its easiest to use relative addressing like below (where `@code{./}' means the current directory).
+But before running your script, first delete the two @file{a.txt} and @file{a.fits} files that were created when you interactively ran the commands.
+
+@example
+$ rm a.txt a.fits
+$ ls
+$ ./my-first-script.sh
+$ ls
+@end example
+
+@noindent
+The script immediately prints the statistics while doing all the previous steps in the background.
+With the last @command{ls}, you see that it automatically re-built the @file{a.txt} and @file{a.fits} files, open them and have a look at their contents.
+
+An extremely useful feature of shell scripts is that the shell will ignore anything after a `@code{#}' character.
+You can thus add descriptions/comments to the commands and make them much more useful for the future.
+For example, after adding comments, your script might look like this:
+
+@example
+$ cat my-first-script.sh
+#!/bin/bash
+
+# This script is my first attempt at learning to write shell scripts.
+# As a simple series of commands, I am just building a small FITS
+# image, and calculating its basic statistics.
+
+# Write the matrix into a file.
+echo "1 1 1" > a.txt
+echo "1 2 1" >> a.txt
+echo "1 1 1" >> a.txt
+
+# Convert the matrix to a FITS image.
+astconvertt a.txt --output=a.fits
+
+# Calculate the statistics of the FITS image.
+aststatistics a.fits
+@end example
+
+@noindent
+Isn't this much more easier to read now?
+Comments help to provide human-friendly context to the raw commands.
+At the time you make a script, comments may seem like an extra effort and slow you down.
+But in one year, you will forget almost everything about your script and you will appreciate the effort so much!
+Think of the comments as an email to your future-self and always put a well-written description of the context/purpose (most importantly, things that aren't directly clear by reading the commands) in your scripts.
+
+The example above was very basic and mostly redundant series of commands, to show the basic concepts behind scripts.
+You can put any (arbitrarily long and complex) series of commands in a script by following the two rules: 1) add a shebang, and 2) enable the executable flag.
+Infact, as you continue your own research projects, you will find that any time you are dealing with more than two or three commands, keeping them in a script (and modifying that script, and running it) is much more easier, and future-proof, then typing the commands directly on the command-line and relying on things like @command{history}. Here are some tips that will come in handy when you are writing your scripts:
+
+As a more realistic example, let's have a look at a script that will do the steps of @ref{Setup and data download} and @ref{Dataset inspection and cropping}.
+In particular note how often we are using variables to avoid repeating fixed strings of characters (usually file/directory names).
+This greatly helps in scaling up your project, and avoiding hard-to-find bugs that are caused by typos in those fixed strings.
+
+@example
+$ cat gnuastro-tutorial-1.sh
+#!/bin/bash
+
+
+# Download the input datasets
+# ---------------------------
+#
+# The default file names have this format (where `FILTER' differs for
+# each filter):
+#   hlsp_xdf_hst_wfc3ir-60mas_hudf_FILTER_v1_sci.fits
+# To make the script easier to read, a prefix and suffix variable are
+# used to sandwich the filter name into one short line.
+downloaddir=download
+xdfsuffix=_v1_sci.fits
+xdfprefix=hlsp_xdf_hst_wfc3ir-60mas_hudf_
+xdfurl=http://archive.stsci.edu/pub/hlsp/xdf
+
+# The file name and full URLs of the input data.
+f105w_in=$xdfprefix"f105w"$xdfsuffix
+f160w_in=$xdfprefix"f160w"$xdfsuffix
+f105w_full=$xdfurl/$f105w_in
+f160w_full=$xdfurl/$f160w_in
+
+# Go into the download directory and download the images there,
+# then come back up to the top running directory.
+mkdir $downloaddir
+cd $downloaddir
+wget $f105w_full
+wget $f160w_full
+cd ..
+
+
+# Only work on the deep region
+# ----------------------------
+#
+# To help in readability, each vertice of the deep/flat field is stored
+# as a separate variable. They are then merged into one variable to
+# define the polygon.
+flatdir=flat-ir
+vertice1="53.187414,-27.779152"
+vertice2="53.159507,-27.759633"
+vertice3="53.134517,-27.787144"
+vertice4="53.161906,-27.807208"
+f105w_flat=$flatdir/xdf-f105w.fits
+f160w_flat=$flatdir/xdf-f160w.fits
+deep_polygon="$vertice1:$vertice2:$vertice3:$vertice4"
+
+mkdir $flatdir
+astcrop --mode=wcs -h0 --output=$f105w_flat \
+        --polygon=$deep_polygon $downloaddir/$f105w_in
+astcrop --mode=wcs -h0 --output=$f160w_flat \
+        --polygon=$deep_polygon $downloaddir/$f160w_in
+@end example
+
+The first thing you may notice is that even if you already have the downloaded input images, this script will always try to re-download them.
+Also, if you re-run the script, you will notice that @command{mkdir} prints an error message that the download directory already exists.
+Therefore, the script above isn't too useful and some modifications are necessary to make it more generally useful.
+Here are some general tips that are often very useful when writing scripts:
+
+@table @strong
+@item Stop script if a command crashes
+By default, if a command in a script crashes (aborts and fails to do what it was meant to do), the script will continue onto the next command.
+In GNU Bash, you can tell the shell to stop a script in the case of a crash by adding this line at the start of your script:
+
+@example
+set -e
+@end example
+
+@item Check if a file/directory exists to avoid re-creating it
+Conditionals are a very useful feature in scripts.
+One common conditional is to check if a file exists or not.
+Assuming the file's name is @file{FILENAME}, you can check its existance (to avoid re-doing the commands that build it) like this:
+@example
+if [ -f FILENAME ]; then
+  echo "FILENAME exists"
+else
+  # Some commands to generate the file
+  echo "done" > FILENAME
+fi
+@end example
+To check the existance of a directory instead of a file, use @code{-d} instead of @code{-f}.
+To negate a conditional, use `@code{!}' and note that conditionals can be written in one line also (useful for when its short).
+
+One common scenario that you'll need to check the existance of directories is when you are making them: the default @command{mkdir} command will crash if the desired directory already exists.
+On some systems (including GNU/Linux distributions), @code{mkdir} has options to deal with such cases. But if you want your script to be portable, its best to check yourself like below:
+
+@example
+if ! [ -d DIRNAME ]; then mkdir DIRNAME; fi
+@end example
+@end table
+
+@noindent
+Taking these tips into consideration, we can write a better version of the script above that includes checks on every step to avoid repeating steps/commands.
+Please compare this script with the previous one carefully to spot the differences.
+These are very important points that you will definitely encouter during your own research, and knowing them can greatly help your productiveity, so pay close attention (even in the comments).
+
+@example
+$ cat gnuastro-tutorial-2.sh
+#!/bin/bash
+set -e
+
+
+# Download the input datasets
+# ---------------------------
+#
+# The default file names have this format (where `FILTER' differs for
+# each filter):
+#   hlsp_xdf_hst_wfc3ir-60mas_hudf_FILTER_v1_sci.fits
+# To make the script easier to read, a prefix and suffix variable are
+# used to sandwich the filter name into one short line.
+downloaddir=download
+xdfsuffix=_v1_sci.fits
+xdfprefix=hlsp_xdf_hst_wfc3ir-60mas_hudf_
+xdfurl=http://archive.stsci.edu/pub/hlsp/xdf
+
+# The file name and full URLs of the input data.
+f105w_in=$xdfprefix"f105w"$xdfsuffix
+f160w_in=$xdfprefix"f160w"$xdfsuffix
+f105w_full=$xdfurl/$f105w_in
+f160w_full=$xdfurl/$f160w_in
+
+# Go into the download directory and download the images there,
+# then come back up to the top running directory.
+if ! [ -d $downloaddir ]; then mkdir $downloaddir; fi
+cd $downloaddir
+if ! [ -f $f105w_in ]; then wget $f105w_full; fi
+if ! [ -f $f160w_in ]; then wget $f160w_full; fi
+cd ..
+
+
+# Only work on the deep region
+# ----------------------------
+#
+# To help in readability, each vertice of the deep/flat field is stored
+# as a separate variable. They are then merged into one variable to
+# define the polygon.
+flatdir=flat-ir
+vertice1="53.187414,-27.779152"
+vertice2="53.159507,-27.759633"
+vertice3="53.134517,-27.787144"
+vertice4="53.161906,-27.807208"
+f105w_flat=$flatdir/xdf-f105w.fits
+f160w_flat=$flatdir/xdf-f160w.fits
+deep_polygon="$vertice1:$vertice2:$vertice3:$vertice4"
+
+if ! [ -d $flatdir ]; then mkdir $flatdir; fi
+if ! [ -f $f105w_flat ]; then
+    astcrop --mode=wcs -h0 --output=$f105w_flat \
+            --polygon=$deep_polygon $downloaddir/$f105w_in
+fi
+if ! [ -f $f160w_flat ]; then
+    astcrop --mode=wcs -h0 --output=$f160w_flat \
+            --polygon=$deep_polygon $downloaddir/$f160w_in
+fi
+@end example
+
 
 
 
@@ -3718,7 +4034,7 @@ $ astsegment r_detected.fits
 @cindex DS9
 @cindex SAO DS9
 Open the output @file{r_detected_segmented.fits} as a multi-extension data cube like before and flip through the first and second extensions to see the detected clumps (all pixels with a value larger than 1).
-To optimize the parameters and make sure you have detected what you wanted, its highly recommended to visually inspect the detected clumps on the input image.
+To optimize the parameters and make sure you have detected what you wanted, we recommend to visually inspect the detected clumps on the input image.
 
 For visual inspection, you can make a simple shell script like below.
 It will first call MakeCatalog to estimate the positions of the clumps, then make an SAO ds9 region file and open ds9 with the image and region file.

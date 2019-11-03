@@ -7,6 +7,10 @@ See the end of the file for license conditions.
 
 ** New features
 
+  Book:
+   - The "General program usage tutorial" now has a section on how to write
+     scripts effectively to automate your analysis.
+
   Arithmetic:
    - The new `add-dimension' operator will stack the popped operands in a
      higher-dimensional dataset. For example to build a 3D cube from
