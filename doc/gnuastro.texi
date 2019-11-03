@@ -3355,10 +3355,11 @@ But that text file must have to special features:
 @cindex Hashbang
 For the first, Unix-like operating systems define the @emph{shebang} concept (also known as @emph{sha-bang} or @emph{hashbang}).
 In the shebang convention, the first two characters of a file should be `@code{#!}'.
-When confronted with these characters, the script will be interpretted with the cprogram that follows.
+When confronted with these characters, the script will be interpretted with the program that follows them.
 In this case, we want to write a shell script and the most common shell program is GNU Bash which is installed in @file{/bin/bash}.
-So the first line of your script should be `@code{#!/bin/bash}'@footnote{When the script is to be run by the same shell that is calling it (like this script), the shebang is optional.
-But it is still recommended, because it ensures that even if the user isn't using GNU Bash, the script will be run in GNU Bash: given the differences between various shells, writing truely portable shell scripts that can be run in all shell varieties isn't easy (sometimges not possible!).}.
+So the first line of your script should be `@code{#!/bin/bash}'@footnote{
+When the script is to be run by the same shell that is calling it (like this script), the shebang is optional.
+But it is still recommended, because it ensures that even if the user isn't using GNU Bash, the script will be run in GNU Bash: given the differences between various shells, writing truely portable shell scripts, that can be run by many shell programs/implementations, isn't easy (sometimes not possible!).}.
 
 Using your favorite text editor, make a new empty file, let's call it @file{my-first-script.sh}.
 Write the GNU Bash shebang (above) as its first line
