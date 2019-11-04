@@ -1396,6 +1396,16 @@ ui_one_tile_per_object(struct mkcatalogparams *p)
       }
   while(++l<lf);
 
+  /* If an label doesn't exist in the image, then set the minimum and
+     maximum values to zero. */
+  for(i=0;i<p->numobjects;++i)
+    for(d=0;d<ndim;++d)
+      {
+        if( minmax[ i * width + d ] == GAL_BLANK_SIZE_T
+            && minmax[ i * width + ndim + d ] == 0 )
+          minmax[ i * width + d ] = minmax[ i * width + ndim + d ] = 0;
+      }
+
   /* For a check.
   for(i=0;i<p->numobjects;++i)
     printf("%zu: (%zu, %zu) --> (%zu, %zu)\n", i+1, minmax[i*width],
