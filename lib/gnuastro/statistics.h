@@ -108,6 +108,9 @@ gal_data_t *
 gal_statistics_quantile_function(gal_data_t *input, gal_data_t *value,
                                  int inplace);
 
+gal_data_t *
+gal_statistics_unique(gal_data_t *input, int inplace);
+
 
 
 

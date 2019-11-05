@@ -23715,6 +23715,12 @@ than the input's largest element, then the returned value is 1. See
 @code{gal_statistics_median} for a description of @code{inplace}.
 @end deftypefun
 
+@deftypefun {gal_data_t *} gal_statistics_unique (gal_data_t @code{*input}, int @code{inplace})
+Return a 1D dataset with the same numeric data type as the input, but only containing its unique elements and without any (possible) blank/NaN elements.
+Note that the input's number of dimensions is irrelevant for this function.
+If @code{inplace} is not zero, then the unique values will over-write the allocated space of the input, otherwise a new space will be allocated and the input will not be touched.
+@end deftypefun
+
 @deftypefun {gal_data_t *} gal_statistics_mode (gal_data_t @code{*input}, float @code{mirrordist}, int @code{inplace})
 Return a four-element (@code{double} or @code{float64}) dataset that
 contains the mode of the @code{input} distribution. This function

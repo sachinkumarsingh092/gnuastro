@@ -115,6 +115,7 @@ See the end of the file for license conditions.
    - gal_binary_connected_indexs: store indexs of connected components.
    - gal_box_bound_ellipsoid_extent: Extent of 3D ellipsoid.
    - gal_box_bound_ellipsoid: Bounding box for a 3D ellipsoid.
+   - gal_statistics_unique: Return unique (non-blank) elements of the input.
 
 ** Removed features
 

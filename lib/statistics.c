@@ -537,6 +537,59 @@ gal_statistics_quantile_function(gal_data_t *input, gal_data_t *value,
 
 
 
+/* Pull out unique elements */
+#define UNIQUE_BYTYPE(TYPE) {                                           \
+    size_t i, j;                                                        \
+    TYPE *a=out->array, b;                                              \
+                                                                        \
+    /* Write the blank value for this type into `b'. */                 \
+    gal_blank_write(&b, out->type);                                     \
+                                                                        \
+    /* Go over the elements, and set the duplicates to blank. */        \
+    /* Note that for integers and floats, the behavior of blank/NaN */  \
+    /* differs: for floats (NaN), we can identify a blank using the  */ \
+    /* fact that by definition, NaN!=NaN. */                            \
+    if(b==b)                                                            \
+      for(i=0;i<out->size;++i)                                          \
+        { if(a[i]!=b)    for(j=i+1;j<out->size;++j) if(a[i]==a[j]) a[j]=b;} \
+    else                                                                \
+      for(i=0;i<out->size;++i)                                          \
+        { if(a[i]==a[i]) for(j=i+1;j<out->size;++j) if(a[i]==a[j]) a[j]=b;} \
+  }
+
+gal_data_t *
+gal_statistics_unique(gal_data_t *input, int inplace)
+{
+  gal_data_t *out = inplace ? input : gal_data_copy(input);
+
+  /* Remove the duplicates based on size. */
+  switch(out->type)
+    {
+    case GAL_TYPE_UINT8:   UNIQUE_BYTYPE( uint8_t  ); break;
+    case GAL_TYPE_INT8:    UNIQUE_BYTYPE( int8_t   ); break;
+    case GAL_TYPE_UINT16:  UNIQUE_BYTYPE( uint16_t ); break;
+    case GAL_TYPE_INT16:   UNIQUE_BYTYPE( int16_t  ); break;
+    case GAL_TYPE_UINT32:  UNIQUE_BYTYPE( uint32_t ); break;
+    case GAL_TYPE_INT32:   UNIQUE_BYTYPE( int32_t  ); break;
+    case GAL_TYPE_UINT64:  UNIQUE_BYTYPE( uint64_t ); break;
+    case GAL_TYPE_INT64:   UNIQUE_BYTYPE( int64_t  ); break;
+    case GAL_TYPE_FLOAT32: UNIQUE_BYTYPE( float    ); break;
+    case GAL_TYPE_FLOAT64: UNIQUE_BYTYPE( double   ); break;
+    default:
+      error(EXIT_FAILURE, 0, "the `unique' operator doesn't support type "
+            "code `%u'", out->type);
+    }
+
+  /* Remove all blank elements (note that `gal_blank_remove' also corrects
+     the size of the dataset and sets it to 1D). */
+  gal_blank_remove(out);
+  return out;
+}
+
+
+
+
+
 
 
 
