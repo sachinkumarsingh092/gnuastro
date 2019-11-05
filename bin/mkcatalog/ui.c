@@ -1354,6 +1354,7 @@ ui_one_tile_per_object(struct mkcatalogparams *p)
 {
   size_t ndim=p->objects->ndim;
 
+  uint8_t *rarray=NULL;
   int32_t *l, *lf, *start;
   size_t i, d, *min, *max, width=2*ndim;
   size_t *minmax=gal_pointer_allocate(GAL_TYPE_SIZE_T,
@@ -1381,7 +1382,8 @@ ui_one_tile_per_object(struct mkcatalogparams *p)
     if(*l>0)
       {
         /* Get the coordinates of this pixel. */
-        gal_dimension_index_to_coord(l-start, ndim, p->objects->dsize, coord);
+        gal_dimension_index_to_coord(l-start, ndim, p->objects->dsize,
+                                     coord);
 
         /* Check to see this coordinate is the smallest/largest found so
            far for this label. Note that labels start from 1, while indexs
@@ -1396,14 +1398,38 @@ ui_one_tile_per_object(struct mkcatalogparams *p)
       }
   while(++l<lf);
 
-  /* If an label doesn't exist in the image, then set the minimum and
+  /* If a label doesn't exist in the image, then set the minimum and
      maximum values to zero. */
   for(i=0;i<p->numobjects;++i)
     for(d=0;d<ndim;++d)
       {
         if( minmax[ i * width + d ] == GAL_BLANK_SIZE_T
             && minmax[ i * width + ndim + d ] == 0 )
-          minmax[ i * width + d ] = minmax[ i * width + ndim + d ] = 0;
+          {
+            /* Set the first and last pixel to 0. */
+            minmax[ i * width + d ] = minmax[ i * width + ndim + d ] = 0;
+
+            /* Flag this label as one that must be removed. The ones that
+               must be removed get a value of `1' in `p->rowsremove'. */
+            if(p->inbetweenints==0)
+              {
+                if(p->rowsremove)
+                  rarray[i]=1;
+                else
+                  {
+                    /* Note that by initializing with zeros, all (the
+                       possibly existing) previous rows that shouldn't be
+                       removed are flagged as zero in this array. */
+                    p->rowsremove=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1,
+                                                 &p->numobjects, NULL, 1,
+                                                 p->cp.minmapsize,
+                                                 p->cp.quietmmap,
+                                                 NULL, NULL, NULL);
+                    rarray=p->rowsremove->array;
+                    rarray[i]=1;
+                  }
+              }
+          }
       }
 
   /* For a check.

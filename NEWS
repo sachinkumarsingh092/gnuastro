@@ -55,6 +55,15 @@ See the end of the file for license conditions.
      --clumpsgeow3: Geometric center of all clumps in 3rd dim.
      --areaxy: Projected area in first two dimentions.
      --geoareaxy: Projected geoarea in first two dimensions.
+   --inbetweenints: output will contain one row for all integers between 1
+     and the largest label in the input (irrespective of their existance in
+     the input image). This was the default/only behavior of MakeCatalog
+     until now. However, there are situations where the labeled input image
+     integers may not be contiguous. For example if the input's only
+     labeled pixel values are 11 and 13 from this release MakeCatalog's
+     output will only have two rows. If you want the old behavior (of one
+     row per integer, even if its not in the image), you can use this
+     option.
 
   MakeProfiles:
    - Can produce mock ellipsoids in a datacube (using X-Z-X Euler angles

@@ -15426,6 +15426,13 @@ pixels that belong to other labels but overlap with the 2D projection. This
 can be used to see how reliable the emission line measurement is (on the
 projected spectra) and also if multiple lines (labeled regions) belong to
 the same physical object.
+
+@item --inbetweenints
+Output will contain one row for all integers between 1 and the largest label in the input (irrespective of their existance in the input image).
+By default, MakeCatalog's output will only contain rows with integers that actually corresponded to atleast one pixel in the input dataset.
+
+For example if the input's only labeled pixel values are 11 and 13, MakeCatalog's default output will only have two rows.
+If you use this option, it will have 13 rows and all the columns corresponding to integer identifiers that didn't correspond to any pixel will be 0 or NaN (depending on context).
 @end table
 
 

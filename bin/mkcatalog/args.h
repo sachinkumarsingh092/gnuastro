@@ -244,6 +244,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "inbetweenints",
+      UI_KEY_INBETWEENINTS,
+      0,
+      0,
+      "Keep rows (integer ids) with no labels.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->inbetweenints,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 

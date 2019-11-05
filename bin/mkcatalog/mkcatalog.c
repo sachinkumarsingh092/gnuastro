@@ -610,6 +610,47 @@ sort_clumps_by_objid(struct mkcatalogparams *p)
 
 
 
+static void
+mkcatalog_remove_labels_with_no_pixel(struct mkcatalogparams *p)
+{
+  size_t i;
+  gal_data_t *tmp, *perm;
+  uint8_t *rarray=p->rowsremove->array;
+  size_t g=0, b=0, numgood=0, *permutation;
+
+  /* Count how many good rows we have. */
+  for(i=0;i<p->numobjects;++i) if(rarray[i]==0) ++numgood;
+
+  /* Define the permutation to keep only the rows that must be shown. */
+  perm=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &p->numobjects, NULL, 1,
+                      p->cp.minmapsize, p->cp.quietmmap, NULL, NULL, NULL);
+  permutation=perm->array;
+  for(i=0;i<p->numobjects;++i)
+    permutation[i] = rarray[i] ? numgood+b++ : g++;
+
+  /* For a check.
+  for(i=0;i<p->numobjects;++i)
+    printf("%zu: %u (%zu)\n", i+1, rarray[i], permutation[i]);
+  */
+
+  /* Apply the permutation. */
+  for(tmp=p->objectcols;tmp!=NULL;tmp=tmp->next)
+    {
+      /* Apply the permutation. */
+      gal_permutation_apply_inverse(tmp, permutation);
+
+      /* Correct the size. */
+      tmp->size=tmp->dsize[0]=numgood;
+    }
+
+  /* Clean up and return. */
+  gal_data_free(perm);
+}
+
+
+
+
+
 /* Write the produced columns into the output */
 static void
 mkcatalog_write_outputs(struct mkcatalogparams *p)
@@ -618,6 +659,11 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
   char str[200], *fname;
   gal_list_str_t *comments;
   int outisfits=gal_fits_name_is_fits(p->objectsout);
+
+  /* If there are object labels without a pixel, then remove them from the
+     objects catalog. */
+  if(p->rowsremove)
+    mkcatalog_remove_labels_with_no_pixel(p);
 
   /* If a catalog is to be generated. */
   if(p->objectcols)
