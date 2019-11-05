@@ -562,7 +562,12 @@ gal_statistics_unique(gal_data_t *input, int inplace)
 {
   gal_data_t *out = inplace ? input : gal_data_copy(input);
 
-  /* Remove the duplicates based on size. */
+  /* Since we are replacing the repeated elements with blank, re-set the
+     blank flags. */
+  out->flag &= ~GAL_DATA_FLAG_BLANK_CH; /* Set bit to 0. */
+  out->flag &= ~GAL_DATA_FLAG_HASBLANK; /* Set bit to 0. */
+
+  /* Set all non-unique elements to blank. */
   switch(out->type)
     {
     case GAL_TYPE_UINT8:   UNIQUE_BYTYPE( uint8_t  ); break;
@@ -582,7 +587,7 @@ gal_statistics_unique(gal_data_t *input, int inplace)
 
   /* Remove all blank elements (note that `gal_blank_remove' also corrects
      the size of the dataset and sets it to 1D). */
-  gal_blank_remove(out);
+  gal_blank_remove_realloc(out);
   return out;
 }
 

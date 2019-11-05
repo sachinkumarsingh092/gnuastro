@@ -612,6 +612,144 @@ ui_num_clumps(struct mkcatalogparams *p)
 
 
 
+/* To make the catalog processing more scalable (and later allow for
+   over-lappping regions), we will define a tile for each object. */
+static void
+ui_one_tile_per_object_correct_numobjects(struct mkcatalogparams *p)
+{
+  size_t ndim=p->objects->ndim;
+
+  uint8_t *rarray=NULL;
+  int32_t *l, *lf, *start;
+  gal_data_t *rowsremove=NULL;
+  size_t i, j, d, no, *min, *max, exists, width=2*ndim;
+  size_t *minmax=gal_pointer_allocate(GAL_TYPE_SIZE_T,
+                                      width*p->numobjects, 0, __func__,
+                                      "minmax");
+  size_t *coord=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
+                                      "coord");
+
+  /* Initialize the minimum and maximum position for each tile/object. So,
+     we'll initialize the minimum coordinates to the maximum possible
+     `size_t' value (in `GAL_BLANK_SIZE_T') and the maximums to zero. */
+  for(i=0;i<p->numobjects;++i)
+    for(d=0;d<ndim;++d)
+      {
+        minmax[ i * width +        d ] = GAL_BLANK_SIZE_T; /* Minimum. */
+        minmax[ i * width + ndim + d ] = 0;                /* Maximum. */
+      }
+
+  /* Go over the objects label image and correct the minimum and maximum
+     coordinates. */
+  start=p->objects->array;
+  lf=(l=p->objects->array)+p->objects->size;
+  do
+    if(*l>0)
+      {
+        /* Get the coordinates of this pixel. */
+        gal_dimension_index_to_coord(l-start, ndim, p->objects->dsize,
+                                     coord);
+
+        /* Check to see this coordinate is the smallest/largest found so
+           far for this label. Note that labels start from 1, while indexs
+           here start from zero. */
+        min = &minmax[ (*l-1) * width        ];
+        max = &minmax[ (*l-1) * width + ndim ];
+        for(d=0;d<ndim;++d)
+          {
+            if( coord[d] < min[d] ) min[d] = coord[d];
+            if( coord[d] > max[d] ) max[d] = coord[d];
+          }
+      }
+  while(++l<lf);
+
+  /* If a label doesn't exist in the image, then write over it and define
+     the unique labels to use for the next steps. To over-write, we have
+     two counters: `i' (for the position in the input array) and `no' (or
+     `num-objects' for the counter in the output table). In the end, `no'
+     counts the total number of unique labels in the input. */
+  no=0;
+  for(i=0;i<p->numobjects;++i)
+    {
+      /* Make sure a pixel with this label exists in all dimensions. */
+      exists=0;
+      for(d=0;d<ndim;++d)
+        if ( minmax[ i * width + d ] == GAL_BLANK_SIZE_T
+             && minmax[ i * width + ndim + d ] == 0 )
+          {
+            /* When the object doesn't exist, but the user wants a row
+               anyway, make all the minimums and maximums of all
+               coordinates 0, note that the maximum is already zero. */
+            if(p->inbetweenints)
+              minmax[ i * width + d ] = 0;
+          }
+        else
+          {
+            /* Write over the blank elements when necessary
+               (i!=j). When i==j, then these statements are
+               redundant. */
+            minmax[no*width+d]=minmax[i*width+d];
+            minmax[no*width+ndim+d]=minmax[i*width+ndim+d];
+
+            /* Set the checked flag. */
+            exists=1;
+          }
+
+      /* If it does (or if the user wants to keep all integers), then
+         increment the output counter.*/
+      if(p->inbetweenints || exists) ++no;
+      else
+        {
+          /* If `rarray' isn't defined yet, define it. */
+          if(rarray==NULL)
+            {
+              /* Note that by initializing with zeros, all (the possibly
+                 existing) previous rows that shouldn't be removed are
+                 flagged as zero in this array. */
+              rowsremove=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1,
+                                        &p->numobjects, NULL, 1,
+                                        p->cp.minmapsize, p->cp.quietmmap,
+                                        NULL, NULL, NULL);
+              rarray=rowsremove->array;
+            }
+          rarray[i]=1;
+        }
+    }
+
+  /* If `rarray!=NULL', then there are elements to remove and we need to
+     make some modifications/corrections. */
+  if(rarray)
+    {
+      /* Build an array to keep the real ID of each tile. */
+      j=0;
+      p->outlabs=gal_pointer_allocate(GAL_TYPE_INT32, no, 0, __func__,
+                                      "p->outlabs");
+      for(i=0;i<p->numobjects;++i) if(rarray[i]==0) p->outlabs[j++]=i+1;
+
+      /* Correct numobjects and clean up. */
+      p->numobjects=no;
+      gal_data_free(rowsremove);
+    }
+
+  /* For a check.
+  for(i=0;i<p->numobjects;++i)
+    printf("%zu: (%zu, %zu) --> (%zu, %zu)\n",
+           p->outlabs ? p->outlabs[i] : i+1, minmax[i*width],
+           minmax[i*width+1], minmax[i*width+2], minmax[i*width+3]);
+  */
+
+  /* Make the tiles. */
+  p->tiles=gal_tile_series_from_minmax(p->objects, minmax, p->numobjects);
+
+  /* Clean up. */
+  free(coord);
+  free(minmax);
+}
+
+
+
+
+
 /* The only mandatory input is the objects image, so first read that and
    make sure its type is correct. */
 static void
@@ -673,6 +811,11 @@ ui_read_labels(struct mkcatalogparams *p)
 
   /* Prepare WCS information for final table meta-data. */
   ui_wcs_info(p);
+
+
+  /* Make the tiles that cover each object and also correct the total
+     number of objects based on the parsing of the image. */
+  ui_one_tile_per_object_correct_numobjects(p);
 
 
   /* Read the clumps array if necessary. */
@@ -746,7 +889,6 @@ ui_read_labels(struct mkcatalogparams *p)
           p->clumps=NULL;
         }
     }
-
 
   /* Clean up. */
   keys[0].name=keys[1].name=NULL;
@@ -1347,109 +1489,6 @@ ui_preparations_outnames(struct mkcatalogparams *p)
 
 
 
-/* To make the catalog processing more scalable (and later allow for
-   over-lappping regions), we will define a tile for each object. */
-void
-ui_one_tile_per_object(struct mkcatalogparams *p)
-{
-  size_t ndim=p->objects->ndim;
-
-  uint8_t *rarray=NULL;
-  int32_t *l, *lf, *start;
-  size_t i, d, *min, *max, width=2*ndim;
-  size_t *minmax=gal_pointer_allocate(GAL_TYPE_SIZE_T,
-                                      width*p->numobjects, 0, __func__,
-                                      "minmax");
-  size_t *coord=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
-                                      "coord");
-
-
-  /* Initialize the minimum and maximum position for each tile/object. So,
-     we'll initialize the minimum coordinates to the maximum possible
-     `size_t' value (in `GAL_BLANK_SIZE_T') and the maximums to zero. */
-  for(i=0;i<p->numobjects;++i)
-    for(d=0;d<ndim;++d)
-      {
-        minmax[ i * width +        d ] = GAL_BLANK_SIZE_T; /* Minimum. */
-        minmax[ i * width + ndim + d ] = 0;                /* Maximum. */
-      }
-
-  /* Go over the objects label image and correct the minimum and maximum
-     coordinates. */
-  start=p->objects->array;
-  lf=(l=p->objects->array)+p->objects->size;
-  do
-    if(*l>0)
-      {
-        /* Get the coordinates of this pixel. */
-        gal_dimension_index_to_coord(l-start, ndim, p->objects->dsize,
-                                     coord);
-
-        /* Check to see this coordinate is the smallest/largest found so
-           far for this label. Note that labels start from 1, while indexs
-           here start from zero. */
-        min = &minmax[ (*l-1) * width        ];
-        max = &minmax[ (*l-1) * width + ndim ];
-        for(d=0;d<ndim;++d)
-          {
-            if( coord[d] < min[d] ) min[d] = coord[d];
-            if( coord[d] > max[d] ) max[d] = coord[d];
-          }
-      }
-  while(++l<lf);
-
-  /* If a label doesn't exist in the image, then set the minimum and
-     maximum values to zero. */
-  for(i=0;i<p->numobjects;++i)
-    for(d=0;d<ndim;++d)
-      {
-        if( minmax[ i * width + d ] == GAL_BLANK_SIZE_T
-            && minmax[ i * width + ndim + d ] == 0 )
-          {
-            /* Set the first and last pixel to 0. */
-            minmax[ i * width + d ] = minmax[ i * width + ndim + d ] = 0;
-
-            /* Flag this label as one that must be removed. The ones that
-               must be removed get a value of `1' in `p->rowsremove'. */
-            if(p->inbetweenints==0)
-              {
-                if(p->rowsremove)
-                  rarray[i]=1;
-                else
-                  {
-                    /* Note that by initializing with zeros, all (the
-                       possibly existing) previous rows that shouldn't be
-                       removed are flagged as zero in this array. */
-                    p->rowsremove=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1,
-                                                 &p->numobjects, NULL, 1,
-                                                 p->cp.minmapsize,
-                                                 p->cp.quietmmap,
-                                                 NULL, NULL, NULL);
-                    rarray=p->rowsremove->array;
-                    rarray[i]=1;
-                  }
-              }
-          }
-      }
-
-  /* For a check.
-  for(i=0;i<p->numobjects;++i)
-    printf("%zu: (%zu, %zu) --> (%zu, %zu)\n", i+1, minmax[i*width],
-           minmax[i*width+1], minmax[i*width+2], minmax[i*width+3]);
-  */
-
-  /* Make the tiles. */
-  p->tiles=gal_tile_series_from_minmax(p->objects, minmax, p->numobjects);
-
-  /* Clean up. */
-  free(coord);
-  free(minmax);
-}
-
-
-
-
-
 /* When a spectrum is requested, the slice information (slice number and
    slice WCS) is common to all different spectra. So instead of calculating
    it every time, we'll just make it once here, then copy it for every
@@ -1619,10 +1658,6 @@ ui_preparations(struct mkcatalogparams *p)
 
   /* Set the output filename(s). */
   ui_preparations_outnames(p);
-
-
-  /* Make the tiles that cover each object. */
-  ui_one_tile_per_object(p);
 
 
   /* If a spectrum is requested, generate the two WCS columns. */
@@ -1861,6 +1896,9 @@ ui_free_report(struct mkcatalogparams *p, struct timeval *t1)
   gal_data_free(p->upmask);
   gal_data_free(p->clumps);
   gal_data_free(p->objects);
+  if(p->outlabs) free(p->outlabs);
+  gal_list_data_free(p->clumpcols);
+  gal_list_data_free(p->objectcols);
   gal_list_data_free(p->specsliceinfo);
   if(p->upcheckout) free(p->upcheckout);
   gal_data_array_free(p->tiles, p->numobjects, 0);

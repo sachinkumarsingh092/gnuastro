@@ -206,6 +206,7 @@ struct mkcatalogparams
   gal_data_t          *upmask;  /* Upper limit magnitude mask.          */
   float                medstd;  /* Median standard deviation value.     */
   float               cpscorr;  /* Counts-per-second correction.        */
+  int32_t            *outlabs;  /* Labels in output catalog (when necessary) */
   size_t           numobjects;  /* Number of object labels in image.    */
   float               clumpsn;  /* Clump S/N threshold.                 */
   size_t            numclumps;  /* Number of clumps in image.           */
@@ -229,7 +230,6 @@ struct mkcatalogparams
   size_t         *numclumps_c;  /* To sort the clumps table by Obj.ID.  */
   gal_data_t   *specsliceinfo;  /* Slice information for spectra.       */
   gal_data_t         *spectra;  /* Array of datasets containing spectra.*/
-  gal_data_t      *rowsremove;  /* For rows/labels with no pixel.       */
 
   char        *usedvaluesfile;  /* Ptr to final name used for values.   */
   char        *usedclumpsfile;  /* Ptr to final name used for clumps.   */

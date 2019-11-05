@@ -19109,10 +19109,10 @@ If you want to re-check a dataset with the blank-value-check flag already
 set (for example if you have made changes to it), then explicitly set the
 @code{GAL_DATA_FLAG_BLANK_CH} bit to zero before calling this
 function. When there are no other flags, you can just set the flags to zero
-(@code{input->flags=0}), otherwise you can use this expression:
+(@code{input->flag=0}), otherwise you can use this expression:
 
 @example
-input->flags &= ~GAL_DATA_FLAG_BLANK_CH;
+input->flag &= ~GAL_DATA_FLAG_BLANK_CH;
 @end example
 @end deftypefun
 
@@ -19139,20 +19139,17 @@ same size as @code{input}.
 
 
 @deftypefun void gal_blank_remove (gal_data_t @code{*input})
-Remove blank elements from a dataset, convert it to a 1D dataset, adjust
-the size properly (the number of non-blank elements), and toggle the
-blank-value-related bit-flags. In practice this function doesn't
-@code{realloc} the input array, it just shifts the blank elements to the
-end and adjusts the size elements of the @code{gal_data_t}, see
-@ref{Generic data container}.
+Remove blank elements from a dataset, convert it to a 1D dataset, adjust the size properly (the number of non-blank elements), and toggle the blank-value-related bit-flags.
+In practice this function doesn't@code{realloc} the input array (see @code{gal_blank_remove_realloc} for shrinking/re-allocating also), it just shifts the blank elements to the end and adjusts the size elements of the @code{gal_data_t}, see @ref{Generic data container}.
 
-If all the elements were blank, then @code{input->size} will be zero. This
-is thus a good parameter to check after calling this function to see if
-there actually were any non-blank elements in the input or not and take the
-appropriate measure. This check is highly recommended because it will avoid
-strange bugs in later steps.
+If all the elements were blank, then @code{input->size} will be zero.
+This is thus a good parameter to check after calling this function to see if there actually were any non-blank elements in the input or not and take the appropriate measure.
+This check is highly recommended because it will avoid strange bugs in later steps.
 @end deftypefun
 
+@deftypefun void gal_blank_remove_realloc (gal_data_t @code{*input})
+Similar to @code{gal_blank_remove}, but also shrinks/re-allocates the dataset's allocated memory.
+@end deftypefun
 
 
 
@@ -23778,10 +23775,10 @@ If you want to re-check a dataset with the blank-value-check flag already
 set (for example if you have made changes to it), then explicitly set the
 @code{GAL_DATA_FLAG_SORT_CH} bit to zero before calling this function. When
 there are no other flags, you can simply set the flags to zero (with
-@code{input->flags=0}), otherwise you can use this expression:
+@code{input->flag=0}), otherwise you can use this expression:
 
 @example
-input->flags &= ~GAL_DATA_FLAG_SORT_CH;
+input->flag &= ~GAL_DATA_FLAG_SORT_CH;
 @end example
 @end deftypefun
 
@@ -23803,7 +23800,7 @@ allocate a new copy of the dataset and work on that. Therefore if
 @code{inplace==0}, the input dataset will be modified.
 
 This function uses the bit flags of the input, so if you have modified the
-dataset, set @code{input->flags=0} before calling this function. Also note
+dataset, set @code{input->flag=0} before calling this function. Also note
 that @code{inplace} is only for the dataset elements. Therefore even when
 @code{inplace==0}, if the input is already sorted @emph{and} has no blank
 values, then the flags will be updated to show this.
@@ -24368,8 +24365,8 @@ your software), to avoid an extra parsing of the dataset and improve
 performance, you can set the two bits manually (see the description of
 @code{flags} in @ref{Generic data container}):
 @example
-input->flags |=  GAL_DATA_FLAG_BLANK_CH; /* Set bit to 1. */
-input->flags &= ~GAL_DATA_FLAG_HASBLANK; /* Set bit to 0. */
+input->flag |=  GAL_DATA_FLAG_BLANK_CH; /* Set bit to 1. */
+input->flag &= ~GAL_DATA_FLAG_HASBLANK; /* Set bit to 0. */
 @end example
 @end deftypefun
 

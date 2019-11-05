@@ -713,3 +713,22 @@ gal_blank_remove(gal_data_t *input)
   input->flag |= GAL_DATA_FLAG_BLANK_CH;
   input->flag &= ~GAL_DATA_FLAG_HASBLANK;
 }
+
+
+
+
+
+/* Similar to `gal_blank_remove', but also reallocates/frees the extra
+   space. */
+void
+gal_blank_remove_realloc(gal_data_t *input)
+{
+  /* Remove the blanks and fix the size of the dataset. */
+  gal_blank_remove(input);
+
+  /* Run realloc to shrink the allocated space. */
+  input->array=realloc(input->array,
+                       input->size*gal_type_sizeof(input->type));
+  if(input->array==NULL)
+    error(EXIT_FAILURE, 0, "%s: couldn't reallocate memory", __func__);
+}

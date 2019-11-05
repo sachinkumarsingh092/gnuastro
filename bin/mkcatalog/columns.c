@@ -669,6 +669,7 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_width     = 10;
           disp_precision = 0;
           ciflag[ CCOL_MINX ] = 1;
+          oiflag[ OCOL_NUMALL ] = ciflag[ CCOL_NUMALL ] = 1;
           break;
 
         case UI_KEY_MAXX:
@@ -682,6 +683,7 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_width     = 10;
           disp_precision = 0;
           ciflag[ CCOL_MAXX ] = 1;
+          oiflag[ OCOL_NUMALL ] = ciflag[ CCOL_NUMALL ] = 1;
           break;
 
         case UI_KEY_MINY:
@@ -695,6 +697,7 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_width     = 10;
           disp_precision = 0;
           ciflag[ CCOL_MINY ] = 1;
+          oiflag[ OCOL_NUMALL ] = ciflag[ CCOL_NUMALL ] = 1;
           break;
 
         case UI_KEY_MAXY:
@@ -708,6 +711,7 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_width     = 10;
           disp_precision = 0;
           ciflag[ CCOL_MAXY ] = 1;
+          oiflag[ OCOL_NUMALL ] = ciflag[ CCOL_NUMALL ] = 1;
           break;
 
         case UI_KEY_MINZ:
@@ -721,6 +725,7 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_width     = 10;
           disp_precision = 0;
           ciflag[ CCOL_MINZ ] = 1;
+          oiflag[ OCOL_NUMALL ] = ciflag[ CCOL_NUMALL ] = 1;
           break;
 
         case UI_KEY_MAXZ:
@@ -734,6 +739,7 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_width     = 10;
           disp_precision = 0;
           ciflag[ CCOL_MAXZ ] = 1;
+          oiflag[ OCOL_NUMALL ] = ciflag[ CCOL_NUMALL ] = 1;
           break;
 
         case UI_KEY_W1:
@@ -1721,7 +1727,7 @@ columns_clump_brightness(double *ci)
 
 /* Measure the minimum and maximum positions. */
 static uint32_t
-columns_xy_extrema(struct mkcatalog_passparams *pp, size_t *coord, int key)
+columns_xy_extrema(struct mkcatalog_passparams *pp, double *oi, size_t *coord, int key)
 {
   size_t ndim=pp->tile->ndim;
   gal_data_t *tile=pp->tile, *block=tile->block;
@@ -1738,19 +1744,23 @@ columns_xy_extrema(struct mkcatalog_passparams *pp, size_t *coord, int key)
 
   /* Return the proper value: note that `coord' is in C standard: starting
      from the slowest dimension and counting from zero. */
-  switch(key)
-    {
-    case UI_KEY_MINX: return coord[ndim-1] + 1;                   break;
-    case UI_KEY_MAXX: return coord[ndim-1] + tile->dsize[ndim-1]; break;
-    case UI_KEY_MINY: return coord[ndim-2] + 1;                   break;
-    case UI_KEY_MAXY: return coord[ndim-2] + tile->dsize[ndim-2]; break;
-    case UI_KEY_MINZ: return coord[ndim-3] + 1;                   break;
-    case UI_KEY_MAXZ: return coord[ndim-3] + tile->dsize[ndim-3]; break;
-    default:
-      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
-            "problem. The value %d is not a recognized value", __func__,
-            PACKAGE_BUGREPORT, key);
-    }
+  if(oi[OCOL_NUMALL])
+    switch(key)
+      {
+      case UI_KEY_MINX: return coord[ndim-1] + 1;                   break;
+      case UI_KEY_MAXX: return coord[ndim-1] + tile->dsize[ndim-1]; break;
+      case UI_KEY_MINY: return coord[ndim-2] + 1;                   break;
+      case UI_KEY_MAXY: return coord[ndim-2] + tile->dsize[ndim-2]; break;
+      case UI_KEY_MINZ: return coord[ndim-3] + 1;                   break;
+      case UI_KEY_MAXZ: return coord[ndim-3] + tile->dsize[ndim-3]; break;
+      default:
+        error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+              "problem. The value %d is not a recognized value", __func__,
+              PACKAGE_BUGREPORT, key);
+      }
+  else
+    return 0;
+
 
   /* Control should not reach here. */
   error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s to fix the "
@@ -1819,9 +1829,17 @@ columns_fill(struct mkcatalog_passparams *pp)
   double *ci, *oi=pp->oi;
   size_t coord[3]={GAL_BLANK_SIZE_T, GAL_BLANK_SIZE_T, GAL_BLANK_SIZE_T};
 
-  size_t sr=pp->clumpstartindex, cind, coind;
-  size_t oind=pp->object-1; /* IDs start from 1, indexs from 0. */
+  size_t i, sr=pp->clumpstartindex, oind, cind, coind;
   double **vo=NULL, **vc=NULL, **go=NULL, **gc=NULL, **vcc=NULL, **gcc=NULL;
+
+  /* Find the object's index in final catalog. */
+  if(p->outlabs)
+    {
+      for(i=0;i<p->numobjects;++i)
+        if(p->outlabs[i]==pp->object)
+          { oind=i; break; }
+    }
+  else oind=pp->object-1;
 
   /* If a WCS column is requested (check will be done inside the function),
      then set the pointers. */
@@ -1936,7 +1954,7 @@ columns_fill(struct mkcatalog_passparams *pp)
         case UI_KEY_MAXY:
         case UI_KEY_MINZ:
         case UI_KEY_MAXZ:
-          ((uint32_t *)colarr)[oind]=columns_xy_extrema(pp, coord, key);
+          ((uint32_t *)colarr)[oind]=columns_xy_extrema(pp, oi, coord, key);
           break;
 
         case UI_KEY_W1:
