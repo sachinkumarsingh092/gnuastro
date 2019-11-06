@@ -1312,42 +1312,45 @@ ui_preparations_read_keywords(struct mkcatalogparams *p)
   float std, minstd;
   gal_data_t *keys=NULL;
 
-  /* When a Sky standard deviation dataset (not number) is given. */
-  if(p->std && p->std->size>1)
+  /* Set the counts-per-second correction. */
+  if(p->std)
     {
-      /* Read the keywords from the standard deviation image. */
-      keys=gal_data_array_calloc(2);
-      keys[0].next=&keys[1];
-      keys[0].name="MINSTD";              keys[1].name="MEDSTD";
-      keys[0].type=GAL_TYPE_FLOAT32;      keys[1].type=GAL_TYPE_FLOAT32;
-      keys[0].array=&minstd;              keys[1].array=&p->medstd;
-      gal_fits_key_read(p->usedstdfile, p->stdhdu, keys, 0, 0);
-
-      /* If the two keywords couldn't be read. We don't want to slow down
-         the user for the median (which needs sorting). So we'll just
-         calculate the minimum which is necessary for the `p->cpscorr'. */
-      if(keys[1].status) p->medstd=NAN;
-      if(keys[0].status)
+      if(p->std->size>1)
         {
-          /* Calculate the minimum STD. */
-          tmp=gal_statistics_minimum(p->std);
-          minstd=*((float *)(tmp->array));
-          gal_data_free(tmp);
+          /* Read the keywords from the standard deviation image. */
+          keys=gal_data_array_calloc(2);
+          keys[0].next=&keys[1];
+          keys[0].name="MINSTD";              keys[1].name="MEDSTD";
+          keys[0].type=GAL_TYPE_FLOAT32;      keys[1].type=GAL_TYPE_FLOAT32;
+          keys[0].array=&minstd;              keys[1].array=&p->medstd;
+          gal_fits_key_read(p->usedstdfile, p->stdhdu, keys, 0, 0);
 
-          /* If the units are in variance, then take the square root. */
-          if(p->variance) minstd=sqrt(minstd);
+          /* If the two keywords couldn't be read. We don't want to slow down
+             the user for the median (which needs sorting). So we'll just
+             calculate the minimum which is necessary for the `p->cpscorr'. */
+          if(keys[1].status) p->medstd=NAN;
+          if(keys[0].status)
+            {
+              /* Calculate the minimum STD. */
+              tmp=gal_statistics_minimum(p->std);
+              minstd=*((float *)(tmp->array));
+              gal_data_free(tmp);
+
+              /* If the units are in variance, then take the square root. */
+              if(p->variance) minstd=sqrt(minstd);
+            }
+          p->cpscorr = minstd>1 ? 1.0f : minstd;
+
+          /* Clean up. */
+          keys[0].name=keys[1].name=NULL;
+          keys[0].array=keys[1].array=NULL;
+          gal_data_array_free(keys, 2, 1);
         }
-      p->cpscorr = minstd>1 ? 1.0f : minstd;
-
-      /* Clean up. */
-      keys[0].name=keys[1].name=NULL;
-      keys[0].array=keys[1].array=NULL;
-      gal_data_array_free(keys, 2, 1);
-    }
-  else
-    {
-      std=((float *)(p->std->array))[0];
-      p->cpscorr=std>1 ? 1.0f : std;
+      else
+        {
+          std=((float *)(p->std->array))[0];
+          p->cpscorr=std>1 ? 1.0f : std;
+        }
     }
 }
 
