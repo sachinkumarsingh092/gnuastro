@@ -130,6 +130,7 @@ See the end of the file for license conditions.
   bug #57057: BuildProgram not using environment LDFLAGS or CPPFLAGS.
   bug #57101: Crop segmentation fault when no overlap exists in image-mode.
   bug #57164: MakeCatalog crashes when a label isn't in the dataset.
+  bug #57180: MakeCatalog reporting infinity S/N when --instd isn't an image.
 
 
 

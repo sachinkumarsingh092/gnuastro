@@ -1308,8 +1308,8 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
 static void
 ui_preparations_read_keywords(struct mkcatalogparams *p)
 {
-  float minstd;
   gal_data_t *tmp;
+  float std, minstd;
   gal_data_t *keys=NULL;
 
   /* When a Sky standard deviation dataset (not number) is given. */
@@ -1343,6 +1343,11 @@ ui_preparations_read_keywords(struct mkcatalogparams *p)
       keys[0].name=keys[1].name=NULL;
       keys[0].array=keys[1].array=NULL;
       gal_data_array_free(keys, 2, 1);
+    }
+  else
+    {
+      std=((float *)(p->std->array))[0];
+      p->cpscorr=std>1 ? 1.0f : std;
     }
 }
 
