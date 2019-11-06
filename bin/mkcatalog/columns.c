@@ -1829,7 +1829,7 @@ columns_fill(struct mkcatalog_passparams *pp)
   double *ci, *oi=pp->oi;
   size_t coord[3]={GAL_BLANK_SIZE_T, GAL_BLANK_SIZE_T, GAL_BLANK_SIZE_T};
 
-  size_t i, sr=pp->clumpstartindex, oind, cind, coind;
+  size_t i, cind, coind, sr=pp->clumpstartindex, oind=GAL_BLANK_SIZE_T;
   double **vo=NULL, **vc=NULL, **go=NULL, **gc=NULL, **vcc=NULL, **gcc=NULL;
 
   /* Find the object's index in final catalog. */
