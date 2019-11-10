@@ -1,6 +1,7 @@
 Alphabetically ordered list to acknowledge in the next release.
 
 Hamed Altafi
+Stefan Brüns
 Alexey Dokuchaev
 Raúl Infante Sainz
 Sebastián Luna Valero

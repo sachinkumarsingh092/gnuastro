@@ -148,13 +148,18 @@ gnuastro/config.h: Makefile $(internaldir)/config.h.in
 # Build Gnuastro's pkg-config file similar to `gnuastro/config.h'.
 gnuastro.pc: Makefile $(srcdir)/gnuastro.pc.in
 	rm -f $@ $@.tmp
-	$(SED)                                      \
-	-e 's|@prefix[@]|$(prefix)|g'               \
-	-e 's|@exec_prefix[@]|$(exec_prefix)|g'     \
-	-e 's|@libdir[@]|$(libdir)|g'               \
-	-e 's|@includedir[@]|$(includedir)|g'       \
-	-e 's|@LIBS[@]|$(LIBS)|g'                   \
-	-e 's|@VERSION[@]|$(VERSION)|g'             \
-	'$(srcdir)/$@.in' >> $@.tmp
+	ol=""; \
+	if [ x"$(HAVE_LIBJPEG)" = xyes ]; then ol="$$ol libjpeg"; fi; \
+	if [ x"$(HAVE_LIBLZMA)" = xyes ]; then ol="$$ol liblzma"; fi; \
+	if [ x"$(HAVE_LIBGIT2)" = xyes ]; then ol="$$ol libgit2"; fi; \
+	if [ x"$(HAVE_LIBTIFF)" = xyes ]; then ol="$$ol libtiff-4"; fi; \
+	$(SED) -e's|@prefix[@]|$(prefix)|g' \
+	       -e"s|@optional_libs[@]|$$ol|g" \
+	       -e's|@exec_prefix[@]|$(exec_prefix)|g' \
+	       -e's|@libdir[@]|$(libdir)|g' \
+	       -e's|@includedir[@]|$(includedir)|g' \
+	       -e's|@LIBS[@]|$(LIBS)|g' \
+	       -e's|@VERSION[@]|$(VERSION)|g' \
+	       '$(srcdir)/$@.in' >> $@.tmp
 	chmod a-w $@.tmp
 	mv $@.tmp $@
