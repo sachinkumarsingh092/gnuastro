@@ -449,10 +449,10 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
   mkcatalog_write_inputs_in_comments(p, &comments, 1, 1);
 
 
-  /* Write other supplimentary information. */
+  /* Write other supplementary information. */
   if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
     {
-      if( asprintf(&str, "--------- Supplimentary information ---------")<0 )
+      if( asprintf(&str, "--------- Supplementary information ---------")<0 )
         error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
     }
