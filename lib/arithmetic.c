@@ -618,8 +618,8 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
   /* The dimension and sizes of the out and condition data sets must be the
      same. */
   if( gal_dimension_is_different(out, cond) )
-    error(EXIT_FAILURE, 0, "%s: the output and condition data sets of the "
-          "must be the same size", __func__);
+    error(EXIT_FAILURE, 0, "%s: the output and condition datasets "
+          "must have the same size", __func__);
 
   /* See if the condition array has blank values. */
   chb=gal_blank_present(cond, 0);
