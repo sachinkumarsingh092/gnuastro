@@ -1245,7 +1245,7 @@ struct argp_option program_options[] =
       UI_KEY_AREAXY,
       0,
       0,
-      "Projected area in first two dimentions.",
+      "Projected area in first two dimensions.",
       UI_GROUP_COLUMNS_MORPHOLOGY,
       0,
       GAL_TYPE_INVALID,
