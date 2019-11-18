@@ -482,7 +482,6 @@ Sky value
 
 NoiseChisel
 
-* NoiseChisel changes after publication::  NoiseChisel updates after paper's publication.
 * Invoking astnoisechisel::     Options and arguments for NoiseChisel.
 
 Invoking NoiseChisel
@@ -493,7 +492,6 @@ Invoking NoiseChisel
 
 Segment
 
-* Segment changes after publication::  Segment updates after paper's publication.
 * Invoking astsegment::         Inputs, outputs and options to Segment
 
 Invoking Segment
@@ -2717,8 +2715,7 @@ $ astnoisechisel --help | grep check
 @end example
 
 Let's check the overall detection process to get a better feeling of what NoiseChisel is doing with the following command.
-To learn the details of NoiseChisel in more detail, please see @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
-Also see @ref{NoiseChisel changes after publication}.
+To learn the details of NoiseChisel in more detail, please see @ref{NoiseChisel}, @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} and @url{https://arxiv.org/abs/1909.11230, Akhlaghi [2019]}.
 
 @example
 $ astnoisechisel flat-ir/xdf-f160w.fits --checkdetection
@@ -13067,7 +13064,9 @@ Once instrumental signatures are removed from the raw data (image) in the initia
 You are naturally eager to start answering the scientific questions that motivated the data collection in the first place.
 However, the raw dataset/image is just an array of values/pixels, that is all! These raw values cannot directly be used to answer your scientific questions: for example ``how many galaxies are there in the image?''.
 
-The first high-level step in your analysis of your targets will thus be to classify, or label, the dataset elements (pixels) into two classes: 1) noise, where random effects are the major contributor to the value, and 2) signal, where non-random factors (for example light from a distant galaxy) are present.
+The first high-level step in the analysis of your dataset will thus be to classify, or label, the dataset elements (pixels) into two classes:
+1) Noise, where random effects are the major contributor to the value, and
+2) Signal, where non-random factors (for example light from a distant galaxy) are present.
 This classification of the elements in a dataset is formally known as @emph{detection}.
 
 In an observational/experimental dataset, signal is always buried in noise: only mock/simulated datasets are free of noise.
@@ -13078,7 +13077,7 @@ Therefore when noise is significant, proper detection of your targets is a uniqu
 
 @cindex Erosion
 NoiseChisel is Gnuastro's program for detection of targets that don't have a sharp border (almost all astronomical objects).
-When the targets have a sharp edges/border (for example cells in biological imaging), a simple threshold is enough to separate them from noise and each other (if they are not touching).
+When the targets have sharp edges/borders (for example cells in biological imaging), a simple threshold is enough to separate them from noise and each other (if they are not touching).
 To detect such sharp-edged targets, you can use Gnuastro's Arithmetic program in a command like below (assuming the threshold is @code{100}, see @ref{Arithmetic}):
 
 @example
@@ -13087,20 +13086,23 @@ $ astarithmetic in.fits 100 gt 2 connected-components
 
 Since almost no astronomical target has such sharp edges, we need a more advanced detection methodology.
 NoiseChisel uses a new noise-based paradigm for detection of very extended and diffuse targets that are drowned deeply in the ocean of noise.
-It was initially introduced in @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
+It was initially introduced in @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} and improvements after the first four were published in @url{https://arxiv.org/abs/1909.11230, Akhlaghi [2019]}.
+Please take the time to go through these papers to most effectively use NoiseChisel.
+
 The name of NoiseChisel is derived from the first thing it does after thresholding the dataset: to erode it.
 In mathematical morphology, erosion on pixels can be pictured as carving-off boundary pixels.
 Hence, what NoiseChisel does is similar to what a wood chisel or stone chisel do.
 It is just not a hardware, but a software.
 In fact, looking at it as a chisel and your dataset as a solid cube of rock will greatly help in effectively understanding and optimally using it: with NoiseChisel you literally carve your targets out of the noise.
-Try running it with the @option{--checkdetection} option to see each step of the carving process on your input dataset.
+Try running it with the @option{--checkdetection} option, and open the temporary output as a multi-extension cube, to see each step of the carving process on your input dataset (see @ref{Viewing multiextension FITS images}).
 
 @cindex Segmentation
-NoiseChisel's primary output is a binary detection map with the same size as the input but only with two values: 0 and 1.
+NoiseChisel's primary output is a binary detection map with the same size as the input but its pixels only have two values: 0 (background) and 1 (foreground).
 Pixels that don't harbor any detected signal (noise) are given a label (or value) of zero and those with a value of 1 have been identified as hosting signal.
 
 Segmentation is the process of classifying the signal into higher-level constructs.
-For example if you have two separate galaxies in one image, by default NoiseChisel will give a value of 1 to the pixels of both, but after segmentation, the pixels in each will get separate labels.
+For example if you have two separate galaxies in one image, NoiseChisel will give a value of 1 to the pixels of both (each forming an ``island'' of touching foreground pixels).
+After segmentation, the connected foreground pixels will get separate labels, enabling you to study them individually.
 NoiseChisel is only focused on detection (separating signal from noise), to @emph{segment} the signal (into separate galaxies for example), Gnuastro has a separate specialized program @ref{Segment}.
 NoiseChisel's output can be directly/readily fed into Segment.
 
@@ -13114,142 +13116,44 @@ In this case, the output won't be a binary image any more, the signal will have 
 You can then directly feed NoiseChisel's output into MakeCatalog for measurements over the detections and the production of a catalog (see @ref{MakeCatalog}).
 
 Thanks to the published papers mentioned above, there is no need to provide a more complete introduction to NoiseChisel in this book.
-However, published papers cannot be updated any more, but the software has evolved/changed.
-The changes since publication are documented in @ref{NoiseChisel changes after publication}.
-Afterwards, in @ref{Invoking astnoisechisel}, the details of running NoiseChisel and its options are discussed.
+@c However, published papers cannot be updated any more, but the software has evolved/changed.
+@c The changes since publication are documented in @ref{NoiseChisel changes after publication}.
+In @ref{Invoking astnoisechisel}, the details of running NoiseChisel and its options are discussed.
 
 As discussed above, detection is one of the most important steps for your scientific result.
 It is therefore very important to obtain a good understanding of NoiseChisel (and afterwards @ref{Segment} and @ref{MakeCatalog}).
-We thus strongly recommend that after reading the papers above and the respective sections of Gnuastro's book, you play a little with the settings (in the order presented in the paper and @ref{Invoking astnoisechisel}) on a dataset you are familiar with and inspect all the check images (options starting with @option{--check}) to see the effect of each parameter.
-
-We strongly recommend going over the two tutorials of @ref{General program usage tutorial} and @ref{Detecting large extended targets}.
+We strongly recommend reviewing two tutorials of @ref{General program usage tutorial} and @ref{Detecting large extended targets}.
 They are designed to show how to most effectively use NoiseChisel for the detection of small faint objects and large extended objects.
-In the meantime, they will show you the modular principle behind Gnuastro's programs and how they are built to complement, and build upon, each other.
+In the meantime, they also show the modular principle behind Gnuastro's programs and how they are built to complement, and build upon, each other.
+
 @ref{General program usage tutorial} culminates in using NoiseChisel to detect galaxies and use its outputs to find the galaxy colors.
 Defining colors is a very common process in most science-cases.
 Therefore it is also recommended to (patiently) complete that tutorial for optimal usage of NoiseChisel in conjunction with all the other Gnuastro programs.
 @ref{Detecting large extended targets} shows you can optimize NoiseChisel's settings for very extended objects to successfully carve out to signal-to-noise ratio levels of below 1/10.
+After going through those tutorials, play a little with the settings (in the order presented in the paper and @ref{Invoking astnoisechisel}) on a dataset you are familiar with and inspect all the check images (options starting with @option{--check}) to see the effect of each parameter.
 
-In @ref{NoiseChisel changes after publication}, we'll review the changes in NoiseChisel since the publication of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
-We will then review NoiseChisel's input, detection, and output options in @ref{NoiseChisel input}, @ref{Detection options}, and @ref{NoiseChisel output}.
+Below, in @ref{Invoking astnoisechisel}, we will review NoiseChisel's input, detection, and output options in @ref{NoiseChisel input}, @ref{Detection options}, and @ref{NoiseChisel output}.
+If you have used NoiseChisel within your research, please run it with @option{--cite} to list the papers you should cite and how to acknowledge its funding sources.
 
 @menu
-* NoiseChisel changes after publication::  NoiseChisel updates after paper's publication.
 * Invoking astnoisechisel::     Options and arguments for NoiseChisel.
 @end menu
 
-@node NoiseChisel changes after publication, Invoking astnoisechisel, NoiseChisel, NoiseChisel
-@subsection NoiseChisel changes after publication
+@c @node NoiseChisel changes after publication, Invoking astnoisechisel, NoiseChisel, NoiseChisel
+@c @subsection NoiseChisel changes after publication
 
-NoiseChisel was initially introduced in @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
-It is thus strongly recommended to read this paper for a good understanding of what it does and how each parameter influences the output.
-To help in understanding how it works, that paper has a large number of figures showing every step on multiple mock and real examples.
+@c NoiseChisel was initially introduced in @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} and updates after the first four years were published in @url{https://arxiv.org/abs/1909.11230, Akhlaghi [2019]}.
+@c It is thus strongly recommended to read this paper for a good understanding of what it does and how each parameter influences the output.
+@c To help in understanding how it works, those papers have many figures showing every step on multiple mock and real examples.
 
-However, the paper cannot be updated anymore, but NoiseChisel has evolved (and will continue to do so): better algorithms or steps have been found, thus options will be added or removed.
-This book is thus the final and definitive guide to NoiseChisel.
-The aim of this section is to make the transition from the paper to the installed version on your system, as smooth as possible with the list below.
-For a more detailed list of changes in previous Gnuastro releases/versions, please see the @file{NEWS} file@footnote{The @file{NEWS} file is present in the released Gnuastro tarball, see @ref{Release tarball}.}.
-
-The most important change since the publication of that paper is that from Gnuastro 0.6, NoiseChisel is only in charge on detection.
-Segmentation of the detected signal was spun-off into a separate program: @ref{Segment}.
-This spin-off allows much greater creativity and is in the spirit of Gnuastro's modular design (see @ref{Program design philosophy}).
-Below you can see the major changes since that paper was published.
-First, the removed options/features are discussed, then we review the new features that have been added.
-
-@noindent
-Removed features/options:
-@itemize
-
-@item
-@option{--skysubtracted}: This option was used to account for the extra noise that is added if the Sky value has already been subtracted.
-However, NoiseChisel estimates the Sky standard deviation based on the input data, not exposure maps or other theoretical considerations.
-Therefore the standard deviation of the undetected pixels also contains the errors due to any previous sky subtraction.
-This option is therefore no longer present in NoiseChisel.
-
-@option{--dilate}: In the paper, true detections were dilated for a final dig into the noise.
-However, the simple 8-connected dilation produced boxy results which were not realistic and could miss diffuse flux.
-The final dig into the noise is now done by ``grow''ing the true detections, similar to how true clumps were grown, see the description of @option{--detgrowquant} below and in @ref{Detection options} for more on the new alternative.
-
-@item
-Segmentation has been completely moved to a new program: @ref{Segment}.
-@end itemize
-
-@noindent
-Added features/options:
-@itemize
-
-@item
-The quantile difference to identify tiles with no significant signal is measured between the @emph{mean} and median.
-In the published paper, it was between the @emph{mode} and median.
-The quantile of the mean is more sensitive to skewness (the presence of signal), so it is preferable to the quantile of the mode.
-For more see @ref{Quantifying signal in a tile}.
-
-@item
-@option{--widekernel}: NoiseChisel uses the difference between the mean and median to identify if a tile should be used for estimating the quantile thresholds (see @ref{Quantifying signal in a tile}).
-Until now, NoiseChisel would convolve an image once and estimate the proper tiles for quantile estimations on the convolved image.
-The same convolved image would later be used for quantile estimation.
-A larger kernel does increase the skewness (and thus difference between the mean and median, therefore helps in detecting the presence signal), however, it disfigures the shapes/morphology of the objects.
-
-This new @option{--widekernel} option (and a corresponding @option{--wkhdu} option to specify its HDU) is added to solve such cases.
-When its given, the input will be convolved with both the sharp (given through the @option{--kernel} option) and wide kernels.
-The mean and median are calculated on the dataset that is convolved with the wider kernel, then the quantiles are estimated on the image convolved with the sharper kernel.
-
-@item
-Outlier rejection in quantile thresholds: When there are large galaxies or bright stars in the image, their gradient may be on a smaller scale than the selected tile size.
-In such cases, those tiles will be identified as tiles with no signal and thus preserved.
-An outlier identification algorithm has been added to NoiseChisel and can be configured with the following options: @option{--outliersigma} and @option{--outliersclip}.
-For a more complete description, see the latter half of @ref{Quantifying signal in a tile}.
-
-@item
-@option{--blankasforeground}: allows blank pixels to be treated as foreground in NoiseChisel's binary operations: the initial erosion (@option{--erode}) and opening (@option{--open}) as well as the filling holes and opening step for defining pseudo-detections (@option{--dthresh}).
-In the published paper, blank pixels were treated as foreground by default.
-To avoid too many false positive near blank/masked regions, blank pixels are now considered to be in the background.
-This option will create the old behavior.
-
-@item
-@option{--skyfracnoblank}: To reduce the bias caused by undetected wings of galaxies and stars in the Sky measurements, NoiseChisel only uses tiles that have a sufficiently large fraction of undetected pixels.
-Until now the reference for this fraction was the whole tile size.
-With this option, it is now possible to ask for ignoring blank pixels when calculating the fraction.
-This is useful when blank/masked pixels are distributed across the image.
-For more, see the description of this option in @ref{Detection options}.
-
-@item
-@option{--dopening}: Number of openings after applying @option{--dthresh}.
-For more, see the description of this option in @ref{Detection options}.
-
-@item
-@option{--dopeningngb}: The connectivity/neighbors used in the opening of @option{--dopening}.
-
-@item
-@option{--holengb}: The connectivity (defined by the number of neighbors) to fill holes after applying @option{--dthresh} (above) to find pseudo-detections.
-For more, see the description of this option in @ref{Detection options}.
-
-@item
-@option{--pseudoconcomp}: The connectivity (defined by the number of neighbors) to find individual pseudo-detections.
-For more, see the description of this option in @ref{Detection options}.
-
-@item
-@option{--snthresh}: Manually set the S/N of true pseudo-detections and thus avoid the need to automatically identify this value.
-For more, see the description of this option in @ref{Detection options}.
-
-@item
-@option{--detgrowquant}: is used to grow the final true detections until a given quantile in the same way that clumps are grown during segmentation (compare columns 2 and 3 in Figure 10 of the paper).
-It replaces the old @option{--dilate} option in the paper and older versions of Gnuastro.
-Dilation is a blind growth method which causes objects to be boxy or diamond shaped when too many layers are added.
-However, with the growth method that is defined now, we can follow the signal into the noise with any shape.
-The appropriate quantile depends on your dataset's correlated noise properties and how cleanly it was Sky subtracted.
-The new @option{--detgrowmaxholesize} can also be used to specify the maximum hole size to fill as part of this growth, see the description in @ref{Detection options} for more details.
-
-This new growth process can be much more successful in detecting diffuse flux around true detections compared to dilation and give more realistic results, but it can also increase the NoiseChisel run time (depending on the given value and input size).
-
-@item
-@option{--cleangrowndet}: Further clean/remove false detections after
-growth, see the descriptions under this option in @ref{Detection options}.
-
-@end itemize
+@c However, the papers cannot be updated anymore, but NoiseChisel has evolved (and will continue to do so): better algorithms or steps have been found, thus options will be added or removed.
+@c This book is thus the final and definitive guide to NoiseChisel.
+@c The aim of this section is to make the transition from the paper to the installed version on your system, as smooth as possible with the list below.
+@c For a more detailed list of changes in previous Gnuastro releases/versions, please see the @file{NEWS} file@footnote{The @file{NEWS} file is present in the released Gnuastro tarball, see @ref{Release tarball}.}.
 
 
-@node Invoking astnoisechisel,  , NoiseChisel changes after publication, NoiseChisel
+
+@node Invoking astnoisechisel,  , NoiseChisel, NoiseChisel
 @subsection Invoking NoiseChisel
 
 NoiseChisel will detect signal in noise producing a multi-extension dataset containing a binary detection map which is the same size as the input.
@@ -13823,7 +13727,7 @@ Once signal is separated from noise (for example with @ref{NoiseChisel}), you ha
 Signal (for example every galaxy in your image) has been ``detected'', but all detections have a label of 1.
 Therefore while we know which pixels contain signal, we still can't find out how many galaxies they contain or which detected pixels correspond to which galaxy.
 At the lowest (most generic) level, detection is a kind of segmentation (segmenting the whole dataset into signal and noise, see @ref{NoiseChisel}).
-Here, we'll define segmentation only on signal: to separate and find sub-structure within the detections.
+Here, we'll define segmentation only on signal: to separate sub-structure within the detections.
 
 @cindex Connected component labeling
 If the targets are clearly separated, or their detected regions aren't touching, a simple connected components@footnote{@url{https://en.wikipedia.org/wiki/Connected-component_labeling}} algorithm (very basic segmentation) is enough to separate the regions that are touching/connected.
@@ -13853,7 +13757,7 @@ It is therefore necessary to do a more sophisticated segmentation and break up t
 
 Segment will use a detection map and its corresponding dataset to find sub-structure over the detected areas and use them for its segmentation.
 Until Gnuastro version 0.6 (released in 2018), Segment was part of @ref{NoiseChisel}.
-Therefore, similar to NoiseChisel, the best place to start reading about Segment and understanding what it does (with many illustrative figures) is Section 3.2 of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
+Therefore, similar to NoiseChisel, the best place to start reading about Segment and understanding what it does (with many illustrative figures) is Section 3.2 of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}, and continue with @url{https://arxiv.org/abs/1909.11230, Akhlaghi [2019]}.
 
 @cindex river
 @cindex Watershed algorithm
@@ -13864,83 +13768,37 @@ Using the undetected regions can be disabled by directly giving a signal-to-nois
 
 The true clumps are then grown to a certain threshold over the detections.
 Based on the strength of the connections (rivers/watersheds) between the grown clumps, they are considered parts of one @emph{object} or as separate @emph{object}s.
-See Section 3.2 of Akhlaghi and Ichikawa [2015] (link above) for more.
+See Section 3.2 of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} for more.
 Segment's main output are thus two labeled datasets: 1) clumps, and 2) objects.
 See @ref{Segment output} for more.
 
-To start learning about Segment, especially in relation to detection (@ref{NoiseChisel}) and measurement (@ref{MakeCatalog}), the recommended references are @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} and @url{https://arxiv.org/abs/1611.06387, Akhlaghi [2016]}.
+To start learning about Segment, especially in relation to detection (@ref{NoiseChisel}) and measurement (@ref{MakeCatalog}), the recommended references are @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}, @url{https://arxiv.org/abs/1611.06387, Akhlaghi [2016]} and @url{https://arxiv.org/abs/1909.11230, Akhlaghi [2019]}.
+If you have used Segment within your research, please run it with @option{--cite} to list the papers you should cite and how to acknowledge its funding sources.
 
 Those papers cannot be updated any more but the software will evolve.
 For example Segment became a separate program (from NoiseChisel) in 2018 (after those papers were published).
 Therefore this book is the definitive reference.
-To help in the transition from those papers to the software you are using, see @ref{Segment changes after publication}.
+@c To help in the transition from those papers to the software you are using, see @ref{Segment changes after publication}.
 Finally, in @ref{Invoking astsegment}, we'll discuss Segment's inputs, outputs and configuration options.
 
 
 @menu
-* Segment changes after publication::  Segment updates after paper's publication.
 * Invoking astsegment::         Inputs, outputs and options to Segment
 @end menu
 
-@node Segment changes after publication, Invoking astsegment, Segment, Segment
-@subsection Segment changes after publication
+@c @node Segment changes after publication, Invoking astsegment, Segment, Segment
+@c @subsection Segment changes after publication
 
-Segment's main algorithm and working strategy were initially defined and introduced in Section 3.2 of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
-Prior to Gnuastro version 0.6 (released 2018), one program (NoiseChisel) was in charge of detection @emph{and} segmentation.
-To increase creativity and modularity, NoiseChisel's segmentation features were spun-off into a separate program (Segment).
-It is strongly recommended to read that paper for a good understanding of what Segment does, how it relates to detection, and how each parameter influences the output.
-That paper has a large number of figures showing every step on multiple mock and real examples.
+@c Segment's main algorithm and working strategy were initially defined and introduced in Section 3.2 of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} and @url{https://arxiv.org/abs/1909.11230, Akhlaghi [2019]}.
+@c It is strongly recommended to read those papers for a good understanding of what Segment does, how it relates to detection, and how each parameter influences the output.
+@c They have many figures showing every step on multiple mock and real examples.
 
-However, the paper cannot be updated anymore, but Segment has evolved (and will continue to do so): better algorithms or steps have been (and will be) found.
-This book is thus the final and definitive guide to Segment.
-The aim of this section is to make the transition from the paper to your installed version, as smooth as possible through the list below.
-For a more detailed list of changes in previous Gnuastro releases/versions, please follow the @file{NEWS} file@footnote{The @file{NEWS} file is present in the released Gnuastro tarball, see @ref{Release tarball}.}.
+@c However, the papers cannot be updated anymore, but Segment has evolved (and will continue to do so): better algorithms or steps have been (and will be) found.
+@c This book is thus the final and definitive guide to Segment.
+@c The aim of this section is to make the transition from the paper to your installed version, as smooth as possible through the list below.
+@c For a more detailed list of changes in previous Gnuastro releases/versions, please follow the @file{NEWS} file@footnote{The @file{NEWS} file is present in the released Gnuastro tarball, see @ref{Release tarball}.}.
 
-@itemize
-
-@item
-Since the spin-off from NoiseChisel, the default kernel to smooth the input for convolution has a FWHM of 1.5 pixels (still a Gaussian).
-This is slightly less than NoiseChisel's default kernel (which has a FWHM of 2 pixels).
-This enables the better detection of sharp clumps: as the kernel gets wider, the lower signal-to-noise (but sharp/small) clumps will be washed away into the noise.
-You can use MakeProfiles to build your own kernel if this is too sharp/wide for your purpose.
-For more, see the @option{--kernel} option in @ref{Segment input}.
-
-The ability to use a different convolution kernel for detection and segmentation is one example of how separating detection from segmentation into separate programs can increase creativity.
-In detection, you want to detect the diffuse and extended emission, but in segmentation, you want to detect sharp peaks.
-
-@item
-The criteria to select true from false clumps is the peak significance.
-It is defined to be the difference between the clump's peak value (@mymath{C_c}) and the highest valued river pixel around that clump (@mymath{R_c}).
-Both are calculated on the convolved image (signified by the @mymath{c} subscript).
-To avoid absolute values (differing from dataset to dataset), @mymath{C_c-R_c} is then divided by the Sky standard deviation under the river pixel used (@mymath{\sigma_r}) as shown below:
-
-@dispmath{C_c-R_c\over \sigma_r}
-
-When @option{--minima} is given, the nominator becomes @mymath{R_c-C_c}.
-
-The input Sky standard deviation dataset (@option{--std}) is assumed to be for the unconvolved image.
-Therefore a constant factor (related to the convolution kernel) is necessary to convert this into an absolute peak significance@footnote{To get an estimate of the standard deviation correction factor between the input and convolved images, you can take the following steps:
-1) Mask (set to NaN) all detections on the convolved image with the @code{where} operator or @ref{Arithmetic}.
-2) Calculate the standard deviation of the undetected (non-masked) pixels of the convolved image with the @option{--sky} option of @ref{Statistics} (which also calculates the Sky standard deviation).
-Just make sure the tessellation settings of Statistics and NoiseChisel are the same (you can check with the @option{-P} option).
-3) Divide the two standard deviation datasets to get the correction factor.}.
-As far as Segment is concerned, the absolute value of this correction factor is irrelevant: because it uses the ambient noise (undetected regions) to find the numerical threshold of this fraction and applies that over the detected regions.
-
-A distribution's extremum (maximum or minimum) values, used in the new criteria, are strongly affected by scatter.
-On the other hand, the convolved image has much less scatter@footnote{For more on the effect of convolution on a distribution, see Section 3.1.1 of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.}.
-Therefore @mymath{C_c-R_c} is a more reliable (with less scatter) measure to identify signal than @mymath{C-R} (on the unconvolved image).
-
-Initially, the total clump signal-to-noise ratio of each clump was used, see Section 3.2.1 of @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
-Therefore its completeness decreased dramatically when clumps were present on gradients.
-In tests, this measure proved to be more successful in detecting clumps on gradients and on flatter regions simultaneously.
-
-@item
-With the new @option{--minima} option, it is now possible to detect inverse clumps (for example absorption features).
-In such cases, the clump should be built from its smallest value.
-@end itemize
-
-
-@node Invoking astsegment,  , Segment changes after publication, Segment
+@node Invoking astsegment,  , Segment, Segment
 @subsection Invoking Segment
 
 Segment will identify substructure within the detected regions of an input image.
@@ -24420,77 +24278,46 @@ labels of each measurement in @code{sig} will be written in
 @code{sigind->array}. If @code{keepsmall} zero, small clumps (where no
 measurement is made) will not be included in the output table.
 
-This function is initially intended for a multi-threaded environment. In
-such cases, you will be writing arrays of clump measures from different
-regions in parallel into an array of @code{gal_data_t}s. You can simply
-allocate (and initialize), such an array with the
-@code{gal_data_array_calloc} function in @ref{Arrays of datasets}. For
-example if the @code{gal_data_t} array is called @code{array}, you can pass
-@code{&array[i]} as @code{sig}.
+This function is initially intended for a multi-threaded environment.
+In such cases, you will be writing arrays of clump measures from different regions in parallel into an array of @code{gal_data_t}s.
+You can simply allocate (and initialize), such an array with the @code{gal_data_array_calloc} function in @ref{Arrays of datasets}.
+For example if the @code{gal_data_t} array is called @code{array}, you can pass @code{&array[i]} as @code{sig}.
 
-Along with some other functions in @code{label.h}, this function was
-initially written for @ref{Segment}. The description of the parameter used
-to measure a clump's significance is fully given in @ref{Segment changes
-after publication}.
+Along with some other functions in @code{label.h}, this function was initially written for @ref{Segment}.
+The description of the parameter used to measure a clump's significance is fully given in @url{https://arxiv.org/abs/1909.11230, Akhlaghi [2019]}.
 
 @end deftypefun
 
 @deftypefun void gal_label_grow_indexs (gal_data_t @code{*labels}, gal_data_t @code{*indexs}, int @code{withrivers}, int @code{connectivity})
-Grow the (positive) labels of @code{labels} over the pixels in
-@code{indexs} (see description of @code{gal_label_indexs}). The pixels
-(position in @code{indexs}, values in @code{labels}) that must be ``grown''
-must have a value of @code{GAL_LABEL_INIT} in @code{labels} before calling
-this function. For a demonstration see Columns 2 and 3 of Figure 10 in
-@url{http://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
+Grow the (positive) labels of @code{labels} over the pixels in @code{indexs} (see description of @code{gal_label_indexs}).
+The pixels (position in @code{indexs}, values in @code{labels}) that must be ``grown'' must have a value of @code{GAL_LABEL_INIT} in @code{labels} before calling this function.
+For a demonstration see Columns 2 and 3 of Figure 10 in @url{http://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]}.
 
-In many aspects, this function is very similar to over-segmentation
-(watershed algorithm, @code{gal_label_watershed}). The big difference is
-that in over-segmentation local maximums (that aren't touching any already
-labeled pixel) get a separate label. However, here the final number of
-labels will not change. All pixels that aren't directly touching a labeled
-pixel just get pushed back to the start of the loop, and the loop iterates
-until its size doesn't change any more. This is because in a generic
-scenario some of the indexed pixels might not be reachable through other
-indexed pixels.
+In many aspects, this function is very similar to over-segmentation (watershed algorithm, @code{gal_label_watershed}).
+The big difference is that in over-segmentation local maximums (that aren't touching any alreadylabeled pixel) get a separate label.
+However, here the final number of labels will not change.
+All pixels that aren't directly touching a labeled pixel just get pushed back to the start of the loop, and the loop iterates until its size doesn't change any more.
+This is because in a generic scenario some of the indexed pixels might not be reachable through other indexed pixels.
 
-The next major difference with over-segmentation is that when there is only
-one label in growth region(s), it is not mandatory for @code{indexs} to be
-sorted by values. If there are multiple labeled regions in growth
-region(s), then values are important and you can use @code{qsort} with
-@code{gal_qsort_index_single_d} to sort the indexs by values in a separate
-array (see @ref{Qsort functions}).
+The next major difference with over-segmentation is that when there is only one label in growth region(s), it is not mandatory for @code{indexs} to be sorted by values.
+If there are multiple labeled regions in growth region(s), then values are important and you can use @code{qsort} with @code{gal_qsort_index_single_d} to sort the indexs by values in a separate array (see @ref{Qsort functions}).
 
-This function looks for positive-valued neighbors of each pixel in
-@code{indexs} and will label a pixel if it touches one. Therefore, it is
-very important that only pixels/labels that are intended for growth have
-positive values in @code{labels} before calling this function. Any
-non-positive (zero or negative) value will be ignored as a label by this
-function. Thus, it is recommended that while filling in the `indexs' array
-values, you initialize all the pixels that are in @code{indexs} with
-@code{GAL_LABEL_INIT}, and set non-labeled pixels that you don't want to
-grow to @code{0}.
+This function looks for positive-valued neighbors of each pixel in @code{indexs} and will label a pixel if it touches one.
+Therefore, it is very important that only pixels/labels that are intended for growth have positive values in @code{labels} before calling this function.
+Any non-positive (zero or negative) value will be ignored as a label by this function.
+Thus, it is recommended that while filling in the `indexs' array values, you initialize all the pixels that are in @code{indexs} with @code{GAL_LABEL_INIT}, and set non-labeled pixels that you don't want to grow to @code{0}.
 
-This function will write into both the input datasets. After this function,
-some of the non-positive @code{labels} pixels will have a new positive
-label and the number of useful elements in @code{indexs} will have
-decreased. The index of those pixels that couldn't be labeled will remain
-inside @code{indexs}. If @code{withrivers} is non-zero, then pixels that
-are immediately touching more than one positive value will be given a
-@code{GAL_LABEL_RIVER} label.
+This function will write into both the input datasets.
+After this function, some of the non-positive @code{labels} pixels will have a new positivelabel and the number of useful elements in @code{indexs} will have decreased.
+The index of those pixels that couldn't be labeled will remain inside @code{indexs}.
+If @code{withrivers} is non-zero, then pixels that are immediately touching more than one positive value will be given a @code{GAL_LABEL_RIVER} label.
 
 @cindex GNU C library
-Note that the @code{indexs->array} is not re-allocated to its new size at
-the end@footnote{Note that according to the GNU C Library, even a
-@code{realloc} to a smaller size can also cause a re-write of the whole
-array, which is not a cheap operation.}. But since @code{indexs->dsize[0]}
-and @code{indexs->size} have new values after this function is returned,
-the extra elements just won't be used until they are ultimately freed by
-@code{gal_data_free}.
+Note that the @code{indexs->array} is not re-allocated to its new size at the end@footnote{Note that according to the GNU C Library, even a @code{realloc} to a smaller size can also cause a re-write of the whole array, which is not a cheap operation.}.
+But since @code{indexs->dsize[0]} and @code{indexs->size} have new values after this function is returned, the extra elements just won't be used until they are ultimately freed by @code{gal_data_free}.
 
-Connectivity is a value between @code{1} (fewest number of neighbors) and
-the number of dimensions in the input (most number of neighbors). For
-example in a 2D dataset, a connectivity of @code{1} and @code{2}
-corresponds to 4-connected and 8-connected neighbors.
+Connectivity is a value between @code{1} (fewest number of neighbors) and the number of dimensions in the input (most number of neighbors).
+For example in a 2D dataset, a connectivity of @code{1} and @code{2} corresponds to 4-connected and 8-connected neighbors.
 @end deftypefun
 
 
