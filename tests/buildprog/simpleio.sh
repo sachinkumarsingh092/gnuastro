@@ -62,5 +62,10 @@ if [ ! -f $source   ]; then echo "$source does not exist."; exit 77; fi
 # `check_with_program' can be something like `Valgrind' or an empty
 # string. Such programs will execute the command if present and help in
 # debugging when the developer doesn't have access to the user's system.
+echo "Test Environment"
+echo "----------------"
+echo "CPPFLAGS: $CPPFLAGS"
+echo "LDFLAGS: $LDFLAGS"
+echo "----------------"
 $check_with_program $execname $source $img 1 --la=../lib/libgnuastro.la \
                               -I$topsrc/lib -I../lib/

@@ -17943,8 +17943,11 @@ You may also use Gnuastro's @ref{Configuration files} to specify other libraries
 
 The C compiler can be chosen with the @option{--cc} option, or environment variables, please see the description of @option{--cc} for more.
 The two common @code{LDFLAGS} and @code{CPPFLAGS} environment variables are also checked and used in the build by default.
+Note that they are placed after the values to the corresponding options @option{--includedir} and @option{--linkdir}.
+Therefore BuildProgram's own options take precedence.
 Using environment variables can be disabled with the @option{--noenv} option.
-Just note that BuildProgram also keeps the important flags in these environment variables in its configuration file, so in many cases, when you needed them to build Gnuastro, you won't need them in BuildProgram.
+Just note that BuildProgram also keeps the important flags in these environment variables in its configuration file.
+Therefore, in many cases, even though you may needed them to build Gnuastro, you won't need them in BuildProgram.
 
 The first argument is considered to be the C source file that must be compiled and linked.
 Any other arguments (non-option tokens on the command-line) will be passed onto the program when BuildProgram wants to run it.

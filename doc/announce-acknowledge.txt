@@ -3,6 +3,7 @@ Alphabetically ordered list to acknowledge in the next release.
 Hamed Altafi
 Stefan Brüns
 Alexey Dokuchaev
+Takashi Ichikawa
 Raúl Infante Sainz
 Sebastián Luna Valero
 Joseph Putko
