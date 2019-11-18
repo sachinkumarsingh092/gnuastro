@@ -15079,7 +15079,7 @@ integral field unit data cubes.
 @item -b
 @itemx --brightness
 The brightness (sum of all pixel values), see @ref{Flux Brightness and magnitude}.
-For clumps, the ambient brightness (flux of river pixels around the clump multiplied by the area of the clump) is removed, see @option{--riverflux}.
+For clumps, the ambient brightness (flux of river pixels around the clump multiplied by the area of the clump) is removed, see @option{--riverave}.
 So the sum of all the clumps brightness in the clump catalog will be smaller than the total clump brightness in the @option{--clumpbrightness} column of the objects catalog.
 
 If no usable pixels are present over the clump or object (for example they are all blank), the returned value will be NaN (note that zero is meaningful).
@@ -15166,7 +15166,7 @@ So note that this value is @emph{not} sky subtracted.
 
 @item --rivernum
 [Clumps] The number of river pixels around this clump, see
-@option{--riverflux}.
+@option{--riverave}.
 
 @item -n
 @itemx --sn
