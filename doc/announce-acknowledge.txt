@@ -6,6 +6,7 @@ Alexey Dokuchaev
 Takashi Ichikawa
 Raúl Infante Sainz
 Sebastián Luna Valero
+Marcel Popescu
 Joseph Putko
 
 

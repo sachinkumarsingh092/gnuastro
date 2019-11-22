@@ -1635,7 +1635,7 @@ $ emacs cat.txt
 $ ls
 cat.txt
 $ cat cat.txt
-# Column 4: PROFILE_NAME [,str7] Radial profile's functional name
+# Column 4: PROFILE_NAME [,str6] Radial profile's functional name
  1  0.0000   0.0000  moffat  5.000  4.765  0.0000  1.000  30.000  5.000
  2  250.00   250.00  sersic  40.00  1.000  -25.00  0.400  3.4400  5.000
  3  50.000   50.000  point   0.000  0.000  0.0000  0.000  6.0000  0.000
