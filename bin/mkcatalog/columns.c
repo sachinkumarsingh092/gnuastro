@@ -2074,12 +2074,12 @@ columns_fill(struct mkcatalog_passparams *pp)
           break;
 
         case UI_KEY_SKY:
-          ((float *)colarr)[oind] = MKC_RATIO(oi[OCOL_SUMSKY], oi[OCOL_NUM]);
+          ((float *)colarr)[oind] = MKC_RATIO(oi[OCOL_SUMSKY], oi[OCOL_NUMSKY]);
           break;
 
         case UI_KEY_STD:
           ((float *)colarr)[oind] = sqrt( MKC_RATIO( oi[ OCOL_SUMVAR ],
-                                                     oi[ OCOL_NUM    ]) );
+                                                     oi[ OCOL_NUMVAR ]) );
           break;
 
         case UI_KEY_SEMIMAJOR:
@@ -2323,12 +2323,12 @@ columns_fill(struct mkcatalog_passparams *pp)
 
           case UI_KEY_SKY:
             ((float *)colarr)[cind] = MKC_RATIO( ci[ CCOL_SUMSKY],
-                                                 ci[ CCOL_NUM] );
+                                                 ci[ CCOL_NUMSKY] );
             break;
 
           case UI_KEY_STD:
             ((float *)colarr)[cind] = sqrt( MKC_RATIO( ci[ CCOL_SUMVAR ],
-                                                       ci[ CCOL_NUM    ] ));
+                                                       ci[ CCOL_NUMVAR ] ));
             break;
 
           case UI_KEY_SEMIMAJOR:

@@ -75,7 +75,7 @@ enum objectcols
     OCOL_NUM,            /* Number of values used in this object.     */
     OCOL_NUMXY,          /* Number of values in the first two dims.   */
     OCOL_SUM,            /* Sum of (value-sky) in object.             */
-    OCOL_SUM_VAR,        /* Varience of sum (for brightness error).   */
+    OCOL_SUM_VAR,        /* Variance including values (not just sky). */
     OCOL_MEDIAN,         /* Median of value in object.                */
     OCOL_VX,             /* Sum of (value-sky) * x.                   */
     OCOL_VY,             /* Sum of (value-sky) * y.                   */
@@ -84,7 +84,9 @@ enum objectcols
     OCOL_VYY,            /* Sum of (value-sky) * y * y.               */
     OCOL_VXY,            /* Sum of (value-sky) * x * y.               */
     OCOL_SUMSKY,         /* Sum of sky value on this object.          */
+    OCOL_NUMSKY,         /* Number of sky value on this object.       */
     OCOL_SUMVAR,         /* Sum of sky variance value on this object. */
+    OCOL_NUMVAR,         /* Number of sky value on this object.       */
     OCOL_SUMWHT,         /* Sum of positive image pixels.             */
     OCOL_NUMWHT,         /* Number of positive pixels used for wht.   */
     OCOL_GX,             /* Geometric center of object in X.          */
@@ -119,7 +121,7 @@ enum clumpcols
     CCOL_NUM,            /* Number of values used in clump.           */
     CCOL_NUMXY,          /* Number of values only in first two dims.  */
     CCOL_SUM,            /* River subtracted brightness.              */
-    CCOL_SUM_VAR,        /* Variance of sum (for brightness error).   */
+    CCOL_SUM_VAR,        /* Variance including values (not just sky). */
     CCOL_MEDIAN,         /* Median of values in clump.                */
     CCOL_RIV_NUM,        /* Num river pixels around this clump.       */
     CCOL_RIV_SUM,        /* Sum of rivers around clump.               */
@@ -130,8 +132,10 @@ enum clumpcols
     CCOL_VXX,            /* Sum of flux*x*x of this clump.            */
     CCOL_VYY,            /* Sum of flux*y*y of this clump.            */
     CCOL_VXY,            /* Sum of flux*x*y of this clump.            */
-    CCOL_SUMSKY,         /* Sum of sky value on this object.          */
-    CCOL_SUMVAR,         /* Sum of sky variance value on this object. */
+    CCOL_SUMSKY,         /* Sum of sky value on this clump.           */
+    CCOL_NUMSKY,         /* Number of sky value on this clump.        */
+    CCOL_SUMVAR,         /* Sum of sky variance value on this clump.  */
+    CCOL_NUMVAR,         /* Number of sky variance value on this clump.*/
     CCOL_SUMWHT,         /* Sum of positive image pixels for wht.     */
     CCOL_NUMWHT,         /* Num of positive image pixels for wht.     */
     CCOL_GX,             /* Geometric center of clump in X.           */

@@ -1159,7 +1159,7 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
       /* Initially, `p->hasblank' was set based on the objects image, but
          it may happen that the objects image only has zero values for
          blank pixels, so we'll also do a check on the input image. */
-      p->hasblank = gal_blank_present(p->objects, 1);
+      p->hasblank = gal_blank_present(p->values, 1);
 
       /* Reset the units of the value-based columns if the input dataset
          has defined units. */

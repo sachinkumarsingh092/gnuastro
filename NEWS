@@ -132,6 +132,7 @@ See the end of the file for license conditions.
   bug #57164: MakeCatalog crashes when a label isn't in the dataset.
   bug #57180: MakeCatalog reporting infinity S/N when --instd isn't an image.
   bug #57200: Generated pkgconfig must request wcslib, not wcs.
+  bug #57293: NaN value for brightness-related columns when values have NaN.
 
 
 

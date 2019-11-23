@@ -441,10 +441,10 @@ parse_objects(struct mkcatalog_passparams *pp)
   double *oi=pp->oi;
   gal_data_t *xybin=NULL;
   size_t *tsize=pp->tile->dsize;
-  uint8_t *xybinarr=NULL, *u, *uf;
-  float var, sval, *V=NULL, *SK=NULL, *ST=NULL;
+  uint8_t *u, *uf, goodvalue, *xybinarr=NULL;
   size_t d, pind=0, increment=0, num_increment=1;
   int32_t *O, *OO, *C=NULL, *objarr=p->objects->array;
+  float var, sval, varval, skyval, *V=NULL, *SK=NULL, *ST=NULL;
   float *std=p->std?p->std->array:NULL, *sky=p->sky?p->sky->array:NULL;
 
   /* If tile processing isn't necessary, set `tid' to a blank value. */
@@ -563,8 +563,12 @@ parse_objects(struct mkcatalog_passparams *pp)
 
 
               /* Value related measurements. */
+              goodvalue=0;
               if( p->values && !( p->hasblank && isnan(*V) ) )
                 {
+                  /* For the standard-deviation measurements later. */
+                  goodvalue=1;
+
                   /* General flux summations. */
                   if(xybin) xybinarr[ pind ]=2;
                   if(oif[ OCOL_NUM    ]) oi[ OCOL_NUM     ]++;
@@ -608,13 +612,19 @@ parse_objects(struct mkcatalog_passparams *pp)
 
 
               /* Sky value based measurements. */
-              if(p->sky)
-                if(oif[ OCOL_SUMSKY ])
-                  oi[ OCOL_SUMSKY  ] += ( pp->st_sky
-                                          ? *SK             /* Full array   */
-                                          : ( p->sky->size>1
-                                              ? sky[tid]    /* Tile         */
-                                              : sky[0] ) ); /* Single value */
+              if(p->sky && oif[ OCOL_SUMSKY ])
+                {
+                  skyval = ( pp->st_sky
+                             ? (isnan(*SK)?0:*SK)               /* Full array  */
+                             : ( p->sky->size>1
+                                 ? (isnan(sky[tid])?0:sky[tid]) /* Tile        */
+                                 : sky[0] ) );                  /* Single value*/
+                  if(!isnan(skyval))
+                    {
+                      oi[ OCOL_NUMSKY  ]++;
+                      oi[ OCOL_SUMSKY  ] += skyval;
+                    }
+                }
 
 
               /* Sky standard deviation based measurements.*/
@@ -622,7 +632,11 @@ parse_objects(struct mkcatalog_passparams *pp)
                 {
                   sval = pp->st_std ? *ST : (p->std->size>1?std[tid]:std[0]);
                   var = p->variance ? sval : sval*sval;
-                  if(oif[ OCOL_SUMVAR ]) oi[ OCOL_SUMVAR  ] += var;
+                  if(oif[ OCOL_SUMVAR ] && (!isnan(var)))
+                    {
+                      oi[ OCOL_NUMVAR  ]++;
+                      oi[ OCOL_SUMVAR  ] += var;
+                    }
                   /* For each pixel, we have a sky contribution to the
                      counts and the signal's contribution. The standard
                      deviation in the sky is simply `sval', but the
@@ -633,9 +647,11 @@ parse_objects(struct mkcatalog_passparams *pp)
                      absolute value, because especially as the signal gets
                      noisy there will be negative values, and we don't want
                      them to decrease the variance. */
-                  if(oif[ OCOL_SUM_VAR ])
-                    oi[ OCOL_SUM_VAR ] += ( (p->variance ? var : sval)
-                                            + fabs(*V) );
+                  if(oif[ OCOL_SUM_VAR ] && goodvalue)
+                    {
+                      varval=p->variance ? var : sval;
+                      if(!isnan(varval)) oi[ OCOL_SUM_VAR ] += varval + fabs(*V);
+                    }
                 }
             }
 
@@ -718,10 +734,10 @@ parse_clumps(struct mkcatalog_passparams *pp)
   gal_data_t *xybin=NULL;
   size_t *tsize=pp->tile->dsize;
   int32_t *O, *OO, *C=NULL, nlab;
-  uint8_t *u, *uf, *cif=p->ciflag;
-  float var, sval, *V=NULL, *SK=NULL, *ST=NULL;
+  uint8_t *u, *uf, goodvalue, *cif=p->ciflag;
   size_t nngb=gal_dimension_num_neighbors(ndim);
   size_t i, ii, d, pind=0, increment=0, num_increment=1;
+  float var, sval, varval, skyval, *V=NULL, *SK=NULL, *ST=NULL;
   int32_t *objects=p->objects->array, *clumps=p->clumps->array;
   float *std=p->std?p->std->array:NULL, *sky=p->sky?p->sky->array:NULL;
 
@@ -855,8 +871,12 @@ parse_clumps(struct mkcatalog_passparams *pp)
 
                   /* Value related measurements, see `parse_objects' for
                      comments. */
+                  goodvalue=0;
                   if( p->values && !( p->hasblank && isnan(*V) ) )
                     {
+                      /* For the standard-deviation measurement. */
+                      goodvalue=1;
+
                       /* Fill in the necessary information. */
                       if(cif[ CCOL_NUM   ]) ci[ CCOL_NUM ]++;
                       if(cif[ CCOL_SUM   ]) ci[ CCOL_SUM ] += *V;
@@ -882,13 +902,19 @@ parse_clumps(struct mkcatalog_passparams *pp)
                     }
 
                   /* Sky based measurements. */
-                  if(p->sky)
-                    if(cif[ CCOL_SUMSKY ])
-                      ci[ CCOL_SUMSKY  ] += ( pp->st_sky
-                                              ? *SK             /* Full */
-                                              : ( p->sky->size>1
-                                                  ? sky[tid]    /* Tile */
-                                                  : sky[0] ) ); /* 1 value */
+                  if(p->sky && cif[ CCOL_SUMSKY ])
+                    {
+                      skyval = ( pp->st_sky
+                                 ? *SK             /* Full. */
+                                 : ( p->sky->size>1
+                                     ? sky[tid]    /* Tile. */
+                                     : sky[0] ) ); /* 1 value. */
+                      if(!isnan(skyval))
+                        {
+                          ci[ CCOL_NUMSKY  ]++;
+                          ci[ CCOL_SUMSKY  ] += skyval;
+                        }
+                    }
 
                   /* Sky Standard deviation based measurements, see
                      `parse_objects' for comments. */
@@ -898,10 +924,17 @@ parse_clumps(struct mkcatalog_passparams *pp)
                                ? *ST
                                : (p->std->size>1 ? std[tid] : std[0]) );
                       var = p->variance ? sval : sval*sval;
-                      if(cif[ CCOL_SUMVAR  ]) ci[ CCOL_SUMVAR ] += var;
-                      if(cif[ CCOL_SUM_VAR ])
-                        ci[ CCOL_SUM_VAR ] += ( (p->variance ? var : sval)
-                                                + fabs(*V) );
+                      if(cif[ CCOL_SUMVAR  ] && (!isnan(var)))
+                        {
+                          ci[ CCOL_NUMVAR ]++;
+                          ci[ CCOL_SUMVAR ] += var;
+                        }
+                      if(cif[ CCOL_SUM_VAR ] && goodvalue)
+                        {
+                          varval=p->variance ? var : sval;
+                          if(!isnan(varval))
+                            ci[ CCOL_SUM_VAR ] += varval + fabs(*V);
+                        }
                     }
                 }
 
