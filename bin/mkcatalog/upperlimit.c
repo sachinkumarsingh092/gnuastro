@@ -401,7 +401,7 @@ upperlimit_write_check(struct mkcatalogparams *p, gal_list_sizet_t *check_x,
                      "Z-axis position of random footprint's first pixel.");
   s=gal_data_alloc(sarr, GAL_TYPE_FLOAT32, 1, &num, NULL, 0, p->cp.minmapsize,
                    p->cp.quietmmap, "RANDOM_SUM",
-                   p->values->unit ? p->values->unit : "input-units",
+                   p->values->unit ? p->values->unit : MKCATALOG_NO_UNIT,
                    "Sum of pixel values over random footprint.");
 
 

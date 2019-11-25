@@ -3,6 +3,21 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 Copyright (C) 2015-2019 Free Software Foundation, Inc.
 See the end of the file for license conditions.
 
+* Noteworthy changes in release X.XX (library X.X.X) (YYYY-MM-DD) [stable]
+
+** New features
+
+** Removed features
+
+** Changed features
+
+** Bugs fixed
+  bug #57300: MakeCatalog memory crash when input dataset has units.
+
+
+
+
+
 * Noteworthy changes in release 0.11 (library 9.0.0) (2019-11-25) [stable]
 
 ** New features

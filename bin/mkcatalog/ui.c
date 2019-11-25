@@ -1167,10 +1167,10 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
         {
           for(column=p->objectcols; column!=NULL; column=column->next)
             if( !strcmp(column->unit, MKCATALOG_NO_UNIT) )
-              { free(column->unit); column->unit=p->values->unit; }
+              { free(column->unit); gal_checkset_allocate_copy(p->values->unit, &column->unit); }
           for(column=p->clumpcols; column!=NULL; column=column->next)
             if( !strcmp(column->unit, MKCATALOG_NO_UNIT) )
-              { free(column->unit); column->unit=p->values->unit; }
+              { free(column->unit); gal_checkset_allocate_copy(p->values->unit, &column->unit); }
         }
     }
 
