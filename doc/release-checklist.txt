@@ -133,6 +133,9 @@ all the commits needed for this release have been completed.
    directory to build the full webpage with this script. We will build with
    debug flags so the build completes fast.
 
+   IMPORTANT NOTE: don't end the directory with a `/'. The directory should
+   be the one that has `CVSROOT' in it.
+
        $ ./configure --enable-debug
        $ make -j8
        $ cd doc
