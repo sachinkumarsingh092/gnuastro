@@ -1,14 +1,5 @@
 Alphabetically ordered list to acknowledge in the next release.
 
-Hamed Altafi
-Stefan Brüns
-Alexey Dokuchaev
-Takashi Ichikawa
-Raúl Infante Sainz
-Sebastián Luna Valero
-Marcel Popescu
-Joseph Putko
-
 
 
 Copyright (C) 2015-2019 Free Software Foundation, Inc.

@@ -62,7 +62,7 @@ all the commits needed for this release have been completed.
      [STABLE] Remove the names in `doc/announce-acknowledge.txt'.
 
 
- - [STABLE] Correct the version links in the webpage
+ - [STABLE] Correct the version links, and date, in the webpage
    (`doc/gnuastro.en.html' and `doc/gnuastro.fr.html'). Note that this is
    not for upload at this stage, it is only for the version control.
 
@@ -82,8 +82,7 @@ all the commits needed for this release have been completed.
 
  - Update the version and build Gnuastro, all done with the `-p' option of
    `./developer-build'. But we'll give it a `pure-junk' directory so it
-   doesn't actually upload the build. Then go into the build directory and
-   run `make distcheck -j8'.
+   doesn't actually upload the build.
 
      $ ./developer-build -p pure-junk
 
