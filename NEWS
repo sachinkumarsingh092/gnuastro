@@ -13,6 +13,7 @@ See the end of the file for license conditions.
 
 ** Bugs fixed
   bug #57300: MakeCatalog memory crash when input dataset has units.
+  bug #57301: MakeCatalog using river sum instead of mean times by clump area.
 
 
 

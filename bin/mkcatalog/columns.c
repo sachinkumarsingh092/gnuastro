@@ -1597,8 +1597,10 @@ columns_sn(struct mkcatalogparams *p, double *row, int o0c1)
   /* When grown clumps are requested from NoiseChisel, some "clumps" will
      completely cover their objects and there will be no rivers. So if this
      is a clump, and the river area is 0, we should treat the S/N as a an
-     object. */
-  double O = (o0c1 && row[ CCOL_RIV_NUM ]) ? row[ CCOL_RIV_SUM ] : 0.0 ;
+     object (and set the outer flux to 0.0). */
+  double O = ( (o0c1 && row[ CCOL_RIV_NUM ])
+               ? (row[ CCOL_NUM ]*row[ CCOL_RIV_SUM ]/row[ CCOL_RIV_NUM ])
+               : 0.0 );
 
   /* Return the derived value. */
   return sqrt(1/p->cpscorr) * (I-O) / columns_brightness_error(p, row, o0c1);
