@@ -1388,7 +1388,7 @@ Valentina Abril-melgarejo,
 Marjan Akbari,
 Hamed Altafi,
 Roland Bacon,
-Roberto Baena Gall\'e,
+Roberto Baena Gall@'e,
 Zahra Bagheri,
 Karl Berry,
 Leindert Boogaard,
@@ -3349,7 +3349,7 @@ $ aststatistics a.fits
 @end example
 
 To automate these series of commands, you should put them in a text file.
-But that text file must have to special features:
+But that text file must have two special features:
 1) It should tell the shell what program should interpret the script.
 2) The operating system should know that the file can be directly executed.
 
