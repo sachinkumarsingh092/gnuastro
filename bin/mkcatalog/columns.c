@@ -1263,6 +1263,7 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_precision = 3;
           oiflag[ OCOL_SUM         ] = ciflag[ CCOL_SUM         ] = 1;
           oiflag[ OCOL_SUM_VAR     ] = ciflag[ CCOL_SUM_VAR     ] = 1;
+                                       ciflag[ CCOL_NUM         ] = 1;
                                        ciflag[ CCOL_RIV_NUM     ] = 1;
                                        ciflag[ CCOL_RIV_SUM     ] = 1;
                                        ciflag[ CCOL_RIV_SUM_VAR ] = 1;
