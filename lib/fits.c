@@ -2706,12 +2706,10 @@ fits_tab_read_ascii_float_special(char *filename, char *hdu, fitsfile *fptr,
   /* Convert the strings to float. */
   for(i=0;i<numrows;++i)
     {
-      /* Parse the string. */
+      /* Parse the string, if its not readable as a special number (like
+         `inf' or `nan', then just read it as a NaN. */
       tmp=strtod(strarr[i], &tailptr);
-      if(tailptr==strarr[i])
-        error(EXIT_FAILURE, 0, "%s (hdu %s): couldn't parse row %zu of "
-              "column %zu (with value `%s') as a floating point number",
-              filename, hdu, i+1, colnum, strarr[i]);
+      if(tailptr==strarr[i]) tmp=NAN;
 
       /* Write it into the output dataset. */
       if(out->type==GAL_TYPE_FLOAT32)

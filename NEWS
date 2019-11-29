@@ -14,6 +14,12 @@ See the end of the file for license conditions.
 
 ** Changed features
 
+  All programs and libraries:
+   - FITS ASCII tables: When a column has a floating point type, but its
+     ASCII string can't be parsed as a number, it will be read as a
+     NaN. Until now, the corresponding program/library would abort,
+     printing the problematic string and its location.
+
 ** Bugs fixed
   bug #57300: MakeCatalog memory crash when input dataset has units.
   bug #57301: MakeCatalog using river sum instead of mean times by clump area.
