@@ -8026,6 +8026,19 @@ It is thus useful in scripts, for example when you need to do check the number o
 For a complete list of basic meta-data on the extensions in a FITS file, don't use any of the options in this section or in @ref{Keyword manipulation}.
 For more, see @ref{Invoking astfits}.
 
+@item --datasum
+@cindex @code{DATASUM}: FITS keyword
+Calculate and print the given HDU's "datasum" to stdout.
+The given HDU is specified with the @option{--hdu} (or @option{-h}) option.
+This number is calculated by parsing all the bytes of the given HDU's data records (excluding keywords).
+This option ignores any possibly existing @code{DATASUM} keyword in the HDU.
+For more on the datasum feature of the FITS standard, see @ref{Keyword manipulation} (under the @code{checksum} component of @option{--write}).
+
+You can use this option to confirm that the data in two different HDUs (possibly with different keywords) is identical.
+Its advantage over @option{--write=datasum} (which writes the @code{DATASUM} keyword into the given HDU) is that it doesn't require write permissions.
+
+
+
 @item -C STR
 @itemx --copy=STR
 Copy the specified extension into the output file, see explanations above.
@@ -8246,12 +8259,12 @@ $ astfits test.fits -h1 --write=/,"My keywords"   \
 @cindex CFITSIO
 @cindex @code{DATASUM}: FITS keyword
 @cindex @code{CHECKSUM}: FITS keyword
-When nothing is given afterwards, the header integrity keywords@footnote{Section 4.4.2.7 (page 15) of @url{https://fits.gsfc.nasa.gov/standard40/fits_standard40aa-le.pdf}} @code{DATASUM} and @code{CHECKSUM} will be written/updated.
-They are calculated and written by CFITSIO.
-They thus comply with the FITS standard 4.0 that defines these keywords.
+When nothing is given afterwards, the header integrity keywords @code{DATASUM} and @code{CHECKSUM} will be calculated and written/updated.
+This is calculation and writing is done fully by CFITSIO.
+They thus comply with the FITS standard 4.0@footnote{@url{https://fits.gsfc.nasa.gov/standard40/fits_standard40aa-le.pdf}} that defines these keywords (its Appendix J).
 
-If a value is given (for example @option{--write=checksum,my-own-checksum,"my checksum"}), then CFITSIO won't be called to calculate these two keywords and the value (as well as possible comment and unit) will be written just like any other keyword.
-This is generally not recommended, but necessary in special circumstances (where the checksum needs to be manually updated for example).
+If a value is given (e.g., @option{--write=checksum,MyOwnCheckSum}), then CFITSIO won't be called to calculate these two keywords and the value (as well as possible comment and unit) will be written just like any other keyword.
+This is generally not recommended, but necessary in special circumstances (for example when the checksum needs to be manually updated).
 
 @code{DATASUM} only depends on the data section of the HDU/extension, so it is not changed when you update the keywords.
 But @code{CHECKSUM} also depends on the header and will not be valid if you make any further changes to the header.

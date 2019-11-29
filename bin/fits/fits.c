@@ -272,6 +272,31 @@ fits_hdu_number(struct fitsparams *p)
 
 
 static void
+fits_datasum(struct fitsparams *p)
+{
+  int status=0;
+  fitsfile *fptr;
+  unsigned long datasum, hdusum;
+
+  /* Read the first extension (necessary for reading the rest). */
+  fptr=gal_fits_hdu_open(p->filename, p->cp.hdu, READONLY);
+
+  /* Calculate the checksum and datasum of the opened HDU. */
+  fits_get_chksum(fptr, &datasum, &hdusum, &status);
+  gal_fits_io_error(status, "estimating datasum");
+
+  /* Close the file. */
+  fits_close_file(fptr, &status);
+
+  /* Print the datasum */
+  printf("%ld\n", datasum);
+}
+
+
+
+
+
+static void
 fits_hdu_remove(struct fitsparams *p, int *r)
 {
   char *hdu;
@@ -400,6 +425,8 @@ fits(struct fitsparams *p)
       /* Options that must be called alone. */
       if(p->numhdus)
         fits_hdu_number(p);
+      else if(p->datasum)
+        fits_datasum(p);
 
       /* Options that can be called together. */
       else

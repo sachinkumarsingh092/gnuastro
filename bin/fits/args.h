@@ -102,6 +102,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "datasum",
+      UI_KEY_DATASUM,
+      0,
+      0,
+      "Calculate HDU's datasum and print in stdout.",
+      UI_GROUP_EXTENSION,
+      &p->datasum,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 

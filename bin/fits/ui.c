@@ -321,58 +321,74 @@ ui_check_copykeys(struct fitsparams *p)
 static void
 ui_read_check_only_options(struct fitsparams *p)
 {
+  uint8_t stdoutcheck;
+
   /* If any of the keyword manipulation options are requested, then set the
      mode flag to keyword-mode. */
   if( p->date || p->comment || p->history || p->asis || p->delete
       || p->rename || p->update || p->write || p->verify || p->printallkeys
       || p->copykeys || p->datetosec )
     {
-      /* Set the mode. */
-      p->mode=FITS_MODE_KEY;
-
       /* Check if a HDU is given. */
       if(p->cp.hdu==NULL)
-        error(EXIT_FAILURE, 0, "a HDU (extension) is necessary for keywrod "
+        error(EXIT_FAILURE, 0, "a HDU (extension) is necessary for keyword "
               "related options but none was defined. Please use the "
               "`--hdu' (or `-h') option to select one");
 
       /* If Copy keys has been given, read it and make sure its setup. */
       if(p->copykeys)
         ui_check_copykeys(p);
+
+      /* Currently `datetosec' must be called alone. */
+      if( p->datetosec
+          && (p->date || p->comment || p->history || p->asis || p->delete
+              || p->rename || p->update || p->write || p->verify
+              || p->printallkeys || p->copykeys) )
+        error(EXIT_FAILURE, 0, "`--datetosec' cannot currently be called "
+              "with any other option");
+
+      /* Set the operating mode. */
+      p->mode=FITS_MODE_KEY;
     }
 
   /* Same for the extension-related options */
-  if( p->remove || p->copy || p->cut || p->numhdus)
+  if( p->remove || p->copy || p->cut || p->numhdus || p->datasum )
     {
       /* A small sanity check. */
       if(p->mode!=FITS_MODE_INVALID)
         error(EXIT_FAILURE, 0, "extension and keyword manipulation options "
               "cannot be called together");
 
-      /* Unlike the rest of the HDU-related options, `--numhdus' must be
-         called alone. */
-      if(p->numhdus==1 && (p->remove || p->copy || p->cut) )
-        error(EXIT_FAILURE, 0, "`--numhdus' option must be called alone (it "
-              "cannot be called with other extension or keyword options)");
+      /* Some HDU options cannot be called with other options. */
+      stdoutcheck = 0;
+      stdoutcheck = p->numhdus + p->datasum;
+
+      /* Make sure the output name is set. */
+      if(stdoutcheck)
+        {
+          /* Make sure the other HDU-related options aren't called. */
+          if(p->remove || p->copy || p->cut)
+            error(EXIT_FAILURE, 0, "`--numhdus' or `--datasum' options "
+                  "must be called alone");
+
+          /* Make sure the HDU is given for the datasum option. */
+          if( p->datasum && p->cp.hdu==NULL )
+            error(EXIT_FAILURE, 0, "a HDU (extension) is necessary for the "
+                  " `--checksum' or `--datasum' options. Please use the "
+                  "`--hdu' (or `-h') option to select one");
+        }
+      else
+        {
+          if(p->cp.output)
+            gal_checkset_writable_remove(p->cp.output, 1, p->cp.dontdelete);
+          else
+            p->cp.output=gal_checkset_automatic_output(&p->cp, p->filename,
+                                                       "_ext.fits");
+        }
 
       /* Set the operating mode. */
       p->mode=FITS_MODE_HDU;
-
-      /* Make sure the output name is set. */
-      if(p->cp.output)
-        gal_checkset_writable_remove(p->cp.output, 1, p->cp.dontdelete);
-      else
-        p->cp.output=gal_checkset_automatic_output(&p->cp, p->filename,
-                                                   "_ext.fits");
     }
-
-  /* Currently `datetosec' must be called alone. */
-  if( p->datetosec
-      && (p->date || p->comment || p->history || p->asis || p->delete
-          || p->rename || p->update || p->write || p->verify
-          || p->printallkeys || p->copykeys || p->mode==FITS_MODE_HDU) )
-    error(EXIT_FAILURE, 0, "`--datetosec' cannot currently be called with "
-          "any other option");
 
   /* If no options are given, go into HDU mode, which will print the HDU
      information when nothing is asked. */

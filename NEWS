@@ -7,6 +7,9 @@ See the end of the file for license conditions.
 
 ** New features
 
+  Fits:
+   --datasum: Calculate and print the given HDU's "datasum" to stdout.
+
 ** Removed features
 
 ** Changed features
