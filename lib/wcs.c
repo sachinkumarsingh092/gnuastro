@@ -655,17 +655,15 @@ gal_wcs_pixel_scale(struct wcsprm *wcs)
   /* Only continue if a WCS exists. */
   if(wcs==NULL) return NULL;
 
+
   /* Write the full WCS rotation matrix into an array, irrespective of what
      style it was stored in the wcsprm structure (`PCi_j' style or `CDi_j'
      style). */
   a=gal_wcs_warp_matrix(wcs);
 
-  /* A small sanity check (this won't work on a singular matrix, can happen
-     in FITS WCSs!). In this case, we should return NULL.*/
-  n=wcs->naxis;
-  for(i=0;i<n;++i) {if(a[i*n+i]==0.0f) return NULL;}
 
   /* Now that everything is good, we can allocate the necessary memory. */
+  n=wcs->naxis;
   v=gal_pointer_allocate(GAL_TYPE_FLOAT64, n*n, 0, __func__, "v");
   permutation=gal_pointer_allocate(GAL_TYPE_SIZE_T, n, 0, __func__,
                                    "permutation");
