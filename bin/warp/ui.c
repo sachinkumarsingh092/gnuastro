@@ -527,6 +527,13 @@ ui_matrix_make_align(struct warpparams *p, double *tmatrix)
       x[2] = 0.0f;
       x[3] = w[3]>0 ? 1.0f : -1.0f;  /* Has to be positive. */
     }
+  else if (w[0]==0.0f && w[3]==0.0f )
+    {
+      x[0] = 0.0f;
+      x[1] = w[1]<0 ? 1.0f : -1.0f;  /* Has to be negative. */
+      x[2] = w[2]>0 ? 1.0f : -1.0f;  /* Has to be positive. */
+      x[3] = 0.0f;
+    }
   else
     {
       A = (w[3]/w[1]) - (w[2]/w[0]);
