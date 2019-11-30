@@ -27,6 +27,14 @@ See the end of the file for license conditions.
      NaN. Until now, the corresponding program/library would abort,
      printing the problematic string and its location.
 
+  NoiseChisel:
+   - Until now, when NoiseChisel didn't detect any pixels, it just printed
+     a message and wouldn't not make any output file. This was very
+     inconvenient in general scripts. From now on, in this scenario, an
+     output file will be created and the detection map will only have a
+     value of zero. As a result, the Sky and Sky standard deviation
+     extensions will be measured over all the tiles.
+
 ** Bugs fixed
   bug #57300: MakeCatalog memory crash when input dataset has units.
   bug #57301: MakeCatalog using river sum instead of mean times by clump area.

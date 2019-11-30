@@ -248,28 +248,14 @@ noisechisel(struct noisechiselparams *p)
   /* Remove false detections. */
   detection(p);
 
-  /* If we have any detections, find the Sky value and subtract it from the
-     input and convolved images. */
-  if(p->numdetections)
-    {
-      /* Find the final Sky and Sky STD values. */
-      sky_and_std(p, p->skyname);
+  /* Find the final Sky and Sky STD values. */
+  sky_and_std(p, p->skyname);
 
-      /* Abort if the user only wanted to see until this point.*/
-      if(p->skyname && !p->continueaftercheck)
-        ui_abort_after_check(p, p->skyname, NULL,
-                             "derivation of final Sky (and its STD) value");
+  /* Abort if the user only wanted to see until this point.*/
+  if(p->skyname && !p->continueaftercheck)
+    ui_abort_after_check(p, p->skyname, NULL,
+                         "derivation of final Sky (and its STD) value");
 
-      /* Write the output. */
-      noisechisel_output(p);
-    }
-  else
-    {
-      if(p->cp.quiet)
-        error(0, 0, "no output file created: no detections could found "
-              "in `%s' with given parameters", p->inputname);
-      else
-        gal_timing_report(NULL, "NO OUTPUT FILE CREATED (try with "
-                          "`--checkdetection' to see why)", 1);
-    }
+  /* Write the output. */
+  noisechisel_output(p);
 }
