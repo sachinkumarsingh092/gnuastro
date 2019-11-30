@@ -52,6 +52,9 @@ gal_list_str_add(gal_list_str_t **list, char *value,
 {
   gal_list_str_t *newnode;
 
+  /* If the value is a NULL pointer, don't add to the list. */
+  if(value==NULL) return;
+
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)

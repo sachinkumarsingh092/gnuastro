@@ -10,6 +10,13 @@ See the end of the file for license conditions.
   Fits:
    --datasum: Calculate and print the given HDU's "datasum" to stdout.
 
+  Table:
+   --equal: Can now work on columns with string type also.
+   --notequal: Can now work on columns with string type also.
+
+  Library:
+   - gal_txt_trim_space: trim white space before and after a string.
+
 ** Removed features
 
 ** Changed features

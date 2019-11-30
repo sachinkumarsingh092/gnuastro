@@ -93,8 +93,8 @@ gal_txt_line_stat(char *line)
 
 /* Remove the spaces around the values, and if the final/trimmed string has
    no length, return NULL. */
-static char *
-txt_trim_space(char *str)
+char *
+gal_txt_trim_space(char *str)
 {
   char *end;
 
@@ -104,8 +104,7 @@ txt_trim_space(char *str)
   /* Remove the spaces before the start of the string. */
   while(isspace(*str)) ++str;
 
-  /* If there was nothing in the string, then just return the ending `\0'
-     character. */
+  /* If there was nothing in the string, return NULL. */
   if(*str=='\0') return NULL;
 
   /* Remove the spaces at the end, and write a possibly new `\0'. */
@@ -217,7 +216,7 @@ txt_info_from_comment(char *in_line, gal_data_t **datall, char *comm_start,
          the line. Relying on the column count from the first line is more
          robust and less prone to human error, for example typing a number
          larger than the total number of columns.  */
-      name=txt_trim_space(name);
+      name=gal_txt_trim_space(name);
       if(name==NULL) return;
 
 
@@ -253,7 +252,7 @@ txt_info_from_comment(char *in_line, gal_data_t **datall, char *comm_start,
          the line. */
       if(typestr && *typestr!='\0')
         {
-          typestr=txt_trim_space(typestr);
+          typestr=gal_txt_trim_space(typestr);
           if( !strncmp(typestr, "str", 3) )
             {
               type=GAL_TYPE_STRING;
@@ -275,8 +274,8 @@ txt_info_from_comment(char *in_line, gal_data_t **datall, char *comm_start,
          and comment strings, trim the white space before and after each
          before using them here.  */
       gal_list_data_add_alloc(datall, NULL, type, 0, NULL, NULL, 0, -1, 1,
-                              name, txt_trim_space(unit),
-                              txt_trim_space(comment) );
+                              name, gal_txt_trim_space(unit),
+                              gal_txt_trim_space(comment) );
 
 
       /* Put the number of this column into the status variable of the data
@@ -288,7 +287,7 @@ txt_info_from_comment(char *in_line, gal_data_t **datall, char *comm_start,
 
       /* Write the blank value into the array. Note that this is not the
          final column, we are just collecting information now. */
-      gal_tableintern_read_blank(*datall, txt_trim_space(blank));
+      gal_tableintern_read_blank(*datall, gal_txt_trim_space(blank));
     }
 
   /* Clean up. */
@@ -732,7 +731,7 @@ txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
   switch(data->type)
     {
     case GAL_TYPE_STRING:
-      gal_checkset_allocate_copy(txt_trim_space(token), &str[i]);
+      gal_checkset_allocate_copy(gal_txt_trim_space(token), &str[i]);
       if( (strb=info->array) && !strcmp( *strb, str[i] ) )
         {
           free(str[i]);

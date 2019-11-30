@@ -9310,6 +9310,12 @@ The first argument is the column identifier (name or number, see @ref{Selecting 
 For example @option{--equal=ID,5,6,8} will only print the rows that have a value of 5, 6, or 8 in the @code{ID} column.
 This option can also be called multiple times, so @option{--equal=ID,4,5 --equal=ID,6,7} has the same effect as @option{--equal=4,5,6,7}.
 
+The @option{--equal} and @option{--notequal} options also work when the given column has a string type.
+In this case the given value to the option will also be parsed as a string, not as a number.
+When dealing with string columns, be careful with trailing white space characters (the actual value maybe adjusted to the right, left, or center of the column's width).
+If you need to account for such white spaces, you can use shell quoting.
+For example @code{--equal=NAME,"  myname "}.
+
 @cartouche
 @noindent
 @strong{Equality and floating point numbers:} Floating point numbers are only approximate values (see @ref{Numeric data types}).
@@ -9325,6 +9331,7 @@ For example @option{--notequal=ID,5,6,8} will only print the rows where the @cod
 This option can also be called multiple times, so @option{--notequal=ID,4,5 --notequal=ID,6,7} has the same effect as @option{--notequal=4,5,6,7}.
 
 Be very careful if you want to use the non-equality with floating point numbers, see the special note under @option{--equal} for more.
+This option also works when the given column has a string type, see the description under @option{--equal} (above) for more.
 
 @item -s STR
 @item --sort=STR
@@ -21535,167 +21542,119 @@ different file formats that Gnuastro's library recognizes.
 @node Text files, TIFF files, File input output, File input output
 @subsubsection Text files (@file{txt.h})
 
-The most universal and portable format for data storage are plain text
-files. They can be viewed and edited on any text editor or even on the
-command-line. This section are describes some functions that help in
-reading from and writing to plain text files.
+The most universal and portable format for data storage are plain text files.
+They can be viewed and edited on any text editor or even on the command-line.
+This section are describes some functions that help in reading from and writing to plain text files.
 
 @cindex CRLF line terminator
 @cindex Line terminator, CRLF
-Lines are one of the most basic building blocks (delimiters) of a text
-file. Some operating systems like Microsoft Windows, terminate their ASCII
-text lines with a carriage return character and a new-line character (two
-characters, also known as CRLF line terminators). While Unix-like operating
-systems just use a single new-line character. The functions below that read
-an ASCII text file are able to identify lines with both kinds of line
-terminators.
+Lines are one of the most basic building blocks (delimiters) of a text file.
+Some operating systems like Microsoft Windows, terminate their ASCII text lines with a carriage return character and a new-line character (two characters, also known as CRLF line terminators).
+While Unix-like operating systems just use a single new-line character.
+The functions below that read an ASCII text file are able to identify lines with both kinds of line terminators.
 
-Gnuastro defines a simple format for metadata of table columns in a plain
-text file that is discussed in @ref{Gnuastro text table format}. The
-functions to get information from, read from and write to plain text files
-also follow those conventions.
+Gnuastro defines a simple format for metadata of table columns in a plain text file that is discussed in @ref{Gnuastro text table format}.
+The functions to get information from, read from and write to plain text files also follow those conventions.
 
 
 @deffn Macro GAL_TXT_LINESTAT_INVALID
 @deffnx Macro GAL_TXT_LINESTAT_BLANK
 @deffnx Macro GAL_TXT_LINESTAT_COMMENT
 @deffnx Macro GAL_TXT_LINESTAT_DATAROW
-Status codes for lines in a plain text file that are returned by
-@code{gal_txt_line_stat}. Lines which have a @key{#} character as their
-first non-white character are considered to be comments. Lines with nothing
-but white space characters are considered blank. The remaining lines are
-considered as containing data.
+Status codes for lines in a plain text file that are returned by @code{gal_txt_line_stat}.
+Lines which have a @key{#} character as their first non-white character are considered to be comments.
+Lines with nothing but white space characters are considered blank.
+The remaining lines are considered as containing data.
 @end deffn
 
 @deftypefun int gal_txt_line_stat (char @code{*line})
-Check the contents of @code{line} and see if it is a blank, comment, or
-data line. The returned values are the macros that start with
-@code{GAL_TXT_LINESTAT}.
+Check the contents of @code{line} and see if it is a blank, comment, or data line.
+The returned values are the macros that start with @code{GAL_TXT_LINESTAT}.
+@end deftypefun
+
+@deftypefun {char *} gal_txt_trim_space (char @code{*str})
+Trim the white space characters before and after the given string.
+The operation is done within the allocated space of the string, so if you need the string untouched, please pass an allocated copy of the string to this function.
+The returned pointer is within the input string.
+If the input pointer is @code{NULL}, or the string only has white-space characters, the returned pointer will be @code{NULL}.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_txt_table_info (char @code{*filename}, gal_list_str_t @code{*lines}, size_t @code{*numcols}, size_t @code{*numrows})
-Store the information of each column in a text file @code{filename}, or
-list of strings (@code{lines}) into an array of data structures with
-@code{numcols} elements (one data structure for each column) see
-@ref{Arrays of datasets}. The total number of rows in the table is also put
-into the memory that @code{numrows} points to.
+Store the information of each column in a text file @code{filename}, or list of strings (@code{lines}) into an array of data structures with @code{numcols} elements (one data structure for each column) see @ref{Arrays of datasets}.
+The total number of rows in the table is also put into the memory that @code{numrows} points to.
 
-@code{lines} is a list of strings with each node representing one line
-(including the new-line character), see @ref{List of strings}. It will
-mostly be the output of @code{gal_txt_stdin_read}, which is used to read
-the program's input as separate lines from the standard input (see
-below). Note that @code{filename} and @code{lines} are mutually exclusive
-and one of them must be @code{NULL}.
+@code{lines} is a list of strings with each node representing one line (including the new-line character), see @ref{List of strings}.
+It will mostly be the output of @code{gal_txt_stdin_read}, which is used to read the program's input as separate lines from the standard input (see below).
+Note that @code{filename} and @code{lines} are mutually exclusive and one of them must be @code{NULL}.
 
-This function is just for column information. Therefore it only stores
-meta-data like column name, units and comments. No actual data (contents of
-the columns for example the @code{array} or @code{dsize} elements) will be
-allocated by this function. This is a low-level function particular to
-reading tables in plain text format. To be generic, it is recommended to
-use @code{gal_table_info} which will allow getting information from a
-variety of table formats based on the filename (see @ref{Table input
-output}).
+This function is just for column information.
+Therefore it only stores meta-data like column name, units and comments.
+No actual data (contents of the columns for example the @code{array} or @code{dsize} elements) will be allocated by this function.
+This is a low-level function particular to reading tables in plain text format.
+To be generic, it is recommended to use @code{gal_table_info} which will allow getting information from a variety of table formats based on the filename (see @ref{Table input output}).
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_txt_table_read (char @code{*filename}, gal_list_str_t @code{*lines}, size_t @code{numrows}, gal_data_t @code{*colinfo}, gal_list_sizet_t @code{*indexll}, size_t @code{minmapsize}, int @code{quietmmap})
-Read the columns given in the list @code{indexll} from a plain text file
-(@code{filename}) or list of strings (@code{lines}), into a linked list of
-data structures (see @ref{List of size_t} and @ref{List of gal_data_t}). If
-the necessary space for each column is larger than @code{minmapsize}, don't
-keep it in the RAM, but in a file on the HDD/SSD. For more one
-@code{minmapsize} and @code{quietmmap}, see the description under the same
-name in @ref{Generic data container}.
+Read the columns given in the list @code{indexll} from a plain text file (@code{filename}) or list of strings (@code{lines}), into a linked list of data structures (see @ref{List of size_t} and @ref{List of gal_data_t}).
+If the necessary space for each column is larger than @code{minmapsize}, don't keep it in the RAM, but in a file on the HDD/SSD.
+For more one @code{minmapsize} and @code{quietmmap}, see the description under the same name in @ref{Generic data container}.
 
-@code{lines} is a list of strings with each node representing one line
-(including the new-line character), see @ref{List of strings}. It will
-mostly be the output of @code{gal_txt_stdin_read}, which is used to read
-the program's input as separate lines from the standard input (see
-below). Note that @code{filename} and @code{lines} are mutually exclusive
-and one of them must be @code{NULL}.
+@code{lines} is a list of strings with each node representing one line (including the new-line character), see @ref{List of strings}.
+It will mostly be the output of @code{gal_txt_stdin_read}, which is used to read the program's input as separate lines from the standard input (see below).
+Note that @code{filename} and @code{lines} are mutually exclusive and one of them must be @code{NULL}.
 
-Note that this is a low-level function, so the output data list is the
-inverse of the input indexs linked list. It is recommended to use
-@code{gal_table_read} for generic reading of tables in any format, see
-@ref{Table input output}.
+Note that this is a low-level function, so the output data list is the inverse of the input indexs linked list.
+It is recommended to use @code{gal_table_read} for generic reading of tables in any format, see @ref{Table input output}.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_txt_image_read (char @code{*filename}, gal_list_str_t @code{*lines}, size_t @code{minmapsize}, int @code{quietmmap})
-Read the 2D plain text dataset in file (@code{filename}) or list of strings
-(@code{lines}) into a dataset and return the dataset. If the necessary
-space for the image is larger than @code{minmapsize}, don't keep it in the
-RAM, but in a file on the HDD/SSD. For more on @code{minmapsize} and
-@code{quietmmap}, see the description under the same name in @ref{Generic
-data container}.
+Read the 2D plain text dataset in file (@code{filename}) or list of strings (@code{lines}) into a dataset and return the dataset.
+If the necessaryspace for the image is larger than @code{minmapsize}, don't keep it in the RAM, but in a file on the HDD/SSD.
+For more on @code{minmapsize} and @code{quietmmap}, see the description under the same name in @ref{Generic data container}.
 
-@code{lines} is a list of strings with each node representing one line
-(including the new-line character), see @ref{List of strings}. It will
-mostly be the output of @code{gal_txt_stdin_read}, which is used to read
-the program's input as separate lines from the standard input (see
-below). Note that @code{filename} and @code{lines} are mutually exclusive
-and one of them must be @code{NULL}.
+@code{lines} is a list of strings with each node representing one line (including the new-line character), see @ref{List of strings}.
+It will mostly be the output of @code{gal_txt_stdin_read}, which is used to read the program's input as separate lines from the standard input (see below).
+Note that @code{filename} and @code{lines} are mutually exclusive and one of them must be @code{NULL}.
 @end deftypefun
 
 @deftypefun {gal_list_str_t *} gal_txt_stdin_read (long @code{timeout_microsec})
 @cindex Standard input
-Read the complete standard input and return a list of strings with each
-line (including the new-line character) as one node of that list. If the
-standard input is already filled (for example connected to another
-program's output with a pipe), then this function will parse the whole
-stream.
+Read the complete standard input and return a list of strings with each line (including the new-line character) as one node of that list.
+If the standard input is already filled (for example connected to another program's output with a pipe), then this function will parse the whole stream.
 
-If Standard input is not pre-configured and the @emph{first line} is
-typed/written in the terminal before @code{timeout_microsec} micro-seconds,
-it will continue parsing until reaches an end-of-file character
-(@key{CTRL-D} after a new-line on the keyboard) with no time limit. If
-nothing is entered before @code{timeout_microsec} micro-seconds, it will
-return @code{NULL}.
+If Standard input is not pre-configured and the @emph{first line} is typed/written in the terminal before @code{timeout_microsec} micro-seconds, it will continue parsing until reaches an end-of-file character (@key{CTRL-D} after a new-line on the keyboard) with no time limit.
+If nothing is entered before @code{timeout_microsec} micro-seconds, it will return @code{NULL}.
 
-All the functions that can read plain text tables will accept a filename as
-well as a list of strings (intended to be the output of this function for
-using Standard input). The reason for keeping the standard input is that
-once something is read from the standard input, it is hard to put it
-back. We often need to read a text file several times: once to count how
-many columns it has and which ones are requested, and another time to read
-the desired columns. So it easier to keep it all in allocated memory and
-pass it on from the start for each round.
+All the functions that can read plain text tables will accept a filename as well as a list of strings (intended to be the output of this function for using Standard input).
+The reason for keeping the standard input is that once something is read from the standard input, it is hard to put it back.
+We often need to read a text file several times: once to count how many columns it has and which ones are requested, and another time to read the desired columns.
+So it easier to keep it all in allocated memory and pass it on from the start for each round.
 @end deftypefun
 
 @deftypefun void gal_txt_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comment}, char @code{*filename}, uint8_t @code{colinfoinstdout})
-Write @code{cols} in a plain text file @code{filename}. @code{cols} may
-have one or two dimensions which determines the output:
+Write @code{cols} in a plain text file @code{filename}.
+@code{cols} may have one or two dimensions which determines the output:
 
 @table @asis
 @item 1D
-@code{cols} is treated as a column and a list of datasets (see @ref{List of
-gal_data_t}): every node in the list is written as one column in a
-table.
+@code{cols} is treated as a column and a list of datasets (see @ref{List of gal_data_t}): every node in the list is written as one column in a table.
 
 @item 2D
-@code{cols} is a two dimensional array, it cannot be treated as a list
-(only one 2D array can currently be written to a text file). So if
-@code{cols->next!=NULL} the next nodes in the list are ignored and will not
-be written.
+@code{cols} is a two dimensional array, it cannot be treated as a list (only one 2D array can currently be written to a text file).
+So if @code{cols->next!=NULL} the next nodes in the list are ignored and will not be written.
 @end table
 
-This is a low-level function for tables. It is recommended to use
-@code{gal_table_write} for generic writing of tables in a variety of
-formats, see @ref{Table input output}.
+This is a low-level function for tables.
+It is recommended to use @code{gal_table_write} for generic writing of tables in a variety of formats, see @ref{Table input output}.
 
-If @code{filename} already exists this function will abort with an error
-and will not write over the existing file. Before calling this function
-make sure if the file exists or not. If @code{comments!=NULL}, a @code{#}
-will be put at the start of each node of the list of strings and will be
-written in the file before the column meta-data in @code{filename} (see
-@ref{List of strings}).
+If @code{filename} already exists this function will abort with an error and will not write over the existing file.
+Before calling this function make sure if the file exists or not.
+If @code{comments!=NULL}, a @code{#} will be put at the start of each node of the list of strings and will be written in the file before the column meta-data in @code{filename} (see @ref{List of strings}).
 
-When @code{filename==NULL}, the column information will be printed on the
-standard output (command-line). When @code{colinfoinstdout!=0} and
-@code{filename==NULL} (columns are printed in the standard output), the
-dataset metadata will also printed in the standard output. When printing to
-the standard output, the column information can be piped into another
-program for further processing and thus the meta-data (lines starting with
-a @code{#}) must be ignored. In such cases, you only print the column
-values by passing @code{0} to @code{colinfoinstdout}.
+When @code{filename==NULL}, the column information will be printed on the standard output (command-line).
+When @code{colinfoinstdout!=0} and @code{filename==NULL} (columns are printed in the standard output), the dataset metadata will also printed in the standard output.
+When printing to the standard output, the column information can be piped into another program for further processing and thus the meta-data (lines starting with a @code{#}) must be ignored.
+In such cases, you only print the column values by passing @code{0} to @code{colinfoinstdout}.
 @end deftypefun
 
 
@@ -21703,47 +21662,35 @@ values by passing @code{0} to @code{colinfoinstdout}.
 @subsubsection TIFF files (@file{tiff.h})
 
 @cindex TIFF format
-Outside of astronomy, the TIFF standard is arguably the most commonly used
-format to store high-precision data/images. Unlike FITS however, the TIFF
-standard only supports images (not tables), but like FITS, it has support
-for all standard data types (see @ref{Numeric data types}) which is the
-primary reason other fields use it.
+Outside of astronomy, the TIFF standard is arguably the most commonly used format to store high-precision data/images.
+Unlike FITS however, the TIFF standard only supports images (not tables), but like FITS, it has support for all standard data types (see @ref{Numeric data types}) which is the primary reason other fields use it.
 
-Another similarity of the TIFF and FITS standards is that TIFF supports
-multiple images in one file. The TIFF standard calls each one of these
-images (and their accompanying meta-data) a `directory' (roughly equivalent
-to the FITS extensions). Unlike FITS however, the directories can only be
-identified by their number (counting from zero), recall that in FITS you
-can also use the extension name to identify it.
+Another similarity of the TIFF and FITS standards is that TIFF supports multiple images in one file.
+The TIFF standard calls each one of these images (and their accompanying meta-data) a `directory' (roughly equivalent to the FITS extensions).
+Unlike FITS however, the directories can only be identified by their number (counting from zero), recall that in FITS you can also use the extension name to identify it.
 
-The functions described here allow easy reading (and later writing) of TIFF
-files within Gnuastro or for users of Gnuastro's libraries. Currently only
-reading is supported, but if you are interested, please get in touch with
-us.
+The functions described here allow easy reading (and later writing) of TIFF files within Gnuastro or for users of Gnuastro's libraries.
+Currently only reading is supported, but if you are interested, please get in touch with us.
 
 @deftypefun {int} gal_tiff_name_is_tiff (char @code{*name})
-Return @code{1} if @code{name} has a TIFF suffix. This can be used to make
-sure that a given input file is TIFF. See @code{gal_tiff_suffix_is_tiff}
-for a list of recognized suffixes.
+Return @code{1} if @code{name} has a TIFF suffix.
+This can be used to make sure that a given input file is TIFF.
+See @code{gal_tiff_suffix_is_tiff} for a list of recognized suffixes.
 @end deftypefun
 
 @deftypefun {int} gal_tiff_suffix_is_tiff (char @code{*name})
-Return @code{1} if @code{suffix} is a recognized TIFF suffix. The
-recognized suffixes are @file{tif}, @file{tiff}, @file{TIFF} and
-@file{TIFF}.
+Return @code{1} if @code{suffix} is a recognized TIFF suffix.
+The recognized suffixes are @file{tif}, @file{tiff}, @file{TIFF} and @file{TIFF}.
 @end deftypefun
 
 @deftypefun {size_t} gal_tiff_dir_string_read (char @code{*string})
-Return the number within @code{string} as a @code{size_t} number to
-identify a TIFF directory. Note that the directories start counting from
-zero.
+Return the number within @code{string} as a @code{size_t} number to identify a TIFF directory.
+Note that the directories start counting from zero.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_tiff_read (char @code{*filename}, size_t @code{dir}, size_t @code{minmapsize}, int @code{quietmmap})
-Read the @code{dir} directory within the TIFF file @code{filename} and
-return the contents of that TIFF directory as @code{gal_data_t}. If the
-directory's image contains multiple channels, the output will be a list
-(see @ref{List of gal_data_t}).
+Read the @code{dir} directory within the TIFF file @code{filename} and return the contents of that TIFF directory as @code{gal_data_t}.
+If the directory's image contains multiple channels, the output will be a list (see @ref{List of gal_data_t}).
 @end deftypefun
 
 
@@ -21754,51 +21701,38 @@ directory's image contains multiple channels, the output will be a list
 @subsubsection JPEG files (@file{jpeg.h})
 
 @cindex JPEG format
-The JPEG file format is one of the most common formats for storing and
-transferring images, recognized by almost all image rendering and
-processing programs. In particular, because of its lossy compression
-algorithm, JPEG files can have low volumes, making it used heavily on the
-internet. For more on this file format, and a comparison with others,
-please see @ref{Recognized file formats}.
+The JPEG file format is one of the most common formats for storing and transferring images, recognized by almost all image rendering and processing programs.
+In particular, because of its lossy compression algorithm, JPEG files can have low volumes, making it used heavily on the internet.
+For more on this file format, and a comparison with others, please see @ref{Recognized file formats}.
 
-For scientific purposes, the lossy compression and very limited dynamic
-range (8-bit integers) make JPEG very unattractive for storing of valuable
-data. However, because of its commonality, it will inevitably be needed in
-some situations. The functions here can be used to read and write JPEG
-images into Gnuastro's @ref{Generic data container}. If the JPEG file has
-more than one color channel, each channel is treated as a separate node in
-a list of datasets (see @ref{List of gal_data_t}).
+For scientific purposes, the lossy compression and very limited dynamic range (8-bit integers) make JPEG very unattractive for storing of valuable data.
+However, because of its commonality, it will inevitably be needed in some situations.
+The functions here can be used to read and write JPEG images into Gnuastro's @ref{Generic data container}.
+If the JPEG file has more than one color channel, each channel is treated as a separate node in a list of datasets (see @ref{List of gal_data_t}).
 
 @deftypefun {int} gal_jpeg_name_is_jpeg (char @code{*name})
-Return @code{1} if @code{name} has a JPEG suffix. This can be used to make
-sure that a given input file is JPEG. See @code{gal_jpeg_suffix_is_jpeg}
-for a list of recognized suffixes.
+Return @code{1} if @code{name} has a JPEG suffix.
+This can be used to make sure that a given input file is JPEG.
+See @code{gal_jpeg_suffix_is_jpeg} for a list of recognized suffixes.
 @end deftypefun
 
 @deftypefun {int} gal_jpeg_suffix_is_jpeg (char @code{*name})
-Return @code{1} if @code{suffix} is a recognized JPEG suffix. The
-recognized suffixes are @code{.jpg}, @code{.JPG}, @code{.jpeg},
-@code{.JPEG}, @code{.jpe}, @code{.jif}, @code{.jfif} and @code{.jfi}.
+Return @code{1} if @code{suffix} is a recognized JPEG suffix.
+The recognized suffixes are @code{.jpg}, @code{.JPG}, @code{.jpeg}, @code{.JPEG}, @code{.jpe}, @code{.jif}, @code{.jfif} and @code{.jfi}.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_jpeg_read (char @code{*filename}, size_t @code{minmapsize}, int @code{quietmmap})
-Read the JPEG file @code{filename} and return the contents as
-@code{gal_data_t}. If the directory's image contains multiple
-colors/channels, the output will be a list with one node per color/channel
-(see @ref{List of gal_data_t}).
+Read the JPEG file @code{filename} and return the contents as @code{gal_data_t}.
+If the directory's image contains multiple colors/channels, the output will be a list with one node per color/channel (see @ref{List of gal_data_t}).
 @end deftypefun
 
 @cindex JPEG compression quality
 @deftypefun {void} gal_jpeg_write (gal_data_t @code{*in}, char @code{*filename}, uint8_t @code{quality}, float @code{widthincm})
-Write the given dataset (@code{in}) into @file{filename} (a JPEG file). If
-@code{in} is a list, then each node in the list will be a color channel,
-therefore there can only be 1, 3 or 4 nodes in the list. If the number of
-nodes is different, then this function will abort the program with a
-message describing the cause. The lossy JPEG compression level can be set
-through @code{quality} which is a value between 0 and 100 (inclusive, 100
-being the best quality). The display width of the JPEG file in units of
-centimeters (to suggest to viewers/users, only a meta-data) can be set
-through @code{widthincm}.
+Write the given dataset (@code{in}) into @file{filename} (a JPEG file).
+If @code{in} is a list, then each node in the list will be a color channel, therefore there can only be 1, 3 or 4 nodes in the list.
+If the number of nodes is different, then this function will abort the program with a message describing the cause.
+The lossy JPEG compression level can be set through @code{quality} which is a value between 0 and 100 (inclusive, 100 being the best quality).
+The display width of the JPEG file in units of centimeters (to suggest to viewers/users, only a meta-data) can be set through @code{widthincm}.
 @end deftypefun
 
 

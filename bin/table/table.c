@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gsl/gsl_heapsort.h>
 
+#include <gnuastro/txt.h>
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
@@ -135,15 +136,48 @@ table_selection_range(struct tableparams *p, gal_data_t *col)
 
 
 
+/* Given a string dataset and a single string, return a `uint8_t' array
+   with the same size as the string dataset that has a `1' for all the
+   elements that are equal. */
+static gal_data_t *
+table_selection_string_eq_ne(gal_data_t *column, char *reference, int e0n1)
+{
+  gal_data_t *out;
+  uint8_t *oarr, comp;
+  size_t i, size=column->size;
+  char **strarr=column->array;
+
+  /* Allocate the output binary dataset. */
+  out=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &size, NULL, 0, -1, 1,
+                     NULL, NULL, NULL);
+  oarr=out->array;
+
+  /* Parse the values and mark the outputs IN THE OPPOSITE manner (we are
+     marking the ones that must be removed). */
+  for(i=0;i<size;++i)
+    {
+      comp=strcmp(strarr[i], reference);
+      oarr[i] = e0n1 ? (comp==0) : (comp!=0);
+    }
+
+  /* Return. */
+  return out;
+}
+
+
+
+
+
 static gal_data_t *
 table_selection_equal_or_notequal(struct tableparams *p, gal_data_t *col,
                                   int e0n1)
 {
-  double *darr;
+  void *varr;
+  char **strarr;
   size_t i, one=1;
   int numok=GAL_ARITHMETIC_NUMOK;
   int inplace=GAL_ARITHMETIC_INPLACE;
-  gal_data_t *eq, *out=NULL, *value=NULL;
+  gal_data_t *eq, *tdata, *out=NULL, *value=NULL;
   gal_data_t *arg = e0n1 ? p->notequal : p->equal;
 
   /* Note that this operator is used to make the "masked" array, so when
@@ -161,17 +195,36 @@ table_selection_equal_or_notequal(struct tableparams *p, gal_data_t *col,
           "problem at %s. `p->range' should not be NULL at this point",
           __func__, PACKAGE_BUGREPORT);
 
-  /* Allocate space for the value. */
-  value=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &one, NULL, 0, -1, 1,
-                     NULL, NULL, NULL);
+  /* To easily parse the given values. */
+  strarr=arg->array;
 
   /* Go through the values given to this call of the option and flag the
      elements. */
   for(i=0;i<arg->size;++i)
     {
-      darr=arg->array;
-      ((double *)(value->array))[0] = darr[i];
-      eq=gal_arithmetic(operator, 1, numok, col, value);
+      /* Write the value  */
+      if(col->type==GAL_TYPE_STRING)
+        eq=table_selection_string_eq_ne(col, strarr[i], e0n1);
+      else
+        {
+          /* Allocate the value dataset. */
+          value=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &one, NULL, 0, -1, 1,
+                               NULL, NULL, NULL);
+          varr=value->array;
+
+          /* Read the stored string as a float64. */
+          if( gal_type_from_string(&varr, strarr[i], GAL_TYPE_FLOAT64) )
+            {
+              fprintf(stderr, "%s couldn't be read as a number.\n", strarr[i]);
+              exit(EXIT_FAILURE);
+            }
+
+          /* Mark the rows that are equal (irrespective of the column's
+             original numerical datatype). */
+          eq=gal_arithmetic(operator, 1, numok, col, value);
+        }
+
+      /* Merge the results with (possible) previous results. */
       if(out)
         {
           out=gal_arithmetic(mergeop, 1, inplace, out, eq);
@@ -189,8 +242,10 @@ table_selection_equal_or_notequal(struct tableparams *p, gal_data_t *col,
   }
   */
 
+
   /* Move the main pointer to the next possible call of the given
-     option. With this, we can safely free `arg' at this point. */
+     option. Note that `arg' already points to `p->equal' or `p->notequal',
+     so it will automatically be freed with the next step.*/
   if(e0n1) p->notequal=p->notequal->next;
   else     p->equal=p->equal->next;
 

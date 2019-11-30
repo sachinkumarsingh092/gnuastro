@@ -694,6 +694,58 @@ gal_options_parse_list_of_numbers(char *string, char *filename, size_t lineno)
 
 
 
+gal_data_t *
+gal_options_parse_list_of_strings(char *string, char *filename, size_t lineno)
+{
+  size_t num;
+  gal_data_t *out;
+  gal_list_str_t *list=NULL, *tll;
+  char *cp, *token, **strarr, delimiters[]=",:";
+
+  /* The nature of the arrays/numbers read here is very small, so since
+     `p->cp.minmapsize' might not have been read yet, we will set it to -1
+     (largest size_t number), so the values are kept in memory. */
+  int quietmmap=1;
+  size_t minmapsize=-1;
+
+  /* If we have an empty string, just return NULL. */
+  if(string==NULL || *string=='\0') return NULL;
+
+  /* Make a copy of the input string, and save the tokens */
+  gal_checkset_allocate_copy(string, &cp);
+  token=strtok(cp, delimiters);
+  gal_list_str_add(&list, token, 1);
+  while(token!=NULL)
+    {
+      token=strtok(NULL, delimiters);
+      if(token!=NULL)
+        gal_list_str_add(&list, token, 1);
+    }
+
+
+  /* Allocate the output dataset (array containing all the given
+     strings). */
+  num=gal_list_str_number(list);
+  out=gal_data_alloc(NULL, GAL_TYPE_STRING, 1, &num, NULL, 0,
+                     minmapsize, quietmmap, NULL, NULL, NULL);
+
+  /* Fill the output dataset. */
+  strarr=out->array;
+  for(tll=list;tll!=NULL;tll=tll->next)
+    strarr[--num]=tll->v;
+
+  /* Clean up and return. Note that we don't want to free the values in the
+     list, the elements in `out->array' point to them and will later use
+     them.*/
+  free(cp);
+  gal_list_str_free(list, 0);
+  return out;
+}
+
+
+
+
+
 /* The input to this function is a string of any number of strings
    separated by a comma (`,') for example: `a,abc,abcd'. The output
    `gal_data_t' contains the array of given strings. You can read the
@@ -1086,14 +1138,15 @@ gal_options_read_sigma_clip(struct argp_option *option, char *arg,
    The output is a `gal_data_t', where the `name' is the given name and the
    values are in its array (of `float64' type).
  */
-void *
+static void *
 gal_options_parse_name_and_values(struct argp_option *option, char *arg,
-                                  char *filename, size_t lineno, void *junk)
+                                  char *filename, size_t lineno, void *junk,
+                                  int str0_f641)
 {
   size_t i, nc;
-  double *darray;
-  char *c, *name, *values;
+  double *darray=NULL;
   gal_data_t *tmp, *existing, *dataset;
+  char *c, *name, *values, **strarr=NULL;
   char *str, sstr[GAL_OPTIONS_STATIC_MEM_FOR_VALUES];
 
   /* We want to print the stored values. */
@@ -1101,7 +1154,8 @@ gal_options_parse_name_and_values(struct argp_option *option, char *arg,
     {
       /* Set the value pointer to `dataset'. */
       existing=*(gal_data_t **)(option->value);
-      darray = existing->array;
+      if(str0_f641) darray = existing->array;
+      else          strarr = existing->array;
 
       /* First write the name. */
       nc=0;
@@ -1116,7 +1170,8 @@ gal_options_parse_name_and_values(struct argp_option *option, char *arg,
                   "characters in the statically allocated string has become "
                   "too close to %d", __func__, PACKAGE_BUGREPORT,
                   GAL_OPTIONS_STATIC_MEM_FOR_VALUES);
-          nc += sprintf(sstr+nc, "%g,", darray[i]);
+          if(str0_f641) nc += sprintf(sstr+nc, "%g,", darray[i]);
+          else          nc += sprintf(sstr+nc, "%s,", strarr[i]);
         }
       sstr[nc-1]='\0';
 
@@ -1137,10 +1192,13 @@ gal_options_parse_name_and_values(struct argp_option *option, char *arg,
       *c='\0';
       gal_checkset_allocate_copy(arg, &name);
 
-      /* Read the values and write the name. */
-      dataset=gal_options_parse_list_of_numbers(values, filename, lineno);
+      /* Read the values. */
+      dataset=( str0_f641
+                ? gal_options_parse_list_of_numbers(values, filename, lineno)
+                : gal_options_parse_list_of_strings(values, filename, lineno));
 
-      /* If there actually was a string of numbers, then do the rest. */
+      /* If there actually was a string of numbers, add the dataset to the
+         rest. */
       if(dataset)
         {
           dataset->name=name;
@@ -1171,6 +1229,30 @@ gal_options_parse_name_and_values(struct argp_option *option, char *arg,
       /* Our job is done, return NULL. */
       return NULL;
     }
+}
+
+
+
+
+
+void *
+gal_options_parse_name_and_strings(struct argp_option *option, char *arg,
+                                   char *filename, size_t lineno, void *junk)
+{
+  return gal_options_parse_name_and_values(option, arg, filename, lineno,
+                                           junk, 0);
+}
+
+
+
+
+
+void *
+gal_options_parse_name_and_float64s(struct argp_option *option, char *arg,
+                                    char *filename, size_t lineno, void *junk)
+{
+  return gal_options_parse_name_and_values(option, arg, filename, lineno,
+                                           junk, 1);
 }
 
 
