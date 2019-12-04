@@ -17231,8 +17231,19 @@ List the pre-defined spectral line wavelengths and names on standard output, the
 When this option is given, other operations on the command-line will be ignored.
 This is convenient when you forget the specific name of the spectral line used within Gnuastro.
 
-The format of the list is a two-column table, with Gnuastro's text table format (see @ref{Gnuastro text table format}).
 These names can be used with the options that deal with spectral lines, for example @option{--obsline} (below) and @option{--lineatz} (@ref{CosmicCalculator specific calculations}).
+
+The format of the output list is a two-column table, with Gnuastro's text table format (see @ref{Gnuastro text table format}).
+Therefore, if you are only looking for lines in a specific range, you can pipe the output into Gnuastro's table program and use its @option{--range} option on the @code{wavelength} (first) column.
+For example, if you only want to see the lines between 4000 and 6000 Angstroms, you can run this command:
+
+@example
+$ astcosmiccal --listlines \
+               | asttable --range=wavelength,4000,6000
+@end example
+
+@noindent
+And if you want to use the list later and have it as a table in a file, you can easily add the @option{--output} (or @option{-o}) option to the @command{asttable} command, and specify the filename, for example @option{--output=lines.fits} or @option{--output=lines.txt}.
 
 @item -O STR/FLT,FLT
 @itemx --obsline=STR/FLT,FLT

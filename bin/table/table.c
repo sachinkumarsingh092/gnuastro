@@ -177,7 +177,7 @@ table_selection_equal_or_notequal(struct tableparams *p, gal_data_t *col,
   size_t i, one=1;
   int numok=GAL_ARITHMETIC_NUMOK;
   int inplace=GAL_ARITHMETIC_INPLACE;
-  gal_data_t *eq, *tdata, *out=NULL, *value=NULL;
+  gal_data_t *eq, *out=NULL, *value=NULL;
   gal_data_t *arg = e0n1 ? p->notequal : p->equal;
 
   /* Note that this operator is used to make the "masked" array, so when
