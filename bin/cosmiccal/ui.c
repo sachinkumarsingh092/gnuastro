@@ -417,9 +417,36 @@ ui_read_check_only_options(struct cosmiccalparams *p)
 /***************       Preparations         *******************/
 /**************************************************************/
 static void
+ui_list_lines(struct cosmiccalparams *p)
+{
+  size_t i;
+
+  /* First print the metadata */
+  printf("# Column 1: Wavelength [Angstrom,f32] Pre-defined line wavelength.\n");
+  printf("# Column 2: Name       [name,  str10] Pre-defined line name.\n");
+
+  /* Print the line information. */
+  for(i=1;i<GAL_SPECLINES_NUMBER;++i)
+    printf("%-15g%s\n", gal_speclines_line_angstrom(i),
+           gal_speclines_line_name(i));
+
+  /* Abort the program. */
+  exit(EXIT_SUCCESS);
+}
+
+
+
+
+
+static void
 ui_preparations(struct cosmiccalparams *p)
 {
   double *obsline = p->obsline ? p->obsline->array : NULL;
+
+  /* If `--listlines' is given, print them and abort, don't continue with
+     the preparations. */
+  if(p->listlines)
+    ui_list_lines(p);
 
   /* If `--obsline' has been given, set the redshift based on it. */
   if(p->obsline)

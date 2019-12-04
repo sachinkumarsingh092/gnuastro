@@ -114,6 +114,26 @@ struct argp_option program_options[] =
 
 
 
+
+    /* Output options */
+    {
+      "listlines",
+      UI_KEY_LISTLINES,
+      0,
+      0,
+      "List known spectral lines.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->listlines,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
+
+
+
+
     {
       0, 0, 0, 0,
       "Specific calculations",

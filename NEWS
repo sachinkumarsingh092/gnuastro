@@ -7,6 +7,12 @@ See the end of the file for license conditions.
 
 ** New features
 
+  CosmicCalculator:
+   --listlines: list the pre-defined spectral line wavelengths and names
+     (which you can use with the `--obsline' and `--lineatz' options). This
+     is convenient when you forget the specific name of the spectral line
+     used within Gnuastro.
+
   Fits:
    --datasum: Calculate and print the given HDU's "datasum" to stdout.
 

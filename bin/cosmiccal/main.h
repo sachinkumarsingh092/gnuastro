@@ -52,6 +52,7 @@ struct cosmiccalparams
   double               omatter; /* Current matter density.              */
   double            oradiation; /* Current radiation density.           */
   gal_data_t          *obsline; /* Observed wavelength of a line.       */
+  uint8_t            listlines; /* List the known spectral lines.       */
 
   /* Outputs. */
   gal_list_i32_t     *specific; /* Codes for single row calculations.   */

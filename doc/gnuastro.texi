@@ -17226,6 +17226,14 @@ Matter (including massive neutrinos) density divided by the critical density in 
 @itemx --oradiation=FLT
 Radiation density divided by the critical density in the current Universe (@mymath{\Omega_{r,0}}).
 
+@item --listlines
+List the pre-defined spectral line wavelengths and names on standard output, then abort CosmicCalculator.
+When this option is given, other operations on the command-line will be ignored.
+This is convenient when you forget the specific name of the spectral line used within Gnuastro.
+
+The format of the list is a two-column table, with Gnuastro's text table format (see @ref{Gnuastro text table format}).
+These names can be used with the options that deal with spectral lines, for example @option{--obsline} (below) and @option{--lineatz} (@ref{CosmicCalculator specific calculations}).
+
 @item -O STR/FLT,FLT
 @itemx --obsline=STR/FLT,FLT
 @cindex Rest-frame wavelength

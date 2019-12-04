@@ -46,7 +46,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 __BEGIN_C_DECLS  /* From C++ preparations */
 
 
-/* Spectral line internal codes. */
+/* Spectral line internal codes (SORT BY WAVELENGTH). */
 enum gal_speclines_line_codes
 {
   GAL_SPECLINES_INVALID=0,
@@ -79,10 +79,14 @@ enum gal_speclines_line_codes
   GAL_SPECLINES_HEIIBLUE,
   GAL_SPECLINES_LYALPHA,
   GAL_SPECLINES_LYLIMIT,
+
+  /* This should be the last element (to keep the total number of
+     lines). */
+  GAL_SPECLINES_NUMBER,
 };
 
 
-/* Spectral lines wavelengths in Angstroms. */
+/* Spectral lines wavelengths in Angstroms (SORT BY WAVELENGTH). */
 #define GAL_SPECLINES_ANGSTROM_SIIRED    6731
 #define GAL_SPECLINES_ANGSTROM_SII       6724
 #define GAL_SPECLINES_ANGSTROM_SIIBLUE   6717
@@ -114,7 +118,7 @@ enum gal_speclines_line_codes
 #define GAL_SPECLINES_ANGSTROM_LYLIMIT   912
 
 
-/* Spectral line name strings. */
+/* Spectral line name strings (SORT BY WAVELENGTH). */
 #define GAL_SPECLINES_NAME_SIIRED    "siired"
 #define GAL_SPECLINES_NAME_SII       "sii"
 #define GAL_SPECLINES_NAME_SIIBLUE   "siiblue"
