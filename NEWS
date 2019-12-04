@@ -21,6 +21,7 @@ See the end of the file for license conditions.
    --notequal: Can now work on columns with string type also.
 
   Library:
+   - GAL_SPECLINES_INVALID_MAX: Total number of spectral lines, plus 1.
    - gal_txt_trim_space: trim white space before and after a string.
 
 ** Removed features

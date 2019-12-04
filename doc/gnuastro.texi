@@ -17245,7 +17245,8 @@ It can be one of the standard names below, or any rest-frame wavelength in Angst
 The second argument is the observed wavelength of that line.
 For example @option{--obsline=lyalpha,6000} is the same as @option{--obsline=1215.64,6000}.
 
-The accepted names are listed below, sorted from red (longer wavelength) to blue (shorter wavelength).
+The pre-defined names are listed below, sorted from red (longer wavelength) to blue (shorter wavelength).
+You can get this list on the command-line with the @option{--listlines}.
 
 @table @code
 @item siired
@@ -17470,9 +17471,10 @@ The comoving volume in Megaparsecs cube (Mpc@mymath{^3}) until the desired redsh
 @item -i STR/FLT
 @itemx --lineatz=STR/FLT
 The wavelength of the specified line at the redshift given to CosmicCalculator.
-The line can be specified either by its name (see description of @option{--obsline} in @ref{CosmicCalculator input options}), or directly as a number.
+The line can be specified either by its name or directly as a number (its wavelength).
+To get the list of pre-defined names for the lines and their wavelength, you can use the @option{--listlines} option, see @ref{CosmicCalculator input options}.
 In the former case (when a name is given), the returned number is in units of Angstroms.
-In the latter (when a number is given), the returned value is the same units of the input number.
+In the latter (when a number is given), the returned value is the same units of the input number (assuming its a wavelength).
 
 @end table
 
@@ -24646,8 +24648,17 @@ spectral lines. All these functions are declared in
 @deffnx Macro GAL_SPECLINES_HEIIBLUE
 @deffnx Macro GAL_SPECLINES_LYALPHA
 @deffnx Macro GAL_SPECLINES_LYLIMIT
+@deffnx Macro GAL_SPECLINES_INVALID_MAX
 Internal values/identifiers for specific spectral lines as is clear from
 their names.
+Note the first and last one, they can be used when parsing the lines automatically: both don't correspond to any line, but their integer values correspond to the two integers just before and after the first and last line identifier.
+
+@code{GAL_SPECLINES_INVALID} has a value of zero, and allows you to have a fixed integer which never corresponds to a line.
+@code{GAL_SPECLINES_INVALID_MAX} is the total number of pre-defined lines, plus one.
+So you can parse all the known lines with a @code{for} loop like this:
+@example
+for(i=1;i<GAL_SPECLINES_INVALID_MAX;++i)
+@end example
 @end deffn
 
 @deffn  Macro GAL_SPECLINES_ANGSTROM_SIIRED

@@ -426,7 +426,7 @@ ui_list_lines(struct cosmiccalparams *p)
   printf("# Column 2: Name       [name,  str10] Pre-defined line name.\n");
 
   /* Print the line information. */
-  for(i=1;i<GAL_SPECLINES_NUMBER;++i)
+  for(i=1;i<GAL_SPECLINES_INVALID_MAX;++i)
     printf("%-15g%s\n", gal_speclines_line_angstrom(i),
            gal_speclines_line_name(i));
 
