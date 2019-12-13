@@ -190,20 +190,6 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
           printf("latpole: %f\n", wcs->latpole);
           */
 
-          /* When LONPOLE isn't given and the PV matrix information is not
-             given properly, `wcs->lonpole' can have absurd values (on the
-             order of 1e50 or something). In such cases, we can have this
-             WCSLIB error: "wcsset ERROR 5: Invalid parameter value.". To
-             avoid confusion for the users in such cases, we'll see if the
-             value is in the reasonable range and if not, we'll inform the
-             user.*/
-          if(wcs->lonpole>360 || wcs->lonpole<-360)
-            fprintf(stderr, "WARNING: the inferred `lonpole' of the input's "
-                    "WCS is not reasonable (with a value of `%f').\n\n"
-                    "If `LONPOLE' isn't in the FITS keywords, this is "
-                    "probably because of the `PV%%_1' keyword(s).\n\n",
-                    wcs->lonpole);
-
           /* Set the WCS structure. */
           status=wcsset(wcs);
           if(status)
