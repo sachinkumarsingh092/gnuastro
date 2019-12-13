@@ -157,11 +157,11 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
                       "WARNING: You can do this with Gnuastro's `astfits' "
                       "program and the `--update' option. The minimal WCS "
                       "keywords that need a numerical value are: `CRVAL1', "
-                      "`CRVAL2', `CRPIX1', `CRPIX2' and `CD%%_%%' (or "
-                      "`PC%%_%%', where the %% are integers), please see "
-                      "the FITS standard, and inspect your FITS file to "
-                      "identify the full set of keywords that you need "
-                      "correct (for example PV%%_%% keywords).\n\n");
+                      "`CRVAL2', `CRPIX1', `CRPIX2', `EQUINOX' and "
+                      "`CD%%_%%' (or `PC%%_%%', where the %% are integers), "
+                      "please see the FITS standard, and inspect your FITS "
+                      "file to identify the full set of keywords that you "
+                      "need correct (for example PV%%_%% keywords).\n\n");
         }
 
       /* CTYPE is a mandatory WCS keyword, so if it hasn't been given (its
@@ -176,6 +176,34 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
         }
       else
         {
+          /* For a check.
+          printf("flag: %d\n", wcs->flag);
+          printf("naxis: %d\n", wcs->naxis);
+          printf("crpix: %f, %f\n", wcs->crpix[0], wcs->crpix[1]);
+          printf("pc: %f, %f, %f, %f\n", wcs->pc[0], wcs->pc[1], wcs->pc[2],
+                 wcs->pc[3]);
+          printf("cdelt: %f, %f\n", wcs->cdelt[0], wcs->cdelt[1]);
+          printf("crval: %f, %f\n", wcs->crval[0], wcs->crval[1]);
+          printf("cunit: %s, %s\n", wcs->cunit[0], wcs->cunit[1]);
+          printf("ctype: %s, %s\n", wcs->ctype[0], wcs->ctype[1]);
+          printf("lonpole: %f\n", wcs->lonpole);
+          printf("latpole: %f\n", wcs->latpole);
+          */
+
+          /* When LONPOLE isn't given and the PV matrix information is not
+             given properly, `wcs->lonpole' can have absurd values (on the
+             order of 1e50 or something). In such cases, we can have this
+             WCSLIB error: "wcsset ERROR 5: Invalid parameter value.". To
+             avoid confusion for the users in such cases, we'll see if the
+             value is in the reasonable range and if not, we'll inform the
+             user.*/
+          if(wcs->lonpole>360 || wcs->lonpole<-360)
+            fprintf(stderr, "WARNING: the inferred `lonpole' of the input's "
+                    "WCS is not reasonable (with a value of `%f').\n\n"
+                    "If `LONPOLE' isn't in the FITS keywords, this is "
+                    "probably because of the `PV%%_1' keyword(s).\n\n",
+                    wcs->lonpole);
+
           /* Set the WCS structure. */
           status=wcsset(wcs);
           if(status)
@@ -199,11 +227,11 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
         }
     }
 
-
   /* Clean up and return. */
+  status=0;
   if (fits_free_memory(fullheader, &status) )
-    gal_fits_io_error(status, "problem in fitsarrayvv.c for freeing "
-                           "the memory used to keep all the headers");
+    gal_fits_io_error(status, "problem in freeing the memory used to "
+                      "keep all the headers");
   return wcs;
 }
 

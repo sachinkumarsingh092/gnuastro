@@ -377,7 +377,7 @@ ui_preparations(struct arithmeticparams *p)
         }
       else
         fprintf(stderr, "WARNING: %s (hdu %s) didn't contain a "
-                "(readable by WCSLIB) WCS.", p->wcsfile, p->wcshdu);
+                "(readable by WCSLIB) WCS.\n", p->wcsfile, p->wcshdu);
 
       /* Correct the WCS dimensions if necessary. Note that we don't need
          the `ndim' or `dsize' any more. */
