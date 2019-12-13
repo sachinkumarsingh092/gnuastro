@@ -72,6 +72,8 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
                      int *nwcs)
 {
   /* Declaratins: */
+  int sumcheck;
+  size_t i, fulllen;
   int nkeys=0, status=0;
   struct wcsprm *wcs=NULL;
   char *fullheader, *to, *from;
@@ -113,7 +115,6 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
       /*******************************************************/
     }
 
-
   /* WCSlib function to parse the FITS headers. */
   status=wcspih(fullheader, nkeys, relax, ctrl, &nreject, nwcs, &wcs);
   if(status)
@@ -124,14 +125,45 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
               status, wcs_errmsg[status]);
       wcs=NULL; *nwcs=0;
     }
-  if (fits_free_memory(fullheader, &status) )
-    gal_fits_io_error(status, "problem in fitsarrayvv.c for freeing "
-                           "the memory used to keep all the headers");
-
 
   /* Set the internal structure: */
   if(wcs)
     {
+      /* It may happen that the WCS-related keyword values are stored as
+         strings (they have single-quotes around them). In this case,
+         WCSLIB will read the CRPIX and CRVAL values as zero. When this
+         happens do a small check and abort, while informing the user about
+         the problem. */
+      sumcheck=0;
+      for(i=0;i<wcs->naxis;++i)
+        {sumcheck += (wcs->crval[i]==0.0f) + (wcs->crpix[i]==0.0f);}
+      if(sumcheck==wcs->naxis*2)
+        {
+          /* We only care about the first set of characters in each
+             80-character row, so we don't need to parse the last few
+             characters anyway. */
+          fulllen=strlen(fullheader)-12;
+          for(i=0;i<fulllen;++i)
+            if( strncmp(fullheader+i, "CRVAL1  = '", 11) == 0 )
+              fprintf(stderr, "WARNING: WCS Keyword values are not "
+                      "numbers.\n\n"
+                      "WARNING: The values to the WCS-related keywords are "
+                      "enclosed in single-quotes. In the FITS standard "
+                      "this is how string values are stored, therefore "
+                      "WCSLIB is unable to read them AND WILL PUT ZERO IN "
+                      "THEIR PLACE (creating a wrong WCS in the output). "
+                      "Please update the respective keywords of the input "
+                      "to be numbers (see next line).\n\n"
+                      "WARNING: You can do this with Gnuastro's `astfits' "
+                      "program and the `--update' option. The minimal WCS "
+                      "keywords that need a numerical value are: `CRVAL1', "
+                      "`CRVAL2', `CRPIX1', `CRPIX2' and `CD%%_%%' (or "
+                      "`PC%%_%%', where the %% are integers), please see "
+                      "the FITS standard, and inspect your FITS file to "
+                      "identify the full set of keywords that you need "
+                      "correct (for example PV%%_%% keywords).\n\n");
+        }
+
       /* CTYPE is a mandatory WCS keyword, so if it hasn't been given (its
          '\0'), then the headers didn't have a WCS structure. However,
          WCSLIB still fills in the basic information (for example the
@@ -168,7 +200,10 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
     }
 
 
-  /* Return the WCS structure. */
+  /* Clean up and return. */
+  if (fits_free_memory(fullheader, &status) )
+    gal_fits_io_error(status, "problem in fitsarrayvv.c for freeing "
+                           "the memory used to keep all the headers");
   return wcs;
 }
 
@@ -971,12 +1006,13 @@ gal_wcs_world_to_img(gal_data_t *coords, struct wcsprm *wcs, int inplace)
                                  &world, &pixcrd, &imgcrd);
   nelem=wcs->naxis; /* We have to make sure a WCS is given first. */
 
+
   /* Write the values from the input list of separate columns into a single
      array (WCSLIB input). */
   wcs_convert_list_to_array(coords, world, stat, wcs->naxis, 1);
 
 
-  /* Use WCSLIB's wcsp2s for the conversion. */
+  /* Use WCSLIB's wcss2p for the conversion. */
   status=wcss2p(wcs, ncoord, nelem, world, phi, theta, imgcrd, pixcrd, stat);
   if(status)
     error(EXIT_FAILURE, 0, "%s: wcss2p ERROR %d: %s", __func__, status,
