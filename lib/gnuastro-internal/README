@@ -1,7 +1,7 @@
 GNU Astronomy Utilities internal header files
 ---------------------------------------------
 
-Copyright (C) 2015-2019 Free Software Foundation, Inc.
+Copyright (C) 2015-2020, Free Software Foundation, Inc.
 See the end of the file for license conditions.
 
 The `.h' files in this directory are headers to Gnuastro's internal
@@ -17,7 +17,6 @@ enough).
 
 Copyright
 ---------
-Copyright (C) 2015-2019 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document under
 the terms of the GNU Free Documentation License, Version 1.3 or any later
