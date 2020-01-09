@@ -932,6 +932,51 @@ struct multioperandparams
 
 
 
+#define MULTIOPERAND_QUANTILE(TYPE) {                                   \
+    size_t n, j;                                                        \
+    gal_data_t *quantile;                                               \
+    TYPE *o=p->out->array;                                              \
+    TYPE *pixs=gal_pointer_allocate(p->list->type, p->dnum, 0,          \
+                                    __func__, "pixs");                  \
+    gal_data_t *cont=gal_data_alloc(pixs, p->list->type, 1, &p->dnum,   \
+                                    NULL, 0, -1, 1, NULL, NULL, NULL);  \
+                                                                        \
+    /* Go over all the pixels assigned to this thread. */               \
+    for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
+      {                                                                 \
+        /* Initialize, `j' is desired pixel's index. */                 \
+        n=0;                                                            \
+        j=tprm->indexs[tind];                                           \
+                                                                        \
+        /* Read the necessay values from each input. */                 \
+        for(i=0;i<p->dnum;++i) pixs[n++]=a[i][j];                       \
+                                                                        \
+        /* If there are any elements, measure the  */                   \
+        if(n)                                                           \
+          {                                                             \
+            /* Calculate the quantile and put it in the output. */      \
+            quantile=gal_statistics_quantile(cont, p->p1, 1);           \
+            memcpy(&o[j], quantile->array,                              \
+                   gal_type_sizeof(p->list->type));                     \
+            gal_data_free(quantile);                                    \
+                                                                        \
+            /* Since we are doing sigma-clipping in place, the size, */ \
+            /* and flags need to be reset. */                           \
+            cont->flag=0;                                               \
+            cont->size=cont->dsize[0]=p->dnum;                          \
+          }                                                             \
+        else                                                            \
+          o[j]=b;                                                       \
+      }                                                                 \
+                                                                        \
+    /* Clean up. */                                                     \
+    gal_data_free(cont);                                                \
+  }
+
+
+
+
+
 #define MULTIOPERAND_SIGCLIP(TYPE) {                                    \
     size_t n, j;                                                        \
     gal_data_t *sclip;                                                  \
@@ -955,6 +1000,7 @@ struct multioperandparams
         /* If there are any elements, measure the  */                   \
         if(n)                                                           \
           {                                                             \
+            /* Calculate the sigma-clip and write it in. */             \
             sclip=gal_statistics_sigma_clip(cont, p->p1, p->p2, 1, 1);  \
             sarr=sclip->array;                                          \
             switch(p->operator)                                         \
@@ -968,6 +1014,7 @@ struct multioperandparams
                       "valid for sigma-clipping results", __func__,     \
                       p->operator);                                     \
               }                                                         \
+            gal_data_free(sclip);                                       \
                                                                         \
             /* Since we are doing sigma-clipping in place, the size, */ \
             /* and flags need to be reset. */                           \
@@ -1034,6 +1081,10 @@ struct multioperandparams
                                                                         \
       case GAL_ARITHMETIC_OP_MEDIAN:                                    \
         MULTIOPERAND_MEDIAN(TYPE, QSORT_F);                             \
+        break;                                                          \
+                                                                        \
+      case GAL_ARITHMETIC_OP_QUANTILE:                                  \
+        MULTIOPERAND_QUANTILE(TYPE);                                    \
         break;                                                          \
                                                                         \
       case GAL_ARITHMETIC_OP_SIGCLIP_STD:                               \
@@ -1144,6 +1195,17 @@ arithmetic_multioperand(int operator, int flags, gal_data_t *list,
       /* Write them */
       if(isnan(p1)) p1=((float *)(tmp->array))[0];
       else          p2=((float *)(tmp->array))[0];
+
+      /* Operator specific, parameter sanity checks. */
+      switch(operator)
+        {
+        case GAL_ARITHMETIC_OP_QUANTILE:
+          if(p1<0 || p1>1)
+            error(EXIT_FAILURE, 0, "%s: the parameter given to the `quantile' "
+                  "operator must be between (and including) 0 and 1. The "
+                  "given value is: %g", __func__, p1);
+          break;
+        }
     }
 
 
@@ -1178,6 +1240,7 @@ arithmetic_multioperand(int operator, int flags, gal_data_t *list,
     case GAL_ARITHMETIC_OP_MEAN:           otype=GAL_TYPE_FLOAT32; break;
     case GAL_ARITHMETIC_OP_STD:            otype=GAL_TYPE_FLOAT32; break;
     case GAL_ARITHMETIC_OP_MEDIAN:         otype=GAL_TYPE_FLOAT32; break;
+    case GAL_ARITHMETIC_OP_QUANTILE:       otype=list->type;       break;
     case GAL_ARITHMETIC_OP_SIGCLIP_STD:    otype=GAL_TYPE_FLOAT32; break;
     case GAL_ARITHMETIC_OP_SIGCLIP_MEAN:   otype=GAL_TYPE_FLOAT32; break;
     case GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN: otype=GAL_TYPE_FLOAT32; break;
@@ -1620,6 +1683,8 @@ gal_arithmetic_set_operator(char *string, size_t *num_operands)
     { op=GAL_ARITHMETIC_OP_STD;               *num_operands=-1; }
   else if (!strcmp(string, "median"))
     { op=GAL_ARITHMETIC_OP_MEDIAN;            *num_operands=-1; }
+  else if (!strcmp(string, "quantile"))
+    { op=GAL_ARITHMETIC_OP_QUANTILE;          *num_operands=-1; }
   else if (!strcmp(string, "sigclip-number"))
     { op=GAL_ARITHMETIC_OP_SIGCLIP_NUMBER;    *num_operands=-1; }
   else if (!strcmp(string, "sigclip-mean"))
@@ -1750,6 +1815,7 @@ gal_arithmetic_operator_string(int operator)
     case GAL_ARITHMETIC_OP_MEAN:            return "mean";
     case GAL_ARITHMETIC_OP_STD:             return "std";
     case GAL_ARITHMETIC_OP_MEDIAN:          return "median";
+    case GAL_ARITHMETIC_OP_QUANTILE:        return "quantile";
     case GAL_ARITHMETIC_OP_SIGCLIP_NUMBER:  return "sigclip-number";
     case GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN:  return "sigclip-median";
     case GAL_ARITHMETIC_OP_SIGCLIP_MEAN:    return "sigclip-mean";
@@ -1860,6 +1926,7 @@ gal_arithmetic(int operator, size_t numthreads, int flags, ...)
     case GAL_ARITHMETIC_OP_MEAN:
     case GAL_ARITHMETIC_OP_STD:
     case GAL_ARITHMETIC_OP_MEDIAN:
+    case GAL_ARITHMETIC_OP_QUANTILE:
     case GAL_ARITHMETIC_OP_SIGCLIP_STD:
     case GAL_ARITHMETIC_OP_SIGCLIP_MEAN:
     case GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN:

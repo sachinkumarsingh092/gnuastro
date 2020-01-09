@@ -77,6 +77,9 @@ pop_number_of_operands(struct arithmeticparams *p, int op, char *token_string,
   /* See if this operator needs any parameters. If so, pop them. */
   switch(op)
     {
+    case GAL_ARITHMETIC_OP_QUANTILE:
+      numparams=1;
+      break;
     case GAL_ARITHMETIC_OP_SIGCLIP_STD:
     case GAL_ARITHMETIC_OP_SIGCLIP_MEAN:
     case GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN:
@@ -98,8 +101,8 @@ pop_number_of_operands(struct arithmeticparams *p, int op, char *token_string,
       tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
       gal_list_data_add(params, tmp);
 
-      /* A small sanity check (none of the parameters for sigma-clipping
-         can be negative.. */
+      /* A small sanity check (none of the parameters for sigma-clipping,
+         or quantile estimation can be negative. */
       if( ((float *)(tmp->array))[0]<=0.0 )
         error(EXIT_FAILURE, 0, "the %s popped operand of the \"%s\" "
               "operator cannot be negative", cstring, token_string);

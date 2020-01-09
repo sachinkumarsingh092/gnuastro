@@ -7,6 +7,9 @@ See the end of the file for license conditions.
 
 ** New features
 
+  Arithmetic:
+   - New `quantile' operator for coadding datasets.
+
   CosmicCalculator:
    --listlines: list the pre-defined spectral line wavelengths and names
      (which you can use with the `--obsline' and `--lineatz' options). This
@@ -19,10 +22,12 @@ See the end of the file for license conditions.
   Table:
    --equal: Can now work on columns with string type also.
    --notequal: Can now work on columns with string type also.
+   - New `quantile' operator in column arithmetic.
 
   Library:
    - GAL_SPECLINES_INVALID_MAX: Total number of spectral lines, plus 1.
    - gal_txt_trim_space: trim white space before and after a string.
+   - GAL_ARITHMETIC_OP_QUANTILE: operator for `gal_arithmetic'.
 
 ** Removed features
 

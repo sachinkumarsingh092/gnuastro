@@ -121,6 +121,7 @@ enum gal_arithmetic_operators
   GAL_ARITHMETIC_OP_MEAN,         /* Mean per pixel of multiple arrays.    */
   GAL_ARITHMETIC_OP_STD,          /* STD per pixel of multiple arrays.     */
   GAL_ARITHMETIC_OP_MEDIAN,       /* Median per pixel of multiple arrays.  */
+  GAL_ARITHMETIC_OP_QUANTILE,     /* Quantile per pixel of multiple arrays.*/
   GAL_ARITHMETIC_OP_SIGCLIP_NUMBER,/* Sigma-clipped number of mult. arrays.*/
   GAL_ARITHMETIC_OP_SIGCLIP_MEAN, /* Sigma-clipped mean of multiple arrays.*/
   GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN,/* Sigma-clipped median of mult. arrays.*/

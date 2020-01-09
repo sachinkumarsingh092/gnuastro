@@ -10108,6 +10108,19 @@ For each pixel, find the median in all given datasets.
 The output will have the a single-precision (32-bit) floating point type.
 This operator is called similar to the @command{min} operator, please see there for more.
 
+@item quantile
+For each pixel, find the quantile from all given datasets.
+The output will have the same numeric data type and size as the input datasets.
+Besides the input datasets, the quantile operator also needs a single parameter (the requested quantile).
+The parameter should be the first popped operand, with a value between (and including) 0 and 1.
+The second popped operand must be the number of datasets to use.
+
+In the example below, the first-popped operand (@command{0.7}) is the quantile, the second-popped operand (@command{3}) is the number of datasets to pop.
+
+@example
+astarithmetic a.fits b.fits c.fits 3 0.7 quantile
+@end example
+
 @item sigclip-number
 For each pixel, find the sigma-clipped number (after removing outliers) in all given datasets.
 The output will have the an unsigned 32-bit integer type (see @ref{Numeric data types}).
@@ -10117,7 +10130,7 @@ This operator is very similar to @command{min}, with the exception that it expec
 The first popped operand is the termination criteria and the second is the multiple of @mymath{\sigma}.
 
 For example in the command below, the first popped operand (@command{0.2}) is the sigma clipping termination criteria.
-If the termination criteria is larger than 1 it is interpreted as the number of clips to do.
+If the termination criteria is larger than, or equal to, 1 it is interpreted as the number of clips to do.
 But if it is between 0 and 1, then it is the tolerance level on the standard deviation (see @ref{Sigma clipping}).
 The second popped operand (@command{5}) is the multiple of sigma to use in sigma-clipping.
 The third popped operand (@command{10}) is number of datasets that will be used (similar to the first popped operand to @command{min}).
@@ -22226,6 +22239,12 @@ output will be @code{GAL_TYPE_UINT32} and for the rest, it will be
 @code{GAL_TYPE_FLOAT32}.
 @end deffn
 
+@deffn Macro GAL_ARITHMETIC_OP_QUANTILE
+Similar to the operands above (including @code{GAL_ARITHMETIC_MIN}), except that when @code{gal_arithmetic} is called with these operators, it requires two arguments.
+The first is the list of datasets like before, and the second is the 1-element dataset with the quantile value.
+The output type is the same as the inputs.
+@end deffn
+
 @deffn  Macro GAL_ARITHMETIC_OP_SIGCLIP_STD
 @deffnx Macro GAL_ARITHMETIC_OP_SIGCLIP_MEAN
 @deffnx Macro GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN
@@ -23521,7 +23540,7 @@ Return the index of the element that has a quantile of @code{quantile}
 assuming the dataset has @code{size} elements.
 @end deftypefun
 
-@deftypefun size_t gal_statistics_quantile (gal_data_t @code{*input}, double @code{quantile}, int @code{inplace})
+@deftypefun {gal_data_t *} gal_statistics_quantile (gal_data_t @code{*input}, double @code{quantile}, int @code{inplace})
 Return a single-element dataset containing the value with in a quantile
 @code{quantile} of the non-blank values in @code{input}. The numerical
 datatype of the output is the same as @code{input}. See
