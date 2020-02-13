@@ -265,6 +265,23 @@ columns_sanity_check(struct mkcatalogparams *p)
      based on it (for units and names). */
   columns_wcs_preparation(p);
 
+  /* If sigma-clipping measurements are requested, make sure the necessary
+     parameters are provided. */
+  for(colcode=p->columnids; colcode!=NULL; colcode=colcode->next)
+    switch(colcode->v)
+      {
+      case UI_KEY_SIGCLIPSTD:
+      case UI_KEY_SIGCLIPMEAN:
+      case UI_KEY_SIGCLIPNUMBER:
+      case UI_KEY_SIGCLIPMEDIAN:
+        if(isnan(p->sigmaclip[0]) || isnan(p->sigmaclip[1]))
+          error(EXIT_FAILURE, 0, "no sigma-clip defined! When any of the "
+                "sigma-clipping columns are requested, it is necessary to "
+                "specify the necessary sigma-clipping parameters with the "
+                "`--sigmaclip' option");
+        break;
+      }
+
   /* Check for dimension-specific columns. */
   switch(p->objects->ndim)
     {
@@ -1079,6 +1096,70 @@ columns_define_alloc(struct mkcatalogparams *p)
           oiflag[ OCOL_MEDIAN  ] = ciflag[ CCOL_MEDIAN  ] = 1;
                                    ciflag[ CCOL_RIV_NUM ] = 1;
                                    ciflag[ CCOL_RIV_SUM ] = 1;
+          break;
+
+        case UI_KEY_SIGCLIPNUMBER:
+          name           = "SIGCLIP-NUMBER";
+          unit           = "counter";
+          ocomment       = "Number of pixels in Sigma-clipped object";
+          ccomment       = "Number of pixels in Sigma-clipped clump.";
+          otype          = GAL_TYPE_INT32;
+          ctype          = GAL_TYPE_INT32;
+          disp_fmt       = 0;
+          disp_width     = 6;
+          disp_precision = 0;
+          oiflag[ OCOL_NUM        ] = ciflag[ CCOL_NUM        ] = 1;
+          oiflag[ OCOL_SIGCLIPNUM ] = ciflag[ CCOL_SIGCLIPNUM ] = 1;
+                                      ciflag[ CCOL_RIV_NUM    ] = 1;
+                                      ciflag[ CCOL_RIV_SUM    ] = 1;
+          break;
+
+        case UI_KEY_SIGCLIPMEDIAN:
+          name           = "SIGCLIP-MEDIAN";
+          unit           = MKCATALOG_NO_UNIT;
+          ocomment       = "Sigma-clipped median of object pixels.";
+          ccomment       = "Sigma-clipped median of clump pixels.";
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 10;
+          disp_precision = 5;
+          oiflag[ OCOL_NUM           ] = ciflag[ CCOL_NUM           ] = 1;
+          oiflag[ OCOL_SIGCLIPMEDIAN ] = ciflag[ CCOL_SIGCLIPMEDIAN ] = 1;
+                                         ciflag[ CCOL_RIV_NUM       ] = 1;
+                                         ciflag[ CCOL_RIV_SUM       ] = 1;
+          break;
+
+        case UI_KEY_SIGCLIPMEAN:
+          name           = "SIGCLIP-MEAN";
+          unit           = MKCATALOG_NO_UNIT;
+          ocomment       = "Sigma-clipped mean of object pixels.";
+          ccomment       = "Sigma-clipped mean of clump pixels.";
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 10;
+          disp_precision = 5;
+          oiflag[ OCOL_NUM         ] = ciflag[ CCOL_NUM         ] = 1;
+          oiflag[ OCOL_SIGCLIPMEAN ] = ciflag[ CCOL_SIGCLIPMEAN ] = 1;
+                                       ciflag[ CCOL_RIV_NUM     ] = 1;
+                                       ciflag[ CCOL_RIV_SUM     ] = 1;
+          break;
+
+        case UI_KEY_SIGCLIPSTD:
+          name           = "SIGCLIP-STD";
+          unit           = MKCATALOG_NO_UNIT;
+          ocomment       = "Sigma-clipped standard deviation of object pixels.";
+          ccomment       = "Sigma-clipped standard deviation of clump pixels.";
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 10;
+          disp_precision = 5;
+          oiflag[ OCOL_NUM        ] = ciflag[ CCOL_NUM        ] = 1;
+          oiflag[ OCOL_SIGCLIPSTD ] = ciflag[ CCOL_SIGCLIPSTD ] = 1;
+                                      ciflag[ CCOL_RIV_NUM   ] = 1;
+                                      ciflag[ CCOL_RIV_SUM   ] = 1;
           break;
 
         case UI_KEY_MAGNITUDE:
@@ -2032,6 +2113,22 @@ columns_fill(struct mkcatalog_passparams *pp)
                                       : NAN );
           break;
 
+        case UI_KEY_SIGCLIPNUMBER:
+          ((int32_t *)colarr)[oind] = oi[ OCOL_SIGCLIPNUM ];
+          break;
+
+        case UI_KEY_SIGCLIPMEDIAN:
+          ((float *)colarr)[oind] = oi[ OCOL_SIGCLIPMEDIAN ];
+          break;
+
+        case UI_KEY_SIGCLIPMEAN:
+          ((float *)colarr)[oind] = oi[ OCOL_SIGCLIPMEAN ];
+          break;
+
+        case UI_KEY_SIGCLIPSTD:
+          ((float *)colarr)[oind] = oi[ OCOL_SIGCLIPSTD ];
+          break;
+
         case UI_KEY_MAGNITUDE:
           ((float *)colarr)[oind] = ( oi[ OCOL_NUM ]>0.0f
                                       ? MKC_MAG(oi[ OCOL_SUM ])
@@ -2272,6 +2369,22 @@ columns_fill(struct mkcatalog_passparams *pp)
           case UI_KEY_MEDIAN:
             ((float *)colarr)[cind] = ( ci[ CCOL_NUM ]>0.0f
                                         ? ci[ CCOL_MEDIAN ] : NAN );
+            break;
+
+          case UI_KEY_SIGCLIPNUMBER:
+            ((int32_t *)colarr)[cind] = ci[ CCOL_SIGCLIPNUM ];
+            break;
+
+          case UI_KEY_SIGCLIPMEDIAN:
+            ((float *)colarr)[cind] = ci[ CCOL_SIGCLIPMEDIAN ];
+            break;
+
+          case UI_KEY_SIGCLIPMEAN:
+            ((float *)colarr)[cind] = ci[ CCOL_SIGCLIPMEAN ];
+            break;
+
+          case UI_KEY_SIGCLIPSTD:
+            ((float *)colarr)[cind] = ci[ CCOL_SIGCLIPSTD ];
             break;
 
           case UI_KEY_MAGNITUDE: /* Similar: brightness for clumps */

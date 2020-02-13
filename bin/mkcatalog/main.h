@@ -77,6 +77,10 @@ enum objectcols
     OCOL_SUM,            /* Sum of (value-sky) in object.             */
     OCOL_SUM_VAR,        /* Variance including values (not just sky). */
     OCOL_MEDIAN,         /* Median of value in object.                */
+    OCOL_SIGCLIPNUM,     /* Sigma-clipped mean of this object.        */
+    OCOL_SIGCLIPSTD,     /* Sigma-clipped mean of this object.        */
+    OCOL_SIGCLIPMEAN,    /* Sigma-clipped mean of this object.        */
+    OCOL_SIGCLIPMEDIAN,  /* Sigma-clipped mean of this object.        */
     OCOL_VX,             /* Sum of (value-sky) * x.                   */
     OCOL_VY,             /* Sum of (value-sky) * y.                   */
     OCOL_VZ,             /* Sum of (value-sky) * z.                   */
@@ -123,6 +127,10 @@ enum clumpcols
     CCOL_SUM,            /* River subtracted brightness.              */
     CCOL_SUM_VAR,        /* Variance including values (not just sky). */
     CCOL_MEDIAN,         /* Median of values in clump.                */
+    CCOL_SIGCLIPNUM,     /* Sigma-clipped mean of this clump.         */
+    CCOL_SIGCLIPSTD,     /* Sigma-clipped mean of this clump.         */
+    CCOL_SIGCLIPMEAN,    /* Sigma-clipped mean of this clump.         */
+    CCOL_SIGCLIPMEDIAN,  /* Sigma-clipped mean of this clump.         */
     CCOL_RIV_NUM,        /* Num river pixels around this clump.       */
     CCOL_RIV_SUM,        /* Sum of rivers around clump.               */
     CCOL_RIV_SUM_VAR,    /* Variance of sum (for error measurements). */
@@ -189,6 +197,7 @@ struct mkcatalogparams
   float             sfmagarea;  /* Surface brightness area (arcsec^2).  */
   uint8_t            spectrum;  /* Object spectrum for 3D datasets.     */
   uint8_t       inbetweenints;  /* Keep rows (integer ids) with no labels. */
+  double         sigmaclip[2];  /* Sigma clip column settings.          */
 
   char            *upmaskfile;  /* Name of upper limit mask file.       */
   char             *upmaskhdu;  /* HDU of upper limit mask file.        */

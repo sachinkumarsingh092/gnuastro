@@ -1062,29 +1062,31 @@ parse_clumps(struct mkcatalog_passparams *pp)
 
 
 void
-parse_median(struct mkcatalog_passparams *pp)
+parse_order_based(struct mkcatalog_passparams *pp)
 {
   struct mkcatalogparams *p=pp->p;
 
   float *V;
   double *ci;
-  gal_data_t *median;
+  float *sigcliparr;
+  gal_data_t *result;
   int32_t *O, *OO, *C=NULL;
-  gal_data_t **clumpsmed=NULL;
+  gal_data_t **clumpsvals=NULL;
   size_t i, increment=0, num_increment=1;
   size_t *tsize=pp->tile->dsize, ndim=p->objects->ndim;
   size_t counter=0, *ccounter=NULL, tmpsize=pp->oi[OCOL_NUM];
-  gal_data_t *objmed=gal_data_alloc(NULL, p->values->type, 1, &tmpsize, NULL,
-                                    0, p->cp.minmapsize, p->cp.quietmmap,
-                                    NULL, NULL, NULL);
+  gal_data_t *objvals=gal_data_alloc(NULL, p->values->type, 1, &tmpsize, NULL,
+                                     0, p->cp.minmapsize, p->cp.quietmmap,
+                                     NULL, NULL, NULL);
 
-  /* Allocate space for the clump medians. */
+
+  /* Allocate space for the clump values. */
   if(p->clumps)
     {
       errno=0;
-      clumpsmed=malloc(pp->clumpsinobj * sizeof *clumpsmed);
-      if(clumpsmed==NULL)
-        error(EXIT_FAILURE, errno, "%s: couldn't allocate `clumpsmed' for "
+      clumpsvals=malloc(pp->clumpsinobj * sizeof *clumpsvals);
+      if(clumpsvals==NULL)
+        error(EXIT_FAILURE, errno, "%s: couldn't allocate `clumpsvals' for "
               "%zu clumps", __func__, pp->clumpsinobj);
 
 
@@ -1094,9 +1096,9 @@ parse_median(struct mkcatalog_passparams *pp)
       for(i=0;i<pp->clumpsinobj;++i)
         {
           tmpsize=pp->ci[ i * CCOL_NUMCOLS + CCOL_NUM ];
-          clumpsmed[i]=gal_data_alloc(NULL, p->values->type, 1, &tmpsize,
-                                      NULL, 0, p->cp.minmapsize,
-                                      p->cp.quietmmap, NULL, NULL, NULL);
+          clumpsvals[i]=gal_data_alloc(NULL, p->values->type, 1, &tmpsize,
+                                       NULL, 0, p->cp.minmapsize,
+                                       p->cp.quietmmap, NULL, NULL, NULL);
         }
     }
 
@@ -1119,15 +1121,15 @@ parse_median(struct mkcatalog_passparams *pp)
           if( *O==pp->object && !( p->hasblank && isnan(*V) ) )
             {
               /* Copy the value for the whole object. */
-              memcpy( gal_pointer_increment(objmed->array, counter++,
+              memcpy( gal_pointer_increment(objvals->array, counter++,
                                              p->values->type), V,
                       gal_type_sizeof(p->values->type) );
 
               /* We are also on a clump. */
               if(p->clumps && *C>0)
-                memcpy( gal_pointer_increment(clumpsmed[*C-1]->array,
-                                               ccounter[*C-1]++,
-                                               p->values->type), V,
+                memcpy( gal_pointer_increment(clumpsvals[*C-1]->array,
+                                              ccounter[*C-1]++,
+                                              p->values->type), V,
                         gal_type_sizeof(p->values->type) );
             }
 
@@ -1143,28 +1145,89 @@ parse_median(struct mkcatalog_passparams *pp)
     }
 
 
-  /* Calculate the final medians for objects. */
-  median=gal_data_copy_to_new_type_free(gal_statistics_median(objmed, 1),
-                                        GAL_TYPE_FLOAT64);
-  pp->oi[OCOL_MEDIAN]=*((double *)(median->array));
-  gal_data_free(objmed);
-  gal_data_free(median);
+  /* Calculate the necessary values for the objects. */
+  if(p->oiflag[ OCOL_MEDIAN ])
+    {
+      result=gal_data_copy_to_new_type_free(gal_statistics_median(objvals, 1),
+                                            GAL_TYPE_FLOAT64);
+      pp->oi[OCOL_MEDIAN]=*((double *)(result->array));
+      gal_data_free(result);
+    }
+  if(p->oiflag[ OCOL_SIGCLIPNUM ]
+     || p->oiflag[ OCOL_SIGCLIPSTD ]
+     || p->oiflag[ OCOL_SIGCLIPMEAN ]
+     || p->oiflag[ OCOL_SIGCLIPMEDIAN ])
+    {
+      /* Calculate the sigma-clipped results and write them in any
+         requested column. */
+      result=gal_statistics_sigma_clip(objvals, p->sigmaclip[0],
+                                       p->sigmaclip[1], 1, 1);
+      sigcliparr=result->array;
+      if(p->oiflag[ OCOL_SIGCLIPNUM ])
+        pp->oi[OCOL_SIGCLIPNUM]=sigcliparr[0];
+      if(p->oiflag[ OCOL_SIGCLIPSTD ])
+        pp->oi[OCOL_SIGCLIPSTD]=sigcliparr[3];
+      if(p->oiflag[ OCOL_SIGCLIPMEAN ])
+        pp->oi[OCOL_SIGCLIPMEAN]=sigcliparr[2];
+      if(p->oiflag[ OCOL_SIGCLIPMEDIAN ])
+        pp->oi[OCOL_SIGCLIPMEDIAN]=sigcliparr[1];
+
+      /* Clean up the sigma-clipped values. */
+      gal_data_free(result);
+    }
 
 
-  /* Calculate the median for clumps. */
+  /* Clean up the object values. */
+  gal_data_free(objvals);
+
+
+  /* Calculate the necessary value for clumps. */
   if(p->clumps)
     {
       for(i=0;i<pp->clumpsinobj;++i)
         {
+          /* Set the main row to fill. */
           ci=&pp->ci[ i * CCOL_NUMCOLS ];
-          median=gal_statistics_median(clumpsmed[i], 1);
-          median=gal_data_copy_to_new_type_free(median, GAL_TYPE_FLOAT64);
-          ci[ CCOL_MEDIAN ] = ( *((double *)(median->array))
-                                - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]) );
-          gal_data_free(clumpsmed[i]);
-          gal_data_free(median);
+
+          /* Do the necessary calculation. */
+          if(p->ciflag[ CCOL_MEDIAN ])
+            {
+              result=gal_statistics_median(clumpsvals[i], 1);
+              result=gal_data_copy_to_new_type_free(result, GAL_TYPE_FLOAT64);
+              ci[ CCOL_MEDIAN ] = ( *((double *)(result->array))
+                                    - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]) );
+              gal_data_free(result);
+            }
+          if(p->ciflag[ CCOL_SIGCLIPNUM ]
+             || p->ciflag[ CCOL_SIGCLIPSTD ]
+             || p->ciflag[ CCOL_SIGCLIPMEAN ]
+             || p->ciflag[ CCOL_SIGCLIPMEDIAN ])
+            {
+              /* Calculate the sigma-clipped results and write them in any
+                 requested column. */
+              result=gal_statistics_sigma_clip(clumpsvals[i], p->sigmaclip[0],
+                                               p->sigmaclip[1], 1, 1);
+              sigcliparr=result->array;
+              if(p->ciflag[ CCOL_SIGCLIPNUM ])
+                pp->ci[CCOL_SIGCLIPNUM]=sigcliparr[0];
+              if(p->ciflag[ CCOL_SIGCLIPSTD ])
+                pp->ci[CCOL_SIGCLIPSTD]=( sigcliparr[3]
+                                          - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]));
+              if(p->ciflag[ CCOL_SIGCLIPMEAN ])
+                pp->ci[CCOL_SIGCLIPMEAN]=( sigcliparr[2]
+                                           - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]));
+              if(p->ciflag[ CCOL_SIGCLIPMEDIAN ])
+                pp->ci[CCOL_SIGCLIPMEDIAN]=( sigcliparr[1]
+                                             - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]));
+
+              /* Clean up the sigma-clipped values. */
+              gal_data_free(result);
+            }
+
+          /* Clean up this clump's values. */
+          gal_data_free(clumpsvals[i]);
         }
-      free(clumpsmed);
+      free(clumpsvals);
       free(ccounter);
     }
 }

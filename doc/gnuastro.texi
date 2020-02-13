@@ -14854,6 +14854,13 @@ The dataset given to @option{--stdfile} (and @option{--stdhdu} has the Sky varia
 @itemx --zeropoint=FLT
 The zero point magnitude for the input image, see @ref{Flux Brightness and magnitude}.
 
+@item --sigmaclip FLT,FLT
+The sigma-clipping parameters when any of the sigma-clipping related columns are requested (for example @option{--sigclip-median} or @option{--sigclip-number}).
+
+This option takes two values: the first is the multiple of @mymath{\sigma}, and the second is the termination criteria.
+If the latter is larger than 1, it is read as an integer number and will be the number of times to clip.
+If it is smaller than 1, it is interpreted as the tolerance level to stop clipping. See @ref{Sigma clipping} for a complete explanation.
+
 @end table
 
 
@@ -15144,6 +15151,23 @@ For clumps, the average river flux is subtracted from the sky subtracted mean.
 @item --median
 The median sky subtracted value of pixels within the object or clump.
 For clumps, the average river flux is subtracted from the sky subtracted median.
+
+@item --sigclip-number
+The number of elements/pixels in the dataset after sigma-clipping the object or clump.
+The sigma-clipping parameters can be set with the @option{--sigmaclip} option described in @ref{MakeCatalog inputs and basic settings}.
+For more on Sigma-clipping, see @ref{Sigma clipping}.
+
+@item --sigclip-median
+The sigma-clipped median value of the object of clump's pixel distribution.
+For more on sigma-clipping and how to define it, see @option{--sigclip-number}.
+
+@item --sigclip-mean
+The sigma-clipped mean value of the object of clump's pixel distribution.
+For more on sigma-clipping and how to define it, see @option{--sigclip-number}.
+
+@item --sigclip-std
+The sigma-clipped standard deviation of the object of clump's pixel distribution.
+For more on sigma-clipping and how to define it, see @option{--sigclip-number}.
 
 @item -m
 @itemx --magnitude

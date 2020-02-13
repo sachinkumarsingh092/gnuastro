@@ -126,6 +126,8 @@ ui_initialize_options(struct mkcatalogparams *p,
   p->sfmagarea      = NAN;
   p->upnsigma       = NAN;
   p->zeropoint      = NAN;
+  p->sigmaclip[0]   = NAN;
+  p->sigmaclip[1]   = NAN;
   p->upsigmaclip[0] = NAN;
   p->upsigmaclip[1] = NAN;
   p->checkuplim[0]  = GAL_BLANK_INT32;
@@ -928,6 +930,10 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
         case OCOL_SUM:                *values        = 1;          break;
         case OCOL_SUM_VAR:            *values = *std = 1;          break;
         case OCOL_MEDIAN:             *values        = 1;          break;
+        case OCOL_SIGCLIPNUM:         *values        = 1;          break;
+        case OCOL_SIGCLIPMEDIAN:      *values        = 1;          break;
+        case OCOL_SIGCLIPMEAN:        *values        = 1;          break;
+        case OCOL_SIGCLIPSTD:         *values        = 1;          break;
         case OCOL_VX:                 *values        = 1;          break;
         case OCOL_VY:                 *values        = 1;          break;
         case OCOL_VZ:                 *values        = 1;          break;
@@ -979,6 +985,10 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
           case CCOL_SUM:              *values        = 1;          break;
           case CCOL_SUM_VAR:          *values = *std = 1;          break;
           case CCOL_MEDIAN:           *values        = 1;          break;
+          case CCOL_SIGCLIPNUM:    *values        = 1;          break;
+          case CCOL_SIGCLIPMEDIAN:    *values        = 1;          break;
+          case CCOL_SIGCLIPMEAN:      *values        = 1;          break;
+          case CCOL_SIGCLIPSTD:       *values        = 1;          break;
           case CCOL_RIV_NUM:          /* Only clump labels. */     break;
           case CCOL_RIV_SUM:          *values        = 1;          break;
           case CCOL_RIV_SUM_VAR:      *values = *std = 1;          break;

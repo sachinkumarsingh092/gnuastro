@@ -179,9 +179,14 @@ mkcatalog_single_object(void *in_prm)
           parse_clumps(&pp);
         }
 
-      /* If the median is requested, another pass is necessary. */
-      if( p->oiflag[ OCOL_MEDIAN ] )
-        parse_median(&pp);
+      /* If an order-based calculation is requested, another pass is
+         necessary. */
+      if( p->oiflag[ OCOL_MEDIAN ]
+          || p->oiflag[ OCOL_SIGCLIPNUM ]
+          || p->oiflag[ OCOL_SIGCLIPSTD ]
+          || p->oiflag[ OCOL_SIGCLIPMEAN ]
+          || p->oiflag[ OCOL_SIGCLIPMEDIAN ])
+        parse_order_based(&pp);
 
       /* Calculate the upper limit magnitude (if necessary). */
       if(p->upperlimit) upperlimit_calculate(&pp);

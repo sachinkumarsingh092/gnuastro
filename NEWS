@@ -19,6 +19,14 @@ See the end of the file for license conditions.
   Fits:
    --datasum: Calculate and print the given HDU's "datasum" to stdout.
 
+  MakeCatalog:
+   --sigmaclip: defines the sigma-clipping parameters for those columns.
+   New output columns:
+     --sigclip-number: Number of sigma-clipped pixels in object/clump.
+     --sigclip-median: Sigma-clipped median of pixels in object/clump.
+     --sigclip-mean: Sigma-clipped mean of pixels in object/clump.
+     --sigclip-std: Sigma-clipped standard deviation of pixels in object/clump.
+
   Table:
    --equal: Can now work on columns with string type also.
    --notequal: Can now work on columns with string type also.

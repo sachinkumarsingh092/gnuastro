@@ -33,6 +33,6 @@ void
 parse_clumps(struct mkcatalog_passparams *pp);
 
 void
-parse_median(struct mkcatalog_passparams *pp);
+parse_order_based(struct mkcatalog_passparams *pp);
 
 #endif

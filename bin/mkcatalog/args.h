@@ -175,6 +175,20 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "sigmaclip",
+      UI_KEY_SIGMACLIP,
+      "FLT,FLT",
+      0,
+      "Sigma-clip column multiple and tolerance.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->sigmaclip,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_read_sigma_clip
+    },
 
 
 
@@ -1194,6 +1208,62 @@ struct argp_option program_options[] =
       0,
       0,
       "Sky standard deviation (per pixel).",
+      UI_GROUP_COLUMNS_BRIGHTNESS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "sigclip-number",
+      UI_KEY_SIGCLIPNUMBER,
+      0,
+      0,
+      "Number of pixels in Sigma-clipped measurement.",
+      UI_GROUP_COLUMNS_BRIGHTNESS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "sigclip-median",
+      UI_KEY_SIGCLIPMEDIAN,
+      0,
+      0,
+      "Median after Sigma-clipping",
+      UI_GROUP_COLUMNS_BRIGHTNESS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "sigclip-mean",
+      UI_KEY_SIGCLIPMEAN,
+      0,
+      0,
+      "Mean after Sigma-clipping",
+      UI_GROUP_COLUMNS_BRIGHTNESS,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "sigclip-std",
+      UI_KEY_SIGCLIPSTD,
+      0,
+      0,
+      "Standard deviation after Sigma-clipping",
       UI_GROUP_COLUMNS_BRIGHTNESS,
       0,
       GAL_TYPE_INVALID,
