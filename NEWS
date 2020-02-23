@@ -18,6 +18,11 @@ See the end of the file for license conditions.
 
   Fits:
    --datasum: Calculate and print the given HDU's "datasum" to stdout.
+   --datetosec: Can also account for `Z' in the end of the date-time
+     string. According to `https://www.w3.org/TR/NOTE-datetime', a `Z'
+     effectively means no time zone, or UTC time (which is the default in
+     FITS). It still doesn't account for time zone hours of the w3.org
+     standard.
 
   MakeCatalog:
    --sigmaclip: defines the sigma-clipping parameters for those columns.

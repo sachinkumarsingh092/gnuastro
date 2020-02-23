@@ -905,12 +905,17 @@ gal_fits_key_clean_str_value(char *string)
 
 /* Fill the `tm' structure (defined in `time.h') with the values derived
    from a FITS format date-string and return the (optional) sub-second
-   information as a double.*/
+   information as a double.
+
+   The basic FITS string is defined under the `DATE' keyword in the FITS
+   standard. For the more complete format which includes timezones, see the
+   W3 standard: https://www.w3.org/TR/NOTE-datetime
+*/
 char *
 gal_fits_key_date_to_struct_tm(char *fitsdate, struct tm *tp)
 {
   char *c=NULL, *cf;
-  int hasT=0, hassq=0, usesdash=0, usesslash=0;
+  int hasT=0, hassq=0, usesdash=0, usesslash=0, hasZ=0;
 
   /* Initialize the `tm' structure to all-zero elements. In particular, The
      FITS standard times are written in UTC, so, the time zone (`tm_zone'
@@ -918,7 +923,7 @@ gal_fits_key_date_to_struct_tm(char *fitsdate, struct tm *tp)
      has to be zero. The day-light saving flag (`isdst' element) also has
      to be set to zero. */
   tp->tm_sec=tp->tm_min=tp->tm_hour=tp->tm_mday=tp->tm_mon=tp->tm_year=0;
-  tp->tm_wday=tp->tm_yday=tp->tm_isdst=tp->tm_gmtoff;
+  tp->tm_wday=tp->tm_yday=tp->tm_isdst=tp->tm_gmtoff=0;
   tp->tm_zone=NULL;
 
   /* According to the FITS standard the `T' in the middle of the date and
@@ -931,6 +936,8 @@ gal_fits_key_date_to_struct_tm(char *fitsdate, struct tm *tp)
       case '-':  usesdash=1;  break; /* Day definition: YYYY-MM-DD.       */
       case '/':  usesslash=1; break; /* Day definition(old): DD/MM/YY.    */
       case '\'': hassq=1;     break; /* Wholly Wrapped in a single-quote. */
+      case 'Z':  hasZ=1;      break; /* When ends in `Z', means UTC. See  */
+                                   /* https://www.w3.org/TR/NOTE-datetime */
       }
   while(++c<cf);
 
@@ -939,10 +946,14 @@ gal_fits_key_date_to_struct_tm(char *fitsdate, struct tm *tp)
         ? NULL
         : ( usesdash
             ? ( hasT
-                ? strptime(fitsdate, hassq?"'%FT%T'":"%FT%T", tp)
+                ? ( hasZ
+                    ? strptime(fitsdate, hassq?"'%FT%TZ'":"%FT%TZ", tp)
+                    : strptime(fitsdate, hassq?"'%FT%T'":"%FT%T", tp) )
                 : strptime(fitsdate, hassq?"'%F'"   :"%F"   , tp))
             : ( hasT
-                ? strptime(fitsdate, hassq?"'%d/%m/%yT%T'":"%d/%m/%yT%T", tp)
+                ? ( hasZ
+                    ? strptime(fitsdate, hassq?"'%d/%m/%yT%TZ'":"%d/%m/%yT%TZ", tp)
+                    : strptime(fitsdate, hassq?"'%d/%m/%yT%T'":"%d/%m/%yT%T", tp))
                 : strptime(fitsdate, hassq?"'%d/%m/%y'"   :"%d/%m/%y"   , tp)
                 )
             )
@@ -956,9 +967,12 @@ gal_fits_key_date_to_struct_tm(char *fitsdate, struct tm *tp)
           "these formats:\n"
           "   YYYY-MM-DD\n"
           "   YYYY-MM-DDThh:mm:ss\n"
-          "   DD/MM/YY               (Note the `YY', see *)\n"
-          "   DD/MM/YYThh:mm:ss      (Note the `YY', see *)\n\n"
-          "[*]: Gnuastro's FITS library (this program), interprets the "
+          "   YYYY-MM-DDThh:mm:ssZ   (Note the `Z',  see *) \n"
+          "   DD/MM/YY               (Note the `YY', see ^)\n"
+          "   DD/MM/YYThh:mm:ss\n"
+          "   DD/MM/YYThh:mm:ssZ\n\n"
+          "[*]: The `Z' is interpreted as being in the UTC Timezone.\n"
+          "[^]: Gnuastro's FITS library (this program), interprets the "
           "older (two character for year) format, year values 68 to 99 as "
           "the years 1969 to 1999 and values 0 to 68 as the years 2000 to "
           "2068.", fitsdate);
