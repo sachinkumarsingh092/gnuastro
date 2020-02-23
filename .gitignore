@@ -160,3 +160,6 @@ bin/buildprog/astbuildprog.conf
 # directory, we have abandoned the convention above.
 
 /bootstrapped/build-aux
+
+# vscode
+.vscode/

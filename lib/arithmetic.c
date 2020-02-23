@@ -551,6 +551,77 @@ arithmetic_from_statistics(int operator, int flags, gal_data_t *input)
 
 
 /***********************************************************************/
+/***************                  Metadata                **************/
+/***********************************************************************/
+
+/* The size operator. Reports the size along a given dimension. */
+static gal_data_t *
+arithmetic_size(int operator, int flags, gal_data_t *in, gal_data_t *arg)
+{
+  gal_data_t *out=NULL;
+  size_t *out_arr;
+  size_t arg_val, temp_dsize=1;
+  size_t *dsize=&temp_dsize;
+
+  /* Check the type */
+  switch(arg->type)
+    {
+      case GAL_TYPE_FLOAT32:
+      case GAL_TYPE_FLOAT64:
+        error(EXIT_FAILURE, 0, "%s: size "
+              "operator can only work on integer types", __func__);
+    }
+
+  /* Convert `arg` to GAL_TYPE_SIZE_T */
+  arg=gal_data_copy_to_new_type_free(arg, GAL_TYPE_SIZE_T);
+
+  arg_val=*(size_t *)(arg->array);
+
+  /* Allocate size for the output data to make changes.
+     Set the output array value. */
+  dsize[0]=temp_dsize;
+  out=gal_data_alloc(NULL, GAL_TYPE_UINT64, 1, dsize,
+                    NULL, 0, in->minmapsize, 0,
+                    NULL, NULL, NULL);
+
+  out_arr=out->array;
+  out_arr[0]=in->dsize[arg_val-1];
+
+  /* The first argument must be a single integer. */
+  if(arg->size != 1)
+    {
+      /* If an image/array is passed, report error. */
+      error(EXIT_FAILURE, 0, "%s: first argument must be a single integer. ",
+            __func__);
+    }
+
+  /* Clean up and return */
+  if( flags & GAL_ARITHMETIC_FREE)
+    gal_data_free(in);
+
+  return out;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***********************************************************************/
 /***************                  Where                   **************/
 /***********************************************************************/
 /* When the `iftrue' dataset only has one element and the element is blank,
@@ -1694,6 +1765,10 @@ gal_arithmetic_set_operator(char *string, size_t *num_operands)
   else if (!strcmp(string, "sigclip-std"))
     { op=GAL_ARITHMETIC_OP_SIGCLIP_STD;       *num_operands=-1; }
 
+  /* The size operator */
+  else if (!strcmp(string, "size"))
+    { op=GAL_ARITHMETIC_OP_SIZE;              *num_operands=2;  }
+
   /* Conditional operators. */
   else if (!strcmp(string, "lt" ))
     { op=GAL_ARITHMETIC_OP_LT;                *num_operands=2;  }
@@ -1820,6 +1895,8 @@ gal_arithmetic_operator_string(int operator)
     case GAL_ARITHMETIC_OP_SIGCLIP_MEDIAN:  return "sigclip-median";
     case GAL_ARITHMETIC_OP_SIGCLIP_MEAN:    return "sigclip-mean";
     case GAL_ARITHMETIC_OP_SIGCLIP_STD:     return "sigclip-number";
+
+    case GAL_ARITHMETIC_OP_SIZE:            return "size";
 
     case GAL_ARITHMETIC_OP_TO_UINT8:        return "uchar";
     case GAL_ARITHMETIC_OP_TO_INT8:         return "char";
@@ -1978,6 +2055,12 @@ gal_arithmetic(int operator, size_t numthreads, int flags, ...)
       out=arithmetic_change_type(d1, operator, flags);
       break;
 
+    /* Size operator */
+    case GAL_ARITHMETIC_OP_SIZE:
+      d1 = va_arg(va, gal_data_t *);
+      d2 = va_arg(va, gal_data_t *);
+      out=arithmetic_size(operator, flags, d1, d2);
+      break;
 
     /* When the operator is not recognized. */
     default:

@@ -10154,6 +10154,15 @@ For each pixel, find the sigma-clipped standard deviation in all given datasets.
 The output will have the a single-precision (32-bit) floating point type.
 This operator is called similar to the @command{sigclip-number} operator, please see there for more.
 
+@item size
+Size of the dataset along a given dimension. 
+The output will be a single unsigned integer(dimensions cannot be negative).
+For example, the following command will produce the dimension of the hdu1(default) in the first operand(a.fits) along the second axis.
+
+@example
+astarithmetic a.fits 2 size
+@end example
+
 @item filter-mean
 Apply mean filtering (or @url{https://en.wikipedia.org/wiki/Moving_average, moving average}) on the input dataset.
 During mean filtering, each pixel (data element) is replaced by the mean value of all its surrounding pixels (excluding blank values).
@@ -22263,6 +22272,12 @@ element in the parameters list is the multiple of sigma and the second is
 the termination criteria (see @ref{Sigma clipping}). The output type of
 @code{GAL_ARITHMETIC_OP_SIGCLIP_NUMBER} will be @code{GAL_TYPE_UINT32} and
 for the rest it will be @code{GAL_TYPE_FLOAT32}.
+@end deffn
+
+@deffn Macro GAL_ARITHMETIC_OP_SIZE
+Size operator that will return a single value for datasets of any kind. When @code{gal_arithmetic} is called with this operator, it requires two arguments.
+The first is the dataset, and the second is a single integer value.
+The output type is a single integer.
 @end deffn
 
 @deffn Macro GAL_ARITHMETIC_OP_POW
