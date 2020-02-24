@@ -914,8 +914,8 @@ gal_fits_key_clean_str_value(char *string)
 char *
 gal_fits_key_date_to_struct_tm(char *fitsdate, struct tm *tp)
 {
-  char *c=NULL, *cf;
   int hasT=0, hassq=0, usesdash=0, usesslash=0, hasZ=0;
+  char *C, *cc, *c=NULL, *cf, *subsec=NULL, *nosubsec=fitsdate;
 
   /* Initialize the `tm' structure to all-zero elements. In particular, The
      FITS standard times are written in UTC, so, the time zone (`tm_zone'
@@ -938,6 +938,20 @@ gal_fits_key_date_to_struct_tm(char *fitsdate, struct tm *tp)
       case '\'': hassq=1;     break; /* Wholly Wrapped in a single-quote. */
       case 'Z':  hasZ=1;      break; /* When ends in `Z', means UTC. See  */
                                    /* https://www.w3.org/TR/NOTE-datetime */
+
+      /* In case we have sub-seconds in the string, we need to remove it
+         because `strptime' doesn't recognize sub-second resolution.*/
+      case '.':
+        /* Allocate space (by copying the remaining full string and adding
+           a `\0' where necessary. */
+        gal_checkset_allocate_copy(c, &subsec);
+        gal_checkset_allocate_copy(fitsdate, &nosubsec);
+
+        /* Parse the sub-second part and remove it from the copy. */
+        cc=nosubsec+(c-fitsdate);
+        for(C=subsec+1;*C!='\0';C++)
+          if(!isdigit(*C)) {*cc++=*C; *C='\0';}
+        *cc='\0';
       }
   while(++c<cf);
 
@@ -947,14 +961,14 @@ gal_fits_key_date_to_struct_tm(char *fitsdate, struct tm *tp)
         : ( usesdash
             ? ( hasT
                 ? ( hasZ
-                    ? strptime(fitsdate, hassq?"'%FT%TZ'":"%FT%TZ", tp)
-                    : strptime(fitsdate, hassq?"'%FT%T'":"%FT%T", tp) )
-                : strptime(fitsdate, hassq?"'%F'"   :"%F"   , tp))
+                    ? strptime(nosubsec, hassq?"'%FT%TZ'":"%FT%TZ", tp)
+                    : strptime(nosubsec, hassq?"'%FT%T'":"%FT%T", tp) )
+                : strptime(nosubsec, hassq?"'%F'"   :"%F"   , tp))
             : ( hasT
                 ? ( hasZ
-                    ? strptime(fitsdate, hassq?"'%d/%m/%yT%TZ'":"%d/%m/%yT%TZ", tp)
-                    : strptime(fitsdate, hassq?"'%d/%m/%yT%T'":"%d/%m/%yT%T", tp))
-                : strptime(fitsdate, hassq?"'%d/%m/%y'"   :"%d/%m/%y"   , tp)
+                    ? strptime(nosubsec, hassq?"'%d/%m/%yT%TZ'":"%d/%m/%yT%TZ", tp)
+                    : strptime(nosubsec, hassq?"'%d/%m/%yT%T'":"%d/%m/%yT%T", tp))
+                : strptime(nosubsec, hassq?"'%d/%m/%y'"   :"%d/%m/%y"   , tp)
                 )
             )
         );
@@ -977,8 +991,12 @@ gal_fits_key_date_to_struct_tm(char *fitsdate, struct tm *tp)
           "the years 1969 to 1999 and values 0 to 68 as the years 2000 to "
           "2068.", fitsdate);
 
+  /* If the subseconds were removed (and a new string was allocated), free
+     that extra new string. */
+  if(nosubsec!=fitsdate) free(nosubsec);
+
   /* Return the subsecond value. */
-  return c;
+  return subsec;
 }
 
 
@@ -1005,7 +1023,7 @@ gal_fits_key_date_to_seconds(char *fitsdate, char **subsecstr,
 
   /* If the user cared about the remainder (sub-second string), then set it
      and convert it to a double type. */
-  if(subsecstr)
+  if(subsecstr && tmp)
     {
       /* Set the output pointer. */
       *subsecstr=tmp;

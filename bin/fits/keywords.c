@@ -420,11 +420,14 @@ keywords_date_to_seconds(struct fitsparams *p, fitsfile *fptr)
       printf("%s (hdu %s), key `%s': %s\n", p->filename, p->cp.hdu,
              p->datetosec, fitsdate);
       printf("Seconds since 1970/01/01 (00:00:00): %zu%s\n\n", seconds,
-             subsecstr);
+             subsecstr?subsecstr:"");
       printf("(To suppress verbose output, run with `-q')\n");
     }
   else
-    printf("%zu%s\n", seconds, subsecstr);
+    printf("%zu%s\n", seconds, subsecstr?subsecstr:"");
+
+  /* Clean up. */
+  if(subsecstr) free(subsecstr);
 }
 
 
