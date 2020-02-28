@@ -157,8 +157,8 @@ ui_initialize_options(struct arithmeticparams *p,
       switch(cp->coptions[i].group)
         {
         case GAL_OPTIONS_GROUP_TESSELLATION:
-          cp->coptions[i].doc=NULL; /* Necessary to remove title. */
-          cp->coptions[i].flags=OPTION_HIDDEN;
+          if(cp->coptions[i].key!=GAL_OPTIONS_KEY_INTERPMETRIC)
+            cp->coptions[i].flags=OPTION_HIDDEN;
           break;
         }
     }
