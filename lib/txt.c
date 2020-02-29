@@ -1479,14 +1479,26 @@ gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename,
   switch(input->ndim)
     {
     case 1:
-      for(i=0;i<input->size;++i)                        /* Row.    */
-        {
-          j=0;
-          for(data=input;data!=NULL;data=data->next)    /* Column. */
-            txt_print_value(fp, data->array, data->type, i,
+      /* When the dataset is bring printed on standard output and its a
+         single number, don't print the column structure, because it will
+         add white-space characters which can be annoying when used in an
+         automatic script. */
+      if(fp==stdout && input->size==1 && input->next==NULL)
+        fprintf(fp, "%s\n",
+                gal_type_to_string(input->array, input->type, 0));
+
+      /* Dataset has more than one row AND more than one column, so follow
+         the basic text formatting (like extra white space to keep the
+         columns under each other). */
+      else
+        for(i=0;i<input->size;++i)                        /* Row.    */
+          {
+            j=0;
+            for(data=input;data!=NULL;data=data->next)    /* Column. */
+              txt_print_value(fp, data->array, data->type, i,
                             fmts[j++ * FMTS_COLS]);
-          fprintf(fp, "\n");
-        }
+            fprintf(fp, "\n");
+          }
       break;
 
 
