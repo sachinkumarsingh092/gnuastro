@@ -558,47 +558,60 @@ arithmetic_from_statistics(int operator, int flags, gal_data_t *input)
 static gal_data_t *
 arithmetic_size(int operator, int flags, gal_data_t *in, gal_data_t *arg)
 {
-  gal_data_t *out=NULL;
-  size_t *out_arr;
-  size_t arg_val, temp_dsize=1;
-  size_t *dsize=&temp_dsize;
+  size_t one=1, arg_val;
+  gal_data_t *usearg=NULL, *out=NULL;
 
-  /* Check the type */
-  switch(arg->type)
+  /* Sanity checks on argument (dimension number): it should be an integer,
+     and have a size of 1. */
+  if(arg->type==GAL_TYPE_FLOAT32 || arg->type==GAL_TYPE_FLOAT64)
+    error(EXIT_FAILURE, 0, "%s: size operator's dimention argument"
+          "must have an interger type", __func__);
+  if(arg->size!=1)
+    error(EXIT_FAILURE, 0, "%s: size operator's dimention argument"
+          "must be a single number, but it has %zu elements", __func__,
+          arg->size);
+
+
+  /* Convert `arg' to `size_t' and read it. Note that we can only free the
+     `arg' array (while changing its type), when the freeing flag has been
+     set. */
+  if(flags & GAL_ARITHMETIC_FREE)
     {
-      case GAL_TYPE_FLOAT32:
-      case GAL_TYPE_FLOAT64:
-        error(EXIT_FAILURE, 0, "%s: size "
-              "operator can only work on integer types", __func__);
+      arg=gal_data_copy_to_new_type_free(arg, GAL_TYPE_SIZE_T);
+      arg_val=*(size_t *)(arg->array);
+      gal_data_free(arg);
+    }
+  else
+    {
+      usearg=gal_data_copy_to_new_type(arg, GAL_TYPE_SIZE_T);
+      arg_val=*(size_t *)(usearg->array);
+      gal_data_free(usearg);
     }
 
-  /* Convert `arg` to GAL_TYPE_SIZE_T */
-  arg=gal_data_copy_to_new_type_free(arg, GAL_TYPE_SIZE_T);
 
-  arg_val=*(size_t *)(arg->array);
+  /* Sanity checks on the value of the given argument.*/
+  if(arg_val>in->ndim)
+    error(EXIT_FAILURE, 0, "%s: size operator's dimension argument "
+          "(given %zu) cannot be larger than the dimentions of the "
+          "given input (%zu)", __func__, arg_val, in->ndim);
+  if(arg_val==0)
+    error(EXIT_FAILURE, 0, "%s: size operator's dimension argument "
+          "(given %zu) cannot be zero: dimensions are counted from 1",
+          __func__, arg_val);
 
-  /* Allocate size for the output data to make changes.
-     Set the output array value. */
-  dsize[0]=temp_dsize;
-  out=gal_data_alloc(NULL, GAL_TYPE_UINT64, 1, dsize,
-                    NULL, 0, in->minmapsize, 0,
-                    NULL, NULL, NULL);
 
-  out_arr=out->array;
-  out_arr[0]=in->dsize[arg_val-1];
+  /* Allocate the output array and write the desired dimension. Note that
+     `dsize' is in the C order, while the output must be in FITS/Fortran
+     order. Also that C order starts from 0, while the FITS order starts
+     from 1. */
+  out=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &one, NULL, 0,
+                     in->minmapsize, 0, NULL, NULL, NULL);
+  *(size_t *)(out->array)=in->dsize[in->ndim-arg_val];
 
-  /* The first argument must be a single integer. */
-  if(arg->size != 1)
-    {
-      /* If an image/array is passed, report error. */
-      error(EXIT_FAILURE, 0, "%s: first argument must be a single integer. ",
-            __func__);
-    }
 
   /* Clean up and return */
-  if( flags & GAL_ARITHMETIC_FREE)
+  if(flags & GAL_ARITHMETIC_FREE)
     gal_data_free(in);
-
   return out;
 }
 

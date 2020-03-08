@@ -10154,15 +10154,6 @@ For each pixel, find the sigma-clipped standard deviation in all given datasets.
 The output will have the a single-precision (32-bit) floating point type.
 This operator is called similar to the @command{sigclip-number} operator, please see there for more.
 
-@item size
-Size of the dataset along a given dimension. 
-The output will be a single unsigned integer(dimensions cannot be negative).
-For example, the following command will produce the dimension of the hdu1(default) in the first operand(a.fits) along the second axis.
-
-@example
-astarithmetic a.fits 2 size
-@end example
-
 @item filter-mean
 Apply mean filtering (or @url{https://en.wikipedia.org/wiki/Moving_average, moving average}) on the input dataset.
 During mean filtering, each pixel (data element) is replaced by the mean value of all its surrounding pixels (excluding blank values).
@@ -10496,6 +10487,16 @@ The internal conversion of C will be used.
 @item float64
 Convert the type of the popped operand to 64-bit (double precision) floating point (see @ref{Numeric data types}).
 The internal conversion of C will be used.
+
+@item size
+Size of the dataset along a given FITS/Fortran dimension (counting from 1).
+The desired dimension should be the first popped operand and the dataset must be the second popped operand.
+The output will be a single unsigned integer (dimensions cannot be negative).
+For example, the following command will produce the size of the first extension/HDU (the default HDU) of @file{a.fits} along the second FITS axis.
+
+@example
+astarithmetic a.fits 2 size
+@end example
 
 @item set-AAA
 Set the characters after the dash (@code{AAA} in the case shown here) as a name for the first popped operand on the stack.

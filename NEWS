@@ -9,6 +9,7 @@ See the end of the file for license conditions.
 
   Arithmetic:
    - New `quantile' operator for coadding datasets.
+   - New `size' operator to report length of dataset in requested dimension.
 
   CosmicCalculator:
    --listlines: list the pre-defined spectral line wavelengths and names
