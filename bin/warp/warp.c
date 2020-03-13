@@ -297,6 +297,7 @@ warp_preparations(struct warpparams *p)
   double is0=p->input->dsize[0], is1=p->input->dsize[1];
 
   double output[8], forarea[8];
+  double *matrix=p->matrix->array;
   double icrn[8]={0,0,0,0,0,0,0,0};
   size_t i, *extinds=p->extinds, dsize[2];
   double xmin=DBL_MAX, xmax=-DBL_MAX, ymin=DBL_MAX, ymax=-DBL_MAX;
@@ -304,17 +305,18 @@ warp_preparations(struct warpparams *p)
   double input[8]={ 0.5f, 0.5f,         is1+0.5f, 0.5f,
                     0.5f, is0+0.5f,     is1+0.5f, is0+0.5f };
 
-  /* Find the range of pixels of the input image. All the input
-     positions are moved to the negative by half a pixel since the
-     center of the pixel is an integer value.*/
+  /* Find the range of pixels of the input image. All the input positions
+     are moved to the negative by half a pixel since the center of the
+     pixel is an integer value.*/
   for(i=0;i<4;++i)
     {
-      mappoint(&input[i*2], (double *)(p->matrix->array), &output[i*2]);
+      mappoint(&input[i*2], matrix, &output[i*2]);
       if(output[i*2]<xmin)     xmin = output[i*2];
       if(output[i*2]>xmax)     xmax = output[i*2];
       if(output[i*2+1]<ymin)   ymin = output[i*2+1];
       if(output[i*2+1]>ymax)   ymax = output[i*2+1];
     }
+
   /* For a check:
   for(i=0;i<4;++i)
       printf("(%.3f, %.3f) --> (%.3f, %.3f)\n",
@@ -324,15 +326,25 @@ warp_preparations(struct warpparams *p)
          xmin, xmax, ymin, ymax);
   */
 
-  /* Set the final size of the image. The X axis is horizontal. The
-     reason we are using the halflower variation of `nearestint' for
-     the maximums is that these points are the farthest extremes of
-     the input image. If they are half a pixel value, they should
-     point to the pixel before. */
+  /* Set the final size of the image. The X axis is horizontal. The reason
+     we are using the halflower variation of `nearestint' for the maximums
+     is that these points are the farthest extremes of the input image. If
+     they are half a pixel value, they should point to the pixel before. */
   dsize[1]=nearestint_halflower(xmax)-nearestint_halfhigher(xmin)+1;
   dsize[0]=nearestint_halflower(ymax)-nearestint_halfhigher(ymin)+1;
   p->outfpixval[0]=nearestint_halfhigher(xmin);
   p->outfpixval[1]=nearestint_halfhigher(ymin);
+
+  /* If we have translation, the `dsize's and `outfpixval's should be
+     corrected. */
+  if(matrix[2]!=0.0f || matrix[5]!=0.0f)
+    {
+      dsize[1] += abs(matrix[2])+1;
+      dsize[0] += abs(matrix[5])+1;
+      if(xmin>0) p->outfpixval[0]=0;
+      if(ymin>0) p->outfpixval[1]=0;
+    }
+
   /* For a check:
   printf("Wrapped:\n");
   printf("dsize [C]: (%zu, %zu)\n", dsize[0], dsize[1]);
