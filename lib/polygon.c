@@ -26,6 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <math.h>
 #include <errno.h>
 #include <error.h>
+#include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -121,7 +122,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Sort the pixels in anti clock-wise order.*/
 void
-gal_polygon_ordered_corners(double *in, size_t n, size_t *ordinds)
+gal_polygon_vertices_sort_convex(double *in, size_t n, size_t *ordinds)
 {
   double angles[GAL_POLYGON_MAX_CORNERS];
   size_t i, tmp, aindexs[GAL_POLYGON_MAX_CORNERS],
@@ -618,4 +619,279 @@ gal_polygon_clip(double *s, size_t n, double *c, size_t m,
       */
     }
   *numcrn=outnum;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***************************************************************/
+/*******     Basic operations for concave-sort     *************/
+/***************************************************************/
+/* The point structures allows storing of points in an array
+   like a pair. */
+struct point
+{
+  double x;
+  double y;
+};
+
+
+
+
+
+/* This function allows us to find the rightmost point in the given
+   array based on its x-coordinates. */
+static struct point
+polygon_leftmost_point(double *in, size_t n)
+{
+  size_t i, min_index;
+  double tmp_min = DBL_MAX;
+
+  /* Loop through the entire array and find the rightmost corner and
+     store the index of that maximum vetex. */
+  for(i=0; i<n; i++)
+    if(tmp_min > in[i*2])
+      {
+        min_index = i;
+        tmp_min = in[i*2];
+      }
+
+  struct point p={in[min_index*2], in[min_index*2+1]};
+  /* For a check:
+  printf("leftmost point: %.3f \n", in[min_index*2]);
+  */
+
+  return p;
+}
+
+
+
+
+
+/* This function allows us to find the leftmost point int the given
+   array based on x coordinates. */
+static struct point
+polygon_rightmost_point(double *in, size_t n)
+{
+  size_t i, max_index;
+  double tmp_max = DBL_MIN;
+
+  /* Loop through the entire array and find the leftmost corner and
+     store the index of that maximum vetex. */
+  for(i=0; i<n; i++)
+    if(tmp_max < in[i*2])
+      {
+        max_index = i;
+        tmp_max = in[i*2];
+      }
+
+  struct point p={in[max_index*2], in[max_index*2+1]};
+  /* For a check:
+  printf("rightmost point: %.3f \n", in[max_index*2]);
+  */
+
+  return p;
+}
+
+
+
+
+
+/* This function uses cross-product and right-hand rule
+    to check the position of points (x, y) w.r.t the vector joining
+    the leftmost and the rightmost point(the diagonal vector).
+
+    Return 1: If point lies to the left-hand side of the diagonal vector.
+    Return 0: If point lies in the diagonal vector
+    Return -1: If point lies to the right-hand side of the diagonal vector.
+    */
+static int
+polygon_leftof_vector(double *in, size_t n, double x, double y)
+{
+  struct point rightmost = polygon_rightmost_point(in, n);
+  struct point leftmost = polygon_leftmost_point(in, n);
+
+  /* Perform the cross-product test. */
+  double test = (rightmost.y-y)*(rightmost.x-leftmost.x) -   \
+                (rightmost.y-leftmost.y)*(rightmost.x-x);
+
+  /* Due to the choice of return value, we multiply `test' by -1 */
+  test = -1*test;
+
+  return test?(test>0?1:-1):0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***************************************************************/
+/********   Sorting and Merging for concave sort     ***********/
+/***************************************************************/
+/* This function makes the two temporary partition of the input
+   array into A and B which keep the points above and below the
+   diagonal vector. */
+static void
+polygon_make_arr(double *in, size_t n, size_t *A_size, size_t *B_size,
+                 struct point *A, struct point *B)
+{
+  /* Here j and k are the indexes for A and B arrays respectively. */
+  size_t i, j = 0, k = 0;
+  *A_size = 0, *B_size = 0;
+
+  /* Loop through the input array and make the desired partition
+    and also calculate their respective sizes. */
+  for(i=0; i<n; i++)
+    {
+      if(polygon_leftof_vector(in, n, in[i*2], in[i*2+1]) <= 0)
+      {
+        A[j].x=in[i*2];
+        A[j].y=in[i*2+1];
+        /* For a check:
+        printf("A =: (%.3f, %.3f)\n", A[j].x, A[j].y);
+        */
+        j++;
+        (*A_size)++;
+      }
+      else
+      {
+        B[k].x=in[i*2];
+        B[k].y=in[i*2+1];
+        /* For a check:
+        printf("B =: (%.3f, %.3f)\n", B[k].x, B[k].y);
+        */
+        k++;
+        (*B_size)++;
+      }
+    }
+
+  /* For a check:
+  printf("sizes of A & B array ==> %ld, %ld \n", *A_size, *B_size);
+  */
+}
+
+
+
+
+
+/* The comparator functions for qsort. CompareA arranges
+    the array in ascending order according to their
+    x-coordinate and CompareB arranges in descending
+    order according to their x-coordintes.
+    */
+static int
+polygon_compareA(const void *a, const void *b)
+{
+  struct point *p1 = (struct point *)a, *p2 = (struct point *)b;
+
+  return (p1->x==p2->x) ? 0:( (p1->x<p2->x) ? -1:1 );
+}
+
+
+
+
+
+static int
+polygon_compareB(const void *a, const void *b)
+{
+  struct point *p1 = (struct point *)a, *p2 = (struct point *)b;
+
+  return (p1->x==p2->x) ? 0:( (p1->x<p2->x) ? 1:-1 );
+}
+
+
+
+
+
+/* This function arranges the A and B arrays and merges them
+    together to the output array. Hence it is the main function
+    which should be called when using concave sort. */
+void
+gal_polygon_vertices_sort(double *in, size_t n, size_t *ordinds)
+{
+  size_t i, j, A_size = 0, B_size = 0;
+  struct point A[GAL_POLYGON_MAX_CORNERS];
+  struct point B[GAL_POLYGON_MAX_CORNERS];
+  struct point sorted[GAL_POLYGON_MAX_CORNERS];
+  struct point tordinds[GAL_POLYGON_MAX_CORNERS];
+
+
+  if(n>GAL_POLYGON_MAX_CORNERS)
+    error(EXIT_FAILURE, 0, "%s: most probably a bug! The number of corners "
+          "is more than %d. This is an internal value and cannot be set from "
+          "the outside. Most probably some bug has caused this un-normal "
+          "value. Please contact us at %s so we can solve this problem",
+          __func__, GAL_POLYGON_MAX_CORNERS, PACKAGE_BUGREPORT);
+
+
+  /* Make arrays A and B and store the vertices in them.
+     Currently points are stored in based on their position
+     from the diagonal vector.
+    */
+
+
+  polygon_make_arr(in, n, &A_size, &B_size, A, B);
+
+  /* Now, we put the contents of A and B in the temporary array.
+     Firstly, we put the contents of A and then save the last index
+     of A(stored in i) and continue from that index while copying
+     from B(using j).
+  */
+  for(i=0; i<A_size; i++) tordinds[i]=A[i];
+  for(j=0; j<B_size; j++) tordinds[i++]=B[j];
+
+  /* Now sort the arrays A and B w.r.t their x axis,
+     sorting A in ascending order and B in descending order. */
+  qsort(A, A_size, sizeof(struct point), polygon_compareA);
+  qsort(B, B_size, sizeof(struct point), polygon_compareB);
+
+/*Finally, we put the contents of A and B in a final sorted array.*/
+  for(i=0; i<A_size; i++) sorted[i]=A[i];
+  for(j=0; j<B_size; j++) sorted[i++]=B[j];
+
+
+/* The temporary array is now used to find the location of points
+   stored in sorted array and assign index in ordinds accordingly.*/
+  for(i=0; i<n; i++)
+    for(j=0; j<n; j++)
+        if( (tordinds[i].x == sorted[j].x) &&
+            (tordinds[i].y == sorted[j].y) )
+          {
+            ordinds[j]=i;
+            break;
+          }
+
 }

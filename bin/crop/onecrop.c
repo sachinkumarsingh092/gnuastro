@@ -366,7 +366,14 @@ polygonmask(struct onecropparams *crp, void *array, long *fpixel_i,
   /* If the user wants to sort the edges, do it, if not, make sure its in
      counter-clockwise orientation. */
   if(crp->p->polygonsort)
-    gal_polygon_ordered_corners(crp->ipolygon, crp->p->nvertices, ordinds);
+    {
+      gal_polygon_vertices_sort(crp->ipolygon, crp->p->nvertices, ordinds);
+
+      if( !gal_polygon_is_convex(crp->ipolygon, crp->p->nvertices))
+        error(0, 0, "%s: Warning: The sorted concave polygon might "
+              "not be in the same desired format as required",
+              __func__);
+    }
   else
     {
       for(i=0;i<crp->p->nvertices;++i) ordinds[i]=i;

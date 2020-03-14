@@ -374,7 +374,7 @@ warp_preparations(struct warpparams *p)
 
 
   /* Order the transformed output pixel. */
-  gal_polygon_ordered_corners(icrn, 4, p->ordinds);
+  gal_polygon_vertices_sort_convex(icrn, 4, p->ordinds);
 
 
   /* Find the area of the output pixel in units of the input pixel,

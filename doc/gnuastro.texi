@@ -23220,7 +23220,7 @@ We have to consider floating point round-off errors when dealing with polygons.
 For example we will take @code{A} as the maximum of @code{A} and @code{B} when @code{A>B-GAL_POLYGON_ROUND_ERR}.
 @end deffn
 
-@deftypefun void gal_polygon_ordered_corners (double @code{*in}, size_t @code{n}, size_t @code{*ordinds})
+@deftypefun void gal_polygon_vertices_sort_convex (double @code{*in}, size_t @code{n}, size_t @code{*ordinds})
 We have a simple polygon (that can result from projection, so its edges don't collide or it doesn't have holes) and we want to order its corners in an anticlockwise fashion.
 This is necessary for clipping it and finding its area later.
 The input vertices can have practically any order.
@@ -23301,6 +23301,14 @@ This function is just a wrapper over @code{gal_polygon_is_counterclockwise}, and
 Clip (find the overlap of) two polygons.
 This function uses the @url{https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm, Sutherland-Hodgman} polygon clipping algorithm.
 Note that the vertices of both polygons have to be sorted in an anti-clock-wise manner.
+@end deftypefun
+
+@deftypefun void gal_polygon_vertices_sort(double *in, size_t n, size_t *ordinds)
+The sorting function which takes points as inputs and makes a sorted array (@code(ordinds}) of indexes.
+In this algorithm, we find the rightmost ans leftmost points(based on their x-coordinate) and use the diagonal vector between those points to group the points in arrays based on their position with respect to this vector.
+Now, for anticlockwise sorting, all the points below the vector are sorted in ascending of their x-coordinates and points above the vector are sorted in decreasing order using @code{qsort}.
+Finally, both these arrays are merged together to get the final sorted array of points, from which the points are indexed into the@code{ordinds} using linear search.
+Remember as there is no unique way to sort concave polygons the final sorted output may not be the one desired.
 @end deftypefun
 
 

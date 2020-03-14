@@ -59,7 +59,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 /**************     Function declarations     ******************/
 /***************************************************************/
 void
-gal_polygon_ordered_corners(double *in, size_t n, size_t *ordinds);
+gal_polygon_vertices_sort_convex(double *in, size_t n, size_t *ordinds);
 
 int
 gal_polygon_is_convex(double *v, size_t n);
@@ -86,6 +86,8 @@ void
 gal_polygon_clip(double *s, size_t n, double *c, size_t m,
                  double *o, size_t *numcrn);
 
+void
+gal_polygon_vertices_sort(double *in, size_t n, size_t *ordinds);
 
 __END_C_DECLS    /* From C++ preparations */
 
