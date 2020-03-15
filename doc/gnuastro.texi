@@ -6225,9 +6225,8 @@ In such scenarios, without this option, the program will crash.
 A random filename is assigned to the array.
 This file will keep the contents of the array as long as it is necessary and the program will delete it as soon as its not necessary any more.
 
-If the @file{.gnuastro} directory exists and is writable, then the random file will be placed in there.
-Otherwise, the @file{.gnuastro_mmap} directory will be checked.
-If @file{.gnuastro_mmap} does not exist, or @file{.gnuastro} is not writable, the random file will be directly written in the current directory with the @file{.gnuastro_mmap_} prefix.
+If the @file{.gnuastro_mmap} directory exists and is writable, then the random file will be placed in there.
+Otherwise, the randomly named file will be directly written in the current directory with the @file{.gnuastro_mmap_} prefix.
 
 By default, the name of the created file, and its size (in bytes) is printed by the program when it is created and later, when its deleted/freed.
 These messages are useful to the user who has enough RAM, but has forgot to increase the value to @code{--minmapsize} (this is often the case).
@@ -19261,11 +19260,9 @@ value of this variable is @code{NULL}, then the contents of @code{array}
 are actually stored in RAM, not in a file on the HDD/SSD. See the
 description of @code{minmapsize} below for more.
 
-If a file is used, it will be kept in the hidden @file{.gnuastro}, or
-@file{.gnuastro_mmap} directories with a randomly selected name to allow
-multiple arrays to be kept there at the same time, see description of
-@option{--minmapsize} in @ref{Processing options}. When
-@code{gal_data_free} is called the randomly named file will be deleted.
+If a file is used, it will be kept in the hidden @file{.gnuastro_mmap} directory.
+Its name is randomly selected to allow multiple arrays at the same time, see description of @option{--minmapsize} in @ref{Processing options}.
+When @code{gal_data_free} is called the randomly named file will be deleted.
 
 @item size_t minmapsize
 The minimum size of an array (in bytes) to store the contents of

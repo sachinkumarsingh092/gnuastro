@@ -48,6 +48,16 @@ See the end of the file for license conditions.
 ** Changed features
 
   All programs and libraries:
+   --minmapsize: Gnuastro's programs no longer attempt to write
+     memory-mapped files under `.gnuastro'. They will only attempt to write
+     them under the `.gnuastro_mmap' directory. Until now, when an internal
+     array needed to be memory-mapped, Gnuastro's programs (through the
+     `pointer.h' library) would first try writing the mmap files in the
+     `.gnuastro' directory. When it failed it would attempt writing in the
+     `.gnuastro_mmap' directory. However, `.gnuastro' is also used to store
+     configuration files (which are hand-written and thus valuable). Mixing
+     the two types of source (configuration files) and automatically
+     generated (memory-mapped) files is very problematic.
    - FITS ASCII tables: When a column has a floating point type, but its
      ASCII string can't be parsed as a number, it will be read as a
      NaN. Until now, the corresponding program/library would abort,
