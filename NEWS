@@ -76,6 +76,7 @@ See the end of the file for license conditions.
   bug #57301: MakeCatalog using river sum instead of mean times by clump area.
   bug #57921: Arithmetic's interpolation operator not reading metric.
   bug #57989: Warp not accounting for translation in pixel grid.
+  bug #57995: Fits lib's date to second function affected by host's timezone.
 
 
 

@@ -909,8 +909,7 @@ gal_fits_key_clean_str_value(char *string)
 
    The basic FITS string is defined under the `DATE' keyword in the FITS
    standard. For the more complete format which includes timezones, see the
-   W3 standard: https://www.w3.org/TR/NOTE-datetime
-*/
+   W3 standard: https://www.w3.org/TR/NOTE-datetime */
 char *
 gal_fits_key_date_to_struct_tm(char *fitsdate, struct tm *tp)
 {
@@ -1037,8 +1036,11 @@ gal_fits_key_date_to_seconds(char *fitsdate, char **subsecstr,
                 tmp);
     }
 
-  /* Convert the `tm' structure to `time_t'. */
-  t=mktime(&tp);
+  /* Convert the `tm' structure to `time_t'. Note that the system's
+     timezone and daylight saving need to be subtracted from the output of
+     `mktime'. Otherwise the result will be different on different
+     host-system timezones (which is not what we want here: bug #57995). */
+  t=mktime(&tp)-timezone-daylight;
 
   /* Return the value and set the output pointer. */
   return (size_t)t;
