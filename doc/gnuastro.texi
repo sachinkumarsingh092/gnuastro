@@ -23172,16 +23172,24 @@ that @code{v[0]} and @code{v[1]} are the positions of the first vertice to
 be considered.
 @end deftypefun
 
-@deftypefun int gal_polygon_pin (double @code{*v}, double @code{*p}, size_t @code{n})
+@deftypefun int gal_polygon_isinside_convex (double @code{*v}, double @code{*p}, size_t @code{n})
 Return @code{1} if the point @code{p} is within the polygon whose vertices
 are defined by @code{v} and @code{0} otherwise. Note that the vertices of
 the polygon have to be sorted in an anti-clock-wise manner.
 @end deftypefun
 
 @deftypefun int gal_polygon_ppropin (double @code{*v}, double @code{*p}, size_t @code{n})
-Similar to @code{gal_polygon_pin}, except that if the point @code{p} is on
+Similar to @code{gal_polygon_isinside_convex}, except that if the point @code{p} is on
 one of the edges of a polygon, this will return @code{0}.
 @end deftypefun
+
+@deftypefun int gal_polygon_isinside(double @code{*v}, double @code{*p}, size_t @code{n})
+Returns @code{0} if point @code{p} in inside a polygon, either convex or concave, whose vertices are defined by @code{v} and @code{0} otherwise.
+This function uses the @url{https://en.wikipedia.org/wiki/Point_in_polygon#Winding_number_algorithm, winding number algorithm}, to check the points.
+
+@deftypefun int gal_polygon_isconvex(double @code{*v}, size_t @code{n})
+Returns @code{1} if the polygon is convex with vertices defined by @code{v} and @code{0} if it is a concave polygon.
+Note that the vertices of the polygon should be sorted in an anti-clockwise manner.
 
 @deftypefun void gal_polygon_clip (double @code{*s}, size_t @code{n}, double @code{*c}, size_t @code{m}, double @code{*o}, size_t @code{*numcrn})
 Clip (find the overlap of) two polygons. This function uses the

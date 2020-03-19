@@ -64,10 +64,16 @@ double
 gal_polygon_area(double *v, size_t n);
 
 int
-gal_polygon_pin(double *v, double *p, size_t n);
+gal_polygon_isinside_convex(double *v, double *p, size_t n);
 
 int
 gal_polygon_ppropin(double *v, double *p, size_t n);
+
+int
+gal_polygon_isinside(double *v, double *p, size_t n);
+
+int
+gal_polygon_isconvex(double *v, size_t n);
 
 void
 gal_polygon_clip(double *s, size_t n, double *c, size_t m,

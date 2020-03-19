@@ -334,7 +334,7 @@ onecrop_ipolygon_fl(double *ipolygon, size_t nvertices, long *fpixel,
     for(i=0;i<size;++i)                                                 \
       {                                                                 \
         point[0]=i%s1+1; point[1]=i/s1+1;                               \
-        if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon)     \
+        if((*func_ptr)(ipolygon, point, nvertices)==outpolygon)           \
           ba[i]=*bb;                                                    \
       }                                                                 \
     free(bb);                                                           \
@@ -348,6 +348,7 @@ polygonmask(struct onecropparams *crp, void *array, long *fpixel_i,
   int type=crp->p->type;
   double *ipolygon, point[2];
   int outpolygon=crp->p->outpolygon;
+  int (*func_ptr)(double *, double *, size_t);
   size_t i, *ordinds, size=s0*s1, nvertices=crp->p->nvertices;
 
 
@@ -374,6 +375,7 @@ polygonmask(struct onecropparams *crp, void *array, long *fpixel_i,
       ipolygon[i*2+1] = crp->ipolygon[ordinds[i]*2+1] - fpixel_i[1];
     }
 
+  func_ptr=&gal_polygon_isinside;
 
   /* Go over all the pixels in the image and if they are within the
      polygon keep them if the user has asked for it.*/
