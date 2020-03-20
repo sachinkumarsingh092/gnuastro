@@ -106,6 +106,11 @@ enum gal_arithmetic_operators
   GAL_ARITHMETIC_OP_LOG,          /* log()   */
   GAL_ARITHMETIC_OP_LOG10,        /* log10() */
 
+  GAL_ARITHMETIC_CONVERT_RA_DECIMAL,    /* right ascension to decimal      */
+  GAL_ARITHMETIC_CONVERT_DEC_DECIMAL,   /* declination to decimal          */
+  GAL_ARITHMETIC_CONVERT_DECIMAL_RA,    /* right ascension to decimal      */
+  GAL_ARITHMETIC_CONVERT_DECIMAL_DEC,   /* declination to decimal          */
+
   GAL_ARITHMETIC_OP_MINVAL,       /* Minimum value of array.               */
   GAL_ARITHMETIC_OP_MAXVAL,       /* Maximum value of array.               */
   GAL_ARITHMETIC_OP_NUMBERVAL,    /* Number of (non-blank) elements.       */

@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/list.h>
 #include <gnuastro/blank.h>
+#include <gnuastro/units.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/pointer.h>
 #include <gnuastro/threads.h>
@@ -396,6 +397,44 @@ arithmetic_abs(int flags, gal_data_t *in)
             "UNIARY_FUNCTION_ON_ELEMENT", in->type);                    \
     }
 
+#define UNIARY_FUNCTION_ON_ELEMENT_OUTPUT_STRING(OP)                    \
+  switch(in->type)                                                      \
+    {                                                                   \
+    case GAL_TYPE_UINT8:                                                \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(char *, uint8_t,  OP)             \
+        break;                                                          \
+    case GAL_TYPE_INT8:                                                 \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(char *, int8_t,   OP)             \
+        break;                                                          \
+    case GAL_TYPE_UINT16:                                               \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(char *, uint16_t, OP)             \
+        break;                                                          \
+    case GAL_TYPE_INT16:                                                \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(char *, int16_t,  OP)             \
+        break;                                                          \
+    case GAL_TYPE_UINT32:                                               \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(char *, uint32_t, OP)             \
+        break;                                                          \
+    case GAL_TYPE_INT32:                                                \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(char *, int32_t,  OP)             \
+        break;                                                          \
+    case GAL_TYPE_UINT64:                                               \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(char *, uint64_t, OP)             \
+        break;                                                          \
+    case GAL_TYPE_INT64:                                                \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(char *, int64_t,  OP)             \
+        break;                                                          \
+    case GAL_TYPE_FLOAT32:                                              \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(char *, float,    OP)             \
+      break;                                                            \
+    case GAL_TYPE_FLOAT64:                                              \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(char *, double,   OP)             \
+      break;                                                            \
+    default:                                                            \
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",         \
+            "UNIARY_FUNCTION_ON_ELEMENT_OUTPUT_STRING", in->type);      \
+    }
+
 #define UNIARY_FUNCTION_ON_ELEMENT(OP)                                  \
   switch(in->type)                                                      \
     {                                                                   \
@@ -434,6 +473,13 @@ arithmetic_abs(int flags, gal_data_t *in)
             "UNIARY_FUNCTION_ON_ELEMENT", in->type);                    \
     }
 
+
+#define UNIFUNC_RUN_FUNCTION_ON_ELEMENT_STRING(OT, OP){                 \
+    OT *oa=o->array;                                                    \
+    char **ia=in->array, **iaf=ia + in->size;                           \
+    do *oa++ = OP(*ia++); while(ia<iaf);                                \
+}
+
 static gal_data_t *
 arithmetic_unary_function(int operator, int flags, gal_data_t *in)
 {
@@ -446,7 +492,11 @@ arithmetic_unary_function(int operator, int flags, gal_data_t *in)
      point). So even if the user requested inplace opereation, if its not a
      floating point type, its not useful.*/
   if( (flags & GAL_ARITHMETIC_INPLACE)
-      && (in->type==GAL_TYPE_FLOAT32 || in->type==GAL_TYPE_FLOAT64) )
+      && (in->type==GAL_TYPE_FLOAT32 || in->type==GAL_TYPE_FLOAT64)
+      && (operator != GAL_ARITHMETIC_CONVERT_DECIMAL_RA
+      &&  operator != GAL_ARITHMETIC_CONVERT_DECIMAL_DEC
+      &&  operator != GAL_ARITHMETIC_CONVERT_RA_DECIMAL
+      &&  operator != GAL_ARITHMETIC_CONVERT_DEC_DECIMAL ) )
     inplace=1;
 
   if(inplace)
@@ -459,6 +509,16 @@ arithmetic_unary_function(int operator, int flags, gal_data_t *in)
       otype = ( in->type==GAL_TYPE_FLOAT64
                 ? GAL_TYPE_FLOAT64
                 : GAL_TYPE_FLOAT32 );
+
+      /* Check for operators which have fixed output types */
+      if ( operator == GAL_ARITHMETIC_CONVERT_RA_DECIMAL ||
+           operator == GAL_ARITHMETIC_CONVERT_DEC_DECIMAL )
+        otype = GAL_TYPE_FLOAT64;
+
+      if (operator == GAL_ARITHMETIC_CONVERT_DECIMAL_RA ||
+          operator == GAL_ARITHMETIC_CONVERT_DECIMAL_DEC)
+        otype = GAL_TYPE_STRING;
+
       o = gal_data_alloc(NULL, otype, in->ndim, in->dsize, in->wcs,
                          0, in->minmapsize, in->quietmmap,
                          NULL, NULL, NULL);
@@ -477,6 +537,22 @@ arithmetic_unary_function(int operator, int flags, gal_data_t *in)
 
     case GAL_ARITHMETIC_OP_LOG10:
       UNIARY_FUNCTION_ON_ELEMENT( log10 );
+      break;
+
+    case GAL_ARITHMETIC_CONVERT_RA_DECIMAL:
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT_STRING( double, gal_units_ra_to_decimal  );
+      break;
+
+    case GAL_ARITHMETIC_CONVERT_DEC_DECIMAL:
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT_STRING( double, gal_units_dec_to_decimal  );
+      break;
+
+    case GAL_ARITHMETIC_CONVERT_DECIMAL_RA:
+      UNIARY_FUNCTION_ON_ELEMENT_OUTPUT_STRING( gal_units_decimal_to_ra );
+      break;
+
+    case GAL_ARITHMETIC_CONVERT_DECIMAL_DEC:
+      UNIARY_FUNCTION_ON_ELEMENT_OUTPUT_STRING( gal_units_decimal_to_dec );
       break;
 
     default:
@@ -1738,6 +1814,16 @@ gal_arithmetic_set_operator(char *string, size_t *num_operands)
   else if (!strcmp(string, "log10"))
     { op=GAL_ARITHMETIC_OP_LOG10;             *num_operands=1;  }
 
+  /* Units conversion functions */
+  else if (!strcmp(string, "ra-to-decimal"))
+    { op=GAL_ARITHMETIC_CONVERT_RA_DECIMAL;   *num_operands=1;  }
+  else if (!strcmp(string, "dec-to-decimal"))
+    { op=GAL_ARITHMETIC_CONVERT_DEC_DECIMAL;  *num_operands=1;  }
+  else if (!strcmp(string, "decimal-to-ra"))
+    { op=GAL_ARITHMETIC_CONVERT_DECIMAL_RA;   *num_operands=1;  }
+  else if (!strcmp(string, "decimal-to-dec"))
+    { op = GAL_ARITHMETIC_CONVERT_DECIMAL_DEC;*num_operands=1;  }
+
   /* Statistical/higher-level operators. */
   else if (!strcmp(string, "minvalue"))
     { op=GAL_ARITHMETIC_OP_MINVAL;            *num_operands=1;  }
@@ -1888,6 +1974,11 @@ gal_arithmetic_operator_string(int operator)
     case GAL_ARITHMETIC_OP_LOG:             return "log";
     case GAL_ARITHMETIC_OP_LOG10:           return "log10";
 
+    case GAL_ARITHMETIC_CONVERT_RA_DECIMAL: return "ra-to-decimal";
+    case GAL_ARITHMETIC_CONVERT_DEC_DECIMAL:return "dec-to-decimal";
+    case GAL_ARITHMETIC_CONVERT_DECIMAL_RA: return "decimal-to-ra";
+    case GAL_ARITHMETIC_CONVERT_DECIMAL_DEC:return "decimal-to-dec";
+
     case GAL_ARITHMETIC_OP_MINVAL:          return "minvalue";
     case GAL_ARITHMETIC_OP_MAXVAL:          return "maxvalue";
     case GAL_ARITHMETIC_OP_NUMBERVAL:       return "numbervalue";
@@ -1986,6 +2077,10 @@ gal_arithmetic(int operator, size_t numthreads, int flags, ...)
     case GAL_ARITHMETIC_OP_SQRT:
     case GAL_ARITHMETIC_OP_LOG:
     case GAL_ARITHMETIC_OP_LOG10:
+    case GAL_ARITHMETIC_CONVERT_RA_DECIMAL:
+    case GAL_ARITHMETIC_CONVERT_DEC_DECIMAL:
+    case GAL_ARITHMETIC_CONVERT_DECIMAL_RA:
+    case GAL_ARITHMETIC_CONVERT_DECIMAL_DEC:
       d1 = va_arg(va, gal_data_t *);
       out=arithmetic_unary_function(operator, flags, d1);
       break;
