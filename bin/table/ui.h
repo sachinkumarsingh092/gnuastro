@@ -41,8 +41,8 @@ enum program_args_groups
 
 /* Available letters for short options:
 
-   a b d f g j k l m p t u v x y z
-   A B C E G H J L O Q R X Y
+   a b d f g j k l m p t v x y z
+   A B E G H J L O Q R X Y
 */
 enum option_keys_enum
 {
@@ -59,7 +59,8 @@ enum option_keys_enum
   UI_KEY_DESCENDING      = 'd',
   UI_KEY_HEAD            = 'H',
   UI_KEY_TAIL            = 't',
-
+  UI_KEY_CATCOLUMN       = 'C',
+  UI_KEY_CATCOLHDU       = 'u',
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
 };

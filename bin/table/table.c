@@ -517,7 +517,31 @@ table_head_tail(struct tableparams *p)
     }
 }
 
+/*This function concatenates two table column wise .
+ It  attaches catcolumn table at the back of first table */
+static void
+table_catcolumn(struct tableparams *p)
+{
+  gal_data_t *column_table, *final;
+  struct gal_options_common_params *cp=&p->cp;
 
+  /* Reading the catcolumn table. */
+  column_table=gal_table_read(p->catcolumn, p->catcolhdu, NULL, p->columns,
+                              cp->searchin, cp->ignorecase, cp->minmapsize,
+                              p->cp.quietmmap, NULL);
+
+  /* checking if both the tables have same number of rows */
+  if(column_table->dsize[0]!=p->table->dsize[0])
+     error(EXIT_FAILURE, 0, "Number of rows are not equal in both tables.\n"
+          "Input table have %zu rows where as catcolumn table have %zu rows.\n",p->table->dsize[0],
+          column_table->dsize[0]);
+
+  /*final column of input table*/
+  final=gal_list_data_last(p->table);
+
+  /*connecting last column of first table to first column of column_table*/
+  final->next=column_table;
+}
 
 
 
@@ -527,6 +551,7 @@ table_head_tail(struct tableparams *p)
 void
 table(struct tableparams *p)
 {
+
   /* Apply a certain range (if required) to the output sample. */
   if(p->selection) table_selection(p);
 
@@ -540,6 +565,9 @@ table(struct tableparams *p)
   /* If any operations are needed, do them. */
   if(p->outcols)
     arithmetic_operate(p);
+
+  /* Concatenate the columns of tables(if required)*/
+  if(p->catcolumn) table_catcolumn(p);
 
   /* Write the output. */
   gal_table_write(p->table, NULL, p->cp.tableformat, p->cp.output,

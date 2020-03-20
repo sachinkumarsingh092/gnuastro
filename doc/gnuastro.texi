@@ -9270,6 +9270,15 @@ The order of the output columns will be the same order given to the option or in
 This option is not mandatory, if no specific columns are requested, all the input table columns are output.
 When this option is called multiple times, it is possible to output one column more than once.
 
+@item -F STR
+@itemx --catcolumn=STR
+File whose columns to add in the main INPUTFILE.
+If any row selection is applied then first row selection is applied and  then concatenation is done.
+
+@item -u STR/INT
+@itemx --catcolhdu=STR/INT
+Same as @option{--hdu},Helps to choose Image extension for file given to @option{--catcolumn}.
+
 @item -w STR
 @itemx --wcsfile=STR
 FITS file that contains the WCS to be used in the @code{wcstoimg} and @code{imgtowcs} operators of @option{--column} (see above).
