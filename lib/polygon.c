@@ -5,6 +5,7 @@ This is part of GNU Astronomy Utilities (Gnuastro) package.
 Original author:
      Mohammad Akhlaghi <mohammad@akhlaghi.org>
 Contributing author(s):
+     Sachin Kumar Singh <sachinkumarsingh092@gmail.com>
 Copyright (C) 2015-2020, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
@@ -183,6 +184,44 @@ gal_polygon_ordered_corners(double *in, size_t n, size_t *ordinds)
 
 
 
+/* This function checks if the polygon is convex or concave by testing all
+   3 consecutive points of the sorted polygon. If any of the test returns
+   false, the the polygon is concave else it is convex.
+
+   return 1: convex polygon
+   return 0: concave polygon
+   */
+int
+gal_polygon_isconvex(double *v, size_t n)
+{
+  size_t i;
+  int flag=1;
+
+  /* Check the first n-1 edges made by n points. */
+  for(i=0; i<n-2; i++)
+    {
+      if( GAL_POLYGON_LEFT_OF_LINE(&v[i*2], &v[(i+1)*2], &v[(i+2)*2]) )
+        continue;
+      else
+        return 0;
+    }
+
+  /* Check the edge between nth and 1st point */
+  if(flag)
+    {
+      if( GAL_POLYGON_LEFT_OF_LINE(&v[(n-2)*2], &v[(n-1)*2], &v[0]) )
+        return 1;
+      else
+        return 0;
+    }
+
+  return 1;
+}
+
+
+
+
+
 /* The area of a polygon is the sum of the vector products of all the
    vertices in a counterclockwise order. See the Wikipedia page for
    Polygon for more information.
@@ -213,6 +252,59 @@ gal_polygon_area(double *v, size_t n)
 
 
 
+/* This fuction test if a point is inside the polygon using winding number
+  algorithm. See its wiki here:
+  https://en.wikipedia.org/wiki/Point_in_polygon#Winding_number_algorithm
+
+  We have a polygon with `n' vertices whose vertices are in the array `v'
+  (with 2*n elements). Such that v[0], v[1] are the two coordinates of the
+  first vertice. The vertices also have to be sorted in a counter clockwise
+  fashion. We also have a point (with coordinates (x, y) == (p[0], p[1])
+  and we want to see if it is inside the polygon or not.
+
+  If point is outside the polygon, return 0.
+  If point is inside the polygon, return a non-zero number.
+  */
+int
+gal_polygon_isinside(double *v, double *p, size_t n)
+{
+  /* The winding number(wn) keeping the count of number of times the ray
+     crosses the polygon. */
+  size_t wn=0, i=0, j=n-1;
+
+  /* Loop through all the edges of the polygon*/
+  while(i<n)
+    {
+      /* Edge from v[i] to v[i+1] in upward direction */
+      if(v[j*2+1] <= p[1])
+        {
+          if(v[i*2+1] > p[1])
+            /* `p' left of edge is an upward intersection, increase wn. */
+            if( GAL_POLYGON_TRI_CROSS_PRODUCT(&v[j*2], &v[i*2], p) > 0 )
+              wn++;
+        }
+      else{
+        /* edge from v[i] to v[i+1] in downward direction */
+        if(v[i*2+1] <= p[1])
+          /* p right of edge is a downward intersection, decrease wn */
+          if( GAL_POLYGON_TRI_CROSS_PRODUCT(&v[j*2], &v[i*2], p) < 0 )
+            wn--;
+      }
+
+      /* Increment `j' */
+      j=i++;
+
+      /* For a check:
+         printf("winding number: %ld, %.3f\n", wn);
+      */
+    }
+  return wn;
+}
+
+
+
+
+
 /* We have a polygon with `n' vertices whose vertices are in the array
    `v' (with 2*n elements). Such that v[0], v[1] are the two
    coordinates of the first vertice. The vertices also have to be
@@ -225,7 +317,7 @@ gal_polygon_area(double *v, size_t n)
    traversed in order. See the comments above `gal_polygon_area' for an
    explanation about i and j and the loop.*/
 int
-gal_polygon_pin(double *v, double *p, size_t n)
+gal_polygon_isinside_convex(double *v, double *p, size_t n)
 {
   size_t i=0, j=n-1;
 
@@ -242,8 +334,8 @@ gal_polygon_pin(double *v, double *p, size_t n)
 
 
 
-/* Similar to gal_polygon_pin, except that if the point is on one of the
-   edges of a polygon, this will return 0. */
+/* Similar to gal_polygon_isinside_convex, except that if the point
+   is on one of the edges of a polygon, this will return 0. */
 int
 gal_polygon_ppropin(double *v, double *p, size_t n)
 {

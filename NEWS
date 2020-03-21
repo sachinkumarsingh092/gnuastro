@@ -17,6 +17,15 @@ See the end of the file for license conditions.
      is convenient when you forget the specific name of the spectral line
      used within Gnuastro.
 
+  Crop:
+   --polygon: can now also crop concave polygons (when atleast one inner
+     angle is more than 180 degrees).
+   --polygonnosort: Don't sort the given set of vertices to the `--polygon'
+     option. For a concave polyton, this is redundant, but for a convex
+     polygon, this option may be necessary because there is no unique
+     solution and if automatic sorting is not disabled, the output polygon
+     may not correspond to what you wanted (the vertices will the correct).
+
   Fits:
    --datasum: Calculate and print the given HDU's "datasum" to stdout.
    --datetosec: Can also account for `Z' in the end of the date-time
@@ -40,8 +49,10 @@ See the end of the file for license conditions.
 
   Library:
    - GAL_SPECLINES_INVALID_MAX: Total number of spectral lines, plus 1.
-   - gal_txt_trim_space: trim white space before and after a string.
    - GAL_ARITHMETIC_OP_QUANTILE: operator for `gal_arithmetic'.
+   - gal_txt_trim_space: trim white space before and after a string.
+   - gal_polygon_isconvex: identify if a polygon is convex or concave.
+   - gal_polygon_isinside: if point is inside polygon (convex or concave).
 
 ** Removed features
 
@@ -63,6 +74,11 @@ See the end of the file for license conditions.
      NaN. Until now, the corresponding program/library would abort,
      printing the problematic string and its location.
 
+  Crop:
+   - `--polygonout' is the new name for `--outpolygon'. Having `polygon' at
+     the start of the option name, makes it easier to find in the help list
+     and also to understand generally.
+
   NoiseChisel:
    - Until now, when NoiseChisel didn't detect any pixels, it just printed
      a message and wouldn't not make any output file. This was very
@@ -70,6 +86,9 @@ See the end of the file for license conditions.
      output file will be created and the detection map will only have a
      value of zero. As a result, the Sky and Sky standard deviation
      extensions will be measured over all the tiles.
+
+  Library:
+   - gal_polygon_isinside_convex: new name for `gal_polygon_pin'.
 
 ** Bugs fixed
   bug #57300: MakeCatalog memory crash when input dataset has units.
