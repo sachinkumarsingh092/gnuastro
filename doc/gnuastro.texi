@@ -23086,64 +23086,16 @@ pixels of the overlap will be put in @code{fpixel_o} and @code{lpixel_o}.
 @node Polygons, Qsort functions, Bounding box, Gnuastro library
 @subsection Polygons (@file{polygon.h})
 
-Polygons are commonly necessary in image processing. In Gnuastro, they are
-used in Crop (see @ref{Crop}) for cutting out non-rectangular regions of a
-image. Warp (see @ref{Warp}) uses them to warp the images into a new pixel
-grid. The polygon related Gnuastro library macros and functions are
-introduced here.
+Polygons are commonly necessary in image processing.
+For example in Crop they are used for cutting out non-rectangular regions of a image (see @ref{Crop}), and in Warp, for mapping different pixel grids over each other (see @ref{Warp}).
 
-In all the functions here the vertices (and points) are defined as an
-array. So a polygon with 4 vertices will be identified with an array of 8
-elements with the first two elements keeping the 2D coordinates of the
-first vertice and so on.
-
-@deffn Macro GAL_POLYGON_MAX_CORNERS
-The largest number of vertices a polygon can have in this library.
-@end deffn
-
-@deffn Macro GAL_POLYGON_ROUND_ERR
-@cindex Round-off error
-We have to consider floating point round-off errors when dealing with
-polygons. For example we will take @code{A} as the maximum of @code{A} and
-@code{B} when @code{A>B-GAL_POLYGON_ROUND_ERR}.
-@end deffn
-
-@deftypefun void gal_polygon_ordered_corners (double @code{*in}, size_t @code{n}, size_t @code{*ordinds})
-We have a simple polygon (that can result from projection, so its edges
-don't collide or it doesn't have holes) and we want to order its corners in
-an anticlockwise fashion. This is necessary for clipping it and finding its
-area later. The input vertices can have practically any order.
-
-The input (@code{in}) is an array containing the coordinates (two values)
-of each vertice. @code{n} is the number of corners. So @code{in} should
-have @code{2*n} elements. The output (@code{ordinds}) is an array with
-@code{n} elements specifying the indexs in order. This array must have been
-allocated before calling this function. The indexes are output for more
-generic usage, for example in a homographic transform (necessary in warping
-an image, see @ref{Warping basics}), the necessary order of vertices is the
-same for all the pixels. In other words, only the positions of the vertices
-change, not the way they need to be ordered. Therefore, this function would
-only be necessary once.
-
-As a summary, the input is unchanged, only @code{n} values will be put in
-the @code{ordinds} array. Such that calling the input coordinates in the
-following fashion will give an anti-clockwise order when there are 4
-vertices:
-
-@example
-1st vertice: in[ordinds[0]*2], in[ordinds[0]*2+1]
-2nd vertice: in[ordinds[1]*2], in[ordinds[1]*2+1]
-3rd vertice: in[ordinds[2]*2], in[ordinds[2]*2+1]
-4th vertice: in[ordinds[3]*2], in[ordinds[3]*2+1]
-@end example
-
-@cindex Convex Hull
-@noindent
-The implementation of this is very similar to the Graham scan in finding
-the Convex Hull. However, in projection we will never have a concave
-polygon (the left condition below, where this algorithm will get to E
-before D), we will always have a convex polygon (right case) or E won't
-exist!
+@cindex Convex polygons
+@cindex Concave polygons
+@cindex Polygons, Convex
+@cindex Polygons, Concave
+Polygons come in two classes: convex and concave (or generally, non-convex!), see below for a demonstration.
+Convex polygons are those where all inner angles are less than 180 degrees.
+By contrast, a convex polygon is one where an inner angle may be more than 180 degress.
 
 @example
             Concave Polygon        Convex Polygon
@@ -23155,36 +23107,51 @@ exist!
               A--------B             A ----------B
 @end example
 
-This is because we are always going to be calculating the area of the
-overlap between a quadrilateral and the pixel grid or the quadrilateral
-its self.
+In all the functions here the vertices (and points) are defined as an array.
+So a polygon with 4 vertices will be identified with an array of 8 elements with the first two elements keeping the 2D coordinates of the first vertice and so on.
 
-The @code{GAL_POLYGON_MAX_CORNERS} macro is defined so there will be no
-need to allocate these temporary arrays separately. Since we are dealing
-with pixels, the polygon can't really have too many vertices.
-@end deftypefun
+@deffn Macro GAL_POLYGON_MAX_CORNERS
+The largest number of vertices a polygon can have in this library.
+@end deffn
 
-@deftypefun double gal_polygon_area (double @code{*v}, size_t @code{n})
-Find the area of a polygon with vertices defined in @code{v}. @code{v}
-points to an array of doubles which keep the positions of the vertices such
-that @code{v[0]} and @code{v[1]} are the positions of the first vertice to
-be considered.
-@end deftypefun
+@deffn Macro GAL_POLYGON_ROUND_ERR
+@cindex Round-off error
+We have to consider floating point round-off errors when dealing with polygons.
+For example we will take @code{A} as the maximum of @code{A} and @code{B} when @code{A>B-GAL_POLYGON_ROUND_ERR}.
+@end deffn
 
-@deftypefun int gal_polygon_isinside_convex (double @code{*v}, double @code{*p}, size_t @code{n})
-Return @code{1} if the point @code{p} is within the polygon whose vertices
-are defined by @code{v} and @code{0} otherwise. Note that the vertices of
-the polygon have to be sorted in an anti-clock-wise manner.
-@end deftypefun
+@deftypefun void gal_polygon_ordered_corners (double @code{*in}, size_t @code{n}, size_t @code{*ordinds})
+We have a simple polygon (that can result from projection, so its edges don't collide or it doesn't have holes) and we want to order its corners in an anticlockwise fashion.
+This is necessary for clipping it and finding its area later.
+The input vertices can have practically any order.
 
-@deftypefun int gal_polygon_ppropin (double @code{*v}, double @code{*p}, size_t @code{n})
-Similar to @code{gal_polygon_isinside_convex}, except that if the point @code{p} is on
-one of the edges of a polygon, this will return @code{0}.
-@end deftypefun
+The input (@code{in}) is an array containing the coordinates (two values) of each vertice.
+@code{n} is the number of corners.
+So @code{in} should have @code{2*n} elements.
+The output (@code{ordinds}) is an array with @code{n} elements specifying the indexs in order.
+This array must have been allocated before calling this function.
+The indexes are output for more generic usage, for example in a homographic transform (necessary in warping an image, see @ref{Warping basics}), the necessary order of vertices is the same for all the pixels.
+In other words, only the positions of the vertices change, not the way they need to be ordered.
+Therefore, this function would only be necessary once.
 
-@deftypefun int gal_polygon_isinside(double @code{*v}, double @code{*p}, size_t @code{n})
-Returns @code{0} if point @code{p} in inside a polygon, either convex or concave, whose vertices are defined by @code{v} and @code{0} otherwise.
-This function uses the @url{https://en.wikipedia.org/wiki/Point_in_polygon#Winding_number_algorithm, winding number algorithm}, to check the points.
+As a summary, the input is unchanged, only @code{n} values will be put in the @code{ordinds} array.
+Such that calling the input coordinates in the following fashion will give an anti-clockwise order when there are 4 vertices:
+
+@example
+1st vertice: in[ordinds[0]*2], in[ordinds[0]*2+1]
+2nd vertice: in[ordinds[1]*2], in[ordinds[1]*2+1]
+3rd vertice: in[ordinds[2]*2], in[ordinds[2]*2+1]
+4th vertice: in[ordinds[3]*2], in[ordinds[3]*2+1]
+@end example
+
+@cindex Convex Hull
+@noindent
+The implementation of this is very similar to the Graham scan in finding the Convex Hull.
+However, in projection we will never have a concave polygon (the left condition below, where this algorithm will get to E before D), we will always have a convex polygon (right case) or E won't exist!
+This is because we are always going to be calculating the area of the overlap between a quadrilateral and the pixel grid or the quadrilateral its self.
+
+The @code{GAL_POLYGON_MAX_CORNERS} macro is defined so there will be no need to allocate these temporary arrays separately.
+Since we are dealing with pixels, the polygon can't really have too many vertices.
 @end deftypefun
 
 @deftypefun int gal_polygon_isconvex(double @code{*v}, size_t @code{n})
@@ -23192,11 +23159,33 @@ Returns @code{1} if the polygon is convex with vertices defined by @code{v} and 
 Note that the vertices of the polygon should be sorted in an anti-clockwise manner.
 @end deftypefun
 
+@deftypefun double gal_polygon_area (double @code{*v}, size_t @code{n})
+Find the area of a polygon with vertices defined in @code{v}.
+@code{v} points to an array of doubles which keep the positions of the vertices such that @code{v[0]} and @code{v[1]} are the positions of the first vertice to be considered.
+@end deftypefun
+
+@deftypefun int gal_polygon_isinside(double @code{*v}, double @code{*p}, size_t @code{n})
+Returns @code{0} if point @code{p} in inside a polygon, either convex or concave.
+The vertices of the polygon are defined by @code{v} and @code{0} otherwise, they have to be ordered in an anti-clockwise manner.
+This function uses the @url{https://en.wikipedia.org/wiki/Point_in_polygon#Winding_number_algorithm, winding number algorithm}, to check the points.
+Note that this is a generic function (working on both concave and convex polygons, so if you know before-hand that your polygon is convex, it is much more efficient to use @code{gal_polygon_isinside_convex}.
+@end deftypefun
+
+@deftypefun int gal_polygon_isinside_convex (double @code{*v}, double @code{*p}, size_t @code{n})
+Return @code{1} if the point @code{p} is within the polygon whose vertices are defined by @code{v}.
+The polygon is assumed to be convex, for a more generic function that deals with concave and convex polygons, see @code{gal_polygon_isinside}.
+Note that the vertices of the polygon have to be sorted in an anti-clock-wise manner.
+@end deftypefun
+
+@deftypefun int gal_polygon_ppropin (double @code{*v}, double @code{*p}, size_t @code{n})
+Similar to @code{gal_polygon_isinside_convex}, except that if the point @code{p} is on
+one of the edges of a polygon, this will return @code{0}.
+@end deftypefun
+
 @deftypefun void gal_polygon_clip (double @code{*s}, size_t @code{n}, double @code{*c}, size_t @code{m}, double @code{*o}, size_t @code{*numcrn})
-Clip (find the overlap of) two polygons. This function uses the
-@url{https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm,
-Sutherland-Hodgman} polygon clipping algorithm. Note that the vertices of
-both polygons have to be sorted in an anti-clock-wise manner.
+Clip (find the overlap of) two polygons.
+This function uses the @url{https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm, Sutherland-Hodgman} polygon clipping algorithm.
+Note that the vertices of both polygons have to be sorted in an anti-clock-wise manner.
 @end deftypefun
 
 

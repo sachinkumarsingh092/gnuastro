@@ -5,6 +5,7 @@ This is part of GNU Astronomy Utilities (Gnuastro) package.
 Original author:
      Mohammad Akhlaghi <mohammad@akhlaghi.org>
 Contributing author(s):
+     Sachin Kumar Singh <sachinkumarsingh092@gmail.com>
 Copyright (C) 2015-2020, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
@@ -183,6 +184,44 @@ gal_polygon_ordered_corners(double *in, size_t n, size_t *ordinds)
 
 
 
+/* This function checks if the polygon is convex or concave by testing all
+   3 consecutive points of the sorted polygon. If any of the test returns
+   false, the the polygon is concave else it is convex.
+
+   return 1: convex polygon
+   return 0: concave polygon
+   */
+int
+gal_polygon_isconvex(double *v, size_t n)
+{
+  size_t i;
+  int flag=1;
+
+  /* Check the first n-1 edges made by n points. */
+  for(i=0; i<n-2; i++)
+    {
+      if( GAL_POLYGON_LEFT_OF_LINE(&v[i*2], &v[(i+1)*2], &v[(i+2)*2]) )
+        continue;
+      else
+        return 0;
+    }
+
+  /* Check the edge between nth and 1st point */
+  if(flag)
+    {
+      if( GAL_POLYGON_LEFT_OF_LINE(&v[(n-2)*2], &v[(n-1)*2], &v[0]) )
+        return 1;
+      else
+        return 0;
+    }
+
+  return 1;
+}
+
+
+
+
+
 /* The area of a polygon is the sum of the vector products of all the
    vertices in a counterclockwise order. See the Wikipedia page for
    Polygon for more information.
@@ -207,61 +246,6 @@ gal_polygon_area(double *v, size_t n)
       j=i++;
     }
   return fabs(sum)/2.0f;
-}
-
-
-
-
-
-/* We have a polygon with `n' vertices whose vertices are in the array
-   `v' (with 2*n elements). Such that v[0], v[1] are the two
-   coordinates of the first vertice. The vertices also have to be
-   sorted in a counter clockwise fashion. We also have a point (with
-   coordinates p[0], p[1]) and we want to see if it is inside the
-   polygon or not.
-
-   If the point is inside the polygon, it will always be to the left
-   of the edge connecting the two vertices when the vertices are
-   traversed in order. See the comments above `gal_polygon_area' for an
-   explanation about i and j and the loop.*/
-int
-gal_polygon_isinside_convex(double *v, double *p, size_t n)
-{
-  size_t i=0, j=n-1;
-
-  while(i<n)
-    {
-      if( GAL_POLYGON_LEFT_OF_LINE(&v[j*2], &v[i*2], p) )
-        j=i++;
-      else return 0;
-    }
-  return 1;
-}
-
-
-
-
-
-/* Similar to gal_polygon_isinside_convex, except that if the point
-   is on one of the edges of a polygon, this will return 0. */
-int
-gal_polygon_ppropin(double *v, double *p, size_t n)
-{
-  size_t i=0, j=n-1;
-
-  while(i<n)
-    {
-      /* For a check:
-      printf("(%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f)=%f\n",
-             v[j*2], v[j*2+1], v[i*2], v[i*2+1], p[0], p[1],
-             GAL_POLYGON_TRI_CROSS_PRODUCT(&v[j*2], &v[i*2], p));
-      */
-      if( GAL_POLYGON_PROP_LEFT_OF_LINE(&v[j*2], &v[i*2], p) )
-        j=i++;
-      else
-        return 0;
-    }
-  return 1;
 }
 
 
@@ -321,37 +305,54 @@ gal_polygon_isinside(double *v, double *p, size_t n)
 
 
 
-/* This function checks if the polygon is convex or concave by testing all
-   3 consecutive points of the sorted polygon. If any of the test returns
-   false, the the polygon is concave else it is convex.
+/* We have a polygon with `n' vertices whose vertices are in the array
+   `v' (with 2*n elements). Such that v[0], v[1] are the two
+   coordinates of the first vertice. The vertices also have to be
+   sorted in a counter clockwise fashion. We also have a point (with
+   coordinates p[0], p[1]) and we want to see if it is inside the
+   polygon or not.
 
-   return 1: convex polygon
-   return 0: concave polygon
-   */
+   If the point is inside the polygon, it will always be to the left
+   of the edge connecting the two vertices when the vertices are
+   traversed in order. See the comments above `gal_polygon_area' for an
+   explanation about i and j and the loop.*/
 int
-gal_polygon_isconvex(double *v, size_t n)
+gal_polygon_isinside_convex(double *v, double *p, size_t n)
 {
-  size_t i;
-  int flag=1;
+  size_t i=0, j=n-1;
 
-  /* Check the first n-1 edges made by n points. */
-  for(i=0; i<n-2; i++)
+  while(i<n)
     {
-      if( GAL_POLYGON_LEFT_OF_LINE(&v[i*2], &v[(i+1)*2], &v[(i+2)*2]) )
-        continue;
+      if( GAL_POLYGON_LEFT_OF_LINE(&v[j*2], &v[i*2], p) )
+        j=i++;
+      else return 0;
+    }
+  return 1;
+}
+
+
+
+
+
+/* Similar to gal_polygon_isinside_convex, except that if the point
+   is on one of the edges of a polygon, this will return 0. */
+int
+gal_polygon_ppropin(double *v, double *p, size_t n)
+{
+  size_t i=0, j=n-1;
+
+  while(i<n)
+    {
+      /* For a check:
+      printf("(%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f)=%f\n",
+             v[j*2], v[j*2+1], v[i*2], v[i*2+1], p[0], p[1],
+             GAL_POLYGON_TRI_CROSS_PRODUCT(&v[j*2], &v[i*2], p));
+      */
+      if( GAL_POLYGON_PROP_LEFT_OF_LINE(&v[j*2], &v[i*2], p) )
+        j=i++;
       else
         return 0;
     }
-
-  /* Check the edge between nth and 1st point */
-  if(flag)
-    {
-      if( GAL_POLYGON_LEFT_OF_LINE(&v[(n-2)*2], &v[(n-1)*2], &v[0]) )
-        return 1;
-      else
-        return 0;
-    }
-
   return 1;
 }
 

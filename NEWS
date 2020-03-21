@@ -40,8 +40,10 @@ See the end of the file for license conditions.
 
   Library:
    - GAL_SPECLINES_INVALID_MAX: Total number of spectral lines, plus 1.
-   - gal_txt_trim_space: trim white space before and after a string.
    - GAL_ARITHMETIC_OP_QUANTILE: operator for `gal_arithmetic'.
+   - gal_txt_trim_space: trim white space before and after a string.
+   - gal_polygon_isconvex: identify if a polygon is convex or concave.
+   - gal_polygon_isinside: if point is inside polygon (convex or concave).
 
 ** Removed features
 
@@ -60,6 +62,9 @@ See the end of the file for license conditions.
      output file will be created and the detection map will only have a
      value of zero. As a result, the Sky and Sky standard deviation
      extensions will be measured over all the tiles.
+
+  Library:
+   - gal_polygon_isinside_convex: new name for `gal_polygon_pin'.
 
 ** Bugs fixed
   bug #57300: MakeCatalog memory crash when input dataset has units.
