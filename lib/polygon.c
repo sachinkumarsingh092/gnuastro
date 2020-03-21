@@ -268,18 +268,15 @@ gal_polygon_ppropin(double *v, double *p, size_t n)
 
 
 
-/* This fuction test if a point is inside the polygon using
-  winding number algorithm.
-
-  See its wiki here:
+/* This fuction test if a point is inside the polygon using winding number
+  algorithm. See its wiki here:
   https://en.wikipedia.org/wiki/Point_in_polygon#Winding_number_algorithm
 
-  We have a polygon with `n' vertices whose vertices are in the array
-  `v' (with 2*n elements). Such that v[0], v[1] are the two
-  coordinates of the first vertice. The vertices also have to be
-  sorted in a counter clockwise fashion. We also have a point (with
-  coordinates (x, y) == (p[0], p[1]) and we want to see if it is inside the
-  polygon or not.
+  We have a polygon with `n' vertices whose vertices are in the array `v'
+  (with 2*n elements). Such that v[0], v[1] are the two coordinates of the
+  first vertice. The vertices also have to be sorted in a counter clockwise
+  fashion. We also have a point (with coordinates (x, y) == (p[0], p[1])
+  and we want to see if it is inside the polygon or not.
 
   If point is outside the polygon, return 0.
   If point is inside the polygon, return a non-zero number.
@@ -294,41 +291,40 @@ gal_polygon_isinside(double *v, double *p, size_t n)
   /* Loop through all the edges of the polygon*/
   while(i<n)
     {
-    /* edge from v[i] to v[i+1] in upward direction */
-    if(v[j*2+1] <= p[1]){
-      if(v[i*2+1] > p[1]){
-        /* p left of edge is an upward intersection, increase wn */
-        if( GAL_POLYGON_TRI_CROSS_PRODUCT(&v[j*2], &v[i*2], p) > 0 ){
-          wn++;
+      /* Edge from v[i] to v[i+1] in upward direction */
+      if(v[j*2+1] <= p[1])
+        {
+          if(v[i*2+1] > p[1])
+            /* `p' left of edge is an upward intersection, increase wn. */
+            if( GAL_POLYGON_TRI_CROSS_PRODUCT(&v[j*2], &v[i*2], p) > 0 )
+              wn++;
         }
+      else{
+        /* edge from v[i] to v[i+1] in downward direction */
+        if(v[i*2+1] <= p[1])
+          /* p right of edge is a downward intersection, decrease wn */
+          if( GAL_POLYGON_TRI_CROSS_PRODUCT(&v[j*2], &v[i*2], p) < 0 )
+            wn--;
       }
-    }
-    else{
-      /* edge from v[i] to v[i+1] in downward direction */
-      if(v[i*2+1] <= p[1]){
-        /* p right of edge is a downward intersection, decrease wn */
-        if( GAL_POLYGON_TRI_CROSS_PRODUCT(&v[j*2], &v[i*2], p) < 0 ){
-          wn--;
-        }
-      }
-    }
-    j=i++;
-  /* For a check:
-    printf("winding number: %ld, %.3f\n", wn);
-    */
+
+      /* Increment `j' */
+      j=i++;
+
+      /* For a check:
+         printf("winding number: %ld, %.3f\n", wn);
+      */
     }
   return wn;
-
 }
 
 
 
 
 
-/* This function checks if the polygon is convex or concave by
-   testing all 3 consecutive points of the sorted polygon.
-   If any of the test returns false, the the polygon is concave
-   else it is convex.
+/* This function checks if the polygon is convex or concave by testing all
+   3 consecutive points of the sorted polygon. If any of the test returns
+   false, the the polygon is concave else it is convex.
+
    return 1: convex polygon
    return 0: concave polygon
    */
@@ -338,27 +334,23 @@ gal_polygon_isconvex(double *v, size_t n)
   size_t i;
   int flag=1;
 
-  /* check the first n-1 edges made by n points. */
+  /* Check the first n-1 edges made by n points. */
   for(i=0; i<n-2; i++)
     {
-    if( GAL_POLYGON_LEFT_OF_LINE(&v[i*2], &v[(i+1)*2], &v[(i+2)*2]) )
-      {
+      if( GAL_POLYGON_LEFT_OF_LINE(&v[i*2], &v[(i+1)*2], &v[(i+2)*2]) )
         continue;
-      }
-    else
-      {
+      else
         return 0;
-      }
     }
 
-  /* check the edge between nth and 1st point */
+  /* Check the edge between nth and 1st point */
   if(flag)
     {
       if( GAL_POLYGON_LEFT_OF_LINE(&v[(n-2)*2], &v[(n-1)*2], &v[0]) )
         return 1;
       else
         return 0;
-  }
+    }
 
   return 1;
 }

@@ -23162,7 +23162,6 @@ its self.
 The @code{GAL_POLYGON_MAX_CORNERS} macro is defined so there will be no
 need to allocate these temporary arrays separately. Since we are dealing
 with pixels, the polygon can't really have too many vertices.
-
 @end deftypefun
 
 @deftypefun double gal_polygon_area (double @code{*v}, size_t @code{n})
@@ -23186,10 +23185,12 @@ one of the edges of a polygon, this will return @code{0}.
 @deftypefun int gal_polygon_isinside(double @code{*v}, double @code{*p}, size_t @code{n})
 Returns @code{0} if point @code{p} in inside a polygon, either convex or concave, whose vertices are defined by @code{v} and @code{0} otherwise.
 This function uses the @url{https://en.wikipedia.org/wiki/Point_in_polygon#Winding_number_algorithm, winding number algorithm}, to check the points.
+@end deftypefun
 
 @deftypefun int gal_polygon_isconvex(double @code{*v}, size_t @code{n})
 Returns @code{1} if the polygon is convex with vertices defined by @code{v} and @code{0} if it is a concave polygon.
 Note that the vertices of the polygon should be sorted in an anti-clockwise manner.
+@end deftypefun
 
 @deftypefun void gal_polygon_clip (double @code{*s}, size_t @code{n}, double @code{*c}, size_t @code{m}, double @code{*o}, size_t @code{*numcrn})
 Clip (find the overlap of) two polygons. This function uses the
