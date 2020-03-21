@@ -59,5 +59,5 @@ if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 # string. Such programs will execute the command if present and help in
 # debugging when the developer doesn't have access to the user's system.
 $check_with_program $execname $img $cat --mode=img --zeroisnotblank     \
-                              --outpolygon --output=imgoutpolygon.fits  \
+                              --polygonout --output=imgpolygonout.fits  \
                               --polygon=209,50:436.76,151:475.64,438.2:210.6,454.04:121.4,289.88

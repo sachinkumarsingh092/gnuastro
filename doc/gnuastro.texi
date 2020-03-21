@@ -9483,7 +9483,7 @@ In Image mode there are two options to define the vertices of a region to crop: 
 The former is lower-level (doesn't accept floating point vertices, and only a rectangular region can be defined), it is also only available in Image mode.
 Please see @ref{Crop section syntax} for a full description of this method.
 
-The latter option (@option{--polygon}) is a higher-level method to define any convex polygon (with any number of vertices) with floating point values.
+The latter option (@option{--polygon}) is a higher-level method to define any polygon (with any number of vertices) with floating point values.
 Please see the description of this option in @ref{Invoking astcrop} for its syntax.
 @end table
 
@@ -9545,7 +9545,9 @@ This string is given to the @option{--section} option.
 Therefore, the pixels along the first axis that are @mymath{\geq}@command{X1} and @mymath{\leq}@command{X2} will be included in the cropped image.
 The same goes for the second axis.
 Note that each different term will be read as an integer, not a float.
-This is a low-level option, for a higher-level way to specify region (any polygon, not just a box), please see the @option{--polygon} option in @ref{Crop options}.
+
+The reason it only accepts integers is that @option{--section} is a low-level option (which is also very fast!).
+For a higher-level way to specify region (any polygon, not just a box), please see the @option{--polygon} option in @ref{Crop options}.
 Also note that in the FITS standard, pixel indexes along each axis start from unity(1) not zero(0).
 
 @cindex Crop section format
@@ -9715,14 +9717,34 @@ If you want an even sided crop, you can run Crop afterwards with @option{--secti
 
 @item -l STR
 @itemx --polygon=STR
-String of crop polygon vertices.
-Note that currently only convex polygons should be used.
-In the future we will make it work for all kinds of polygons.
-Convex polygons are polygons that do not have an internal angle more than 180 degrees.
+String of vertices to define a polygon to crop.
+For a convex polygon, the vertices can be in any order: Crop will automatically sort them in an anti-clockwise fashion and use it.
+It also attempts to sort the vertices of a concave polygon, but in a concave polygon, there is no unique way to sort the vertices, so the output may not be what you want.
+In such scenarios, it may be better to ensure that the list of vertices is already sorted the way you like in an anti-clockwise manner and use the @option{--polygonnosort} option to disable the automatic sorting.
+
+@cindex Convex polygons
+@cindex Concave polygons
+@cindex Polygons, Convex
+@cindex Polygons, Concave
+Polygons come in two classes: convex and concave (or generally, non-convex!), see below for a demonstration.
+Convex polygons are those where all inner angles are less than 180 degrees.
+By contrast, a convex polygon is one where an inner angle may be more than 180 degress.
+
+@example
+            Concave Polygon        Convex Polygon
+
+             D --------C          D------------- C
+              \        |        E /              |
+               \E      |          \              |
+               /       |           \             |
+              A--------B             A ----------B
+@end example
+
 This option can be used both in the image and WCS modes, see @ref{Crop modes}.
 The cropped image will be the size of the rectangular region that completely encompasses the polygon.
 By default all the pixels that are outside of the polygon will be set as blank values (see @ref{Blank pixels}).
-However, if @option{--outpolygon} is called all pixels internal to the vertices will be set to blank.
+However, if @option{--polygonout} is called all pixels internal to the vertices will be set to blank.
+In WCS-mode, you may provide many FITS images/tiles: Crop will stitch them to produce this cropped region, then apply the polygon.
 
 The syntax for the polygon vertices is similar to, and simpler than, that for @option{--section}.
 In short, the dimensions of each coordinate are separated by a comma (@key{,}) and each vertex is separated by a colon (@key{:}).
@@ -9737,9 +9759,8 @@ For example, let's assume you want to work on the deepest part of the WFC3/IR im
   (53.134517,-27.787144), (53.161906,-27.807208) ]
 @end example
 
-They have provided mask images with only these pixels in the WFC3/IR images, but what if you also need to work on the same region in the full resolution ACS images? Also what if you want to use the CANDELS data for the shallow region? Running Crop with @option{--polygon} will easily pull out this region of the image for you irrespective of the resolution.
+They have provided mask images with only these pixels in the WFC3/IR images, but what if you also need to work on the same region in the full resolution ACS images? Also what if you want to use the CANDELS data for the shallow region? Running Crop with @option{--polygon} will easily pull out this region of the image for you, irrespective of the resolution.
 If you have set the operating mode to WCS mode in your nearest configuration file (see @ref{Configuration files}), there is no need to call @option{--mode=wcs} on the command line.
-You may also provide many FITS images/tiles and Crop will stitch them to produce this cropped region:
 
 @example
 $ astcrop --mode=wcs desired-filter-image(s).fits           \
@@ -9767,7 +9788,7 @@ $ v=$(awk 'NR==4' ds9.reg | sed -e's/polygon(//'        \
 $ astcrop --mode=wcs image.fits --polygon=$v
 @end example
 
-@item --outpolygon
+@item --polygonout
 Keep all the regions outside the polygon and mask the inner ones with blank pixels (see @ref{Blank pixels}).
 This is practically the inverse of the default mode of treating polygons.
 Note that this option only works when you have only provided one input image.
@@ -9775,6 +9796,11 @@ If multiple images are given (in WCS mode), then the full area covered by all th
 This can lead to a very large area if large surveys like COSMOS are used.
 So Crop will abort and notify you.
 In such cases, it is best to crop out the larger region you want, then mask the smaller region with this option.
+
+@item --polygonnosort
+Don't sort the given set of vertices to the @option{--polygon} option.
+For a concave polyton, this is redundant, but for a convex polygon, this option may be necessary because there is no unique for a concave polygon.
+If automatic sorting is not disabled, the output polygon may not correspond to what you had in mind, the vertices will be correct though.
 
 @item -s STR
 @itemx --section=STR

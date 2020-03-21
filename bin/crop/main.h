@@ -96,7 +96,8 @@ struct cropparams
   gal_list_str_t     *coordcol;  /* Column in cat containing coordinates. */
   char                *section;  /* Section string.                       */
   char                *polygon;  /* Input string of polygon vertices.     */
-  uint8_t           outpolygon;  /* ==1: Keep the inner polygon region.   */
+  uint8_t           polygonout;  /* ==1: Keep the inner polygon region.   */
+  uint8_t        polygonnosort;  /* Don't sort polygon vertices.          */
 
   /* Internal */
   size_t                 numin;  /* Number of input images.               */

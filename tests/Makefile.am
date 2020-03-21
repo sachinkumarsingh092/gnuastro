@@ -98,7 +98,7 @@ endif
 if COND_CROP
   MAYBE_CROP_TESTS = crop/imgcat.sh crop/wcscat.sh crop/imgcenter.sh    \
   crop/imgcenternoblank.sh crop/section.sh crop/wcscenter.sh            \
-  crop/imgpolygon.sh crop/imgoutpolygon.sh crop/wcspolygon.sh
+  crop/imgpolygon.sh crop/imgpolygonout.sh crop/wcspolygon.sh
 
   crop/imgcat.sh: mkprof/mosaic1.sh.log
   crop/wcscat.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log     \
@@ -109,7 +109,7 @@ if COND_CROP
   crop/wcscenter.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log      \
                      mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
   crop/imgpolygon.sh: mkprof/mosaic1.sh.log
-  crop/imgoutpolygon.sh: mkprof/mosaic1.sh.log
+  crop/imgpolygonout.sh: mkprof/mosaic1.sh.log
   crop/wcspolygon.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log \
                       mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
 endif

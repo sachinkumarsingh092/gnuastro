@@ -377,10 +377,10 @@ ui_read_check_only_options(struct cropparams *p)
       if(p->nvertices<3)
         error(EXIT_FAILURE, 0, "a polygon has to have 3 or more vertices, "
               "you have only given %zu (%s)", p->nvertices, p->polygon);
-      if(p->outpolygon && p->numin>1)
-        error(EXIT_FAILURE, 0, "currently in WCS mode, outpolygon can only "
-              "be set to zero when there is one image, you have given %zu "
-              "images. For multiple images the region will be very large. "
+      if(p->polygonout && p->numin>1)
+        error(EXIT_FAILURE, 0, "currently in WCS mode, `--polygonout' can "
+              "only be set to zero when there is one image, you have given "
+              "%zu images. For multiple images the region will be very large. "
               "It is best if you first crop out the larger region you want "
               "into one image, then mask the polygon", p->numin);
     }

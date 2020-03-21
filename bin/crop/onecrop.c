@@ -334,7 +334,7 @@ onecrop_ipolygon_fl(double *ipolygon, size_t nvertices, long *fpixel,
     for(i=0;i<size;++i)                                                 \
       {                                                                 \
         point[0]=i%s1+1; point[1]=i/s1+1;                               \
-        if((*isinside)(ipolygon, point, nvertices)==outpolygon)           \
+        if((*isinside)(ipolygon, point, nvertices)==polygonout)         \
           ba[i]=*bb;                                                    \
       }                                                                 \
     free(bb);                                                           \
@@ -347,7 +347,7 @@ polygonmask(struct onecropparams *crp, void *array, long *fpixel_i,
 {
   int type=crp->p->type;
   double *ipolygon, point[2];
-  int outpolygon=crp->p->outpolygon;
+  int polygonout=crp->p->polygonout;
   int (*isinside)(double *, double *, size_t);
   size_t i, *ordinds, size=s0*s1, nvertices=crp->p->nvertices;
 
@@ -366,9 +366,15 @@ polygonmask(struct onecropparams *crp, void *array, long *fpixel_i,
 
 
   /* Find the order of the polygons and put the elements in the proper
-     order. Also subtract the fpixel_i coordinates from all the
-     vertices to bring them into the crop image coordinates.*/
-  gal_polygon_ordered_corners(crp->ipolygon, crp->p->nvertices, ordinds);
+     order.*/
+  if(crp->p->polygonnosort)
+    for(i=0;i<crp->p->nvertices;++i) ordinds[i]=i;
+  else
+    gal_polygon_ordered_corners(crp->ipolygon, crp->p->nvertices, ordinds);
+
+  /* Fill the final polygon vertice positions within `ipolygon' and also
+     the fpixel_i coordinates from all the vertices to bring them into the
+     crop image coordinates. */
   for(i=0;i<crp->p->nvertices;++i)
     {
       ipolygon[i*2  ] = crp->ipolygon[ordinds[i]*2]   - fpixel_i[0];
@@ -379,9 +385,9 @@ polygonmask(struct onecropparams *crp, void *array, long *fpixel_i,
      concave polygons the process is more complex and thus
      slower. Therefore when the polygon is convex, its better to use the
      simpler/faster function. */
-  isinside = ( gal_polygon_isconvex(crp->ipolygon, crp->p->nvertices)
-               ? &gal_polygon_isinside_convex
-               : &gal_polygon_isinside );
+  isinside = ( gal_polygon_isconvex(ipolygon, crp->p->nvertices)
+               ? gal_polygon_isinside_convex
+               : gal_polygon_isinside );
 
   /* Go over all the pixels in the image and if they are within the
      polygon keep them if the user has asked for it.*/
@@ -529,7 +535,7 @@ onecrop_flpixel(struct onecropparams *crp)
         onecrop_parse_section(p, dsize, fpixel, lpixel);
       else if(p->polygon)       /* Defined by a polygon.  */
         {
-          if(p->outpolygon==0)
+          if(p->polygonout==0)
             onecrop_ipolygon_fl(p->ipolygon, p->nvertices, fpixel, lpixel);
         }
       else                      /* Defined by its center. */
@@ -545,7 +551,7 @@ onecrop_flpixel(struct onecropparams *crp)
         {
           /* Fill crp->ipolygon in wcspolygonpixel, then set flpixel*/
           fillcrpipolygon(crp);
-          if(p->outpolygon==0)
+          if(p->polygonout==0)
             onecrop_ipolygon_fl(crp->ipolygon, p->nvertices, fpixel, lpixel);
         }
       else
@@ -572,7 +578,7 @@ onecrop_flpixel(struct onecropparams *crp)
 
   /* If the user only wants regions outside to the polygon, then set
      the fpixel and lpixel to cover the full input image. */
-  if(p->polygon && p->outpolygon)
+  if(p->polygon && p->polygonout)
     {
       crp->fpixel[0]=crp->fpixel[1]=1;
       crp->lpixel[0]=dsize[1];
@@ -845,7 +851,7 @@ onecrop(struct onecropparams *crp)
       free(array);
     }
   else
-    if(p->polygon && p->outpolygon==0 && p->mode==IMGCROP_MODE_WCS)
+    if(p->polygon && p->polygonout==0 && p->mode==IMGCROP_MODE_WCS)
       free(crp->ipolygon);
 
   /* The crop is complete. */
