@@ -9283,13 +9283,17 @@ The FITS file name can be specified with @option{--wcsfile}.
 @item -F STR
 @itemx --catcolumn=STR
 Concatenate/add the columns of this option's value (a filename) with the main input table (keeping number of rows fixed).
-The concatenation is done after any column selection (for example with @option{--column}) or row selection (for example with @option{--range}) is applied to the input.
-Note that if the file given to this option is a FITS file, its necessary to also define the corresponding HDU/extension with @option{--catcolhdu}.
+The concatenation is done after any column selection (for example with @option{--column}) or row selection (for example with @option{--range}) is applied to the main input argument.
+
+If the file given to this option is a FITS file, its necessary to also define the corresponding HDU/extension with @option{--catcolhdu}.
+Also note that no column or row selection is applied to the table given to this topion.
+This option may be called multiple times (to add columns from more than one file into the final output), the columns will be added in the same order that this option is called.
 
 @item -u STR/INT
 @itemx --catcolhdu=STR/INT
-The HDU/extension of the FITS files that have been added.
-Same as @option{--hdu},Helps to choose Image extension for file given to @option{--catcolumn}.
+The HDU/extension of the FITS file(s) that have been added with @option{--catcolumn}.
+If @option{--catcolumn} is called more than once with more than one FITS file, its necessary to call this option more than once.
+The HDUs will be loaded in the same order as the FITS files given to @option{--catcolumn}.
 
 @item -O
 @itemx --colinfoinstdout
