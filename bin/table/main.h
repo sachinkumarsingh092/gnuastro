@@ -95,8 +95,8 @@ struct tableparams
   uint8_t          descending;  /* Sort columns in descending order.    */
   size_t                 head;  /* Output only the no. of top rows.     */
   size_t                 tail;  /* Output only the no. of bottom rows.  */
-  char             *catcolumn;  /* Filename to concat column wise       */
-  char             *catcolhdu;  /* Image extension for the catcolumnfile*/
+  gal_list_str_t   *catcolumn;  /* Filename to concat column wise.      */
+  gal_list_str_t   *catcolhdu;  /* HDU/extension for the catcolumn.     */
 
   /* Internal. */
   struct column_pack *outcols;  /* Output column packages.              */

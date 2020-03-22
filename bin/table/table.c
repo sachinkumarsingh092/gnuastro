@@ -517,31 +517,71 @@ table_head_tail(struct tableparams *p)
     }
 }
 
+
+
+
+
 /*This function concatenates two table column wise .
  It  attaches catcolumn table at the back of first table */
 static void
 table_catcolumn(struct tableparams *p)
 {
-  gal_data_t *column_table, *final;
+  char *hdu;
+  gal_data_t *tocat, *final;
+  gal_list_str_t *filell, *hdull;
   struct gal_options_common_params *cp=&p->cp;
 
-  /* Reading the catcolumn table. */
-  column_table=gal_table_read(p->catcolumn, p->catcolhdu, NULL, p->columns,
-                              cp->searchin, cp->ignorecase, cp->minmapsize,
-                              p->cp.quietmmap, NULL);
+  /* Go over all the given files. */
+  hdull=p->catcolhdu;
+  for(filell=p->catcolumn; filell!=NULL; filell=filell->next)
+    {
+      /* Set the HDU (not necessary for non-FITS tables). */
+      if(gal_fits_name_is_fits(filell->v))
+        {
+          if(hdull) { hdu=hdull->v; hdull=hdull->next; }
+          else
+            error(EXIT_FAILURE, 0, "not enough `--catcolhdu's. For every "
+                  "FITS table given to `--catcolumn', a call to "
+                  "`--catcolhdu' is necessary to identify its HDU/extension");
+        }
+      else hdu=NULL;
 
-  /* checking if both the tables have same number of rows */
-  if(column_table->dsize[0]!=p->table->dsize[0])
-     error(EXIT_FAILURE, 0, "Number of rows are not equal in both tables.\n"
-          "Input table have %zu rows where as catcolumn table have %zu rows.\n",p->table->dsize[0],
-          column_table->dsize[0]);
+      /* Read the catcolumn table. */
+      tocat=gal_table_read(filell->v, hdu, NULL, NULL, cp->searchin,
+                           cp->ignorecase, cp->minmapsize, p->cp.quietmmap,
+                           NULL);
 
-  /*final column of input table*/
-  final=gal_list_data_last(p->table);
+      /* Check the number of rows. */
+      if(tocat->dsize[0]!=p->table->dsize[0])
+        error(EXIT_FAILURE, 0, "%s: incorrect number of rows. The table given "
+              "to `--catcolumn' must have the same number of rows as the "
+              "main argument (after all row-selections have been applied), "
+              "but they have %zu and %zu rows respectively",
+              gal_fits_name_save_as_string(filell->v, hdu), tocat->dsize[0],
+              p->table->dsize[0]);
 
-  /*connecting last column of first table to first column of column_table*/
-  final->next=column_table;
+      /* Find the final column of the main table and add this table.*/
+      final=gal_list_data_last(p->table);
+      final->next=tocat;
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -551,7 +591,6 @@ table_catcolumn(struct tableparams *p)
 void
 table(struct tableparams *p)
 {
-
   /* Apply a certain range (if required) to the output sample. */
   if(p->selection) table_selection(p);
 

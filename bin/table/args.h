@@ -32,32 +32,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 struct argp_option program_options[] =
   {
     {
-      "catcolumn",
-      UI_KEY_CATCOLUMN,
-      "STR",
-      0,
-      "Name of files to be concat column",
-      GAL_OPTIONS_GROUP_INPUT,
-      &p->catcolumn,
-      GAL_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-     {
-      "catcolhdu",
-      UI_KEY_CATCOLHDU,
-      "STR/INT",
-      0,
-      "Image extension for the calcolmn file",
-      GAL_OPTIONS_GROUP_INPUT,
-      &p->catcolhdu,
-      GAL_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
       "column",
       UI_KEY_COLUMN,
       "STR",
@@ -92,6 +66,32 @@ struct argp_option program_options[] =
       GAL_OPTIONS_GROUP_INPUT,
       &p->wcshdu,
       GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "catcolumn",
+      UI_KEY_CATCOLUMN,
+      "STR",
+      0,
+      "Name of files to be concat column",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->catcolumn,
+      GAL_TYPE_STRLL,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "catcolhdu",
+      UI_KEY_CATCOLHDU,
+      "STR/INT",
+      0,
+      "HDU/Extension(s) for the calcolmn files.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->catcolhdu,
+      GAL_TYPE_STRLL,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
