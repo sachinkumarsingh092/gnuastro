@@ -281,13 +281,13 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "polygonnosort",
-      UI_KEY_POLYGONNOSORT,
+      "polygonsort",
+      UI_KEY_POLYGONSORT,
       0,
       0,
-      "Don't sort polygon vertices (are anticlockwise).",
+      "Sort polygon vertices as counter-clockwise.",
       UI_GROUP_REGION,
-      &p->polygonnosort,
+      &p->polygonsort,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,

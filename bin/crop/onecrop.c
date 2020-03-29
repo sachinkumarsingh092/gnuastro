@@ -351,7 +351,6 @@ polygonmask(struct onecropparams *crp, void *array, long *fpixel_i,
   int (*isinside)(double *, double *, size_t);
   size_t i, *ordinds, size=s0*s1, nvertices=crp->p->nvertices;
 
-
   /* First of all, allocate enough space to put a copy of the input
      coordinates (we will be using that after sorting in an
      anti-clickwise manner.) */
@@ -364,13 +363,15 @@ polygonmask(struct onecropparams *crp, void *array, long *fpixel_i,
     error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for ordinds",
           __func__, nvertices*sizeof *ordinds);
 
-
-  /* Find the order of the polygons and put the elements in the proper
-     order.*/
-  if(crp->p->polygonnosort)
-    for(i=0;i<crp->p->nvertices;++i) ordinds[i]=i;
-  else
+  /* If the user wants to sort the edges, do it, if not, make sure its in
+     counter-clockwise orientation. */
+  if(crp->p->polygonsort)
     gal_polygon_ordered_corners(crp->ipolygon, crp->p->nvertices, ordinds);
+  else
+    {
+      for(i=0;i<crp->p->nvertices;++i) ordinds[i]=i;
+      gal_polygon_to_counterclockwise(crp->ipolygon, crp->p->nvertices);
+    }
 
   /* Fill the final polygon vertice positions within `ipolygon' and also
      the fpixel_i coordinates from all the vertices to bring them into the

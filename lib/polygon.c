@@ -31,7 +31,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gsl/gsl_sort.h>
 
+#include <gnuastro/pointer.h>
 #include <gnuastro/polygon.h>
+#include <gnuastro/permutation.h>
 
 
 
@@ -360,19 +362,19 @@ gal_polygon_ppropin(double *v, double *p, size_t n)
 
 
 
-/* This function uses the concept of winding, which defines the
-   relative order in which the vertices of a polygon are
-   listed to determine the orientation of vertices. If orientation
-   is positive vertices are in clockwise direction, else is negative
-   for counter-clockwise direction. Zero sum implies a figure like 8, with
-   equal orientation in both direction.
+/* This function uses the concept of winding, which defines the relative
+   order in which the vertices of a polygon are listed to determine the
+   orientation of vertices. If orientation is positive vertices are in
+   clockwise direction, else is negative for counter-clockwise
+   direction. Zero sum implies a figure like 8, with equal orientation in
+   both direction.
 
    See the link below for a detailed description:
    "https://www.element84.com/blog/determining-the-winding-of-a-
-    polygon-given-as-a-set-of-ordered-points"
+   polygon-given-as-a-set-of-ordered-points"
 
-   return 1: sorted in counter-clockwise order.
-   return 0: sorted clockwise order or weight of orientation is equal.
+   return 1: sorted in counter-clockwise order or equal orientation.
+   return 0: sorted clockwise order.
    */
 int
 gal_polygon_is_counterclockwise(double *v, size_t n)
@@ -386,18 +388,17 @@ gal_polygon_is_counterclockwise(double *v, size_t n)
       j=i++;
     }
 
-  if(sum>0) return 0;
-  else      return 1;
-
+  return sum>0 ? 0 : 1;
 }
 
 
 
 
 
-/* This function checks if the vertices are actually sorted in
-   the counterclockwise. If they are do nothing, otherwise if
-   they are clockwise, convert them to counter-clockwise direction
+/* This function checks if the vertices are actually sorted in the
+   counterclockwise. If they are do nothing, otherwise if they are
+   clockwise, convert them to counter-clockwise direction
+
    return 1: success
    return 0: error
    */
@@ -407,58 +408,42 @@ gal_polygon_to_counterclockwise(double *v, size_t n)
   size_t i, j=0;
   size_t *permutation;
   gal_data_t *temp=NULL;
-  int orientation=gal_polygon_is_counterclockwise(v, n);
 
-  switch(orientation)
+  /* Operation only necesssary when polygon isn't counter-clockwise. */
+  if(gal_polygon_is_counterclockwise(v, n)==0)
     {
-      /* Polygon is already sorted in counterclockwise order, do nothing */
-      case 1:
-        return 1;
+      /* Allocate space for permutation array, which stores the order of
+         index in which the vertices are to be ordered for a
+         counter-clockwise direction. */
+      permutation=gal_pointer_allocate(GAL_TYPE_SIZE_T, 2*n, 0,
+                                       __func__, "permutation");
+      for(i=0; i<=2*n-1;)
+        {
+          /* Below sequence of steps ensures that the permutation has
+             indexes reversed but in order (x,y). Simple reversing would
+             have turned it in (y,x) format. */
+          j++;
+          permutation[j]  =(2*n-1-i++);
+          permutation[j-1]=(2*n-1-i++);
+          j++;
+        }
 
-      /* Polygon is sorted in clockwise order, convert to counterclockwise
-        direction. */
-      case 0:
-        /* Allocate space for permutation array, which stores the order of
-          index in which the vertices are to be ordered for a
-          counter-clockwise direction. */
-        permutation=gal_pointer_allocate(GAL_TYPE_SIZE_T, 2*n, 0,
-                                          __func__, "permutation");
-        for(i=0; i<=2*n-1;)
-          {
-            /* Below sequence of steps ensures that the permutation has
-               indexes reversed but in order (x,y). Simple reversing would
-               have turned it in (y,x) format. */
-            j++;
-            permutation[j]  =(2*n-1-i++);
-            permutation[j-1]=(2*n-1-i++);
-            j++;
-          }
-
-        /* Put the vertices in the `gal_data_t' object */
-        temp=gal_data_alloc(v, GAL_TYPE_FLOAT64, 1, &n, NULL, 0,
+      /* Put the vertices in the `gal_data_t' object */
+      temp=gal_data_alloc(v, GAL_TYPE_FLOAT64, 1, &n, NULL, 0,
                           -1, 0, NULL, NULL, NULL);
 
-        /* Apply permutations to just reverse the order of clockwise to
-          counter-clockwise. */
-        gal_permutation_apply(temp, permutation);
+      /* Apply permutations to just reverse the order of clockwise to
+         counter-clockwise. */
+      gal_permutation_apply(temp, permutation);
 
-        temp->array=NULL;
-
-        /* Free allocated spaces. */
-        gal_data_free(temp);
-        free(permutation);
-        return 1;
-
-
-      default:
-        error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s"
-          "polygon orientation code %d not recognized",
-          __func__, PACKAGE_BUGREPORT, orientation);
-        return 0;
+      /* Free allocated spaces. */
+      temp->array=NULL;
+      free(permutation);
+      gal_data_free(temp);
     }
 
-  return 0;
-
+  /* Return value, so far it will always return 1. */
+  return 1;
 }
 
 

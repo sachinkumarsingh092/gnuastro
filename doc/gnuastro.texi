@@ -9732,27 +9732,9 @@ If you want an even sided crop, you can run Crop afterwards with @option{--secti
 @item -l STR
 @itemx --polygon=STR
 String of vertices to define a polygon to crop.
-For a convex polygon, the vertices can be in any order: Crop will automatically sort them in an anti-clockwise fashion and use it.
-It also attempts to sort the vertices of a concave polygon, but in a concave polygon, there is no unique way to sort the vertices, so the output may not be what you want.
-In such scenarios, it may be better to ensure that the list of vertices is already sorted the way you like in an anti-clockwise manner and use the @option{--polygonnosort} option to disable the automatic sorting.
-
-@cindex Convex polygons
-@cindex Concave polygons
-@cindex Polygons, Convex
-@cindex Polygons, Concave
-Polygons come in two classes: convex and concave (or generally, non-convex!), see below for a demonstration.
-Convex polygons are those where all inner angles are less than 180 degrees.
-By contrast, a convex polygon is one where an inner angle may be more than 180 degress.
-
-@example
-            Concave Polygon        Convex Polygon
-
-             D --------C          D------------- C
-              \        |        E /              |
-               \E      |          \              |
-               /       |           \             |
-              A--------B             A ----------B
-@end example
+The vertices are used to define the polygon in the same order given to this option.
+When the vertices are not necessarily ordered in the proper order (for example one vertice in a square comes after its diagonal opposite), you can add the @option{--polygonsort} option which will attempt to sort the vertices before cropping.
+Note that for concave polygons, sorting is not recommended because there is no unique solution, for more, see the description under @option{--polygonsort}.
 
 This option can be used both in the image and WCS modes, see @ref{Crop modes}.
 The cropped image will be the size of the rectangular region that completely encompasses the polygon.
@@ -9811,10 +9793,27 @@ This can lead to a very large area if large surveys like COSMOS are used.
 So Crop will abort and notify you.
 In such cases, it is best to crop out the larger region you want, then mask the smaller region with this option.
 
-@item --polygonnosort
-Don't sort the given set of vertices to the @option{--polygon} option.
-For a concave polyton, this is redundant, but for a convex polygon, this option may be necessary because there is no unique for a concave polygon.
-If automatic sorting is not disabled, the output polygon may not correspond to what you had in mind, the vertices will be correct though.
+@item --polygonsort
+Sort the given set of vertices to the @option{--polygon} option.
+For a concave polyton it will sort the vertices correctly, however for a convex polygon it there is no unique sorting, so be careful because the crop may not be what you expected.
+
+@cindex Convex polygons
+@cindex Concave polygons
+@cindex Polygons, Convex
+@cindex Polygons, Concave
+Polygons come in two classes: convex and concave (or generally, non-convex!), see below for a demonstration.
+Convex polygons are those where all inner angles are less than 180 degrees.
+By contrast, a convex polygon is one where an inner angle may be more than 180 degress.
+
+@example
+            Concave Polygon        Convex Polygon
+
+             D --------C          D------------- C
+              \        |        E /              |
+               \E      |          \              |
+               /       |           \             |
+              A--------B             A ----------B
+@end example
 
 @item -s STR
 @itemx --section=STR
@@ -23192,7 +23191,7 @@ The @code{GAL_POLYGON_MAX_CORNERS} macro is defined so there will be no need to 
 Since we are dealing with pixels, the polygon can't really have too many vertices.
 @end deftypefun
 
-@deftypefun int gal_polygon_is_convex(double @code{*v}, size_t @code{n})
+@deftypefun int gal_polygon_is_convex (double @code{*v}, size_t @code{n})
 Returns @code{1} if the polygon is convex with vertices defined by @code{v} and @code{0} if it is a concave polygon.
 Note that the vertices of the polygon should be sorted in an anti-clockwise manner.
 @end deftypefun
@@ -23202,7 +23201,7 @@ Find the area of a polygon with vertices defined in @code{v}.
 @code{v} points to an array of doubles which keep the positions of the vertices such that @code{v[0]} and @code{v[1]} are the positions of the first vertice to be considered.
 @end deftypefun
 
-@deftypefun int gal_polygon_is_inside(double @code{*v}, double @code{*p}, size_t @code{n})
+@deftypefun int gal_polygon_is_inside (double @code{*v}, double @code{*p}, size_t @code{n})
 Returns @code{0} if point @code{p} in inside a polygon, either convex or concave.
 The vertices of the polygon are defined by @code{v} and @code{0} otherwise, they have to be ordered in an anti-clockwise manner.
 This function uses the @url{https://en.wikipedia.org/wiki/Point_in_polygon#Winding_number_algorithm, winding number algorithm}, to check the points.
@@ -23220,16 +23219,19 @@ Similar to @code{gal_polygon_is_inside_convex}, except that if the point @code{p
 one of the edges of a polygon, this will return @code{0}.
 @end deftypefun
 
-@deftypefun int gal_polygon_is_counterclockwise(double @code{*v}, size_t @code{n})
-Returns  @code{1} if polygon is sorted in anti-clockwise and @code{0} otherwise.
-It uses winding which defines the relative order in which the vertices of a polygon are listed to determine the orientation of vertices.
-If orientation is positive vertices are in clockwise direction, else is negative for anti-clockwise direction. Zero sum implies a figure like @code{8}, with equal orientation in both direction.
+@deftypefun int gal_polygon_is_counterclockwise (double @code{*v}, size_t @code{n})
+Returns  @code{1} if the sorted polygon has a counter-clockwise orientation and @code{0} otherwise.
+This function uses the concept of ``winding'', which defines the relative order in which the vertices of a polygon are listed to determine the orientation of vertices.
+For complex polygons (where edges, or sides, intersect), the most significant orientation is returned.
+In a complex polygon, when the alternative windings are equal (for example an @code{8}-shape) it will return @code{1} (as if it was counter-clockwise).
+Note that the polygon vertices have to be sorted before calling this function.
 @end deftypefun
 
-@deftypefun int gal_polygon_to_counterclockwise(double @code{*v}, size_t @code{n})
-Arrange the vertices of polygon in counter-clockwise direction if input is in clockwise direction, otherwise do nothing.
-It uses @code{gal_polygon_is_counterclockwise} to determine the orientation of polygons.
-Return @code{1} on successful execution, @code{0} otherwise.
+@deftypefun int gal_polygon_to_counterclockwise (double @code{*v}, size_t @code{n})
+Arrange the vertices of the sorted polygon in place, to be in a counter-clockwise direction.
+If the input polygon already has a counter-clockwise direction it won't touch the input.
+The return value is @code{1} on successful execution.
+This function is just a wrapper over @code{gal_polygon_is_counterclockwise}, and will reverse the order of the vertices when necessary necessary.
 @end deftypefun
 
 @deftypefun void gal_polygon_clip (double @code{*s}, size_t @code{n}, double @code{*c}, size_t @code{m}, double @code{*o}, size_t @code{*numcrn})

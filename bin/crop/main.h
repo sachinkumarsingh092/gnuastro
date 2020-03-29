@@ -97,7 +97,7 @@ struct cropparams
   char                *section;  /* Section string.                       */
   char                *polygon;  /* Input string of polygon vertices.     */
   uint8_t           polygonout;  /* ==1: Keep the inner polygon region.   */
-  uint8_t        polygonnosort;  /* Don't sort polygon vertices.          */
+  uint8_t          polygonsort;  /* Don't sort polygon vertices.          */
 
   /* Internal */
   size_t                 numin;  /* Number of input images.               */
