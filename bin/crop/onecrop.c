@@ -385,9 +385,9 @@ polygonmask(struct onecropparams *crp, void *array, long *fpixel_i,
      concave polygons the process is more complex and thus
      slower. Therefore when the polygon is convex, its better to use the
      simpler/faster function. */
-  isinside = ( gal_polygon_isconvex(ipolygon, crp->p->nvertices)
-               ? gal_polygon_isinside_convex
-               : gal_polygon_isinside );
+  isinside = ( gal_polygon_is_convex(ipolygon, crp->p->nvertices)
+               ? gal_polygon_is_inside_convex
+               : gal_polygon_is_inside );
 
   /* Go over all the pixels in the image and if they are within the
      polygon keep them if the user has asked for it.*/

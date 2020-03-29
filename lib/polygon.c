@@ -192,7 +192,7 @@ gal_polygon_ordered_corners(double *in, size_t n, size_t *ordinds)
    return 0: concave polygon
    */
 int
-gal_polygon_isconvex(double *v, size_t n)
+gal_polygon_is_convex(double *v, size_t n)
 {
   size_t i;
   int flag=1;
@@ -266,7 +266,7 @@ gal_polygon_area(double *v, size_t n)
   If point is inside the polygon, return a non-zero number.
   */
 int
-gal_polygon_isinside(double *v, double *p, size_t n)
+gal_polygon_is_inside(double *v, double *p, size_t n)
 {
   /* The winding number(wn) keeping the count of number of times the ray
      crosses the polygon. */
@@ -317,7 +317,7 @@ gal_polygon_isinside(double *v, double *p, size_t n)
    traversed in order. See the comments above `gal_polygon_area' for an
    explanation about i and j and the loop.*/
 int
-gal_polygon_isinside_convex(double *v, double *p, size_t n)
+gal_polygon_is_inside_convex(double *v, double *p, size_t n)
 {
   size_t i=0, j=n-1;
 
@@ -334,7 +334,7 @@ gal_polygon_isinside_convex(double *v, double *p, size_t n)
 
 
 
-/* Similar to gal_polygon_isinside_convex, except that if the point
+/* Similar to gal_polygon_is_inside_convex, except that if the point
    is on one of the edges of a polygon, this will return 0. */
 int
 gal_polygon_ppropin(double *v, double *p, size_t n)
@@ -354,6 +354,111 @@ gal_polygon_ppropin(double *v, double *p, size_t n)
         return 0;
     }
   return 1;
+}
+
+
+
+
+
+/* This function uses the concept of winding, which defines the
+   relative order in which the vertices of a polygon are
+   listed to determine the orientation of vertices. If orientation
+   is positive vertices are in clockwise direction, else is negative
+   for counter-clockwise direction. Zero sum implies a figure like 8, with
+   equal orientation in both direction.
+
+   See the link below for a detailed description:
+   "https://www.element84.com/blog/determining-the-winding-of-a-
+    polygon-given-as-a-set-of-ordered-points"
+
+   return 1: sorted in counter-clockwise order.
+   return 0: sorted clockwise order or weight of orientation is equal.
+   */
+int
+gal_polygon_is_counterclockwise(double *v, size_t n)
+{
+  double sum=0.0f;
+  size_t i=0, j=n-1;
+
+  while(i<n)
+    {
+      sum+=( (v[i*2]-v[j*2])*(v[i*2+1]+v[j*2+1]) );
+      j=i++;
+    }
+
+  if(sum>0) return 0;
+  else      return 1;
+
+}
+
+
+
+
+
+/* This function checks if the vertices are actually sorted in
+   the counterclockwise. If they are do nothing, otherwise if
+   they are clockwise, convert them to counter-clockwise direction
+   return 1: success
+   return 0: error
+   */
+int
+gal_polygon_to_counterclockwise(double *v, size_t n)
+{
+  size_t i, j=0;
+  size_t *permutation;
+  gal_data_t *temp=NULL;
+  int orientation=gal_polygon_is_counterclockwise(v, n);
+
+  switch(orientation)
+    {
+      /* Polygon is already sorted in counterclockwise order, do nothing */
+      case 1:
+        return 1;
+
+      /* Polygon is sorted in clockwise order, convert to counterclockwise
+        direction. */
+      case 0:
+        /* Allocate space for permutation array, which stores the order of
+          index in which the vertices are to be ordered for a
+          counter-clockwise direction. */
+        permutation=gal_pointer_allocate(GAL_TYPE_SIZE_T, 2*n, 0,
+                                          __func__, "permutation");
+        for(i=0; i<=2*n-1;)
+          {
+            /* Below sequence of steps ensures that the permutation has
+               indexes reversed but in order (x,y). Simple reversing would
+               have turned it in (y,x) format. */
+            j++;
+            permutation[j]  =(2*n-1-i++);
+            permutation[j-1]=(2*n-1-i++);
+            j++;
+          }
+
+        /* Put the vertices in the `gal_data_t' object */
+        temp=gal_data_alloc(v, GAL_TYPE_FLOAT64, 1, &n, NULL, 0,
+                          -1, 0, NULL, NULL, NULL);
+
+        /* Apply permutations to just reverse the order of clockwise to
+          counter-clockwise. */
+        gal_permutation_apply(temp, permutation);
+
+        temp->array=NULL;
+
+        /* Free allocated spaces. */
+        gal_data_free(temp);
+        free(permutation);
+        return 1;
+
+
+      default:
+        error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s"
+          "polygon orientation code %d not recognized",
+          __func__, PACKAGE_BUGREPORT, orientation);
+        return 0;
+    }
+
+  return 0;
+
 }
 
 
