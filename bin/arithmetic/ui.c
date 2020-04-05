@@ -232,7 +232,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 static void
 ui_read_check_only_options(struct arithmeticparams *p)
 {
-  if(p->wcsfile)
+  if(p->wcsfile && strcmp(p->wcsfile,"none"))
     {
       if(gal_fits_name_is_fits(p->wcsfile)==0)
         error(EXIT_FAILURE, 0, "%s: file given to `--wcsfile' must be in "
@@ -362,7 +362,7 @@ ui_preparations(struct arithmeticparams *p)
 
   /* In case a file is specified to read the WCS from (and ignore input
      datasets), read the WCS prior to starting parsing of the arguments. */
-  if(p->wcsfile)
+  if(p->wcsfile && strcmp(p->wcsfile,"none"))
     {
       /* Read the number of dimensions and the size of each. */
       dsize=gal_fits_img_info_dim(p->wcsfile, p->wcshdu, &ndim);

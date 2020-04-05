@@ -10,6 +10,7 @@ See the end of the file for license conditions.
   Arithmetic:
    - New `quantile' operator for coadding datasets.
    - New `size' operator to report length of dataset in requested dimension.
+   - When `--wcsfile' is given the value `none', output will not have any WCS.
 
   CosmicCalculator:
    --listlines: list the pre-defined spectral line wavelengths and names

@@ -267,6 +267,7 @@ operands_copy_named(struct arithmeticparams *p, char *name)
 void
 operands_add(struct arithmeticparams *p, char *filename, gal_data_t *data)
 {
+  int readwcs;
   size_t ndim, *dsize;
   struct operand *newnode;
 
@@ -308,7 +309,8 @@ operands_add(struct arithmeticparams *p, char *filename, gal_data_t *data)
 
               /* If no WCS is set yet, use the WCS of this image and remove
                  possibly extra dimensions if necessary. */
-              if(p->refdata.wcs==NULL)
+              readwcs = (p->wcsfile && !strcmp(p->wcsfile,"none")) ? 0 : 1;
+              if(readwcs && p->refdata.wcs==NULL)
                 {
                   dsize=gal_fits_img_info_dim(filename, newnode->hdu, &ndim);
                   p->refdata.wcs=gal_wcs_read(filename, newnode->hdu, 0, 0,

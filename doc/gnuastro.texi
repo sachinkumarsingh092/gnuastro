@@ -9275,6 +9275,8 @@ When this option is called multiple times, it is possible to output one column m
 FITS file that contains the WCS to be used in the @code{wcstoimg} and @code{imgtowcs} operators of @option{--column} (see above).
 The extension name/number within the FITS file can be specified with @option{--wcshdu}.
 
+If the value to this option is @option{none}, no WCS will be written in the output.
+
 @item -W STR
 @itemx --wcshdu=STR
 FITS extension/HDU that contains the WCS to be used in the @code{wcstoimg} and @code{imgtowcs} operators of @option{--column} (see above).
