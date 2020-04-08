@@ -57,24 +57,21 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-
-/*************************************************************
- **************     Convert units to decimal   ***************
- *************************************************************/
-double
-gal_units_ra_to_decimal (char *convert);
+int
+gal_units_extract_decimal(char *convert, const char *delimiter,
+                          double *args, size_t n);
 
 double
-gal_units_dec_to_decimal (char *convert);
+gal_units_ra_to_degree (char *convert);
 
-/*************************************************************
- **************     Convert decimal to units   ***************
- *************************************************************/
-char *
-gal_units_decimal_to_ra (double decimal);
+double
+gal_units_dec_to_degree (char *convert);
 
 char *
-gal_units_decimal_to_dec (double decimal);
+gal_units_degree_to_ra (double decimal);
+
+char *
+gal_units_degree_to_dec (double decimal);
 
 __END_C_DECLS    /* From C++ preparations */
 

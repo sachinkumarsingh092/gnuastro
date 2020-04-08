@@ -48,7 +48,11 @@ See the end of the file for license conditions.
    --notequal: Can now work on columns with string type also.
    --catcolumn: Concatenate tables by column (keeping number of rows fixed).
    --catcolhdu: Specify the HDU/extension of the FITS files of --catcolumn.
-   - New `quantile' operator in column arithmetic.
+   - New operators in column arithmetic:
+     - `ra-to-degree': Convert Right Ascension (HH:MM:SS) to degrees.
+     - `dec-to-degree': Convert Declination (DD:MM:SS) to degrees.
+     - `degree-to-ra': Convert degrees to Right Ascension (HH:MM:SS).
+     - `degree-to-dec': Convert degrees to Declination (HH:MM:SS).
 
   Library:
    - GAL_SPECLINES_INVALID_MAX: Total number of spectral lines, plus 1.
@@ -93,6 +97,14 @@ See the end of the file for license conditions.
      output file will be created and the detection map will only have a
      value of zero. As a result, the Sky and Sky standard deviation
      extensions will be measured over all the tiles.
+
+  Table:
+   - In Column arithmetic, when columns must be specified by their number,
+     that number should be distinguished with a `$' before it (for example
+     `$1' means the first column). Until now, this character was `c', but
+     the new identifying character is very similar to AWK, allowing easier
+     adoption and is also more clear. It is just important to put the total
+     `arith' string within single quotes, not double quotes.
 
   Library:
    - gal_polygon_is_inside_convex: new name for `gal_polygon_pin'.

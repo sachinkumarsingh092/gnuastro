@@ -212,8 +212,8 @@ arithmetic_init(struct tableparams *p, struct arithmetic_token **arith,
           /* Token is a column operand (column number or name). */
           else
             {
-              str = ( (token[0]=='c' && isdigit(token[1]))
-                      ? &token[1]   /* Column number (starting with `c'). */
+              str = ( (token[0]=='$' && isdigit(token[1]))
+                      ? &token[1]   /* Column number (starting with `$'). */
                       : token );    /* Column name, just add it.          */
               gal_list_str_add(toread, str, 1);
               node->index=*totcalled;

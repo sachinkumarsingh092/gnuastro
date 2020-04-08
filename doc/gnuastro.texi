@@ -620,6 +620,7 @@ Gnuastro library
 * Convolution functions::       Library functions to do convolution.
 * Interpolation::               Interpolate (over blank values possibly).
 * Git wrappers::                Wrappers for functions in libgit2.
+* Unit conversion library (@file{units.h})::  Convert between units.
 * Spectral lines library::      Functions for operating on Spectral lines.
 * Cosmology library::           Cosmological calculations.
 
@@ -3113,7 +3114,7 @@ In column-arithmetic, you can identify columns by number or name, see @ref{Colum
 
 @example
 $ asttable cat/xdf-f160w-f105w.fits -ocat/f105w-f160w.fits \
-           -c1,2,RA,DEC,"arith MAG_F105W MAG_F160W -"      \
+           -c1,2,RA,DEC,'arith MAG_F105W MAG_F160W -'      \
            --range=SN_F160W,7,inf
 @end example
 
@@ -9094,31 +9095,54 @@ Just note that white-space characters are used between the tokens of the arithme
 Therefore the whole expression (including the activation word) has to be quoted on the command-line or in a shell script (see the examples below).
 
 To identify a column you can directly use its name, or specify its number (counting from one, see @ref{Selecting table columns}).
-When you are giving a column number, it is necessary to prefix it with a @code{c} (otherwise it is not distinguishable from a constant number to use in the arithmetic operation).
+When you are giving a column number, it is necessary to prefix the number with a @code{$}, similar to AWK.
+Otherwise the number is not distinguishable from a constant number to use in the arithmetic operation.
 
 For example with the command below, the first two columns of @file{table.fits} will be printed along with a third column that is the result of multiplying the first column with @mymath{10^{10}} (for example to convert wavelength from Meters to Angstroms).
-Note how without the `@key{c}', it is not possible to distinguish between @key{1} as a column-counter, or as a constant number to use in the arithmetic operation.
+Note that without the `@key{$}', it is not possible to distinguish between ``1'' as a column-counter, or as a constant number to use in the arithmetic operation.
+Also note that because of the significance of @key{$} for the command-line environment, the single-quotes are used here (as in an AWK expression), not double-quotes.
 
 @example
-$ asttable table.fits -c1,2 -c"arith c1 1e10 x"
+$ asttable table.fits -c1,2 -c'arith $1 1e10 x'
 @end example
+
+@cartouche
+@noindent
+@strong{Single quotes when string contains @key{$}}: On the command-line, or in shell-scripts, @key{$} is used to expand variables, for example @code{echo $PATH} prints the value (a string of characters) in the variable @code{PATH}, it will not simply print @code{$PATH}.
+This operation is also permitted within double quotes, so @code{echo "$PATH"} will produce the same output.
+This is good when printing values, for example in the command below, @code{$PATH} will expand to the value within it.
+
+@example
+$ echo "My path is: $PATH"
+@end example
+
+If you actually want to return the literal string @code{$PATH}, not the value in the @code{PATH} variable (like the scenario here in column arithmetic), you should put it in single quotes like below.
+The printed value here will include the @code{$}, please try it to see for your self and compare to above.
+
+@example
+$ echo 'My path is: $PATH'
+@end example
+
+Therefore, when your column arithmetic involves the @key{$} sign (to specify columns by number), quote your @code{arith } string with a single quotation mark.
+Otherwise you can use both single or double quotes.
+@end cartouche
 
 Alternatively, if the columns have meta-data and the first two are respectively called @code{AWAV} and @code{SPECTRUM}, the command above is equivalent to the command below.
 Note that the @key{c} is no longer necessary in this scenario.
 
 @example
-$ asttable table.fits -cAWAV,SPECTRUM -c"arith AWAV 1e10 x"
+$ asttable table.fits -cAWAV,SPECTRUM -c'arith AWAV 1e10 x'
 @end example
 
 Comparison of the two commands above clearly shows why it is recommended to use column names instead of numbers.
-When the columns have clear names, the command/script actually becomes much more readable, describing the intent of the operation.
+When the columns have descriptive names, the command/script actually becomes much more readable, describing the intent of the operation.
 It is also independent of the low-level table structure: for the second command, the position of the @code{AWAV} and @code{SPECTRUM} columns in @file{table.fits} is irrelevant.
 
 Finally, since the arithmetic expressions are a value to @option{--column}, it doesn't necessarily have to be a separate option, so the commands above are also identical to the command below (note that this only has one @option{-c} option).
 Just be very careful with the quoting!
 
 @example
-$ asttable table.fits -cAWAV,SPECTRUM,"arith AWAV 1e10 x"
+$ asttable table.fits -cAWAV,SPECTRUM,'arith AWAV 1e10 x'
 @end example
 
 Almost all the arithmetic operators of @ref{Arithmetic operators} are also supported for column arithmetic in Table.
@@ -9139,10 +9163,10 @@ The first three columns are the input table's ID, RA and Dec columns.
 The fourth and fifth columns will be the pixel positions in @file{image.fits} that correspond to each RA and Dec.
 
 @example
-$ asttable table.fits -cID,RA,DEC,"arith RA DEC wcstoimg" \
+$ asttable table.fits -cID,RA,DEC,'arith RA DEC wcstoimg' \
            --wcsfile=image.fits
 $ asttable table.fits -cID,RA -cDEC \
-           -c"arith RA DEC wcstoimg" --wcsfile=image.fits
+           -c'arith RA DEC wcstoimg' --wcsfile=image.fits
 @end example
 
 @item imgtowcs
@@ -9158,11 +9182,11 @@ In other words, the following commands are all valid:
 
 @example
 $ asttable table.fits \
-           -c"arith RA1 DEC1 RA2 DEC2 angular-distance"
+           -c'arith RA1 DEC1 RA2 DEC2 angular-distance'
 $ asttable table.fits \
-           -c"arith RA DEC 12.345 6.789 angular-distance"
+           -c'arith RA DEC 12.345 6.789 angular-distance'
 $ asttable table.fits \
-           -c"arith 12.345 6.789 RA DEC angular-distance"
+           -c'arith 12.345 6.789 RA DEC angular-distance'
 @end example
 
 In the first case we are assuming that @file{table.fits} has the following four columns @code{RA1}, @code{DEC1}, @code{RA2}, @code{DEC2}.
@@ -9176,6 +9200,31 @@ The distance (along a great circle) on a sphere between two points is calculated
 
 @dispmath {\cos(d)=\sin(d_1)\sin(d_2)+\cos(d_1)\cos(d_2)\cos(r_1-r_2)}
 
+@item ra-to-degree
+Convert the hour-wise Right Ascension (RA) string, in the format of @code{HH:MM:SS}, to degrees.
+Note that the input column has to be an string format.
+In FITS tables, string columns are well-defined.
+For plain-text tables, please follow the standards defined in @ref{Gnuastro text table format}, otherwise the string column won't be read.
+@example
+$ asttable catalog.fits -c'arith RA ra-to-degree'
+$ asttable catalog.fits -c'arith $5 ra-to-degree'
+@end example
+
+@item dec-to-degree
+Convert the Declination (Dec) string, in the format of @code{DD:MM:SS}, to degrees (a single floating point number).
+For more details please see the @option{ra-to-degree} operator.
+
+@item degree-to-ra
+@cindex Right Ascension
+Convert degrees (a column with a single floating point number) to the Right Ascension, RA, string (in the format of @code{HH:MM:SS}).
+The output will be a string column so no further mathematical operations can be done on it.
+The output can be in any format (for example FITS or plain-text).
+If its plain-text, the string column will be written following the standards described in @ref{Gnuastro text table format}.
+
+@item degree-to-dec
+@cindex Declination
+Convert degrees (a column with a single floating point number) to the Declination, Dec, string (in the format of @code{DD:MM:SS}).
+See the @option{degree-to-ra} for more on the format of the output.
 @end table
 
 
@@ -9216,14 +9265,14 @@ $ asttable bintab.fits --range=10,10e5,inf
 
 ## Only print the 2nd column, and the third column multiplied by 5,
 ## Save the resulting two columns in `table.txt'
-$ asttable bintab.fits -c2,"arith c2 5 x" -otable.fits
+$ asttable bintab.fits -c2,'arith $2 5 x' -otable.fits
 
 ## Sort the output columns by the third column, save output:
 $ asttable bintab.fits --sort=3 -ooutput.txt
 
 ## Subtract the first column from the second in `cat.txt' (can also
 ## be a FITS table) and keep the third and fourth columns.
-$ asttable cat.txt -c"arith c2 c1 -",3,4 -ocat.fits
+$ asttable cat.txt -c'arith $2 c1 -',3,4 -ocat.fits
 @end example
 
 Table's input dataset can be given either as a file or from Standard input (see @ref{Standard input}).
@@ -18271,6 +18320,7 @@ If you use the Info version of this manual (see @ref{Info}), you don't have to w
 * Convolution functions::       Library functions to do convolution.
 * Interpolation::               Interpolate (over blank values possibly).
 * Git wrappers::                Wrappers for functions in libgit2.
+* Unit conversion library (@file{units.h})::  Convert between units.
 * Spectral lines library::      Functions for operating on Spectral lines.
 * Cosmology library::           Cosmological calculations.
 @end menu
@@ -22252,6 +22302,17 @@ different type, you can convert the input to a floating point type with
 @code{gal_data_copy_to_new_type_free}(see @ref{Copying datasets}).
 @end deffn
 
+@deffn  Macro GAL_ARITHMETIC_OP_RA_TO_DEGREE
+@deffnx Macro GAL_ARITHMETIC_OP_DEC_TO_DEGREE
+@deffnx Macro GAL_ARITHMETIC_OP_DEGREE_TO_RA
+@deffnx Macro GAL_ARITHMETIC_OP_DEGREE_TO_DEC
+@cindex Declination
+@cindex Right Ascension
+Unary operators to convert between degrees (as a single floating point number) to the standard Right Ascension and Declination notation (as strings, respectively in the format of @code{HH:MM:SS} and @code{DD:MM:SS}).
+The first two operators expect a string operand and will return a double-precision floating point operand.
+The latter two are the opposite.
+@end deffn
+
 @deffn  Macro GAL_ARITHMETIC_OP_MINVAL
 @deffnx Macro GAL_ARITHMETIC_OP_MAXVAL
 @deffnx Macro GAL_ARITHMETIC_OP_NUMBERVAL
@@ -24659,7 +24720,7 @@ blank. To see if any blank (non-interpolated) elements remain, you can use
 @end deftypefun
 
 
-@node Git wrappers, Spectral lines library, Interpolation, Gnuastro library
+@node Git wrappers, Unit conversion library (@file{units.h}), Interpolation, Gnuastro library
 @subsection Git wrappers (@file{git.h})
 
 @cindex Git
@@ -24695,12 +24756,46 @@ not installed or the program calling this function is not within a version
 controlled directory, then the output will be the @code{NULL} pointer.
 @end deftypefun
 
-@node Spectral lines library, Cosmology library, Git wrappers, Gnuastro library
+@node Unit conversion library (@file{units.h}), Spectral lines library, Git wrappers, Gnuastro library
+@subsection Unit conversion library (@file{units.h})
+
+Datasets can contain values in various formats or units.
+The functions in this section are defined to facilitate the easy conversion between them and are declared in @file{units.h}.
+If there are certain conversions that are useful for your work, please get in touch.
+
+@deftypefun int gal_units_extract_decimal (char @code{*convert}, const char @code{*delimiter}, double @code{*args}, size_t @code{n})
+Parse the input @code{convert} string with a certain delimiter (for example @code{01:23:45}, where the delimiter is @code{":"}) as multiple numbers (for example 1,23,45) and write them as an array in the space that @code{args} is pointing to.
+The expected number of values in the string is specified by the @code{n} argument (3 in the example above).
+
+If the function succeeds, it will return 1, otherwise it will return 0 and the values may not be fully written into @code{args}.
+If the number of values parsed in the string is different from @code{n}, this function will fail.
+@end deftypefun
+
+@deftypefun double gal_units_ra_to_degree (char @code{*convert})
+@cindex Right Ascension
+Convert the input Right Ascension (RA) string (in the format of @code{HH:MM:SS}) to degrees (a single floating point number).
+@end deftypefun
+
+@deftypefun double gal_units_dec_to_degree (char @code{*convert})
+@cindex Declination
+Convert the input Declination (Dec) string (in the format of @code{DD:MM:SS}) to degrees (a single floating point number).
+@end deftypefun
+
+@deftypefun {char *} gal_units_degree_to_ra (double @code{decimal})
+@cindex Right Ascension
+Convert the input Right Ascension (RA) degree (a single floating point number) to old/standard notation (in the format of @code{HH:MM:SS}).
+@end deftypefun
+
+@deftypefun {char *} gal_units_degree_to_dec (double @code{decimal})
+@cindex Declination
+Convert the input Declination (RA) degree (a single floating point number) to old/standard notation (in the format of @code{HH:MM:SS}).
+@end deftypefun
+
+@node Spectral lines library, Cosmology library, Unit conversion library (@file{units.h}), Gnuastro library
 @subsection Spectral lines library (@file{speclines.h})
 
-Gnuastro's library has the following macros and functions for dealing with
-spectral lines. All these functions are declared in
-@file{gnuastro/spectra.h}.
+Gnuastro's library has the following macros and functions for dealing with spectral lines.
+All these functions are declared in @file{gnuastro/spectra.h}.
 
 @cindex H-alpha
 @cindex H-beta

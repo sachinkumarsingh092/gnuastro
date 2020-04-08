@@ -493,10 +493,10 @@ arithmetic_unary_function(int operator, int flags, gal_data_t *in)
      floating point type, its not useful.*/
   if( (flags & GAL_ARITHMETIC_INPLACE)
       && (in->type==GAL_TYPE_FLOAT32 || in->type==GAL_TYPE_FLOAT64)
-      && (operator != GAL_ARITHMETIC_CONVERT_DECIMAL_RA
-      &&  operator != GAL_ARITHMETIC_CONVERT_DECIMAL_DEC
-      &&  operator != GAL_ARITHMETIC_CONVERT_RA_DECIMAL
-      &&  operator != GAL_ARITHMETIC_CONVERT_DEC_DECIMAL ) )
+      && (operator != GAL_ARITHMETIC_OP_RA_TO_DEGREE
+      &&  operator != GAL_ARITHMETIC_OP_DEC_TO_DEGREE
+      &&  operator != GAL_ARITHMETIC_OP_DEGREE_TO_RA
+      &&  operator != GAL_ARITHMETIC_OP_DEGREE_TO_DEC ) )
     inplace=1;
 
   if(inplace)
@@ -511,12 +511,12 @@ arithmetic_unary_function(int operator, int flags, gal_data_t *in)
                 : GAL_TYPE_FLOAT32 );
 
       /* Check for operators which have fixed output types */
-      if ( operator == GAL_ARITHMETIC_CONVERT_RA_DECIMAL ||
-           operator == GAL_ARITHMETIC_CONVERT_DEC_DECIMAL )
+      if ( operator == GAL_ARITHMETIC_OP_RA_TO_DEGREE ||
+           operator == GAL_ARITHMETIC_OP_DEC_TO_DEGREE )
         otype = GAL_TYPE_FLOAT64;
 
-      if (operator == GAL_ARITHMETIC_CONVERT_DECIMAL_RA ||
-          operator == GAL_ARITHMETIC_CONVERT_DECIMAL_DEC)
+      if (operator == GAL_ARITHMETIC_OP_DEGREE_TO_RA ||
+          operator == GAL_ARITHMETIC_OP_DEGREE_TO_DEC)
         otype = GAL_TYPE_STRING;
 
       o = gal_data_alloc(NULL, otype, in->ndim, in->dsize, in->wcs,
@@ -539,20 +539,20 @@ arithmetic_unary_function(int operator, int flags, gal_data_t *in)
       UNIARY_FUNCTION_ON_ELEMENT( log10 );
       break;
 
-    case GAL_ARITHMETIC_CONVERT_RA_DECIMAL:
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT_STRING( double, gal_units_ra_to_decimal  );
+    case GAL_ARITHMETIC_OP_RA_TO_DEGREE:
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT_STRING(double, gal_units_ra_to_degree);
       break;
 
-    case GAL_ARITHMETIC_CONVERT_DEC_DECIMAL:
-      UNIFUNC_RUN_FUNCTION_ON_ELEMENT_STRING( double, gal_units_dec_to_decimal  );
+    case GAL_ARITHMETIC_OP_DEC_TO_DEGREE:
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT_STRING(double, gal_units_dec_to_degree);
       break;
 
-    case GAL_ARITHMETIC_CONVERT_DECIMAL_RA:
-      UNIARY_FUNCTION_ON_ELEMENT_OUTPUT_STRING( gal_units_decimal_to_ra );
+    case GAL_ARITHMETIC_OP_DEGREE_TO_RA:
+      UNIARY_FUNCTION_ON_ELEMENT_OUTPUT_STRING(gal_units_degree_to_ra);
       break;
 
-    case GAL_ARITHMETIC_CONVERT_DECIMAL_DEC:
-      UNIARY_FUNCTION_ON_ELEMENT_OUTPUT_STRING( gal_units_decimal_to_dec );
+    case GAL_ARITHMETIC_OP_DEGREE_TO_DEC:
+      UNIARY_FUNCTION_ON_ELEMENT_OUTPUT_STRING(gal_units_degree_to_dec);
       break;
 
     default:
@@ -1815,14 +1815,14 @@ gal_arithmetic_set_operator(char *string, size_t *num_operands)
     { op=GAL_ARITHMETIC_OP_LOG10;             *num_operands=1;  }
 
   /* Units conversion functions */
-  else if (!strcmp(string, "ra-to-decimal"))
-    { op=GAL_ARITHMETIC_CONVERT_RA_DECIMAL;   *num_operands=1;  }
-  else if (!strcmp(string, "dec-to-decimal"))
-    { op=GAL_ARITHMETIC_CONVERT_DEC_DECIMAL;  *num_operands=1;  }
-  else if (!strcmp(string, "decimal-to-ra"))
-    { op=GAL_ARITHMETIC_CONVERT_DECIMAL_RA;   *num_operands=1;  }
-  else if (!strcmp(string, "decimal-to-dec"))
-    { op = GAL_ARITHMETIC_CONVERT_DECIMAL_DEC;*num_operands=1;  }
+  else if (!strcmp(string, "ra-to-degree"))
+    { op=GAL_ARITHMETIC_OP_RA_TO_DEGREE;   *num_operands=1;  }
+  else if (!strcmp(string, "dec-to-degree"))
+    { op=GAL_ARITHMETIC_OP_DEC_TO_DEGREE;  *num_operands=1;  }
+  else if (!strcmp(string, "degree-to-ra"))
+    { op=GAL_ARITHMETIC_OP_DEGREE_TO_DEC;  *num_operands=1;  }
+  else if (!strcmp(string, "degree-to-dec"))
+    { op=GAL_ARITHMETIC_OP_DEGREE_TO_DEC;  *num_operands=1;  }
 
   /* Statistical/higher-level operators. */
   else if (!strcmp(string, "minvalue"))
@@ -1974,10 +1974,10 @@ gal_arithmetic_operator_string(int operator)
     case GAL_ARITHMETIC_OP_LOG:             return "log";
     case GAL_ARITHMETIC_OP_LOG10:           return "log10";
 
-    case GAL_ARITHMETIC_CONVERT_RA_DECIMAL: return "ra-to-decimal";
-    case GAL_ARITHMETIC_CONVERT_DEC_DECIMAL:return "dec-to-decimal";
-    case GAL_ARITHMETIC_CONVERT_DECIMAL_RA: return "decimal-to-ra";
-    case GAL_ARITHMETIC_CONVERT_DECIMAL_DEC:return "decimal-to-dec";
+    case GAL_ARITHMETIC_OP_RA_TO_DEGREE:    return "ra-to-degree";
+    case GAL_ARITHMETIC_OP_DEC_TO_DEGREE:   return "dec-to-degree";
+    case GAL_ARITHMETIC_OP_DEGREE_TO_RA:    return "degree-to-ra";
+    case GAL_ARITHMETIC_OP_DEGREE_TO_DEC:   return "degree-to-dec";
 
     case GAL_ARITHMETIC_OP_MINVAL:          return "minvalue";
     case GAL_ARITHMETIC_OP_MAXVAL:          return "maxvalue";
@@ -2077,10 +2077,10 @@ gal_arithmetic(int operator, size_t numthreads, int flags, ...)
     case GAL_ARITHMETIC_OP_SQRT:
     case GAL_ARITHMETIC_OP_LOG:
     case GAL_ARITHMETIC_OP_LOG10:
-    case GAL_ARITHMETIC_CONVERT_RA_DECIMAL:
-    case GAL_ARITHMETIC_CONVERT_DEC_DECIMAL:
-    case GAL_ARITHMETIC_CONVERT_DECIMAL_RA:
-    case GAL_ARITHMETIC_CONVERT_DECIMAL_DEC:
+    case GAL_ARITHMETIC_OP_RA_TO_DEGREE:
+    case GAL_ARITHMETIC_OP_DEC_TO_DEGREE:
+    case GAL_ARITHMETIC_OP_DEGREE_TO_RA:
+    case GAL_ARITHMETIC_OP_DEGREE_TO_DEC:
       d1 = va_arg(va, gal_data_t *);
       out=arithmetic_unary_function(operator, flags, d1);
       break;

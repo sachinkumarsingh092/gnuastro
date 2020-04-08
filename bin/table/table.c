@@ -526,7 +526,7 @@ table_head_tail(struct tableparams *p)
 static void
 table_catcolumn(struct tableparams *p)
 {
-  char *hdu;
+  char *hdu=NULL;
   gal_data_t *tocat, *final;
   gal_list_str_t *filell, *hdull;
   struct gal_options_common_params *cp=&p->cp;
