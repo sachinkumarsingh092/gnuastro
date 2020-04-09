@@ -807,29 +807,30 @@ polygon_make_arr(double *in, size_t n, size_t *A_size, size_t *B_size,
 
 
 
-/* The comparator functions for qsort. CompareA arranges
-    the array in ascending order according to their
-    x-coordinate and CompareB arranges in descending
-    order according to their x-coordintes.
-    */
+/* The comparator functions for qsort. CompareA arranges the array in
+   ascending order according to their x-coordinate. */
 static int
 polygon_compareA(const void *a, const void *b)
 {
   struct point *p1 = (struct point *)a, *p2 = (struct point *)b;
-
-  return (p1->x==p2->x) ? 0:( (p1->x<p2->x) ? -1:1 );
+  return ( p1->x==p2->x
+           ? 0
+           : (p1->x<p2->x ? -1 : 1) );
 }
 
 
 
 
 
+/* The comparator functions for qsort. CompareB arranges in descending
+   order according to their x-coordintes. */
 static int
 polygon_compareB(const void *a, const void *b)
 {
   struct point *p1 = (struct point *)a, *p2 = (struct point *)b;
-
-  return (p1->x==p2->x) ? 0:( (p1->x<p2->x) ? 1:-1 );
+  return ( p1->x==p2->x
+           ? 0
+           : (p1->x<p2->x ? 1 : -1) );
 }
 
 
@@ -840,7 +841,7 @@ polygon_compareB(const void *a, const void *b)
     together to the output array. Hence it is the main function
     which should be called when using concave sort. */
 void
-gal_polygon_vertices_sort(double *in, size_t n, size_t *ordinds)
+gal_polygon_vertices_sort(double *vertices, size_t n, size_t *ordinds)
 {
   size_t i, j, A_size = 0, B_size = 0;
   struct point A[GAL_POLYGON_MAX_CORNERS];
@@ -848,7 +849,7 @@ gal_polygon_vertices_sort(double *in, size_t n, size_t *ordinds)
   struct point sorted[GAL_POLYGON_MAX_CORNERS];
   struct point tordinds[GAL_POLYGON_MAX_CORNERS];
 
-
+  /* Sanity check. */
   if(n>GAL_POLYGON_MAX_CORNERS)
     error(EXIT_FAILURE, 0, "%s: most probably a bug! The number of corners "
           "is more than %d. This is an internal value and cannot be set from "
@@ -856,42 +857,32 @@ gal_polygon_vertices_sort(double *in, size_t n, size_t *ordinds)
           "value. Please contact us at %s so we can solve this problem",
           __func__, GAL_POLYGON_MAX_CORNERS, PACKAGE_BUGREPORT);
 
+  /* Make arrays A and B and store the vertices in them. Currently points
+     are stored in based on their position from the diagonal vector. */
+  polygon_make_arr(vertices, n, &A_size, &B_size, A, B);
 
-  /* Make arrays A and B and store the vertices in them.
-     Currently points are stored in based on their position
-     from the diagonal vector.
-    */
-
-
-  polygon_make_arr(in, n, &A_size, &B_size, A, B);
-
-  /* Now, we put the contents of A and B in the temporary array.
-     Firstly, we put the contents of A and then save the last index
-     of A(stored in i) and continue from that index while copying
-     from B(using j).
-  */
+  /* Now, we put the contents of A and B in the temporary array. Firstly,
+     we put the contents of A and then save the last index of A (stored in
+     i) and continue from that index while copying from B(using j). */
   for(i=0; i<A_size; i++) tordinds[i]=A[i];
   for(j=0; j<B_size; j++) tordinds[i++]=B[j];
 
-  /* Now sort the arrays A and B w.r.t their x axis,
-     sorting A in ascending order and B in descending order. */
+  /* Now sort the arrays A and B w.r.t their x axis, sorting A in ascending
+     order and B in descending order. */
   qsort(A, A_size, sizeof(struct point), polygon_compareA);
   qsort(B, B_size, sizeof(struct point), polygon_compareB);
 
-/*Finally, we put the contents of A and B in a final sorted array.*/
+  /*Finally, we put the contents of A and B in a final sorted array.*/
   for(i=0; i<A_size; i++) sorted[i]=A[i];
   for(j=0; j<B_size; j++) sorted[i++]=B[j];
 
-
-/* The temporary array is now used to find the location of points
-   stored in sorted array and assign index in ordinds accordingly.*/
+  /* The temporary array is now used to find the location of points stored
+     in sorted array and assign index in ordinds accordingly.*/
   for(i=0; i<n; i++)
     for(j=0; j<n; j++)
-        if( (tordinds[i].x == sorted[j].x) &&
-            (tordinds[i].y == sorted[j].y) )
-          {
-            ordinds[j]=i;
-            break;
-          }
-
+      if( tordinds[i].x == sorted[j].x && tordinds[i].y == sorted[j].y )
+        {
+          ordinds[j]=i;
+          break;
+        }
 }

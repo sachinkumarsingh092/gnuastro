@@ -62,6 +62,12 @@ See the end of the file for license conditions.
    - gal_polygon_is_inside: if point is inside polygon (convex or concave).
    - gal_polygon_is_counterclockwise: check if polygon is counter-clockwise.
    - gal_polygon_to_counterclockwise: convert to counter-clockwise if it isn't.
+   - gal_polygon_vertices_sort: un-ordered vertices to concave/convext polygons.
+   - gal_units_extract_decimal: Extract numbers from strings like "A:B:C".
+   - gal_units_ra_to_degree: Convert RA (HH:MM:SS) to degrees.
+   - gal_units_dec_to_degree: Convert Dec (DD:MM:SS) to degrees.
+   - gal_units_degree_to_ra: Convert degrees to RA (DD:MM:SS).
+   - gal_units_degree_to_dec: Convert degrees to Dec (DD:MM:SS).
 
 ** Removed features
 

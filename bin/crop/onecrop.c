@@ -363,37 +363,47 @@ polygonmask(struct onecropparams *crp, void *array, long *fpixel_i,
     error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for ordinds",
           __func__, nvertices*sizeof *ordinds);
 
-  /* If the user wants to sort the edges, do it, if not, make sure its in
+  /* If the user wants to sort the edges, do it. If not, make sure its in
      counter-clockwise orientation. */
   if(crp->p->polygonsort)
-    {
-      gal_polygon_vertices_sort(crp->ipolygon, crp->p->nvertices, ordinds);
-
-      if( !gal_polygon_is_convex(crp->ipolygon, crp->p->nvertices))
-        error(0, 0, "%s: Warning: The sorted concave polygon might "
-              "not be in the same desired format as required",
-              __func__);
-    }
+    gal_polygon_vertices_sort(crp->ipolygon, nvertices, ordinds);
   else
     {
-      for(i=0;i<crp->p->nvertices;++i) ordinds[i]=i;
-      gal_polygon_to_counterclockwise(crp->ipolygon, crp->p->nvertices);
+      /* Keep the original order of the vertices, just make it
+         counter-clockwise. */
+      for(i=0;i<nvertices;++i) ordinds[i]=i;
+      gal_polygon_to_counterclockwise(crp->ipolygon, nvertices);
     }
 
   /* Fill the final polygon vertice positions within `ipolygon' and also
      the fpixel_i coordinates from all the vertices to bring them into the
      crop image coordinates. */
-  for(i=0;i<crp->p->nvertices;++i)
+  for(i=0;i<nvertices;++i)
     {
       ipolygon[i*2  ] = crp->ipolygon[ordinds[i]*2]   - fpixel_i[0];
       ipolygon[i*2+1] = crp->ipolygon[ordinds[i]*2+1] - fpixel_i[1];
     }
 
+  /* Print a warning if we done the sorting, _and_ the sorted polygon is
+     concave, _and_ the user hasn't activated the quiet mode. Note that we
+     could'n do this immediately after calling `gal_polygon_vertices_sort'
+     because that function doesn't touch the actual vertice values, it only
+     fills `ordinds'. */
+  if(crp->p->polygonsort
+     && !crp->p->cp.quiet
+     && !gal_polygon_is_convex(ipolygon, nvertices) )
+    error(0, 0, "%s: warning: the given vertices belong to a concave "
+          "polygon, but there is no unique solution to the sorting of "
+          "concave polygons. Please check the cropped image, if it doesn't "
+          "correspond to your desired polygon, sort the vertices yourself "
+          "in counter-clockwise order _and_ don't use the `--polygonsort' "
+          "option", __func__);
+
   /* Set the function for checking if a point is inside the polygon. For
      concave polygons the process is more complex and thus
      slower. Therefore when the polygon is convex, its better to use the
      simpler/faster function. */
-  isinside = ( gal_polygon_is_convex(ipolygon, crp->p->nvertices)
+  isinside = ( gal_polygon_is_convex(ipolygon, nvertices)
                ? gal_polygon_is_inside_convex
                : gal_polygon_is_inside );
 

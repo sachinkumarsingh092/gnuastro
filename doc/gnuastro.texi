@@ -23303,12 +23303,28 @@ This function uses the @url{https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hod
 Note that the vertices of both polygons have to be sorted in an anti-clock-wise manner.
 @end deftypefun
 
-@deftypefun void gal_polygon_vertices_sort(double *in, size_t n, size_t *ordinds)
-The sorting function which takes points as inputs and makes a sorted array (@code(ordinds}) of indexes.
-In this algorithm, we find the rightmost ans leftmost points(based on their x-coordinate) and use the diagonal vector between those points to group the points in arrays based on their position with respect to this vector.
-Now, for anticlockwise sorting, all the points below the vector are sorted in ascending of their x-coordinates and points above the vector are sorted in decreasing order using @code{qsort}.
-Finally, both these arrays are merged together to get the final sorted array of points, from which the points are indexed into the@code{ordinds} using linear search.
-Remember as there is no unique way to sort concave polygons the final sorted output may not be the one desired.
+@deftypefun void gal_polygon_vertices_sort (double @code{*vertices}, size_t @code{n}, size_t @code{*ordinds})
+Sort the indexs of the un-ordered @code{vertices} array to a counter-clockwise polygon in the already allocated space of @code{ordinds}.
+It is assumed that there are @code{n} vertices, and thus that @code{vertices} contains @code{2*n} elements where the two coordinates of the first vertice occupy the first two elements of the array and so on.
+
+The polygon can be both concave and convex (see the start of this section).
+However, note that for concave polygons there is no unique sort from an un-ordered set of vertices.
+So after this function you may want to use @code{gal_polygon_is_convex} and print a warning to check the output if the polygon was concave.
+
+Note that the contents of the @code{vertices} array are left untouched by this function.
+If you want to write the ordered vertice coordinates in another array with the same size, you can use a loop like this:
+
+@example
+for(i=0;i<n;++i)
+@{
+  ordered[i*2  ] = vertices[ ordinds[i]*2    ];
+  ordered[i*2+1] = vertices[ ordinds[i]*2 + 1];
+@}
+@end example
+
+In this algorithm, we find the rightmost and leftmost points (based on their x-coordinate) and use the diagonal vector between those points to group the points in arrays based on their position with respect to this vector.
+For anticlockwise sorting, all the points below the vector are sorted by their ascending x-coordinates and points above the vector are sorted in decreasing order using @code{qsort}.
+Finally, both these arrays are merged together to get the final sorted array of points, from which the points are indexed into the @code{ordinds} using linear search.
 @end deftypefun
 
 
