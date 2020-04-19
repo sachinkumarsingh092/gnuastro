@@ -4499,7 +4499,7 @@ To install all the necessary @TeX{} packages for a successful Gnuastro bootstrap
 $ su
 # tlmgr install epsf jknapltx caption biblatex biber iftex \
                 etoolbox logreq xstring xkeyval pgf ms     \
-                xcolor pgfplots times rsfs pstools epspdf
+                xcolor pgfplots times rsfs ps2eps epspdf
 @end example
 
 @item ImageMagick (@command{imagemagick})
