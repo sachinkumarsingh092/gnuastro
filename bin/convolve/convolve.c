@@ -378,7 +378,7 @@ correctdeconvolve(struct convolveparams *p, double **spatial)
 
 
   /* Put the elements in their proper place: For example in one
-     dimention where the values are actually the true distances:
+     dimension where the values are actually the true distances:
 
         s[0]=0, s[1]=1, s[2]=2, s[3]=3, s[4]=4, s[5]=5
 

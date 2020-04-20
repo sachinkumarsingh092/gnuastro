@@ -176,7 +176,7 @@ See the end of the file for license conditions.
      --geow3: Geometric center in third WCS axis.
      --clumpsw3: Flux wheighted center of all clumps in 3rd dim.
      --clumpsgeow3: Geometric center of all clumps in 3rd dim.
-     --areaxy: Projected area in first two dimentions.
+     --areaxy: Projected area in first two dimensions.
      --geoareaxy: Projected geoarea in first two dimensions.
    --inbetweenints: output will contain one row for all integers between 1
      and the largest label in the input (irrespective of their existance in

@@ -1437,7 +1437,7 @@ gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename,
          elements. */
       if( input!=data && gal_dimension_is_different(input, data) )
         error(EXIT_FAILURE, 0, "%s: the input list of datasets must have the "
-              "same sizes (dimentionality and length along each dimension)",
+              "same sizes (dimensions and length along each dimension)",
               __func__);
     }
 

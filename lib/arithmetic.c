@@ -640,10 +640,10 @@ arithmetic_size(int operator, int flags, gal_data_t *in, gal_data_t *arg)
   /* Sanity checks on argument (dimension number): it should be an integer,
      and have a size of 1. */
   if(arg->type==GAL_TYPE_FLOAT32 || arg->type==GAL_TYPE_FLOAT64)
-    error(EXIT_FAILURE, 0, "%s: size operator's dimention argument"
-          "must have an interger type", __func__);
+    error(EXIT_FAILURE, 0, "%s: size operator's dimension argument"
+          "must have an integer type", __func__);
   if(arg->size!=1)
-    error(EXIT_FAILURE, 0, "%s: size operator's dimention argument"
+    error(EXIT_FAILURE, 0, "%s: size operator's dimension argument"
           "must be a single number, but it has %zu elements", __func__,
           arg->size);
 
@@ -668,7 +668,7 @@ arithmetic_size(int operator, int flags, gal_data_t *in, gal_data_t *arg)
   /* Sanity checks on the value of the given argument.*/
   if(arg_val>in->ndim)
     error(EXIT_FAILURE, 0, "%s: size operator's dimension argument "
-          "(given %zu) cannot be larger than the dimentions of the "
+          "(given %zu) cannot be larger than the dimensions of the "
           "given input (%zu)", __func__, arg_val, in->ndim);
   if(arg_val==0)
     error(EXIT_FAILURE, 0, "%s: size operator's dimension argument "
