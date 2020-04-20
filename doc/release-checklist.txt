@@ -258,10 +258,22 @@ Steps necessary to Package Gnuastro for Debian.
 
 
  - If you don't already have the Git repository, clone it with the
-   following command. A `gnuastro' directory will be built, for the moment
-   don't go in it.
+   following command. A `gnuastro' directory will be built, but to setup
+   the other to main branches, you'll need to go into the cloned directory
+   and checkout to them manually.
 
      $ git clone https://salsa.debian.org/debian-astro-team/gnuastro.git
+     $ cd gnuastro
+     $ git checkout -b upstream --track origin/upstream
+     $ git checkout -b pristine-tar --track origin/pristine-tar
+     $ git checkout master
+
+   Note that if you have just setup the operating system, add your basic
+   Git information:
+
+     $ git config --global user.name "John Doe"
+     $ git config --global user.email johndoe@example.com
+     $ git config --global core.editor emacs
 
 
  - If a Git directory exists, then pull any possible changes that already
@@ -330,14 +342,9 @@ Steps necessary to Package Gnuastro for Debian.
 
 
  - We are done with the `upstream' and `pristine-tar' branches and can
-   checkout `master':
+   checkout `master' and merge with the upstream branch:
 
      $ git checkout master
-
-
- - Merge the upstream branch into the master branch to update the Gnuastro
-   files in master also:
-
      $ git merge upstream
 
 
