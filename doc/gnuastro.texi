@@ -14518,7 +14518,7 @@ Just note that this demo only works when @code{area_per_pixel} is larger than on
 
 @example
 area_per_pixel=25
-scale=$(echo $area_per_pixel | awk '{print sqrt($1)}')
+scale=$(echo $area_per_pixel | awk '@{print sqrt($1)@}')
 astarithmetic image.fits -h0 nan + isblank not -ozero.fits
 astmknoise zero.fits -onoise.fits
 astwarp --scale=1/$scale,1/$scale noise.fits -onoise-w.fits
