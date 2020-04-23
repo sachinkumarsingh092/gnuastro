@@ -14502,14 +14502,38 @@ The low-level magnitude/pixel measurement above is only useful when all the data
 However, you will often find yourself using datasets from various instruments with different pixel scales (projected pixel sizes).
 If we know the pixel scale, we can obtain a more easily comparable surface brightness limit in units of: magnitude/arcsec@mymath{^2}.
 Let's assume that the dataset has a zeropoint value of @mymath{z}, and every pixel is @mymath{p} arcsec@mymath{^2} (so @mymath{A/p} is the number of pixels that cover an area of @mymath{A} arcsec@mymath{^2}).
-If the surface brightness is desired at the @mymath{n}th multiple of @mymath{\sigma_m}, the following equation (in units of magnitudes per A arcsec@mymath{^2}) can be used:
+If the surface brightness is desired at the @mymath{n}th multiple of @mymath{\sigma_m}, the following equation (in units of magnitudes per @mymath{A} arcsec@mymath{^2}) can be used:
 
 @dispmath{SB_{\rm Projected}=-2.5\times\log_{10}{\left(n\sigma_m\sqrt{A\over p}\right)+z}}
 
-Note that this is just an extrapolation of the per-pixel measurement @mymath{\sigma_m}.
+The @mymath{\sqrt{A/p}} term comes from the fact that noise is added in RMS: if you add three datasets with noise @mymath{\sigma_1}, @mymath{\sigma_2} and @mymath{\sigma_3}, the resulting noise level is @mymath{\sigma_t=\sqrt{\sigma_1^2+\sigma_2^2+\sigma_3^2}}, so when @mymath{\sigma_1=\sigma_2=\sigma_3=\sigma}, then @mymath{\sigma_t=\sqrt{3}\sigma}.
+As mentioned above, there are @mymath{A/p} pixels in the area @mymath{A}.
+Therefore, as @mymath{A/p} increases, the surface brightness limiting magnitude will become brighter.
+
+It is just important to understand that the surface brightness limit is the raw noise level, @emph{not} the signal-to-noise.
+To get a feeling for it you can try these commands on any FITS image (let's assume its called @file{image.fits}), the output of the first command (@file{zero.fits}) will be the same size as the input, but all pixels will have a value of zero.
+We then add an ideal noise to this image and warp it to a new pixel size (such that the area of the new pixels is @code{area_per_pixel} times the input's), then we print the standard deviation of the raw noise and warped noise.
+Please open the output images an compare them (their sizes, or their pixel values) to get a good feeling of what is going on.
+Just note that this demo only works when @code{area_per_pixel} is larger than one.
+
+@example
+area_per_pixel=25
+scale=$(echo $area_per_pixel | awk '{print sqrt($1)}')
+astarithmetic image.fits -h0 nan + isblank not -ozero.fits
+astmknoise zero.fits -onoise.fits
+astwarp --scale=1/$scale,1/$scale noise.fits -onoise-w.fits
+std_raw=$(aststatistics noise.fits --std)
+std_warped=$(aststatistics noise-w.fits --std)
+echo;
+echo "(warped pixel area) = $area_per_pixel x (pixel area)"
+echo "Raw STD:    $std_raw"
+echo "Warped STD: $std_warped"
+@end example
+
+As you see in this example, this is thus just an extrapolation of the per-pixel measurement @mymath{\sigma_m}.
 So it should be used with extreme care: for example the dataset must have an approximately flat depth or noise properties overall.
-A more accurate measure for each detection over the dataset is known as the @emph{upper-limit magnitude} which actually uses random positioning of each detection's area/footprint (see below).
-It doesn't extrapolate and even accounts for correlated noise patterns in relation to that detection.
+A more accurate measure for each detection is known as the @emph{upper-limit magnitude} which actually uses random positioning of each detection's area/footprint, see the respective item below.
+The upper-limit magnitude doesn't extrapolate and even accounts for correlated noise patterns in relation to that detection.
 Therefore, the upper-limit magnitude is a much better measure of your dataset's surface brightness limit for each particular object.
 
 MakeCatalog will calculate the input dataset's @mymath{SB_{\rm Pixel}} and @mymath{SB_{\rm Projected}} and write them as comments/meta-data in the output catalog(s).
