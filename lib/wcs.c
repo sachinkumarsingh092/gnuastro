@@ -747,12 +747,12 @@ gal_wcs_pixel_scale(struct wcsprm *wcs)
           }
 
       /* Do the check, print warning and make correction. */
-      if(maxrow!=minrow && maxrow/minrow>1e4 && warning_printed==0)
+      if(maxrow!=minrow && maxrow/minrow>1e5 && warning_printed==0)
         {
           fprintf(stderr, "\nWARNING: The input WCS matrix (possibly taken "
                   "from the FITS header keywords starting with `CD' or `PC') "
                   "contains values with very different scales (more than "
-                  "10^4 different). This is probably due to floating point "
+                  "10^5 different). This is probably due to floating point "
                   "errors. These values might bias the pixel scale (and "
                   "subsequent) calculations.\n\n"
                   "You can see the respective matrix with one of the "
@@ -766,7 +766,7 @@ gal_wcs_pixel_scale(struct wcsprm *wcs)
                   "You can delete the ones with obvious floating point "
                   "error values using the following command (assuming you "
                   "want to delete `CD1_2' and `CD2_1'). Afterwards, you can "
-                  "rerun your original command to remove this warning "
+                  "re-run your original command to remove this warning "
                   "message and possibly correct errors that it might have "
                   "caused.\n\n"
                   "    $ astfits file.fits --delete=CD1_2 --delete=CD2_1\n\n"

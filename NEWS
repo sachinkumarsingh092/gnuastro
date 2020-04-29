@@ -36,7 +36,11 @@ See the end of the file for license conditions.
      standard.
 
   MakeCatalog:
-   --sigmaclip: defines the sigma-clipping parameters for those columns.
+   --sigmaclip: define sigma-clipping parameters for the new `--sigclip-*'
+     columns.
+   --forcereadstd: Read the standard deviation image even if not needed by
+     any columns. This is useful when you want the surface brightness
+     limit, but don't need any error-related columns.
    New output columns:
      --sigclip-number: Number of sigma-clipped pixels in object/clump.
      --sigclip-median: Sigma-clipped median of pixels in object/clump.
@@ -95,6 +99,13 @@ See the end of the file for license conditions.
    --polygonout: is the new name for `--outpolygon'. Having `polygon' at
      the start of the option name, makes it easier to find in the help list
      and also to understand generally.
+
+  MakeCatalog:
+   - Until now, if no standard deviation image was requested, MakeCatalog
+     wouldn't include any surface brightness limit metadata in its
+     output. Now, those two lines are filled, but with a notice on the
+     cause (that there is no standard deviation image), and suggesting
+     solutions.
 
   NoiseChisel:
    - Until now, when NoiseChisel didn't detect any pixels, it just printed

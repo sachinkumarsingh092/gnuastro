@@ -462,6 +462,7 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
       gal_list_str_add(&comments, str, 0);
     }
 
+  /* Pixel area. */
   if(p->objects->wcs)
     {
       pixarea=gal_wcs_pixel_area_arcsec2(p->objects->wcs);
@@ -473,6 +474,7 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
         }
     }
 
+  /* Zeropoint magnitude */
   if(p->hasmag)
     {
       if( asprintf(&str, "Zeropoint magnitude: %.4f", p->zeropoint)<0 )
@@ -481,49 +483,53 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
     }
 
   /* Print surface brightness limits. */
-  if( !isnan(p->medstd) && !isnan(p->zeropoint) &&  !isnan(p->sfmagnsigma) )
+  if( !isnan(p->medstd) && !isnan(p->sfmagnsigma) )
     {
-      /* Per pixel. */
-      if( asprintf(&str, "%g sigma surface brightness (magnitude/pixel): "
-                   "%.3f", p->sfmagnsigma, ( -2.5f
-                                             *log10( p->sfmagnsigma
-                                                     * p->medstd )
-                                             + p->zeropoint ) )<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-      gal_list_str_add(&comments, str, 0);
-
-      /* Requested projected area: if a pixel area could be measured (a WCS
-         was given), then also estimate the surface brightness over one
-         arcsecond^2. From the pixel area, we know how many pixels are
-         necessary to fill the requested projected area (in
-         arcsecond^2). We also know that as the number of samples (pixels)
-         increases (to N), the noise increases by sqrt(N), see the full
-         discussion in the book. */
-      if(!isnan(pixarea) && !isnan(p->sfmagarea))
+      /* Only print magnitudes if a zeropoint is given. */
+      if( !isnan(p->zeropoint) )
         {
-          /* Prepare the comment/information. */
-          if(p->sfmagarea==1.0f)
-            tstr=NULL;
-          else
-            if( asprintf(&tstr, "%g-", p->sfmagarea)<0 )
-              error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-          if( asprintf(&str, "%g sigma surface brightness "
-                       "(magnitude/%sarcsec^2): %.3f", p->sfmagnsigma,
-                       tstr ? tstr : "",
-                       ( -2.5f * log10( p->sfmagnsigma
-                                        * p->medstd
-                                        * sqrt( p->sfmagarea / pixarea) )
-                         + p->zeropoint ) )<0 )
+          /* Per pixel. */
+          if( asprintf(&str, "%g sigma surface brightness (magnitude/pixel): "
+                       "%.3f", p->sfmagnsigma, ( -2.5f
+                                                 *log10( p->sfmagnsigma
+                                                         * p->medstd )
+                                                 + p->zeropoint ) )<0 )
             error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-
-          /* Add the final string/line to the catalog comments. */
           gal_list_str_add(&comments, str, 0);
 
-          /* Clean up (if necessary). */
-          if (tstr)
+          /* Requested projected area: if a pixel area could be measured (a
+             WCS was given), then also estimate the surface brightness over
+             one arcsecond^2. From the pixel area, we know how many pixels
+             are necessary to fill the requested projected area (in
+             arcsecond^2). We also know that as the number of samples
+             (pixels) increases (to N), the noise increases by sqrt(N), see
+             the full discussion in the book. */
+          if(!isnan(pixarea) && !isnan(p->sfmagarea))
             {
-              free(tstr);
-              tstr=NULL;
+              /* Prepare the comment/information. */
+              if(p->sfmagarea==1.0f)
+                tstr=NULL;
+              else
+                if( asprintf(&tstr, "%g-", p->sfmagarea)<0 )
+                  error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+              if( asprintf(&str, "%g sigma surface brightness "
+                           "(magnitude/%sarcsec^2): %.3f", p->sfmagnsigma,
+                           tstr ? tstr : "",
+                           ( -2.5f * log10( p->sfmagnsigma
+                                            * p->medstd
+                                            * sqrt( p->sfmagarea / pixarea) )
+                             + p->zeropoint ) )<0 )
+                error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+
+              /* Add the final string/line to the catalog comments. */
+              gal_list_str_add(&comments, str, 0);
+
+              /* Clean up (if necessary). */
+              if (tstr)
+                {
+                  free(tstr);
+                  tstr=NULL;
+                }
             }
         }
 
@@ -534,7 +540,17 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
         error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       gal_list_str_add(&comments, str, 0);
     }
+  else
+    {
+      gal_checkset_allocate_copy("No surface brightness calcuations "
+                                 "because no STD image used.", &str);
+      gal_list_str_add(&comments, str, 0);
+      gal_checkset_allocate_copy("Ask for column that uses the STD image, "
+                                 "or `--forcereadstd'.", &str);
+      gal_list_str_add(&comments, str, 0);
+    }
 
+  /* The count-per-second correction. */
   if(p->cpscorr>1.0f)
     {
       if( asprintf(&str, "Counts-per-second correction: %.3f", p->cpscorr)<0 )
@@ -542,11 +558,11 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
       gal_list_str_add(&comments, str, 0);
     }
 
+  /* Print upper-limit parameters. */
   if(p->upperlimit)
     upperlimit_write_comments(p, &comments, 1);
 
-
-
+  /* Start column metadata. */
   if(p->cp.tableformat==GAL_TABLE_FORMAT_TXT)
     {
       if( asprintf(&str, "--------- Table columns ---------")<0 )

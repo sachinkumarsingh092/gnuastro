@@ -913,8 +913,10 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
 {
   size_t i;
 
+  /* Set necessary inputs based on options. */
+  if(p->forcereadstd) *std=1;
   if(p->upperlimit) *values=1;
-  if(p->spectrum)   *values=*std=1;
+  if(p->spectrum) *values=*std=1;
 
   /* Go over all the object columns. Note that the objects and clumps (if
      the `--clumpcat' option is given) inputs are mandatory and it is not
@@ -1177,10 +1179,12 @@ ui_preparations_read_inputs(struct mkcatalogparams *p)
         {
           for(column=p->objectcols; column!=NULL; column=column->next)
             if( !strcmp(column->unit, MKCATALOG_NO_UNIT) )
-              { free(column->unit); gal_checkset_allocate_copy(p->values->unit, &column->unit); }
+              { free(column->unit);
+                gal_checkset_allocate_copy(p->values->unit, &column->unit); }
           for(column=p->clumpcols; column!=NULL; column=column->next)
             if( !strcmp(column->unit, MKCATALOG_NO_UNIT) )
-              { free(column->unit); gal_checkset_allocate_copy(p->values->unit, &column->unit); }
+              { free(column->unit);
+                gal_checkset_allocate_copy(p->values->unit, &column->unit); }
         }
     }
 

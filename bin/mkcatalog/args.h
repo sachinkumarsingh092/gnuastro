@@ -163,6 +163,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
+      "forcereadstd",
+      UI_KEY_FORCEREADSTD,
+      0,
+      0,
+      "Read STD even if no columns need it.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->forcereadstd,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "zeropoint",
       UI_KEY_ZEROPOINT,
       "FLT",

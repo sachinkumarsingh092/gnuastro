@@ -14974,6 +14974,10 @@ The HDU of the Sky value standard deviation image.
 @item --variance
 The dataset given to @option{--stdfile} (and @option{--stdhdu} has the Sky variance of every pixel, not the Sky standard deviation.
 
+@item --forcereadstd
+Read the input STD image even if it is not required by any of the requested columns.
+This is because some of the output catalog's metadata may need it, for example to calculate the dataset's surface brightness limit (see @ref{Quantifying measurement limits}, configured with @option{--sfmagarea} and @option{--sfmagnsigma} in @ref{MakeCatalog output}).
+
 @item -z FLT
 @itemx --zeropoint=FLT
 The zero point magnitude for the input image, see @ref{Flux Brightness and magnitude}.
@@ -15525,11 +15529,15 @@ $ awk '!/^#/' out_c.txt | sort -g -k1,1 -k2,2
 @end example
 
 @item --sfmagnsigma=FLT
-The median standard deviation (from a @command{MEDSTD} keyword in the Sky standard deviation image) will be multiplied by the value to this option and its magnitude will be reported in the comments of the output catalog.
+Value to multiply with the median standard deviation (from a @command{MEDSTD} keyword in the Sky standard deviation image) for estimating the surface brightenss limit.
+Note that the surface brightness limit is only reported when a standard deviation image is read, in other words a column using it is requested (for example @option{--sn}) or @option{--forcereadstd} is called.
+
 This value is a per-pixel value, not per object/clump and is not found over an area or aperture, like the common @mymath{5\sigma} values that are commonly reported as a measure of depth or the upper-limit measurements (see @ref{Quantifying measurement limits}).
 
 @item --sfmagarea=FLT
 Area (in arcseconds squared) to convert the per-pixel estimation of @option{--sfmagnsigma} in the comments section of the output tables.
+Note that the surface brightness limit is only reported when a standard deviation image is read, in other words a column using it is requested (for example @option{--sn}) or @option{--forcereadstd} is called.
+
 Note that this is just a unit conversion using the World Coordinate System (WCS) information in the input's header.
 It does not actually do any measurements on this area.
 For random measurements on any area, please use the upper-limit columns of MakeCatalog (see the discussion on upper-limit measurements in @ref{Quantifying measurement limits}).
