@@ -9128,7 +9128,7 @@ Otherwise you can use both single or double quotes.
 @end cartouche
 
 Alternatively, if the columns have meta-data and the first two are respectively called @code{AWAV} and @code{SPECTRUM}, the command above is equivalent to the command below.
-Note that the @key{c} is no longer necessary in this scenario.
+Note that the character `@key{$}' is no longer necessary in this scenario (because names will not be confused with numbers):
 
 @example
 $ asttable table.fits -cAWAV,SPECTRUM -c'arith AWAV 1e10 x'
