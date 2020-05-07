@@ -2,6 +2,7 @@ Alphabetically ordered list to acknowledge in the next release.
 
 Raúl Infante-Sainz
 Alejandro Serrano Borlaff
+Zahra Sharbaf
 Joseph Putko
 
 

@@ -196,17 +196,30 @@ gal_data_t *
 gal_statistics_std(gal_data_t *input)
 {
   size_t dsize=1, n=0;
-  double s=0.0f, s2=0.0f;
+  double s=0.0f, s2=0.0f, *o;
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                  NULL, 1, -1, 1, NULL, NULL, NULL);
 
   /* See if the input actually has any elements. */
-  if(input->size)
-    /* Parse the input. */
-    GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; s += *i; s2 += *i * *i;});
+  o=out->array;
+  switch(input->size)
+    {
+    /* No inputs. */
+    case 0: o[0]=GAL_BLANK_FLOAT64; break;
 
-  /* Write the standard deviation into the output. */
-  *((double *)(out->array)) = n ? sqrt( (s2-s*s/n)/n ) : GAL_BLANK_FLOAT64;
+    /* When we only have a single element, theoretically the standard
+       deviation should be 0. But due to floating-point errors, it will
+       probably not be. So we'll manually set it to zero. */
+    case 1: o[0]=0; break;
+
+    /* More than one element. */
+    default:
+      GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; s += *i; s2 += *i * *i;});
+      o[0]=sqrt( (s2-s*s/n)/n );
+      break;
+    }
+
+  /* Return the output dataset. */
   return out;
 }
 
@@ -221,17 +234,34 @@ gal_data_t *
 gal_statistics_mean_std(gal_data_t *input)
 {
   size_t dsize=2, n=0;
-  double s=0.0f, s2=0.0f;
+  double s=0.0f, s2=0.0f, *o;
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                  NULL, 1, -1, 1, NULL, NULL, NULL);
-  /* See if the input actually has any elements. */
-  if(input->size)
-    /* Parse the input. */
-    GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; s += *i; s2 += *i * *i;});
 
-  /* Write in the output values and return. */
-  ((double *)(out->array))[0] = n ? s/n                  : GAL_BLANK_FLOAT64;
-  ((double *)(out->array))[1] = n ? sqrt( (s2-s*s/n)/n ) : GAL_BLANK_FLOAT64;
+  /* See if the input actually has any elements. */
+  o=out->array;
+  switch(input->size)
+    {
+    /* No inputs. */
+    case 0: o[0]=o[1]=GAL_BLANK_FLOAT64; break;
+
+    /* When we only have a single element, theoretically the standard
+       deviation should be 0. But due to floating-point errors, it will
+       probably not be. So we'll manually set it to zero. */
+    case 1:
+      GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {s+=*i;});
+      o[0]=s; o[1]=0;
+      break;
+
+    /* More than one element. */
+    default:
+      GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; s += *i; s2 += *i * *i;});
+      o[0]=s/n;
+      o[1]=sqrt( (s2-s*s/n)/n );
+      break;
+    }
+
+  /* Return the output dataset. */
   return out;
 }
 
@@ -2015,7 +2045,7 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
   uint8_t bytolerance = param>=1.0f ? 0 : 1;
   double oldmed=NAN, oldmean=NAN, oldstd=NAN;
   size_t num=0, one=1, four=4, size, oldsize;
-  gal_data_t *median_i, *median_d, *out, *meanstd;
+  gal_data_t *fcopy, *median_i, *median_d, *out, *meanstd;
   gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
   size_t maxnum = param>=1.0f ? param : GAL_STATISTICS_SIG_CLIP_MAX_CONVERGE;
 
@@ -2051,20 +2081,44 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
   /* Only continue processing if we have non-blank elements. */
   oa=out->array;
   nbs_array=nbs->array;
-  if(nbs->size==0)
+  switch(nbs->size)
     {
+    /* There was nothing in the input! */
+    case 0:
       if(!quiet)
         printf("NO SIGMA-CLIPPING: all input elements are blank or input's "
                "size is zero.\n");
       oa[0] = oa[1] = oa[2] = oa[3] = NAN;
-    }
-  else
-    {
-      /* Print the comments. */
+      break;
+
+    /* Only one element, convert it to floating point and put it as the
+       mean and median (the standard deviation will be zero by
+       definition). */
+    case 1:
+      /* Write the values. */
+      fcopy=gal_data_copy_to_new_type(nbs, GAL_TYPE_FLOAT32);
+      oa[0] = 1;
+      oa[1] = *((float *)(fcopy->array));
+      oa[2] = *((float *)(fcopy->array));
+      oa[3] = 0;
+      gal_data_free(fcopy);
+
+      /* Print the comments if requested. */
+      if(!quiet)
+        {
+          printf("%-8s %-10s %-15s %-15s %-15s\n",
+                 "round", "number", "median", "mean", "STD");
+          printf("%-8d %-10.0f %-15g %-15g %-15g\n",
+                 0, oa[0], oa[1], oa[2], oa[3]);
+        }
+      break;
+
+    /* More than one element. */
+    default:
+      /* Print the comments if requested. */
       if(!quiet)
         printf("%-8s %-10s %-15s %-15s %-15s\n",
                "round", "number", "median", "mean", "STD");
-
 
       /* Do the clipping, but first initialize the values that will be
          changed during the clipping: the start of the array and the
