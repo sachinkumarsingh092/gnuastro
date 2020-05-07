@@ -265,7 +265,8 @@ struct argp_option program_options[] =
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_colon_sep_csv
     },
     {
       "polygonout",

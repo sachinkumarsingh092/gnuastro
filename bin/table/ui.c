@@ -249,6 +249,28 @@ ui_read_check_only_options(struct tableparams *p)
                 "be smaller than the second (%g)", darr[0], darr[1]);
       }
 
+  /* Basic checks for `--inpolygon' or `--outpolygon'. */
+  if(p->inpolygon || p->outpolygon)
+    {
+      if(p->inpolygon && p->outpolygon)
+        error(EXIT_FAILURE, 0, "`--inpolygon' and `--outpolygon' options "
+              "cannot be called together");
+
+      if(p->inpolygon && p->inpolygon->size!=2)
+        error(EXIT_FAILURE, 0, "two columns (for coordinates) can "
+              "be given to `--inpolygon'");
+
+      if(p->outpolygon && p->outpolygon->size!=2)
+        error(EXIT_FAILURE, 0, "two columns (for coordinates) can "
+              "be given to `--outpolygon'");
+
+      if(p->polygon==NULL)
+        error(EXIT_FAILURE, 0, "no polygon specified for `--inpolygon' or "
+              "`--outpolygon'! Please provide the vertices of the desired "
+              "polygon with the `--polygon' option in this format: "
+              "v1x,v1y:v2x,v2y:v3x,v3y:...");
+    }
+
 
   /* Make sure `--head' and `--tail' aren't given together. */
   if(p->head!=GAL_BLANK_SIZE_T && p->tail!=GAL_BLANK_SIZE_T)
@@ -676,24 +698,52 @@ ui_check_select_sort_before(struct tableparams *p, gal_list_str_t *lines,
                             size_t *sortindout, size_t **selectindout_out,
                             size_t **selecttypeout_out)
 {
-  gal_data_t *dtmp, *allcols;
-  size_t sortind=GAL_BLANK_SIZE_T;
+  char **strarr;
   gal_list_sizet_t *tmp, *indexll;
   gal_list_str_t *stmp, *add=NULL;
   int tableformat, selecthasname=0;
+  size_t one=1, sortind=GAL_BLANK_SIZE_T;
   size_t *selectind=NULL, *selecttype=NULL;
   size_t *selectindout=NULL, *selecttypeout=NULL;
   size_t i, j, k, *s, *sf, allncols, numcols, numrows;
+  gal_data_t *dtmp, *allcols, *inpolytmp=NULL, *outpolytmp=NULL;
 
   /* Important note: these have to be in the same order as the `enum
-     select_types' in `main.h'. */
-  gal_data_t *select[SELECT_TYPE_NUMBER]={p->range, p->equal, p->notequal};
+     select_types' in `main.h'. We'll fill the two polygon elements
+     later. */
+  gal_data_t *select[SELECT_TYPE_NUMBER]={p->range, NULL, NULL,
+                                          p->equal, p->notequal};
+
+
+  /* The inpolygon dataset is currently a single dataset with two elements
+     (strings). But we need to have it as two linked datasets with a set
+     name. */
+  if(p->inpolygon)
+    {
+      strarr=p->inpolygon->array;
+      inpolytmp=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &one, NULL, 1, -1, 1,
+                               strarr[0], NULL, NULL);
+      inpolytmp->next=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &one, NULL,
+                                     1, -1, 1, strarr[1], NULL, NULL);
+      select[SELECT_TYPE_INPOLYGON]=inpolytmp;
+    }
+  if(p->outpolygon)
+    {
+      strarr=p->outpolygon->array;
+      outpolytmp=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &one, NULL, 1, -1, 1,
+                               strarr[0], NULL, NULL);
+      outpolytmp->next=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, &one, NULL,
+                                     1, -1, 1, strarr[1], NULL, NULL);
+      select[SELECT_TYPE_OUTPOLYGON]=outpolytmp;
+    }
 
 
   /* Allocate necessary spaces. */
   if(p->selection)
     {
       *nselect = ( gal_list_data_number(p->range)
+                   + gal_list_data_number(inpolytmp)
+                   + gal_list_data_number(outpolytmp)
                    + gal_list_data_number(p->equal)
                    + gal_list_data_number(p->notequal) );
       selectind=gal_pointer_allocate(GAL_TYPE_SIZE_T, *nselect, 0,
@@ -712,7 +762,7 @@ ui_check_select_sort_before(struct tableparams *p, gal_list_str_t *lines,
 
   /* See if the given columns are numbers or names. */
   i=0;
-  if(p->sort)  sortind  = ui_check_select_sort_read_col_ind(p->sort);
+  if(p->sort) sortind=ui_check_select_sort_read_col_ind(p->sort);
   if(p->selection)
     for(k=0;k<SELECT_TYPE_NUMBER;++k)
       for(dtmp=select[k];dtmp!=NULL;dtmp=dtmp->next)
@@ -740,7 +790,8 @@ ui_check_select_sort_before(struct tableparams *p, gal_list_str_t *lines,
     for(i=0;i<*nselect;++i)
       if(selectind[i]!=GAL_BLANK_SIZE_T && selectind[i]>=numcols)
         error(EXIT_FAILURE, 0, "%s has %zu columns, less than the column "
-              "number given to  `--range', `--equal', or `--sort' (%zu)",
+              "number given to  `--range', `--inpolygon', `--outpolygon', "
+              "`--equal', or `--sort' (%zu)",
               gal_fits_name_save_as_string(p->filename, p->cp.hdu), numcols,
               selectind[i]);
 
@@ -873,6 +924,8 @@ ui_check_select_sort_before(struct tableparams *p, gal_list_str_t *lines,
   if(selectind) free(selectind);
   if(selecttype) free(selecttype);
   gal_data_array_free(allcols, numcols, 0);
+  if(inpolytmp) gal_list_data_free(inpolytmp);
+  if(outpolytmp) gal_list_data_free(outpolytmp);
 }
 
 
@@ -978,13 +1031,15 @@ ui_preparations(struct tableparams *p)
 
 
   /* If any kind of row-selection is requested set `p->selection' to 1. */
-  p->selection = p->range || p->equal || p->notequal;
+  p->selection = ( p->range || p->inpolygon || p->outpolygon || p->equal
+                   || p->notequal );
+
 
   /* If row sorting or selection are requested, see if we should read any
      extra columns. */
   if(p->selection || p->sort)
-    ui_check_select_sort_before(p, lines, &nselect, &origoutncols, &sortindout,
-                                &selectindout, &selecttypeout);
+    ui_check_select_sort_before(p, lines, &nselect, &origoutncols,
+                                &sortindout, &selectindout, &selecttypeout);
 
 
   /* If we have any arithmetic operations, we need to make sure how many

@@ -154,6 +154,48 @@ struct argp_option program_options[] =
       gal_options_parse_name_and_float64s
     },
     {
+      "inpolygon",
+      UI_KEY_INPOLYGON,
+      "STR,STR",
+      0,
+      "Coord. columns that are inside `--polygon'.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->inpolygon,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_csv_strings
+    },
+    {
+      "outpolygon",
+      UI_KEY_OUTPOLYGON,
+      "STR,STR",
+      0,
+      "Coord. columns that are outside `--polygon'.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->outpolygon,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_csv_strings
+    },
+    {
+      "polygon",
+      UI_KEY_POLYGON,
+      "FLT:FLT[,...]",
+      0,
+      "Polygon for `--inpolygon' or `--outpolygon'.",
+      UI_GROUP_OUTROWS,
+      &p->polygon,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_colon_sep_csv
+    },
+    {
       "equal",
       UI_KEY_EQUAL,
       "STR,FLT[,...]",

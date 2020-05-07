@@ -9368,6 +9368,36 @@ This is good when you just want to select using one column's values, but don't n
 For one example of using this option, see the example under
 @option{--sigclip-median} in @ref{Invoking aststatistics}.
 
+@item --inpolygon=STR1,STR2
+Only return rows where the given coordinates are inside the polygon specified by the @option{--polygon} option.
+The coordinate columns are the given @code{STR1} and @code{STR2} columns, they can be a column name or counter (see @ref{Selecting table columns}).
+
+Note that the chosen columns doesn't have to be in the output columns (which are specified by the @code{--column} option).
+For example if we want to select rows in the polygon specified in @ref{Dataset inspection and cropping}, this option can be used like this (you can remove the double quotations and write them all in one line if you remove the white-spaces around the colon separating the column vertices):
+
+@example
+asttable table.fits --inpolygon=RA,DEC      \
+         --polygon="53.187414,-27.779152    \
+                    : 53.159507,-27.759633  \
+                    : 53.134517,-27.787144  \
+                    : 53.161906,-27.807208" \
+@end example
+
+@cartouche
+@noindent
+@strong{Flat/Euclidean space: } The @option{--inpolygon} option assumes a flat/Euclidean space so it is only correct for RA and Dec when the polygon size is very small like the example above.
+If your polygon is a degree or larger, it may not return correct results.
+We are working on other options for this.
+@end cartouche
+
+@item --outpolygon=STR1,STR2
+Only return rows where the given coordinates are outside the polygon specified by the @option{--polygon} option.
+This option is very similar to the @option{--inpolygon} option, so see the description there for more.
+
+@item --polygon=FLT:FLT,...
+The polygon to use for the @code{--inpolygon} and @option{--outpolygon} options.
+The values to this option is parsed in the same way that the Crop program, see its description there for more: @ref{Crop options}.
+
 @item -e STR,INT/FLT,...
 @itemx --equal=STR,INT/FLT,...
 Only output rows that are equal to the given number(s) in the given column.

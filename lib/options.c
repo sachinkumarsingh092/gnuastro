@@ -1152,7 +1152,7 @@ gal_options_parse_name_and_values(struct argp_option *option, char *arg,
   /* We want to print the stored values. */
   if(lineno==-1)
     {
-      /* Set the value pointer to `dataset'. */
+      /* Set the value pointer to `existing'. */
       existing=*(gal_data_t **)(option->value);
       if(str0_f641) darray = existing->array;
       else          strarr = existing->array;
@@ -1173,6 +1173,8 @@ gal_options_parse_name_and_values(struct argp_option *option, char *arg,
           if(str0_f641) nc += sprintf(sstr+nc, "%g,", darray[i]);
           else          nc += sprintf(sstr+nc, "%s,", strarr[i]);
         }
+
+      /* Finish the string. */
       sstr[nc-1]='\0';
 
       /* Copy the string into a dynamically allocated space, because it
@@ -1258,6 +1260,163 @@ gal_options_parse_name_and_float64s(struct argp_option *option, char *arg,
 
 
 
+
+/* Parse strings like this: `num1,num2:num3,n4:num5,num6' and return it as
+   a data container array: all elements are simply placed after each other
+   in the array. */
+static gal_data_t *
+options_parse_colon_sep_csv(char *instring, char *filename, size_t lineno)
+{
+  char *tailptr;
+  gal_data_t *out;
+  char *pt=instring;
+  size_t dim=0, size;
+  double read, *array;
+  gal_list_f64_t *vertices=NULL;
+
+  /* Parse the string. */
+  while(*pt!='\0')
+    {
+      switch(*pt)
+        {
+        case ',':
+          ++dim;
+          if(dim==2)
+            error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                          "Extra `,` in `%s`", instring);
+          ++pt;
+          break;
+        case ':':
+          if(dim==0)
+            error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                          "not enough coordinates for at least "
+                          "one polygon vertex (in %s)", instring);
+          dim=0;
+          ++pt;
+          break;
+        default:
+          break;
+        }
+
+      /* strtod will skip white spaces if they are before a number,
+         but not when they are before a : or ,. So we need to remove
+         all white spaces. White spaces are usually put beside each
+         other, so if one is encountered, go along the string until
+         the white space characters finish.  */
+      if(isspace(*pt))
+        ++pt;
+      else
+        {
+          /* Read the number: */
+          read=strtod(pt, &tailptr);
+
+          /* Check if there actually was a number.
+          printf("\n\n------\n%zu: %f (%s)\n", dim, read, tailptr);
+          */
+
+          /* Make sure if a number was read at all? */
+          if(tailptr==pt) /* No number was read! */
+            error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                          "%s could not be parsed as a floating point "
+                          "number", tailptr);
+
+          /* Check if there are no extra characters in the number, for
+             example we don't have a case like `1.00132.17', or
+             1.01i:2.0. Such errors are not uncommon when typing large
+             numbers, and if ignored, they can lead to unpredictable
+             results, so its best to abort and inform the user. */
+          if( *tailptr!='\0'
+              && !isspace(*tailptr)
+              && strchr(":,", *tailptr)==NULL )
+            error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                          "'%s' is an invalid floating point number "
+                          "sequence in the value to the `--polygon' "
+                          "option, error detected at '%s'", pt, tailptr);
+
+          /* Add the read coordinate to the list of coordinates. */
+          gal_list_f64_add(&vertices, read);
+
+          /* The job here is done, start from tailptr */
+          pt=tailptr;
+        }
+    }
+
+  /* Convert the list to an array, put it in a data structure, clean up and
+     return. */
+  array=gal_list_f64_to_array(vertices, 1, &size);
+  out=gal_data_alloc(array, GAL_TYPE_FLOAT64, 1, &size, NULL, 0, -1, 1,
+                     NULL, NULL, NULL);
+  gal_list_f64_free(vertices);
+  return out;
+}
+
+
+
+
+
+/* Parse strings that are given to a function in this format
+   `num1,num2:num3,n4:num5,num6' */
+void *
+gal_options_parse_colon_sep_csv(struct argp_option *option, char *arg,
+                                char *filename, size_t lineno, void *junk)
+{
+  double *darray;
+  size_t i, nc, size;
+  gal_data_t *tmp, *dataset, *existing;
+  char *str, sstr[GAL_OPTIONS_STATIC_MEM_FOR_VALUES];
+
+  /* We want to print the stored values. */
+  if(lineno==-1)
+    {
+      /* Set the value pointer to `existing'. */
+      existing=*(gal_data_t **)(option->value);
+      darray=existing->array;
+
+      /* Start printing the values. */
+      nc=0;
+      size=existing->size;
+      for(i=0;i<size;i+=2)
+        {
+          /* Make sure we aren't passing the allocated space. */
+          if( nc > GAL_OPTIONS_STATIC_MEM_FOR_VALUES-100 )
+            error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s so we "
+                  "can address the problem. The number of necessary "
+                  "characters in the statically allocated string has become "
+                  "too close to %d", __func__, PACKAGE_BUGREPORT,
+                  GAL_OPTIONS_STATIC_MEM_FOR_VALUES);
+
+          /* Print the two values in the expected format. */
+          nc += sprintf(sstr+nc, "%.6f,%.6f%s", darray[i], darray[i+1],
+                        (i==(size-2) ? "" : ":") );
+        }
+
+      /* Finish the string. */
+      sstr[nc-1]='\0';
+
+      /* Copy the string into a dynamically allocated space, because it
+         will be freed later.*/
+      gal_checkset_allocate_copy(sstr, &str);
+      return str;
+    }
+  else
+    {
+      /* Parse the desired format and put it in this option's pointer. */
+      dataset=options_parse_colon_sep_csv(arg, filename, lineno);
+
+      /* Add the given dataset to the end of an existing dataset. */
+      existing = *(gal_data_t **)(option->value);
+      if(existing)
+        {
+          for(tmp=existing;tmp!=NULL;tmp=tmp->next)
+            if(tmp->next==NULL) { tmp->next=dataset; break; }
+        }
+      else
+        *(gal_data_t **)(option->value) = dataset;
+
+      /* In this scenario, there is no NULL value. */
+      return NULL;
+    }
+}
 
 
 

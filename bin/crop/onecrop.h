@@ -60,9 +60,6 @@ struct onecropparams
 };
 
 void
-onecrop_parse_polygon(struct cropparams *p);
-
-void
 onecrop_name(struct onecropparams *crp);
 
 void

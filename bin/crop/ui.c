@@ -373,16 +373,32 @@ ui_read_check_only_options(struct cropparams *p)
      in the proper format. */
   if(p->polygon)
     {
-      onecrop_parse_polygon(p);
+      /* The number of vertices is half the total number of given values
+         (currently only 2D spaces are considered so each vertice has 2
+         coordinates. */
+      p->nvertices=p->polygon->size/2;
+
+      /* Basic sanity checks. */
       if(p->nvertices<3)
         error(EXIT_FAILURE, 0, "a polygon has to have 3 or more vertices, "
-              "you have only given %zu (%s)", p->nvertices, p->polygon);
+              "you have only given %zu", p->nvertices);
       if(p->polygonout && p->numin>1)
         error(EXIT_FAILURE, 0, "currently in WCS mode, `--polygonout' can "
               "only be set to zero when there is one image, you have given "
-              "%zu images. For multiple images the region will be very large. "
-              "It is best if you first crop out the larger region you want "
-              "into one image, then mask the polygon", p->numin);
+              "%zu images. For multiple images the region will be very "
+              "large. It is best if you first crop out the larger region "
+              "you want into one image, then mask the polygon", p->numin);
+
+      /* Put the coordinates into an array while reversing their order so
+         they correspond to the user's order, then put it in the right
+         place.*/
+      darray=p->polygon->array;
+      if(p->mode==IMGCROP_MODE_IMG) {p->ipolygon=darray; p->wpolygon=NULL;  }
+      else                          {p->ipolygon=NULL;   p->wpolygon=darray;}
+
+      /* We know that the cropped region is not defined by its center. So
+         it makes no sense to check if the center is blank. */
+      p->checkcenter=0;
     }
   else
     p->wpolygon=p->ipolygon=NULL;

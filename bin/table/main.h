@@ -38,6 +38,8 @@ enum select_types
 {
  /* Different types of row-selection */
  SELECT_TYPE_RANGE,             /* 0 by C standard */
+ SELECT_TYPE_INPOLYGON,
+ SELECT_TYPE_OUTPOLYGON,
  SELECT_TYPE_EQUAL,
  SELECT_TYPE_NOTEQUAL,
 
@@ -89,6 +91,9 @@ struct tableparams
   uint8_t         information;  /* ==1: only print FITS information.    */
   uint8_t     colinfoinstdout;  /* ==1: print column metadata in CL.    */
   gal_data_t           *range;  /* Range to limit output.               */
+  gal_data_t       *inpolygon;  /* Columns to check if inside polygon.  */
+  gal_data_t      *outpolygon;  /* Columns to check if outside polygon. */
+  gal_data_t         *polygon;  /* Values of vertices of the polygon.   */
   gal_data_t           *equal;  /* Values to keep in output.            */
   gal_data_t        *notequal;  /* Values to not include in output.     */
   char                  *sort;  /* Column name or number for sorting.   */

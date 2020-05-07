@@ -61,8 +61,12 @@ enum option_keys_enum
   UI_KEY_TAIL            = 't',
   UI_KEY_CATCOLUMN       = 'C',
   UI_KEY_CATCOLHDU       = 'u',
+
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
+  UI_KEY_POLYGON         = 1000,
+  UI_KEY_INPOLYGON,
+  UI_KEY_OUTPOLYGON,
 };
 
 

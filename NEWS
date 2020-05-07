@@ -50,6 +50,9 @@ See the end of the file for license conditions.
   Table:
    --equal: Can now work on columns with string type also.
    --notequal: Can now work on columns with string type also.
+   --polygon: Polygon to use in `--inpolygon' or `--outpolygon'.
+   --inpolygon: Select rows that are inside the polygon of `--polygon'.
+   --outpolygon: Select rows that are outside the polygon of `--polygon'.
    --catcolumn: Concatenate tables by column (keeping number of rows fixed).
    --catcolhdu: Specify the HDU/extension of the FITS files of --catcolumn.
    - New operators in column arithmetic:

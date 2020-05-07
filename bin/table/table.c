@@ -37,6 +37,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/table.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/pointer.h>
+#include <gnuastro/polygon.h>
 #include <gnuastro/arithmetic.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/permutation.h>
@@ -130,6 +131,83 @@ table_selection_range(struct tableparams *p, gal_data_t *col)
   gal_data_free(min);
   gal_data_free(max);
   return ltmin;
+}
+
+
+
+
+
+/* Read column value of any type as a double for the polygon options. */
+static double
+selection_polygon_read_point(gal_data_t *col, size_t i)
+{
+  /* Check and assign the points to the points array. */
+  switch(col->type)
+    {
+    case GAL_TYPE_INT8:    return (( int8_t   *)col->array)[i];
+    case GAL_TYPE_UINT8:   return (( uint8_t  *)col->array)[i];
+    case GAL_TYPE_UINT16:  return (( uint16_t *)col->array)[i];
+    case GAL_TYPE_INT16:   return (( int16_t  *)col->array)[i];
+    case GAL_TYPE_UINT32:  return (( uint32_t *)col->array)[i];
+    case GAL_TYPE_INT32:   return (( int32_t  *)col->array)[i];
+    case GAL_TYPE_UINT64:  return (( uint64_t *)col->array)[i];
+    case GAL_TYPE_INT64:   return (( int64_t  *)col->array)[i];
+    case GAL_TYPE_FLOAT32: return (( float    *)col->array)[i];
+    case GAL_TYPE_FLOAT64: return (( double   *)col->array)[i];
+    default:
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, col->type);
+    }
+
+  /* Control should not reach here. */
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+        "problem. Control should not reach the end of this function",
+        __func__, PACKAGE_BUGREPORT);
+  return NAN;
+}
+
+
+
+
+
+/* Mask the rows that are not in the given polygon. */
+static gal_data_t *
+table_selection_polygon(struct tableparams *p, gal_data_t *col1,
+                        gal_data_t *col2, int in1out0)
+{
+  uint8_t *oarr;
+  double point[2];
+  gal_data_t *out=NULL;
+  size_t i, psize=p->polygon->size/2;
+
+  /* Allocate the output array: This array will have a `0' for the points
+     which are inside the polygon and `1' for those that are outside of it
+     (to be masked/removed from the input). */
+  out=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, col1->dsize, NULL, 0, -1, 1,
+                     NULL, NULL, NULL);
+  oarr=out->array;
+
+  /* Loop through all the rows in the given columns and check the points.*/
+  for(i=0; i<col1->size; i++)
+    {
+      /* Read the column values as a double. */
+      point[0]=selection_polygon_read_point(col1, i);
+      point[1]=selection_polygon_read_point(col2, i);
+
+      /* For `--inpolygon', if point is inside polygon, put 0, otherwise
+         1. Note that we are building a mask for the rows that must be
+         discarded, so we want `1' for the points we don't want. */
+      oarr[i] = (in1out0
+                 ? !gal_polygon_is_inside(p->polygon->array, point, psize)
+                 :  gal_polygon_is_inside(p->polygon->array, point, psize));
+
+      /* For a check
+      printf("(%f,%f): %s, %u\n", point[0], point[1], oarr[i]);
+      */
+    }
+
+  /* Return the output column. */
+  return out;
 }
 
 
@@ -282,6 +360,14 @@ table_selection(struct tableparams *p)
         {
         case SELECT_TYPE_RANGE:
           addmask=table_selection_range(p, tmp->col);
+          break;
+
+        /* `--inpolygon' and `--outpolygon' need two columns. */
+        case SELECT_TYPE_INPOLYGON:
+        case SELECT_TYPE_OUTPOLYGON:
+          addmask=table_selection_polygon(p, tmp->col, tmp->next->col,
+                                          tmp->type==SELECT_TYPE_INPOLYGON);
+          tmp=tmp->next;
           break;
 
         case SELECT_TYPE_EQUAL:
