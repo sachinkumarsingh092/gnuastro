@@ -164,18 +164,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
 {
   struct statisticsparams *p = state->input;
 
-  /* Pass `gal_options_common_params' into the child parser.  */
+  /* Pass 'gal_options_common_params' into the child parser.  */
   state->child_inputs[0] = &p->cp;
 
   /* In case the user incorrectly uses the equal sign (for example
-     with a short format or with space in the long format, then `arg`
+     with a short format or with space in the long format, then 'arg'
      start with (if the short version was called) or be (if the long
      version was called with a space) the equal sign. So, here we
      check if the first character of arg is the equal sign, then the
      user is warned and the program is stopped: */
   if(arg && arg[0]=='=')
-    argp_error(state, "incorrect use of the equal sign (`=`). For short "
-               "options, `=` should not be used and for long options, "
+    argp_error(state, "incorrect use of the equal sign ('='). For short "
+               "options, '=' should not be used and for long options, "
                "there should be no space between the option, equal sign "
                "and value");
 
@@ -216,25 +216,25 @@ ui_add_to_single_value(struct argp_option *option, char *arg,
   /* In case of printing the option values. */
   if(lineno==-1)
     error(EXIT_FAILURE, 0, "currently the options to be printed in one row "
-          "(like `--number', `--mean', and etc) do not support printing "
-          "with the `--printparams' (`-P'), or writing into configuration "
+          "(like '--number', '--mean', and etc) do not support printing "
+          "with the '--printparams' ('-P'), or writing into configuration "
           "files due to lack of time when implementing these features. "
           "You can put them into configuration files manually. Please get "
-          "in touch with us at `%s', so we can implement it",
+          "in touch with us at '%s', so we can implement it",
           PACKAGE_BUGREPORT);
 
   /* Some of these options take values and some don't. */
   if(option->type==GAL_OPTIONS_NO_ARG_TYPE)
     {
-      /* If this option is given in a configuration file, then `arg' will not
-         be NULL and we don't want to do anything if it is `0'. */
+      /* If this option is given in a configuration file, then 'arg' will not
+         be NULL and we don't want to do anything if it is '0'. */
       if(arg)
         {
-          /* Make sure the value is only `0' or `1'. */
+          /* Make sure the value is only '0' or '1'. */
           if( arg[1]!='\0' && *arg!='0' && *arg!='1' )
-            error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `--%s' "
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "the '--%s' "
                           "option takes no arguments. In a configuration "
-                          "file it can only have the values `1' or `0', "
+                          "file it can only have the values '1' or '0', "
                           "indicating if it should be used or not",
                           option->name);
 
@@ -250,7 +250,7 @@ ui_add_to_single_value(struct argp_option *option, char *arg,
       /* Read the string of numbers. */
       inputs=gal_options_parse_list_of_numbers(arg, filename, lineno);
       if(inputs->size==0)
-        error(EXIT_FAILURE, 0, "`--%s' needs a value", option->name);
+        error(EXIT_FAILURE, 0, "'--%s' needs a value", option->name);
 
       /* Do the appropriate operations with the  */
       d=inputs->array;
@@ -265,8 +265,8 @@ ui_add_to_single_value(struct argp_option *option, char *arg,
             {
               if(option->key==UI_KEY_QUANTILE && (d[i]<0 || d[i]>1) )
                 error_at_line(EXIT_FAILURE, 0, filename, lineno, "values "
-                              "to `--quantile' (`-u') must be between 0 "
-                              "and 1, you had asked for %g (read from `%s')",
+                              "to '--quantile' ('-u') must be between 0 "
+                              "and 1, you had asked for %g (read from '%s')",
                               d[i], arg);
               gal_list_f64_add(&p->tp_args, d[i]);
               gal_list_i32_add(&p->singlevalue, option->key);
@@ -276,7 +276,7 @@ ui_add_to_single_value(struct argp_option *option, char *arg,
         default:
           error_at_line(EXIT_FAILURE, 0, filename, lineno, "a bug! please "
                         "contact us at %s so we can address the problem. "
-                        "the option given to `ui_add_to_print_in_row' is "
+                        "the option given to 'ui_add_to_print_in_row' is "
                         "marked as requiring a value, but is not recognized",
                         PACKAGE_BUGREPORT);
         }
@@ -297,7 +297,7 @@ ui_read_quantile_range(struct argp_option *option, char *arg,
   gal_data_t *in;
   struct statisticsparams *p=(struct statisticsparams *)params;
 
-  /* For the `--printparams' (`-P') option:*/
+  /* For the '--printparams' ('-P') option:*/
   if(lineno==-1)
     {
       if( isnan(p->quantmax) )
@@ -318,11 +318,11 @@ ui_read_quantile_range(struct argp_option *option, char *arg,
 
   /* Check if there was only two numbers. */
   if(in->size!=1 && in->size!=2)
-    error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `--%s' "
+    error_at_line(EXIT_FAILURE, 0, filename, lineno, "the '--%s' "
                   "option takes one or two values values (separated by "
                   "a comma) to define the range of used values with "
                   "quantiles. However, %zu numbers were read in the "
-                  "string `%s' (value to this option).\n\n"
+                  "string '%s' (value to this option).\n\n"
                   "If there is only one number as input, it will be "
                   "interpretted as the lower quantile (Q) range. The "
                   "higher range will be set to the quantile (1-Q). "
@@ -338,13 +338,13 @@ ui_read_quantile_range(struct argp_option *option, char *arg,
   if( (p->quantmin<0 || p->quantmin>1)
       || ( !isnan(p->quantmax) && (p->quantmax<0 || p->quantmax>1) ) )
     error_at_line(EXIT_FAILURE, 0, filename, lineno, "values to the "
-                  "`--quantrange' option must be between 0 and 1 "
-                  "(inclusive). Your input was: `%s'", arg);
+                  "'--quantrange' option must be between 0 and 1 "
+                  "(inclusive). Your input was: '%s'", arg);
 
   /* When only one value is given, make sure it is less than 0.5. */
   if( !isnan(p->quantmax) && p->quantmin>0.5 )
     error(EXIT_FAILURE, 0, "%g>=0.5! When only one value is given to the "
-          "`--%s' option, the range is defined as Q and 1-Q. Thus, the "
+          "'--%s' option, the range is defined as Q and 1-Q. Thus, the "
           "value must be less than 0.5", p->quantmin, option->name);
 
   /* Clean up and return. */
@@ -375,7 +375,7 @@ ui_read_quantile_range(struct argp_option *option, char *arg,
 /***************       Sanity Check         *******************/
 /**************************************************************/
 /* Read and check ONLY the options. When arguments are involved, do the
-   check in `ui_check_options_and_arguments'. */
+   check in 'ui_check_options_and_arguments'. */
 static void
 ui_read_check_only_options(struct statisticsparams *p)
 {
@@ -390,7 +390,7 @@ ui_read_check_only_options(struct statisticsparams *p)
   /* If in tile-mode, we must have at least one single valued option. */
   if(p->ontile && p->singlevalue==NULL)
     error(EXIT_FAILURE, 0, "at least one of the single-value measurements "
-          "(for example `--median') must be requested with the `--ontile' "
+          "(for example '--median') must be requested with the '--ontile' "
           "option: there is no value to put in each tile");
 
   /* Tessellation related options. */
@@ -399,18 +399,18 @@ ui_read_check_only_options(struct statisticsparams *p)
       /* The tile or sky mode cannot be called with any other modes. */
       if(p->asciihist || p->asciicfp || p->histogram || p->cumulative
          || p->sigmaclip || !isnan(p->mirror) )
-        error(EXIT_FAILURE, 0, "`--ontile' or `--sky' cannot be called with "
-              "any of the `particular' calculation options, for example "
-              "`--histogram'. This is because the latter work over the whole "
+        error(EXIT_FAILURE, 0, "'--ontile' or '--sky' cannot be called with "
+              "any of the 'particular' calculation options, for example "
+              "'--histogram'. This is because the latter work over the whole "
               "dataset and element positions are changed, but in the former "
               "positions are significant");
 
       /* Make sure the tessellation defining options are given. */
       if( tl->tilesize==NULL || tl->numchannels==NULL
           || isnan(tl->remainderfrac) )
-         error(EXIT_FAILURE, 0, "`--tilesize', `--numchannels', and "
-               "`--remainderfrac' are mandatory options when dealing with "
-               "a tessellation (in `--ontile' or `--sky' mode). Atleast "
+         error(EXIT_FAILURE, 0, "'--tilesize', '--numchannels', and "
+               "'--remainderfrac' are mandatory options when dealing with "
+               "a tessellation (in '--ontile' or '--sky' mode). Atleast "
                "one of these options wasn't given a value.");
     }
 
@@ -421,13 +421,13 @@ ui_read_check_only_options(struct statisticsparams *p)
       /* Mandatory options. */
       if( isnan(p->meanmedqdiff) || isnan(p->sclipparams[0])
           || p->cp.interpmetric==0 || p->cp.interpnumngb==0 )
-        error(EXIT_FAILURE, 0, "`--meanmedqdiff', `--sclipparams', "
-              "`--interpmetric' and `--interpnumngb' are mandatory when "
-              "requesting Sky measurement (`--sky')");
+        error(EXIT_FAILURE, 0, "'--meanmedqdiff', '--sclipparams', "
+              "'--interpmetric' and '--interpnumngb' are mandatory when "
+              "requesting Sky measurement ('--sky')");
 
       /* If mode and median distance is a reasonable value. */
       if(p->meanmedqdiff>0.5)
-        error(EXIT_FAILURE, 0, "%f not acceptable for `--meanmedqdiff'. It "
+        error(EXIT_FAILURE, 0, "%f not acceptable for '--meanmedqdiff'. It "
               "cannot take values larger than 0.5 (quantile of median)",
               p->meanmedqdiff);
 
@@ -435,21 +435,21 @@ ui_read_check_only_options(struct statisticsparams *p)
       if(p->kernelname && gal_fits_name_is_fits(p->kernelname)
          && p->khdu==NULL )
         error(EXIT_FAILURE, 0, "no HDU specified for the kernel image. When "
-              "A HDU is necessary for FITS files. You can use the `--khdu' "
-              "(`-u') option and give it the HDU number (starting from "
+              "A HDU is necessary for FITS files. You can use the '--khdu' "
+              "('-u') option and give it the HDU number (starting from "
               "zero), extension name, or anything acceptable by CFITSIO");
     }
 
 
-  /* Sigma-clipping needs `sclipparams'. */
+  /* Sigma-clipping needs 'sclipparams'. */
   if(p->sigmaclip && isnan(p->sclipparams[0]))
-    error(EXIT_FAILURE, 0, "`--sclipparams' is necessary with `--sigmaclip'. "
-          "`--sclipparams' takes two values (separated by a comma) for "
+    error(EXIT_FAILURE, 0, "'--sclipparams' is necessary with '--sigmaclip'. "
+          "'--sclipparams' takes two values (separated by a comma) for "
           "defining the sigma-clip: the multiple of sigma, and tolerance "
           "(<1) or number of clips (>1).");
 
 
-  /* If any of the mode measurements are requested, then `mirrordist' is
+  /* If any of the mode measurements are requested, then 'mirrordist' is
      mandatory. */
   for(tmp=p->singlevalue; tmp!=NULL; tmp=tmp->next)
     switch(tmp->v)
@@ -459,18 +459,18 @@ ui_read_check_only_options(struct statisticsparams *p)
       case UI_KEY_MODEQUANT:
       case UI_KEY_MODESYMVALUE:
         if( isnan(p->mirrordist) )
-          error(EXIT_FAILURE, 0, "`--mirrordist' is required for the "
-                "mode-related single measurements (`--mode', `--modequant', "
-                "`--modesym', and `--modesymvalue')");
+          error(EXIT_FAILURE, 0, "'--mirrordist' is required for the "
+                "mode-related single measurements ('--mode', '--modequant', "
+                "'--modesym', and '--modesymvalue')");
         break;
       case UI_KEY_SIGCLIPSTD:
       case UI_KEY_SIGCLIPMEAN:
       case UI_KEY_SIGCLIPNUMBER:
       case UI_KEY_SIGCLIPMEDIAN:
         if( isnan(p->sclipparams[0]) )
-          error(EXIT_FAILURE, 0, "`--sclipparams' is necessary with "
+          error(EXIT_FAILURE, 0, "'--sclipparams' is necessary with "
                 "sigma-clipping measurements.\n\n"
-                "`--sclipparams' takes two values (separated by a comma) for "
+                "'--sclipparams' takes two values (separated by a comma) for "
                 "defining the sigma-clip: the multiple of sigma, and tolerance "
                 "(<1) or number of clips (>1).");
         break;
@@ -481,8 +481,8 @@ ui_read_check_only_options(struct statisticsparams *p)
      to greater than is smaller than the value to less-than. */
   if( !isnan(p->lessthan) && !isnan(p->greaterequal)
       && p->lessthan < p->greaterequal )
-    error(EXIT_FAILURE, 0, "the value to `--lessthan' (%g) must be larger "
-          "than the value to `--greaterequal' (%g)", p->lessthan,
+    error(EXIT_FAILURE, 0, "the value to '--lessthan' (%g) must be larger "
+          "than the value to '--greaterequal' (%g)", p->lessthan,
           p->greaterequal);
 
 
@@ -490,15 +490,15 @@ ui_read_check_only_options(struct statisticsparams *p)
      quantrange. */
   if( ( !isnan(p->lessthan) || !isnan(p->greaterequal) )
       && !isnan(p->quantmin) )
-    error(EXIT_FAILURE, 0, "`--lessthan' and/or `--greaterequal' cannot "
-          "be called together with `--quantrange'");
+    error(EXIT_FAILURE, 0, "'--lessthan' and/or '--greaterequal' cannot "
+          "be called together with '--quantrange'");
 
 
-  /* When binned outputs are requested, make sure that `numbins' is set. */
+  /* When binned outputs are requested, make sure that 'numbins' is set. */
   if( (p->histogram || p->cumulative || !isnan(p->mirror)) && p->numbins==0)
-    error(EXIT_FAILURE, 0, "`--numbins' isn't set. When the histogram or "
+    error(EXIT_FAILURE, 0, "'--numbins' isn't set. When the histogram or "
           "cumulative frequency plots are requested, the number of bins "
-          "(`--numbins') is necessary");
+          "('--numbins') is necessary");
 
 
   /* If an ascii plot is requested, check if the ascii number of bins and
@@ -506,7 +506,7 @@ ui_read_check_only_options(struct statisticsparams *p)
   if( (p->asciihist || p->asciicfp)
       && (p->numasciibins==0 || p->asciiheight==0) )
     error(EXIT_FAILURE, 0, "when an ascii plot is requested, "
-          "`--numasciibins' and `--asciiheight' are mandatory, but atleast "
+          "'--numasciibins' and '--asciiheight' are mandatory, but atleast "
           "one of these has not been given");
 
 
@@ -532,7 +532,7 @@ ui_check_options_and_arguments(struct statisticsparams *p)
           if( p->cp.hdu==NULL )
             error(EXIT_FAILURE, 0, "no HDU specified. When the input is a "
                   "FITS file, a HDU must also be specified, you can use "
-                  "the `--hdu' (`-h') option and give it the HDU number "
+                  "the '--hdu' ('-h') option and give it the HDU number "
                   "(starting from zero), extension name, or anything "
                   "acceptable by CFITSIO");
 
@@ -541,7 +541,7 @@ ui_check_options_and_arguments(struct statisticsparams *p)
           p->hdu_type=gal_fits_hdu_format(p->inputname, p->cp.hdu);
           if(p->hdu_type==IMAGE_HDU && p->column)
             error(EXIT_FAILURE, 0, "%s (hdu: %s): is a FITS image "
-                  "extension. The `--column' option is only applicable "
+                  "extension. The '--column' option is only applicable "
                   "to tables.", p->inputname, p->cp.hdu);
         }
     }
@@ -584,8 +584,8 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
   ref = p->reference ? p->reference : p->input;
 
 
-  /* If the user has given a quantile range, then set the `greaterequal'
-     and `lessthan' values. */
+  /* If the user has given a quantile range, then set the 'greaterequal'
+     and 'lessthan' values. */
   if( !isnan(p->quantmin) )
     {
       /* If only one value was given, set the maximum quantile range. */
@@ -603,7 +603,7 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
     }
 
 
-  /* Set the condition. Note that the `greaterequal' name is for the data
+  /* Set the condition. Note that the 'greaterequal' name is for the data
      we want. So we will set the condition based on those that are
      less-than  */
   if(!isnan(p->greaterequal))
@@ -616,7 +616,7 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
     }
 
 
-  /* Same reasoning as above for `p->greaterthan'. */
+  /* Same reasoning as above for 'p->greaterthan'. */
   if(!isnan(p->lessthan))
     {
       tmp=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1, 1,
@@ -650,7 +650,7 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
 
   /* Set all the pixels that satisfy the condition to blank. Note that a
      blank value will be used in the proper type of the input in the
-     `where' operator.*/
+     'where' operator.*/
   gal_arithmetic(GAL_ARITHMETIC_OP_WHERE, 1, flagsor, p->input, cond, blank);
 
 
@@ -751,12 +751,12 @@ ui_read_columns(struct statisticsparams *p)
           error(EXIT_FAILURE, 0, "%s is a table containing more than one "
                 "column. However, the specific column to work on isn't "
                 "specified.\n\n"
-                "Please use the `--column' (`-c') option to specify a "
+                "Please use the '--column' ('-c') option to specify a "
                 "column. You can either give it the column number "
                 "(couting from 1), or a match/search in its meta-data (e.g., "
                 "column names).\n\n"
                 "For more information, please run the following command "
-                "(press the `SPACE' key to go down and `q' to return to the "
+                "(press the 'SPACE' key to go down and 'q' to return to the "
                 "command-line):\n\n"
                 "    $ info gnuastro \"Selecting table columns\"\n",
                 ( p->inputname
@@ -816,7 +816,7 @@ ui_read_columns(struct statisticsparams *p)
         gal_tableintern_error_col_selection(p->inputname, p->cp.hdu, "too "
                                             "many columns were selected by "
                                             "the given values to the "
-                                            "`--column' and/or `--refcol' "
+                                            "'--column' and/or '--refcol' "
                                             "options. Only one is "
                                             "acceptable for each.");
     }
@@ -838,7 +838,7 @@ ui_preparations(struct statisticsparams *p)
   struct gal_tile_two_layer_params *tl=&cp->tl;
   char *checkbasename = p->cp.output ? p->cp.output : p->inputname;
 
-  /* Change `keepinputdir' based on if an output name was given. */
+  /* Change 'keepinputdir' based on if an output name was given. */
   p->cp.keepinputdir = p->cp.output ? 1 : 0;
 
   /* Read the input. */
@@ -919,8 +919,8 @@ ui_preparations(struct statisticsparams *p)
 
       /* Make sure there is data remaining: */
       if(p->input->size==0)
-        error(EXIT_FAILURE, 0, "%s: no data, maybe the `--greaterequal' or "
-              "`--lessthan' options need to be adjusted",
+        error(EXIT_FAILURE, 0, "%s: no data, maybe the '--greaterequal' or "
+              "'--lessthan' options need to be adjusted",
               gal_fits_name_save_as_string(p->inputname, cp->hdu) );
 
       /* Make the sorted array if necessary. */
@@ -931,7 +931,7 @@ ui_preparations(struct statisticsparams *p)
       if( p->histogram || p->cumulative ) ++p->numoutfiles;
     }
 
-  /* Reset `keepinputdir' to what it originally was. */
+  /* Reset 'keepinputdir' to what it originally was. */
   p->cp.keepinputdir=keepinputdir;
 }
 
@@ -963,9 +963,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct statisticsparams *p)
   struct gal_options_common_params *cp=&p->cp;
 
 
-  /* Include the parameters necessary for argp from this program (`args.h')
-     and for the common options to all Gnuastro (`commonopts.h'). We want
-     to directly put the pointers to the fields in `p' and `cp', so we are
+  /* Include the parameters necessary for argp from this program ('args.h')
+     and for the common options to all Gnuastro ('commonopts.h'). We want
+     to directly put the pointers to the fields in 'p' and 'cp', so we are
      simply including the header here to not have to use long macros in
      those headers which make them hard to read and modify. This also helps
      in having a clean environment: everything in those headers is only
@@ -1011,7 +1011,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct statisticsparams *p)
 
   /* Prepare all the options as FITS keywords to write in output
      later. Note that in some modes, there is no output file, and
-     `ui_add_to_single_value' isn't yet prepared. */
+     'ui_add_to_single_value' isn't yet prepared. */
   if( (p->singlevalue && p->ontile) || p->sky || p->histogram \
       || p->cumulative)
     gal_options_as_fits_keywords(&p->cp);

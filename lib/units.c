@@ -82,7 +82,7 @@ gal_units_extract_decimal(char *convert, const char *delimiter,
   /* Check if the number of elements parsed. */
   if (i != n)
     {
-      error (0, 0, "%s: input `%s' must contain %lu numbers, but has "
+      error (0, 0, "%s: input '%s' must contain %lu numbers, but has "
              "%lu numbers\n", __func__, convert, n, i);
       return 0;
     }
@@ -126,7 +126,7 @@ gal_units_ra_to_degree(char *convert)
       /* Check whether the first value is in within limits, and add it. */
       if(val[0]<0.0 || val[0]>24.0)
         {
-          error(0, 0, "%s: value of first decimal (%g) in `%s' should be "
+          error(0, 0, "%s: value of first decimal (%g) in '%s' should be "
                 "between 0 and 24", __func__, val[0], convert);
           return NAN;
         }
@@ -135,7 +135,7 @@ gal_units_ra_to_degree(char *convert)
       /* Check whether value of minutes is in within limits, and add it. */
       if(val[1]<0.0 || val[1]>60.0)
         {
-          error(0, 0, "%s: value of second decimal (%g) in `%s' should be "
+          error(0, 0, "%s: value of second decimal (%g) in '%s' should be "
                 "between 0 and 60", __func__, val[0], convert);
           return NAN;
         }
@@ -144,7 +144,7 @@ gal_units_ra_to_degree(char *convert)
       /* Check whether value of seconds is in within limits, and add it. */
       if(val[2]<0.0 || val[2]>60.0)
         {
-          error(0, 0, "%s: value of third decimal (%g) in `%s' should be "
+          error(0, 0, "%s: value of third decimal (%g) in '%s' should be "
                 "between 0 and 60", __func__, val[0], convert);
           return NAN;
         }
@@ -156,7 +156,7 @@ gal_units_ra_to_degree(char *convert)
     }
   else
     {
-      error(0, 0, "%s: input `%s' couldn't be parsed", __func__, convert);
+      error(0, 0, "%s: input '%s' couldn't be parsed", __func__, convert);
       return NAN;
     }
 
@@ -185,7 +185,7 @@ gal_units_dec_to_degree (char *convert)
       /* Check whether the first value is in within limits. */
       if(val[0]<-90.0 || val[0]>90.0)
         {
-          error(0, 0, "%s: value of first decimal (%g) in `%s' should be "
+          error(0, 0, "%s: value of first decimal (%g) in '%s' should be "
                 "between -90 and 90", __func__, val[0], convert);
           return NAN;
         }
@@ -201,7 +201,7 @@ gal_units_dec_to_degree (char *convert)
       /* Check whether value of arc-minutes is in within limits. */
       if(val[1]<0.0 || val[1]>60.0)
         {
-          error(0, 0, "%s: value of second decimal (%g) in `%s' should be "
+          error(0, 0, "%s: value of second decimal (%g) in '%s' should be "
                 "between 0 and 60", __func__, val[1], convert);
           return NAN;
         }
@@ -211,7 +211,7 @@ gal_units_dec_to_degree (char *convert)
       /* Check whether value of arc-seconds is in within limits */
       if (val[2] < 0.0 || val[2] > 60.0)
         {
-          error(0, 0, "%s: value of third decimal (%g) in `%s' should be "
+          error(0, 0, "%s: value of third decimal (%g) in '%s' should be "
                 "between 0 and 60", __func__, val[2], convert);
           return NAN;
         }
@@ -225,7 +225,7 @@ gal_units_dec_to_degree (char *convert)
     }
   else
     {
-      error(0, 0, "%s: input `%s' couldn't be parsed", __func__, convert);
+      error(0, 0, "%s: input '%s' couldn't be parsed", __func__, convert);
       return NAN;
     }
 
@@ -335,7 +335,7 @@ gal_units_degree_to_dec(double decimal)
       return NULL;
     }
 
-  /* If declination is negative, we set `sign' equal to -1. We multiply the
+  /* If declination is negative, we set 'sign' equal to -1. We multiply the
      decimal by to make sure it is positive. We then extract degrees,
      arc-minutes and arc-seconds from the decimal. Finally, we add a minus
      sign in beginning of string if input was negative. */

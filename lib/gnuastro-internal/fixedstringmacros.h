@@ -64,7 +64,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* This can be used in the end of error messages related to option
    values. */
 #define GAL_STRINGS_HOW_TO_CHECK_VALUES                                 \
-  " You can check all the input values with the `--printparams' "       \
+  " You can check all the input values with the '--printparams' "       \
   "(-P) option."
 
 

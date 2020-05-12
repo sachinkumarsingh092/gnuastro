@@ -102,7 +102,7 @@ gal_box_bound_ellipse(double a, double b, double theta_deg, long *width)
 
 /* Find the bounding box of an ellipsoid. An ellipsoid is defined by its
    three axises: the first (a) must be the major axis, the other two must
-   be smaller than `a' but no particular relation between them is
+   be smaller than 'a' but no particular relation between them is
    assumed. We will define the orientation of the ellipsoid from its major
    axis and use the "Proper Euler angles" (ZXZ order) to define that
    orientation.
@@ -117,8 +117,8 @@ gal_box_bound_ellipse(double a, double b, double theta_deg, long *width)
 
       https://en.wikipedia.org/wiki/Euler_angles
 
-   Defining the general point `p' as (the transpose of `p' with `p^T' and
-   its inverse with `p^-1'):
+   Defining the general point 'p' as (the transpose of 'p' with 'p^T' and
+   its inverse with 'p^-1'):
 
            | x |
        p = | y |
@@ -138,7 +138,7 @@ gal_box_bound_ellipse(double a, double b, double theta_deg, long *width)
    vertical vectors into one matrix. The rotation can be written as the
    following combined affine transformation (only in the three main axises
    (since we aren't dealing with translation here). Here, we'll call
-   `sin(alpha)' as `s1', `cos(beta)' as `c2' and `sin(gamma)' as `s3'.
+   'sin(alpha)' as 's1', 'cos(beta)' as 'c2' and 'sin(gamma)' as 's3'.
 
                    Rotate by Euler angles
                 ----------------------------
@@ -146,7 +146,7 @@ gal_box_bound_ellipse(double a, double b, double theta_deg, long *width)
     R = | s1   c1  0 | * | 0   c2  -s2 | * | s3   c3   0 |
         | 0    0   1 |   | 0   s2   c2 |   | 0    0    1 |
 
-   Then `M' (rotation and scaling to obtain ellipsoid from sphere) will be:
+   Then 'M' (rotation and scaling to obtain ellipsoid from sphere) will be:
 
             | a |          | 0 |          | 0 |              | A1 B1 C1 |
     A = R * | 0 |, B = R * | b |, C = R * | 0 |    -->   M = | A2 B2 C2 |
@@ -162,27 +162,27 @@ gal_box_bound_ellipse(double a, double b, double theta_deg, long *width)
 
      (M^-1 * p)^T * S * (M^-1 * p) = 0  --> p^T * (M^-T * S * M^-1) * p = 0
 
-   Writing Q = M^-T * S * M^-1, we get: `p^T * Q * p = 0'. Now, we define a
-   plane with a horizontal vector `u = [a b c d ]', such that `u.p=0'. For
-   a point on the ellipsoid (at `p') we have: `u^T=p^T * Q'. This is
-   because: `u.p = u^T * p = p^T * Q * p = 0' (as we showed above).
+   Writing Q = M^-T * S * M^-1, we get: 'p^T * Q * p = 0'. Now, we define a
+   plane with a horizontal vector 'u = [a b c d ]', such that 'u.p=0'. For
+   a point on the ellipsoid (at 'p') we have: 'u^T=p^T * Q'. This is
+   because: 'u.p = u^T * p = p^T * Q * p = 0' (as we showed above).
 
    Tangent planes will have the following useful property:
 
         u^T * Q^-1 * u = p^T * Q * Q^-1 * Q * p = p^T * Q * p = 0
 
    Now, the particular plane that is perpendicular to the X axis has the
-   general form: `u = [ 1 0 0 -x ]'. So, defining `R = Q^1', and using the
+   general form: 'u = [ 1 0 0 -x ]'. So, defining 'R = Q^1', and using the
    property above for tangential planes, we can find the X axis position.
 
-   However, getting to `R' from `M' as described above is not easy. So,
+   However, getting to 'R' from 'M' as described above is not easy. So,
    taking the following considerations into account, we can derive the
    final values: [from that webpage] "Several details of the problem can
-   make computing the planes more efficient. The first is that `S' is
-   involutory, meaning `S^-1 = S'. This means that the product `M * S^-1'
-   can be computed implicitly: it is simply `M' with its last column
-   negated. The last column of `R = M * S^-1 * MT' is the same, because the
-   last column of `M^T' is `[ 0 0 0 1 ]'. In particular, `R[4,4]=-1'.
+   make computing the planes more efficient. The first is that 'S' is
+   involutory, meaning 'S^-1 = S'. This means that the product 'M * S^-1'
+   can be computed implicitly: it is simply 'M' with its last column
+   negated. The last column of 'R = M * S^-1 * MT' is the same, because the
+   last column of 'M^T' is '[ 0 0 0 1 ]'. In particular, 'R[4,4]=-1'.
 
    Not all values of RR are used; in fact, only values from the last column
    and the diagonal appear in the formulae. We know the last column
@@ -192,7 +192,7 @@ gal_box_bound_ellipse(double a, double b, double theta_deg, long *width)
 
    So the bounding box lengths along each dimension are the
    following. Recall that in homogenous coordinates, the last column is for
-   translation. So in the case of this function all the `M[i,4]' values are
+   translation. So in the case of this function all the 'M[i,4]' values are
    zero.
 
       x = M[1,4] \pm sqrt( M[1,1]^2 + M[1,2]^2 + M[1,3]^2 )
@@ -242,7 +242,7 @@ gal_box_bound_ellipsoid_extent(double *semiaxes, double *euler_deg,
 
 
 
-/* Using `gal_box_bound_ellipsoid_extent', find the integer width of a box
+/* Using 'gal_box_bound_ellipsoid_extent', find the integer width of a box
    that contains the ellipsoid. */
 #define PRINT3BY3(C, A){                                                \
     printf("%s: | %-15g%-15g%-15g |\n"                                  \
@@ -419,7 +419,7 @@ gal_box_overlap(long *naxes, long *fpixel_i, long *lpixel_i,
       */
       if(fpixel_i[i]<1)
         {
-          /* Along any dimension, if `lpixel_i' is also smaller than 1,
+          /* Along any dimension, if 'lpixel_i' is also smaller than 1,
              then there is no overlap. */
           if(lpixel_i[i]<1) return 0;
 
@@ -442,7 +442,7 @@ gal_box_overlap(long *naxes, long *fpixel_i, long *lpixel_i,
         cropped image we should only fill upto c-n.*/
       if(lpixel_i[i]>naxes[i])
         {
-          /* Along any dimension, if `fpixel_i' is larger than the image
+          /* Along any dimension, if 'fpixel_i' is larger than the image
              size, there is no overlap. */
           if(fpixel_i[i]>naxes[i]) return 0;
 

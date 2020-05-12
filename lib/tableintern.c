@@ -67,7 +67,7 @@ gal_tableintern_error_col_selection(char *filename, char *hdu,
   /* Abort with with the proper error. */
   error(EXIT_FAILURE, 0, "%s: %s\n\nFor more information on selecting "
         "columns in Gnuastro, please run the following command (press "
-        "`SPACE' to go down and `q' to return to the command-line):\n\n"
+        "'SPACE' to go down and 'q' to return to the command-line):\n\n"
         "    $ info gnuastro \"Selecting table columns\"\n\n"
         "To define a better column selection criteria, you can see "
         "the list of column meta-data in this table, with the following "
@@ -135,8 +135,8 @@ gal_tableintern_format_as_string(uint8_t tableformat)
 
 
 
-/* In programs, the `searchin' variable is much more easier to format in as
-   a description than an integer (which is what `gal_table_read_cols'
+/* In programs, the 'searchin' variable is much more easier to format in as
+   a description than an integer (which is what 'gal_table_read_cols'
    needs). This function will check the string value and give the
    corresponding integer value.*/
 uint8_t
@@ -175,30 +175,30 @@ gal_tableintern_searchin_as_string(uint8_t searchin)
 
 
 
-/* For programs that output tables, the `--tableformat' option will be used
+/* For programs that output tables, the '--tableformat' option will be used
    to specify what format the output table should be in. When the output
    file is a FITS file, there are multiple formats, so to simplify the
    coding in each program, this function will do a sanity check on the
-   value given to the `--tableformat' parameter. */
+   value given to the '--tableformat' parameter. */
 void
 gal_tableintern_check_fits_format(char *filename, int tableformat)
 {
   if( filename && gal_fits_name_is_fits(filename) )
     {
-      /* When `--tableformat' was not given. */
+      /* When '--tableformat' was not given. */
       if(tableformat==GAL_TABLE_FORMAT_INVALID)
-        error(EXIT_FAILURE, 0, "`%s' (output file) is a FITS file but the "
+        error(EXIT_FAILURE, 0, "'%s' (output file) is a FITS file but the "
               "desired format of the FITS table has not been specified with "
-              "the `--tableformat' option. For FITS tables, this option can "
-              "take two values: `fits-ascii', or `fits-binary'", filename);
+              "the '--tableformat' option. For FITS tables, this option can "
+              "take two values: 'fits-ascii', or 'fits-binary'", filename);
 
-      /* When `--tableformat' didn't have the correct value. */
+      /* When '--tableformat' didn't have the correct value. */
       if( tableformat != GAL_TABLE_FORMAT_AFITS
           && tableformat != GAL_TABLE_FORMAT_BFITS )
-        error(EXIT_FAILURE, 0, "`%s' (output file) is a FITS file but "
+        error(EXIT_FAILURE, 0, "'%s' (output file) is a FITS file but "
               "is not a recognized FITS table format. For FITS tables, "
-              "`--tableformat' can take two values: `fits-ascii', or "
-              "`fits-binary'", filename);
+              "'--tableformat' can take two values: 'fits-ascii', or "
+              "'fits-binary'", filename);
     }
 }
 
@@ -226,11 +226,11 @@ gal_tableintern_check_fits_format(char *filename, int tableformat)
 /************************************************************************/
 /* Fill in/adjust the basic information necessary to print a column. This
    information can be used for printing a plain text file or for FITS ASCII
-   tables. The `fmt' and `lng' should point to pre-allocated arrays. The
-   best way is: `char fmt[2], lng[3];' in the same function calling this.
+   tables. The 'fmt' and 'lng' should point to pre-allocated arrays. The
+   best way is: 'char fmt[2], lng[3];' in the same function calling this.
 
    The width and precision, which are also necessary for printing, are
-   updated in the data structure's `disp_width' and `disp_precision'
+   updated in the data structure's 'disp_width' and 'disp_precision'
    elements. */
 void
 gal_tableintern_col_print_info(gal_data_t *col, int tableformat,
@@ -250,7 +250,7 @@ gal_tableintern_col_print_info(gal_data_t *col, int tableformat,
       break;
     default:
       error(EXIT_FAILURE, 0, "%s: is only for plain text or FITS ASCII "
-            "tables. The input `tableformat' code %d not recognized",
+            "tables. The input 'tableformat' code %d not recognized",
             __func__, tableformat);
     }
 
@@ -404,10 +404,10 @@ gal_tableintern_col_print_info(gal_data_t *col, int tableformat,
 
 
 
-/* Use the input `blank' string and the input column to put the blank value
+/* Use the input 'blank' string and the input column to put the blank value
    in the column's array. This function should later be generalized into a
    function to read a string into a given data type (see
-   `gal_data_string_to_array_elem'). It is only here temporarily. */
+   'gal_data_string_to_array_elem'). It is only here temporarily. */
 void
 gal_tableintern_read_blank(gal_data_t *col, char *blank)
 {
@@ -419,10 +419,10 @@ gal_tableintern_read_blank(gal_data_t *col, char *blank)
   /* Just for a sanity check, the ndim and array elements should be zero. */
   if(col->ndim || col->array)
     error(EXIT_FAILURE, 0, "%s: the number of dimensions, and the "
-          "`array' element of `col' must be zero", __func__);
+          "'array' element of 'col' must be zero", __func__);
 
   /* Read the blank value as the given type. If successful, then
-     `gal_data_string_to_type' will return 0. In that case, we need to
+     'gal_data_string_to_type' will return 0. In that case, we need to
      initialize the necessary paramters to read this data structure
      correctly. */
   if( !gal_type_from_string((void **)(&col->array), blank, col->type) )

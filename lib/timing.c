@@ -30,13 +30,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Micro-second based timer, which can be used to generate random numbers.
-   The type of `tv_sec' and `tv_usec' is `long int' (from the GNU C Library
+   The type of 'tv_sec' and 'tv_usec' is 'long int' (from the GNU C Library
    manual). But the expected type used by GSL's random number generator is
-   `unsigned long int'. Since the only random number generator that is
-   currently in Gnuastro is GSL's (and it asks for seeds of type `unsigned
-   long int'), this function will return in `unsigned long int'. Note that
-   `unsigned long' will be able to hold any positive `long' integer, which
-   is the case for `tv_sec' and `tv_usec': they are both positive, while
+   'unsigned long int'. Since the only random number generator that is
+   currently in Gnuastro is GSL's (and it asks for seeds of type 'unsigned
+   long int'), this function will return in 'unsigned long int'. Note that
+   'unsigned long' will be able to hold any positive 'long' integer, which
+   is the case for 'tv_sec' and 'tv_usec': they are both positive, while
    the opposite isn't true. */
 unsigned long int
 gal_timing_time_based_rng_seed()

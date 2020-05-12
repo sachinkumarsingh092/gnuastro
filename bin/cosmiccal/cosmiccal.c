@@ -155,7 +155,7 @@ cosmiccal(struct cosmiccalparams *p)
   if(isnan(p->redshift))
     {
       cosmiccal_print_input(p);
-      printf("\n\nPlease specify a redshift with the `--redshift' (or `-z') "
+      printf("\n\nPlease specify a redshift with the '--redshift' (or '-z') "
              "option.\n");
       return;
     }

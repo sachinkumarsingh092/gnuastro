@@ -147,18 +147,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
 {
   struct convolveparams *p = state->input;
 
-  /* Pass `gal_options_common_params' into the child parser.  */
+  /* Pass 'gal_options_common_params' into the child parser.  */
   state->child_inputs[0] = &p->cp;
 
   /* In case the user incorrectly uses the equal sign (for example
-     with a short format or with space in the long format, then `arg`
+     with a short format or with space in the long format, then 'arg'
      start with (if the short version was called) or be (if the long
      version was called with a space) the equal sign. So, here we
      check if the first character of arg is the equal sign, then the
      user is warned and the program is stopped: */
   if(arg && arg[0]=='=')
-    argp_error(state, "incorrect use of the equal sign (`=`). For short "
-               "options, `=` should not be used and for long options, "
+    argp_error(state, "incorrect use of the equal sign ('='). For short "
+               "options, '=' should not be used and for long options, "
                "there should be no space between the option, equal sign "
                "and value");
 
@@ -217,8 +217,8 @@ ui_read_check_only_options(struct convolveparams *p)
   else if( !strcmp("frequency", p->domainstr) )
     p->domain=CONVOLVE_DOMAIN_FREQUENCY;
   else
-    error(EXIT_FAILURE, 0, "domain value `%s' not recognized. Please use "
-          "either `spatial' or `frequency'", p->domainstr);
+    error(EXIT_FAILURE, 0, "domain value '%s' not recognized. Please use "
+          "either 'spatial' or 'frequency'", p->domainstr);
 
 
   /* If we are in the spatial domain, make sure that the necessary
@@ -227,10 +227,10 @@ ui_read_check_only_options(struct convolveparams *p)
     if( cp->tl.tilesize==NULL || cp->tl.numchannels==NULL )
       {
         if( cp->tl.tilesize==NULL && cp->tl.numchannels==NULL )
-          error(EXIT_FAILURE, 0, "in spatial convolution, `--numchannels' "
-                "and `--tilesize' are mandatory");
+          error(EXIT_FAILURE, 0, "in spatial convolution, '--numchannels' "
+                "and '--tilesize' are mandatory");
         else
-          error(EXIT_FAILURE, 0, "in spatial convolution, `--%s' is "
+          error(EXIT_FAILURE, 0, "in spatial convolution, '--%s' is "
                 "mandatory: you should use it to set the %s",
                 cp->tl.tilesize ? "numchannels" : "tilesize",
                 ( cp->tl.tilesize
@@ -258,7 +258,7 @@ ui_check_options_and_arguments(struct convolveparams *p)
           if( p->cp.hdu==NULL )
             error(EXIT_FAILURE, 0, "no HDU specified. When the input is a "
                   "FITS file, a HDU must also be specified, you can use "
-                  "the `--hdu' (`-h') option and give it the HDU number "
+                  "the '--hdu' ('-h') option and give it the HDU number "
                   "(starting from zero), extension name, or anything "
                   "acceptable by CFITSIO");
 
@@ -267,7 +267,7 @@ ui_check_options_and_arguments(struct convolveparams *p)
           p->hdu_type=gal_fits_hdu_format(p->filename, p->cp.hdu);
           if(p->hdu_type==IMAGE_HDU && p->column)
             error(EXIT_FAILURE, 0, "%s (hdu: %s): is a FITS image "
-                  "extension. The `--column' option is only applicable "
+                  "extension. The '--column' option is only applicable "
                   "to tables.", p->filename, p->cp.hdu);
         }
     }
@@ -281,7 +281,7 @@ ui_check_options_and_arguments(struct convolveparams *p)
           if( p->khdu==NULL )
             error(EXIT_FAILURE, 0, "no HDU specified. When the kernel is a "
                   "FITS file, a HDU must also be specified, you can use "
-                  "the `--khdu' (`-u') option and give it the HDU number "
+                  "the '--khdu' ('-u') option and give it the HDU number "
                   "(starting from zero), extension name, or anything "
                   "acceptable by CFITSIO");
 
@@ -290,7 +290,7 @@ ui_check_options_and_arguments(struct convolveparams *p)
           kernel_type=gal_fits_hdu_format(p->kernelname, p->khdu);
           if(kernel_type==IMAGE_HDU && p->kernelcolumn)
             error(EXIT_FAILURE, 0, "%s (hdu: %s): is a FITS image "
-                  "extension. The `--kernelcolumn' option is only "
+                  "extension. The '--kernelcolumn' option is only "
                   "applicable to tables.", p->kernelname, p->khdu);
         }
     }
@@ -357,13 +357,13 @@ ui_read_column(struct convolveparams *p, int i0k1)
           error(EXIT_FAILURE, 0, "%s is a table containing more than one "
                 "column. However, the specific column to work on isn't "
                 "specified.\n\n"
-                "Please use the `--column' (`-c') or `--kernelcolumn' "
+                "Please use the '--column' ('-c') or '--kernelcolumn' "
                 "options (depending on which dataset it is) to specify a "
                 "column. You can either give it the column number "
                 "(couting from 1), or a match/search in its meta-data (e.g., "
                 "column names).\n\n"
                 "For more information, please run the following command "
-                "(press the `SPACE' key to go down and `q' to return to the "
+                "(press the 'SPACE' key to go down and 'q' to return to the "
                 "command-line):\n\n"
                 "    $ info gnuastro \"Selecting table columns\"\n",
                 ( filename
@@ -455,7 +455,7 @@ ui_read_input(struct convolveparams *p)
 
 
 
-/* Read the kernel. VERY IMPORTANT: We can't use the `fits_img_read_kernel'
+/* Read the kernel. VERY IMPORTANT: We can't use the 'fits_img_read_kernel'
    because the Convolve program also does de-convolution. */
 static void
 ui_read_kernel(struct convolveparams *p)
@@ -524,12 +524,12 @@ ui_preparations(struct convolveparams *p)
       if( gal_blank_present(p->input, 1) )
         fprintf(stderr, "\n----------------------------------------\n"
                 "######## %s WARNING ########\n"
-                "There are blank pixels in `%s' (hdu: `%s') and you have "
+                "There are blank pixels in '%s' (hdu: '%s') and you have "
                 "asked for frequency domain convolution. As a result, all "
-                "the pixels in the output (`%s') will be blank. Only "
+                "the pixels in the output ('%s') will be blank. Only "
                 "spatial domain convolution can account for blank pixels "
                 "in the input data. You can run %s again with "
-                "`--domain=spatial'\n"
+                "'--domain=spatial'\n"
                 "----------------------------------------\n\n",
                 PROGRAM_NAME, p->filename, cp->hdu, cp->output,
                 PROGRAM_NAME);
@@ -537,7 +537,7 @@ ui_preparations(struct convolveparams *p)
       /* Frequency domain is only implemented in 2D. */
       if( p->input->ndim==1 )
         error(EXIT_FAILURE, 0, "Frequency domain convolution is currently "
-              "not implemented on 1D datasets. Please use `--domain=spatial' "
+              "not implemented on 1D datasets. Please use '--domain=spatial' "
               "to convolve this dataset");
     }
   else
@@ -554,7 +554,7 @@ ui_preparations(struct convolveparams *p)
     {
       /* Currently this is not implemented in 1D. */
       if(p->kernel->ndim==1)
-        error(EXIT_FAILURE, 0, "`--makekernel' is currently not available "
+        error(EXIT_FAILURE, 0, "'--makekernel' is currently not available "
               "on 1D datasets");
       else
         {
@@ -564,9 +564,9 @@ ui_preparations(struct convolveparams *p)
           /* Make sure the size of the kernel is the same as the input */
           if( p->input->dsize[0]!=p->kernel->dsize[0]
               || p->input->dsize[1]!=p->kernel->dsize[1] )
-            error(EXIT_FAILURE, 0, "with the `--makekernel' (`-m') option, "
+            error(EXIT_FAILURE, 0, "with the '--makekernel' ('-m') option, "
                   "the input image and the image specified with the "
-                  "`--kernel' (`-k') option should have the same size. The "
+                  "'--kernel' ('-k') option should have the same size. The "
                   "lower resolution input image (%s) has %zux%zu pixels "
                   "while the sharper image (%s) specified with the kernel "
                   "option has %zux%zu pixels", p->filename,
@@ -704,9 +704,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct convolveparams *p)
   struct gal_options_common_params *cp=&p->cp;
 
 
-  /* Include the parameters necessary for argp from this program (`args.h')
-     and for the common options to all Gnuastro (`commonopts.h'). We want
-     to directly put the pointers to the fields in `p' and `cp', so we are
+  /* Include the parameters necessary for argp from this program ('args.h')
+     and for the common options to all Gnuastro ('commonopts.h'). We want
+     to directly put the pointers to the fields in 'p' and 'cp', so we are
      simply including the header here to not have to use long macros in
      those headers which make them hard to read and modify. This also helps
      in having a clean environment: everything in those headers is only

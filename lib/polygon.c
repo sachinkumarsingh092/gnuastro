@@ -156,7 +156,7 @@ gal_polygon_vertices_sort_convex(double *in, size_t n, size_t *ordinds)
     }
 
 
-  /* We only have `n-1' more elements to sort, use the angle of the
+  /* We only have 'n-1' more elements to sort, use the angle of the
      line between the three remaining points and the first point. */
   for(i=0;i<n-1;++i)
     angles[i]=atan2( in[ ordinds[i+1]*2+1 ] - in[ ordinds[0]*2+1 ],
@@ -229,7 +229,7 @@ gal_polygon_is_convex(double *v, size_t n)
    vertices in a counterclockwise order. See the Wikipedia page for
    Polygon for more information.
 
-   `v' points to an array of doubles which keep the positions of the
+   'v' points to an array of doubles which keep the positions of the
    vertices such that v[0] and v[1] are the positions of the first
    corner to be considered.
 
@@ -259,7 +259,7 @@ gal_polygon_area(double *v, size_t n)
   algorithm. See its wiki here:
   https://en.wikipedia.org/wiki/Point_in_polygon#Winding_number_algorithm
 
-  We have a polygon with `n' vertices whose vertices are in the array `v'
+  We have a polygon with 'n' vertices whose vertices are in the array 'v'
   (with 2*n elements). Such that v[0], v[1] are the two coordinates of the
   first vertice. The vertices also have to be sorted in a counter clockwise
   fashion. We also have a point (with coordinates (x, y) == (p[0], p[1])
@@ -282,7 +282,7 @@ gal_polygon_is_inside(double *v, double *p, size_t n)
       if(v[j*2+1] <= p[1])
         {
           if(v[i*2+1] > p[1])
-            /* `p' left of edge is an upward intersection, increase wn. */
+            /* 'p' left of edge is an upward intersection, increase wn. */
             if( GAL_POLYGON_TRI_CROSS_PRODUCT(&v[j*2], &v[i*2], p) > 0 )
               wn++;
         }
@@ -294,7 +294,7 @@ gal_polygon_is_inside(double *v, double *p, size_t n)
             wn--;
       }
 
-      /* Increment `j' */
+      /* Increment 'j' */
       j=i++;
 
       /* For a check:
@@ -308,8 +308,8 @@ gal_polygon_is_inside(double *v, double *p, size_t n)
 
 
 
-/* We have a polygon with `n' vertices whose vertices are in the array
-   `v' (with 2*n elements). Such that v[0], v[1] are the two
+/* We have a polygon with 'n' vertices whose vertices are in the array
+   'v' (with 2*n elements). Such that v[0], v[1] are the two
    coordinates of the first vertice. The vertices also have to be
    sorted in a counter clockwise fashion. We also have a point (with
    coordinates p[0], p[1]) and we want to see if it is inside the
@@ -317,7 +317,7 @@ gal_polygon_is_inside(double *v, double *p, size_t n)
 
    If the point is inside the polygon, it will always be to the left
    of the edge connecting the two vertices when the vertices are
-   traversed in order. See the comments above `gal_polygon_area' for an
+   traversed in order. See the comments above 'gal_polygon_area' for an
    explanation about i and j and the loop.*/
 int
 gal_polygon_is_inside_convex(double *v, double *p, size_t n)
@@ -429,7 +429,7 @@ gal_polygon_to_counterclockwise(double *v, size_t n)
           j++;
         }
 
-      /* Put the vertices in the `gal_data_t' object */
+      /* Put the vertices in the 'gal_data_t' object */
       temp=gal_data_alloc(v, GAL_TYPE_FLOAT64, 1, &n, NULL, 0,
                           -1, 0, NULL, NULL, NULL);
 
@@ -452,7 +452,7 @@ gal_polygon_to_counterclockwise(double *v, size_t n)
 
 
 /* Find the intersection of a line segment (Aa--Ab) and an infinite
-   line (Ba--Bb) and put the intersection point in the output `o'. All
+   line (Ba--Bb) and put the intersection point in the output 'o'. All
    the points are assumed to be two element double arrays already
    allocated outside this function.
 
@@ -551,11 +551,11 @@ seginfintersection(double *Aa, double *Ab, double *Ba, double *Bb,
    done
 
    The difference is that we are not using lists, but arrays to keep
-   polygon vertices. The two polygons are called Subject (`s') and
-   Clip (`c') with `n' and `m' vertices respectively.
+   polygon vertices. The two polygons are called Subject ('s') and
+   Clip ('c') with 'n' and 'm' vertices respectively.
 
-   The output is stored in `o' and the number of elements in the
-   output are stored in what `*numcrn' (for number of corners) points
+   The output is stored in 'o' and the number of elements in the
+   output are stored in what '*numcrn' (for number of corners) points
    to.*/
 void
 gal_polygon_clip(double *s, size_t n, double *c, size_t m,
@@ -732,7 +732,7 @@ polygon_leftof_vector(double *in, size_t n, double x, double y)
   double test = (rightmost.y-y)*(rightmost.x-leftmost.x) -   \
                 (rightmost.y-leftmost.y)*(rightmost.x-x);
 
-  /* Due to the choice of return value, we multiply `test' by -1 */
+  /* Due to the choice of return value, we multiply 'test' by -1 */
   test = -1*test;
 
   return test?(test>0?1:-1):0;

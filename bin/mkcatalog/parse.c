@@ -169,7 +169,7 @@ parse_spectrum_pepare(struct mkcatalog_passparams *pp, size_t *start_end_inc,
                          p->values->unit, "Error in SUM_OTHER column.");
 
   /* Fill up the contents of the first element (note that the first
-     `gal_data_t' is actually in an array, so the skeleton is already
+     'gal_data_t' is actually in an array, so the skeleton is already
      allocated, we just have to allocate its contents. */
   gal_data_initialize(pp->spectrum, NULL, p->specsliceinfo->type, 1,
                       &numslices, NULL, 0, p->cp.minmapsize,
@@ -252,8 +252,8 @@ parse_spectrum_end(struct mkcatalog_passparams *pp, gal_data_t *xybin)
       osearr[i] = sqrt( osearr[i] );
     }
 
-  /* Convert the `double' type columns to `float'. The extra precision of
-     `double' was necessary when we were summing values in each slice. But
+  /* Convert the 'double' type columns to 'float'. The extra precision of
+     'double' was necessary when we were summing values in each slice. But
      afterwards, it is not necessary at all (the measurement error is much
      larger than a double-precision floating point number (15
      decimals). But the extra space gained (double) is very useful in not
@@ -271,7 +271,7 @@ parse_spectrum_end(struct mkcatalog_passparams *pp, gal_data_t *xybin)
   parse_spectrum_uint32_to_best_type(&oarea);
 
   /* List the datasets and write them into the pointer for this object
-     (exact copy of the statement in `parse_spectrum_pepare'). */
+     (exact copy of the statement in 'parse_spectrum_pepare'). */
   pp->spectrum->next->next                       = area;
   area->next                                     = sum;
   area->next->next                               = esum;
@@ -325,14 +325,14 @@ parse_spectrum(struct mkcatalog_passparams *pp, gal_data_t *xybin)
   osarr  = area->next->next->next->next->next->next->array;
   osearr = area->next->next->next->next->next->next->next->array;
 
-  /* If tile-id isn't necessary, set `tid' to a blank value. */
+  /* If tile-id isn't necessary, set 'tid' to a blank value. */
   tid = (p->std && p->std->size>1 && st_std == NULL) ? 0 : GAL_BLANK_SIZE_T;
 
   /* Parse each contiguous patch of memory covered by this object. */
   while( start_end_inc[0] + increment <= start_end_inc[1] )
     {
       /* Set the contiguous range to parse. The pixel-to-pixel counting
-         along the fastest dimension will be done over the `O' pointer. */
+         along the fastest dimension will be done over the 'O' pointer. */
       if( p->values        ) V  = st_v   + increment;
       if( p->std && st_std ) ST = st_std + increment;
       OO = ( O = st_o + increment ) + pp->tile->dsize[ndim-1];
@@ -357,7 +357,7 @@ parse_spectrum(struct mkcatalog_passparams *pp, gal_data_t *xybin)
 
                   /* Get the error associated with this voxel. Note that if
                      we are given a variance dataset already, there is no
-                     need to use `st*st', we can directly use `sval'. */
+                     need to use 'st*st', we can directly use 'sval'. */
                   sval = st_std ? *ST : (p->std->size>1?std[tid]:std[0]);
                   st = p->variance ? sqrt(sval) : sval;
                   var = (p->variance ? sval : st*st) + fabs(*V);
@@ -365,8 +365,8 @@ parse_spectrum(struct mkcatalog_passparams *pp, gal_data_t *xybin)
               else var = NAN;
 
 
-              /* Projected spectra: see if we have a value of `2' in the
-                 `xybin' array (showing that there is atleast one non-blank
+              /* Projected spectra: see if we have a value of '2' in the
+                 'xybin' array (showing that there is atleast one non-blank
                  element there over the whole spectrum.  */
               ++nproj;
               parr [ sind ] += *V;
@@ -402,8 +402,8 @@ parse_spectrum(struct mkcatalog_passparams *pp, gal_data_t *xybin)
       increment += ( gal_tile_block_increment(p->objects, tsize,
                                               num_increment++, NULL) );
 
-      /* Increment the slice number, `sind', and reset the projection (2D)
-         index `pind' if we have just finished parsing a slice. */
+      /* Increment the slice number, 'sind', and reset the projection (2D)
+         index 'pind' if we have just finished parsing a slice. */
       if( (num_increment-1)%pp->tile->dsize[1]==0 )
         {
           /* If there was no measurement, set NaN for the values and their
@@ -447,7 +447,7 @@ parse_objects(struct mkcatalog_passparams *pp)
   float var, sval, varval, skyval, *V=NULL, *SK=NULL, *ST=NULL;
   float *std=p->std?p->std->array:NULL, *sky=p->sky?p->sky->array:NULL;
 
-  /* If tile processing isn't necessary, set `tid' to a blank value. */
+  /* If tile processing isn't necessary, set 'tid' to a blank value. */
   size_t tid = ( ( (p->sky     && p->sky->size>1 && pp->st_sky == NULL )
                    || ( p->std && p->std->size>1 && pp->st_std == NULL ) )
                  ? 0 : GAL_BLANK_SIZE_T );
@@ -496,7 +496,7 @@ parse_objects(struct mkcatalog_passparams *pp)
   while( pp->start_end_inc[0] + increment <= pp->start_end_inc[1] )
     {
       /* Set the contiguous range to parse. The pixel-to-pixel counting
-         along the fastest dimension will be done over the `O' pointer. */
+         along the fastest dimension will be done over the 'O' pointer. */
       if( p->clumps            ) C  = pp->st_c   + increment;
       if( p->values            ) V  = pp->st_v   + increment;
       if( p->sky && pp->st_sky ) SK = pp->st_sky + increment;
@@ -639,9 +639,9 @@ parse_objects(struct mkcatalog_passparams *pp)
                     }
                   /* For each pixel, we have a sky contribution to the
                      counts and the signal's contribution. The standard
-                     deviation in the sky is simply `sval', but the
+                     deviation in the sky is simply 'sval', but the
                      standard deviation of the signal (independent of the
-                     sky) is `sqrt(*V)'. Therefore the total variance of
+                     sky) is 'sqrt(*V)'. Therefore the total variance of
                      this pixel is the variance of the sky added with the
                      absolute value of its sky-subtracted flux. We use the
                      absolute value, because especially as the signal gets
@@ -669,7 +669,7 @@ parse_objects(struct mkcatalog_passparams *pp)
                                               num_increment++, NULL) );
 
       /* If a 2D projection is requested, see if we should initialize (set
-         to zero) the projection-index (`pind') not. */
+         to zero) the projection-index ('pind') not. */
       if(xybin && (num_increment-1)%tsize[1]==0 )
         pind=0;
     }
@@ -741,7 +741,7 @@ parse_clumps(struct mkcatalog_passparams *pp)
   int32_t *objects=p->objects->array, *clumps=p->clumps->array;
   float *std=p->std?p->std->array:NULL, *sky=p->sky?p->sky->array:NULL;
 
-  /* If tile processing isn't necessary, set `tid' to a blank value. */
+  /* If tile processing isn't necessary, set 'tid' to a blank value. */
   size_t tid = ( ( (p->sky     && p->sky->size>1 && pp->st_sky == NULL )
                    || ( p->std && p->std->size>1 && pp->st_std == NULL ) )
                  ? 0 : GAL_BLANK_SIZE_T );
@@ -797,7 +797,7 @@ parse_clumps(struct mkcatalog_passparams *pp)
   while( pp->start_end_inc[0] + increment <= pp->start_end_inc[1] )
     {
       /* Set the contiguous range to parse. The pixel-to-pixel counting
-         along the fastest dimension will be done over the `O' pointer. */
+         along the fastest dimension will be done over the 'O' pointer. */
       C = pp->st_c + increment;
       if( p->values            ) V  = pp->st_v   + increment;
       if( p->sky && pp->st_sky ) SK = pp->st_sky + increment;
@@ -869,7 +869,7 @@ parse_clumps(struct mkcatalog_passparams *pp)
                         }
                     }
 
-                  /* Value related measurements, see `parse_objects' for
+                  /* Value related measurements, see 'parse_objects' for
                      comments. */
                   goodvalue=0;
                   if( p->values && !( p->hasblank && isnan(*V) ) )
@@ -917,7 +917,7 @@ parse_clumps(struct mkcatalog_passparams *pp)
                     }
 
                   /* Sky Standard deviation based measurements, see
-                     `parse_objects' for comments. */
+                     'parse_objects' for comments. */
                   if(p->std)
                     {
                       sval = ( pp->st_std
@@ -947,10 +947,10 @@ parse_clumps(struct mkcatalog_passparams *pp)
                   /* We are on a diffuse (possibly a river) pixel. So the
                      value of this pixel has to be added to any of the
                      clumps in touches. But since it might touch a labeled
-                     region more than once, we use `ngblabs' to keep track
+                     region more than once, we use 'ngblabs' to keep track
                      of which label we have already added its value
-                     to. `ii' is the number of different labels this river
-                     pixel has already been considered for. `ngblabs' will
+                     to. 'ii' is the number of different labels this river
+                     pixel has already been considered for. 'ngblabs' will
                      keep the list labels. */
                   ii=0;
                   memset(ngblabs, 0, nngb*sizeof *ngblabs);
@@ -1019,7 +1019,7 @@ parse_clumps(struct mkcatalog_passparams *pp)
                                               num_increment++, NULL) );
 
       /* If a 2D projection is requested, see if we should initialize (set
-         to zero) the projection-index (`pind') not. */
+         to zero) the projection-index ('pind') not. */
       if(xybin && (num_increment-1) % tsize[1]==0 )
         pind=0;
     }
@@ -1086,7 +1086,7 @@ parse_order_based(struct mkcatalog_passparams *pp)
       errno=0;
       clumpsvals=malloc(pp->clumpsinobj * sizeof *clumpsvals);
       if(clumpsvals==NULL)
-        error(EXIT_FAILURE, errno, "%s: couldn't allocate `clumpsvals' for "
+        error(EXIT_FAILURE, errno, "%s: couldn't allocate 'clumpsvals' for "
               "%zu clumps", __func__, pp->clumpsinobj);
 
 
@@ -1107,7 +1107,7 @@ parse_order_based(struct mkcatalog_passparams *pp)
   while( pp->start_end_inc[0] + increment <= pp->start_end_inc[1] )
     {
       /* Set the contiguous range to parse. The pixel-to-pixel counting
-         along the fastest dimension will be done over the `O' pointer. */
+         along the fastest dimension will be done over the 'O' pointer. */
       V = pp->st_v + increment;
       if(p->clumps) C = pp->st_c + increment;
       OO = ( O = pp->st_o + increment ) + tsize[ndim-1];
@@ -1116,8 +1116,8 @@ parse_order_based(struct mkcatalog_passparams *pp)
       do
         {
           /* If this pixel belongs to the requested object, then do the
-             processing. `hasblank' is constant, so when the values doesn't
-             have any blank values, the `isnan' will never be checked. */
+             processing. 'hasblank' is constant, so when the values doesn't
+             have any blank values, the 'isnan' will never be checked. */
           if( *O==pp->object && !( p->hasblank && isnan(*V) ) )
             {
               /* Copy the value for the whole object. */

@@ -213,14 +213,14 @@ readjpg(char *inname, size_t *outs0, size_t *outs1, size_t *numcolors)
   errno=0;
   all=malloc(nc*sizeof *all);
   if(all==NULL)
-    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `all'",
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for 'all'",
           __func__, nc*sizeof *all);
   for(i=0;i<nc;++i)
     {
       errno=0;
       all[i]=malloc(s0*s1*sizeof *all[i]);
       if(all[i]==NULL)
-        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `all[%zu]'",
+        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for 'all[%zu]'",
               __func__, s0*s1*sizeof *all[i], i);
     }
 
@@ -411,8 +411,8 @@ gal_jpeg_write(gal_data_t *in, char *filename, uint8_t quality,
     error(EXIT_FAILURE, 0, "%s: only 1, 3, and 4 color channels are "
           "acceptable, input is a list of %zu data sets", __func__, numch);
   if(in->type!=GAL_TYPE_UINT8)
-    error(EXIT_FAILURE, 0, "%s: input has a `%s' type, but JPEG images can "
-          "only have a `uint8' type", __func__, gal_type_name(in->type, 1));
+    error(EXIT_FAILURE, 0, "%s: input has a '%s' type, but JPEG images can "
+          "only have a 'uint8' type", __func__, gal_type_name(in->type, 1));
 
   /* Make sure the file doesn't exist and that we have write
      permission. Note that the JPEG standard doesn't have multple

@@ -91,10 +91,10 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
     default:
       error(EXIT_FAILURE, 0, "the %s operator can only accept single or "
             "double precision floating point numbers as its operand. The "
-            "%s operand has type %s. You can use the `float' or `double' "
+            "%s operand has type %s. You can use the 'float' or 'double' "
             "operators before this operator to explicitly convert to the "
             "desired precision floating point type. If the operand was "
-            "originally a typed number (string of characters), add an `f' "
+            "originally a typed number (string of characters), add an 'f' "
             "after it so it is directly read into the proper precision "
             "floating point number (based on the number of non-zero "
             "decimals it has)", gal_arithmetic_operator_string(operator),
@@ -562,10 +562,10 @@ arithmetic_unary_function(int operator, int flags, gal_data_t *in)
 
 
   /* Clean up. Note that if the input arrays can be freed, and any of right
-     or left arrays needed conversion, `UNIFUNC_CONVERT_TO_COMPILED_TYPE'
-     has already freed the input arrays, and we only have `r' and `l'
+     or left arrays needed conversion, 'UNIFUNC_CONVERT_TO_COMPILED_TYPE'
+     has already freed the input arrays, and we only have 'r' and 'l'
      allocated in any case. Alternatively, when the inputs shouldn't be
-     freed, the only allocated spaces are the `r' and `l' arrays if their
+     freed, the only allocated spaces are the 'r' and 'l' arrays if their
      types weren't compiled for binary operations, we can tell this from
      the pointers: if they are different from the original pointers, they
      were allocated. */
@@ -580,7 +580,7 @@ arithmetic_unary_function(int operator, int flags, gal_data_t *in)
 
 
 
-/* Call functions in the `gnuastro/statistics' library. */
+/* Call functions in the 'gnuastro/statistics' library. */
 static gal_data_t *
 arithmetic_from_statistics(int operator, int flags, gal_data_t *input)
 {
@@ -648,8 +648,8 @@ arithmetic_size(int operator, int flags, gal_data_t *in, gal_data_t *arg)
           arg->size);
 
 
-  /* Convert `arg' to `size_t' and read it. Note that we can only free the
-     `arg' array (while changing its type), when the freeing flag has been
+  /* Convert 'arg' to 'size_t' and read it. Note that we can only free the
+     'arg' array (while changing its type), when the freeing flag has been
      set. */
   if(flags & GAL_ARITHMETIC_FREE)
     {
@@ -677,7 +677,7 @@ arithmetic_size(int operator, int flags, gal_data_t *in, gal_data_t *arg)
 
 
   /* Allocate the output array and write the desired dimension. Note that
-     `dsize' is in the C order, while the output must be in FITS/Fortran
+     'dsize' is in the C order, while the output must be in FITS/Fortran
      order. Also that C order starts from 0, while the FITS order starts
      from 1. */
   out=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &one, NULL, 0,
@@ -713,7 +713,7 @@ arithmetic_size(int operator, int flags, gal_data_t *in, gal_data_t *arg)
 /***********************************************************************/
 /***************                  Where                   **************/
 /***********************************************************************/
-/* When the `iftrue' dataset only has one element and the element is blank,
+/* When the 'iftrue' dataset only has one element and the element is blank,
    then it will be replaced with the blank value of the type of the output
    data. */
 #define DO_WHERE_OPERATION(ITT, OT) {                                   \
@@ -755,7 +755,7 @@ arithmetic_size(int operator, int flags, gal_data_t *in, gal_data_t *arg)
     case GAL_TYPE_FLOAT64:  DO_WHERE_OPERATION( double,   OT);  break;  \
     default:                                                            \
       error(EXIT_FAILURE, 0, "%s: type code %d not recognized for the " \
-            "`iftrue' dataset", "WHERE_OUT_SET", iftrue->type);         \
+            "'iftrue' dataset", "WHERE_OUT_SET", iftrue->type);         \
     }
 
 
@@ -772,8 +772,8 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
   /* The condition operator has to be unsigned char. */
   if(cond->type!=GAL_TYPE_UINT8)
     error(EXIT_FAILURE, 0, "%s: the condition operand must be an "
-          "`uint8' type, but the given condition operand has a "
-          "`%s' type", __func__, gal_type_name(cond->type, 1));
+          "'uint8' type, but the given condition operand has a "
+          "'%s' type", __func__, gal_type_name(cond->type, 1));
 
   /* The dimension and sizes of the out and condition data sets must be the
      same. */
@@ -798,7 +798,7 @@ arithmetic_where(int flags, gal_data_t *out, gal_data_t *cond,
     case GAL_TYPE_FLOAT32:       WHERE_OUT_SET( float    );      break;
     case GAL_TYPE_FLOAT64:       WHERE_OUT_SET( double   );      break;
     default:
-      error(EXIT_FAILURE, 0, "%s: type code %d not recognized for the `out'",
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized for the 'out'",
             __func__, out->type);
     }
 
@@ -855,7 +855,7 @@ struct multioperandparams
     /* Go over all the pixels assigned to this thread. */               \
     for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
       {                                                                 \
-        /* Initialize, `j' is desired pixel's index. */                 \
+        /* Initialize, 'j' is desired pixel's index. */                 \
         n=0;                                                            \
         t=max;                                                          \
         j=tprm->indexs[tind];                                           \
@@ -885,7 +885,7 @@ struct multioperandparams
     /* Go over all the pixels assigned to this thread. */               \
     for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
       {                                                                 \
-        /* Initialize, `j' is desired pixel's index. */                 \
+        /* Initialize, 'j' is desired pixel's index. */                 \
         n=0;                                                            \
         t=min;                                                          \
         j=tprm->indexs[tind];                                           \
@@ -915,7 +915,7 @@ struct multioperandparams
     /* Go over all the pixels assigned to this thread. */               \
     for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
       {                                                                 \
-        /* Initialize, `j' is desired pixel's index. */                 \
+        /* Initialize, 'j' is desired pixel's index. */                 \
         n=0;                                                            \
         j=tprm->indexs[tind];                                           \
                                                                         \
@@ -948,7 +948,7 @@ struct multioperandparams
     /* Go over all the pixels assigned to this thread. */               \
     for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
       {                                                                 \
-        /* Initialize, `j' is desired pixel's index. */                 \
+        /* Initialize, 'j' is desired pixel's index. */                 \
         n=0;                                                            \
         sum=0.0f;                                                       \
         j=tprm->indexs[tind];                                           \
@@ -982,7 +982,7 @@ struct multioperandparams
     /* Go over all the pixels assigned to this thread. */               \
     for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
       {                                                                 \
-        /* Initialize, `j' is desired pixel's index. */                 \
+        /* Initialize, 'j' is desired pixel's index. */                 \
         n=0;                                                            \
         sum=0.0f;                                                       \
         j=tprm->indexs[tind];                                           \
@@ -1016,7 +1016,7 @@ struct multioperandparams
     /* Go over all the pixels assigned to this thread. */               \
     for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
       {                                                                 \
-        /* Initialize, `j' is desired pixel's index. */                 \
+        /* Initialize, 'j' is desired pixel's index. */                 \
         n=0;                                                            \
         sum=sum2=0.0f;                                                  \
         j=tprm->indexs[tind];                                           \
@@ -1056,11 +1056,11 @@ struct multioperandparams
     /* Go over all the pixels assigned to this thread. */               \
     for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
       {                                                                 \
-        /* Initialize, `j' is desired pixel's index. */                 \
+        /* Initialize, 'j' is desired pixel's index. */                 \
         n=0;                                                            \
         j=tprm->indexs[tind];                                           \
                                                                         \
-        /* Loop over each array: `i' is input dataset's index. */       \
+        /* Loop over each array: 'i' is input dataset's index. */       \
         for(i=0;i<p->dnum;++i)                                          \
           {                                                             \
             /* Only integers and non-NaN floats: v==v is 1. */          \
@@ -1104,7 +1104,7 @@ struct multioperandparams
     /* Go over all the pixels assigned to this thread. */               \
     for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
       {                                                                 \
-        /* Initialize, `j' is desired pixel's index. */                 \
+        /* Initialize, 'j' is desired pixel's index. */                 \
         n=0;                                                            \
         j=tprm->indexs[tind];                                           \
                                                                         \
@@ -1150,7 +1150,7 @@ struct multioperandparams
     /* Go over all the pixels assigned to this thread. */               \
     for(tind=0; tprm->indexs[tind] != GAL_BLANK_SIZE_T; ++tind)         \
       {                                                                 \
-        /* Initialize, `j' is desired pixel's index. */                 \
+        /* Initialize, 'j' is desired pixel's index. */                 \
         n=0;                                                            \
         j=tprm->indexs[tind];                                           \
                                                                         \
@@ -1204,7 +1204,7 @@ struct multioperandparams
     errno=0;                                                            \
     a=malloc(p->dnum*sizeof *a);                                        \
     if(a==NULL)                                                         \
-      error(EXIT_FAILURE, 0, "%s: %zu bytes for `a'",                   \
+      error(EXIT_FAILURE, 0, "%s: %zu bytes for 'a'",                   \
             "MULTIOPERAND_TYPE_SET", p->dnum*sizeof *a);                \
                                                                         \
     /* Fill in the array pointers and the blank value for this type. */ \
@@ -1324,7 +1324,7 @@ multioperand_on_thread(void *in_prm)
 
 /* The single operator in this function is assumed to be a linked list. The
    number of operators is determined from the fact that the last node in
-   the linked list must have a NULL pointer as its `next' element. */
+   the linked list must have a NULL pointer as its 'next' element. */
 static gal_data_t *
 arithmetic_multioperand(int operator, int flags, gal_data_t *list,
                         gal_data_t *params, size_t numthreads)
@@ -1336,7 +1336,7 @@ arithmetic_multioperand(int operator, int flags, gal_data_t *list,
   gal_data_t *out, *tmp, *ttmp;
 
 
-  /* For generality, `list' can be a NULL pointer, in that case, this
+  /* For generality, 'list' can be a NULL pointer, in that case, this
      function will return a NULL pointer and avoid further processing. */
   if(list==NULL) return NULL;
 
@@ -1361,7 +1361,7 @@ arithmetic_multioperand(int operator, int flags, gal_data_t *list,
         {
         case GAL_ARITHMETIC_OP_QUANTILE:
           if(p1<0 || p1>1)
-            error(EXIT_FAILURE, 0, "%s: the parameter given to the `quantile' "
+            error(EXIT_FAILURE, 0, "%s: the parameter given to the 'quantile' "
                   "operator must be between (and including) 0 and 1. The "
                   "given value is: %g", __func__, p1);
           break;
@@ -1484,7 +1484,7 @@ arithmetic_multioperand(int operator, int flags, gal_data_t *list,
    don't need to be checked (the floating point standard will do the job
    for us). It is also not necessary to check blanks in bitwise operators,
    but bitwise operators have their own macro
-   (`BINARY_OP_INCR_OT_RT_LT_SET') which doesn' use `checkblanks'.*/
+   ('BINARY_OP_INCR_OT_RT_LT_SET') which doesn' use 'checkblanks'.*/
 int
 gal_arithmetic_binary_checkblank(gal_data_t *l, gal_data_t *r)
 {
@@ -1522,7 +1522,7 @@ arithmetic_binary_out_type(int operator, gal_data_t *l, gal_data_t *r)
 static gal_data_t *
 arithmetic_binary(int operator, int flags, gal_data_t *l, gal_data_t *r)
 {
-  /* Read the variable arguments. `lo' and `ro' keep the original data, in
+  /* Read the variable arguments. 'lo' and 'ro' keep the original data, in
      case their type isn't built (based on configure options are configure
      time). */
   int32_t otype;
@@ -1540,10 +1540,10 @@ arithmetic_binary(int operator, int flags, gal_data_t *l, gal_data_t *r)
 
 
   /* Set the output type. For the comparison operators, the output type is
-     either 0 or 1, so we will set the output type to `unsigned char' for
+     either 0 or 1, so we will set the output type to 'unsigned char' for
      efficient memory and CPU usage. Since the number of operators without
-     a fixed output type (like the conditionals) is less, by `default' we
-     will set the output type to `unsigned char', and if any of the other
+     a fixed output type (like the conditionals) is less, by 'default' we
+     will set the output type to 'unsigned char', and if any of the other
      operatrs are given, it will be chosen based on the input types.*/
   otype=arithmetic_binary_out_type(operator, l, r);
 
@@ -1564,8 +1564,8 @@ arithmetic_binary(int operator, int flags, gal_data_t *l, gal_data_t *r)
 
 
   /* If the output pointer was not set above for any of the possible
-     reasons, allocate it. For `mmapsize', note that since its `size_t', it
-     will always be positive. The `-1' that is recommended to give when you
+     reasons, allocate it. For 'mmapsize', note that since its 'size_t', it
+     will always be positive. The '-1' that is recommended to give when you
      want the value in RAM is actually the largest possible memory
      location. So we just have to choose the smaller minmapsize of the two
      to decide if the output array should be in RAM or not. */
@@ -1720,8 +1720,8 @@ arithmetic_binary_function_flt(int operator, int flags, gal_data_t *l,
 
 
   /* If the output pointer was not set for any reason, allocate it. For
-     `mmapsize', note that since its `size_t', it will always be
-     Positive. The `-1' that is recommended to give when you want the value
+     'mmapsize', note that since its 'size_t', it will always be
+     Positive. The '-1' that is recommended to give when you want the value
      in RAM is actually the largest possible memory location. So we just
      have to choose the smaller minmapsize of the two to decide if the
      output array should be in RAM or not. */
@@ -1744,10 +1744,10 @@ arithmetic_binary_function_flt(int operator, int flags, gal_data_t *l,
 
 
   /* Clean up. Note that if the input arrays can be freed, and any of right
-     or left arrays needed conversion, `BINFUNC_CONVERT_TO_COMPILED_TYPE'
-     has already freed the input arrays, and we only have `r' and `l'
+     or left arrays needed conversion, 'BINFUNC_CONVERT_TO_COMPILED_TYPE'
+     has already freed the input arrays, and we only have 'r' and 'l'
      allocated in any case. Alternatively, when the inputs shouldn't be
-     freed, the only allocated spaces are the `r' and `l' arrays if their
+     freed, the only allocated spaces are the 'r' and 'l' arrays if their
      types weren't compiled for binary operations, we can tell this from
      the pointers: if they are different from the original pointers, they
      were allocated. */
@@ -2172,7 +2172,7 @@ gal_arithmetic(int operator, size_t numthreads, int flags, ...)
 
     /* When the operator is not recognized. */
     default:
-      error(EXIT_FAILURE, 0, "%s: the argument \"%d\" could not be "
+      error(EXIT_FAILURE, 0, "%s: the argument '%d' could not be "
             "interpretted as an operator", __func__, operator);
     }
 

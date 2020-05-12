@@ -71,7 +71,7 @@ convertt_change(struct converttparams *p)
     for(channel=p->chll; channel!=NULL; channel=channel->next)
       {
         /* Make a condition array: all pixels with a value equal to
-           `change->from' will be set as 1 in this array. */
+           'change->from' will be set as 1 in this array. */
         cond=gal_arithmetic(GAL_ARITHMETIC_OP_EQ, 1, GAL_ARITHMETIC_NUMOK,
                             channel, change->from);
 
@@ -103,7 +103,7 @@ convertt_trunc_function(int operator, gal_data_t *data, gal_data_t *value)
 
 
   /* Make a condition array: all pixels with a value equal to
-     `change->from' will be set as 1 in this array. */
+     'change->from' will be set as 1 in this array. */
   cond=gal_arithmetic(operator, 1, GAL_ARITHMETIC_NUMOK, data, value);
 
 
@@ -115,7 +115,7 @@ convertt_trunc_function(int operator, gal_data_t *data, gal_data_t *value)
      data structure must not have changed. */
   if(out!=data)
     error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s to solve the "
-          "problem. The `out' and `data' pointers are the same", __func__,
+          "problem. The 'out' and 'data' pointers are the same", __func__,
           PACKAGE_BUGREPORT);
 
 
@@ -246,7 +246,7 @@ convertt_scale_to_uchar(struct converttparams *p)
     {
       if(channel->status==0)
         {
-          /* Convert the values into a range between `0' and `maxbyte'. */
+          /* Convert the values into a range between '0' and 'maxbyte'. */
           ff=(f=channel->array)+size;
           if(p->invert)
             {

@@ -84,7 +84,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* This is for operators like `&&' and `||', where the right operator is
+/* This is for operators like '&&' and '||', where the right operator is
    not necessarily read (and thus incremented). */
 #define BINARY_OP_INCR_OT_RT_LT_SET(OP, OT, LT, RT) {                   \
     LT *la=l->array;                                                    \
@@ -146,7 +146,7 @@ enum arithmetic_binary_outtype_flags
       break;                                                            \
     default:                                                            \
       error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s to "   \
-            "address the problem. %d not recognized for `F'",           \
+            "address the problem. %d not recognized for 'F'",           \
             "BINARY_SET_OUT_INT", PACKAGE_BUGREPORT, F);                \
     }
 
@@ -172,7 +172,7 @@ enum arithmetic_binary_outtype_flags
       break;                                                            \
     default:                                                            \
       error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s to "   \
-            "address the problem. %d not recognized for `F'",           \
+            "address the problem. %d not recognized for 'F'",           \
             "BINARY_SET_OUT", PACKAGE_BUGREPORT, F);                    \
     }
 

@@ -55,7 +55,7 @@ if [ ! -f $img      ]; then echo "$img does not exist.";   exit 77; fi
 # enable multithreaded access to files, the tests pass. It is the
 # users choice to enable this feature.
 #
-# `check_with_program' can be something like `Valgrind' or an empty
+# 'check_with_program' can be something like Valgrind or an empty
 # string. Such programs will execute the command if present and help in
 # debugging when the developer doesn't have access to the user's system.
 $check_with_program $execname $img $cat --mode=img --zeroisnotblank     \

@@ -45,7 +45,7 @@ buildprog_as_one_string(char *opt, gal_list_str_t *list)
   /* Only if we have a list. */
   if(list)
     {
-      /* For every node in the list, we want the `opt' and a space along with
+      /* For every node in the list, we want the 'opt' and a space along with
          the actual string. */
       for(tmp=list; tmp!=NULL; tmp=tmp->next)
         len += 1 + (opt ? strlen(opt) : 0) + strlen(tmp->v);
@@ -71,7 +71,7 @@ buildprog_as_one_string(char *opt, gal_list_str_t *list)
 int
 buildprog(struct buildprogparams *p)
 {
-  /* Note that the first node of `sourceargs' is the acutal source and the
+  /* Note that the first node of 'sourceargs' is the acutal source and the
      rest are arguments to be run later. */
   int retval;
   char *fullla;
@@ -104,7 +104,7 @@ buildprog(struct buildprogparams *p)
     if( asprintf(&optimize, "-O%s", p->optimize)<0 )
       error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
 
-  /* Libtool `.la' file: */
+  /* Libtool '.la' file: */
   if(p->la) fullla=p->la;
   else
     if( asprintf(&fullla, "%s/libgnuastro.la", LIBDIR)<0 )

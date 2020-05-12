@@ -52,7 +52,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    requested first or Dec or if they are requested multiple times. So
    before the allocation, we'll check the first one.
 
-   The space that is allocated in `columns_define_alloc' is for the final
+   The space that is allocated in 'columns_define_alloc' is for the final
    values that are written in the output file. */
 static void
 columns_alloc_radec(struct mkcatalogparams *p)
@@ -78,7 +78,7 @@ columns_alloc_radec(struct mkcatalogparams *p)
 
 
 
-/* Similar to `columns_alloc_radec'. */
+/* Similar to 'columns_alloc_radec'. */
 static void
 columns_alloc_georadec(struct mkcatalogparams *p)
 {
@@ -103,7 +103,7 @@ columns_alloc_georadec(struct mkcatalogparams *p)
 
 
 
-/* Similar to `columns_alloc_radec'. */
+/* Similar to 'columns_alloc_radec'. */
 static void
 columns_alloc_clumpsradec(struct mkcatalogparams *p)
 {
@@ -120,7 +120,7 @@ columns_alloc_clumpsradec(struct mkcatalogparams *p)
 
 
 
-/* Similar to `columns_alloc_radec'. */
+/* Similar to 'columns_alloc_radec'. */
 static void
 columns_alloc_clumpsgeoradec(struct mkcatalogparams *p)
 {
@@ -278,7 +278,7 @@ columns_sanity_check(struct mkcatalogparams *p)
           error(EXIT_FAILURE, 0, "no sigma-clip defined! When any of the "
                 "sigma-clipping columns are requested, it is necessary to "
                 "specify the necessary sigma-clipping parameters with the "
-                "`--sigmaclip' option");
+                "'--sigmaclip' option");
         break;
       }
 
@@ -367,8 +367,8 @@ columns_define_alloc(struct mkcatalogparams *p)
   for(colcode=p->columnids; colcode!=NULL; colcode=colcode->next)
     {
       /* Set the column-specific parameters, please follow the same order
-         as `args.h'. IMPORTANT: we want the names to be the same as the
-         option names. Note that zero `disp_' variables will be
+         as 'args.h'. IMPORTANT: we want the names to be the same as the
+         option names. Note that zero 'disp_' variables will be
          automatically determined.*/
       switch(colcode->v)
         {
@@ -1554,7 +1554,7 @@ columns_define_alloc(struct mkcatalogparams *p)
 
 
       /* If this is an objects column, add it to the list of columns. We
-         will be using the `status' element to keep the MakeCatalog code
+         will be using the 'status' element to keep the MakeCatalog code
          for the columns. */
       if(otype!=GAL_TYPE_INVALID)
         {
@@ -1592,7 +1592,7 @@ columns_define_alloc(struct mkcatalogparams *p)
              the user.
 
              We'll just ignore the clump-specific ID-related columns,
-             because the `--ids' (generic for both objects and clumps) is a
+             because the '--ids' (generic for both objects and clumps) is a
              simple generic solution for identifiers. Also, ultimately,
              they aren't measurements. */
           else if( otype==GAL_TYPE_INVALID
@@ -1604,14 +1604,14 @@ columns_define_alloc(struct mkcatalogparams *p)
 
 
   /* If the user has asked for clump-only columns, but no clumps catalog is
-     to be created (the `--clumpscat' option was not given or there were no
+     to be created (the '--clumpscat' option was not given or there were no
      clumps in the specified image), then print an informative message that
      the columns in question will be ignored. */
   if(noclumpimg)
     {
       gal_list_str_reverse(&noclumpimg);
       fprintf(stderr, "WARNING: the following column(s) are unique to "
-              "clumps (not objects), but the `--clumpscat' option has not "
+              "clumps (not objects), but the '--clumpscat' option has not "
               "been called, or there were no clumps in the clumps labeled "
               "image. Hence, these columns will be ignored in the "
               "output.\n\n");
@@ -1816,8 +1816,8 @@ columns_xy_extrema(struct mkcatalog_passparams *pp, double *oi, size_t *coord, i
   size_t ndim=pp->tile->ndim;
   gal_data_t *tile=pp->tile, *block=tile->block;
 
-  /* We only want to do the coordinate estimation once: in `columns_fill',
-     we initialized the coordinates with `GAL_BLANK_SIZE_T'. When the
+  /* We only want to do the coordinate estimation once: in 'columns_fill',
+     we initialized the coordinates with 'GAL_BLANK_SIZE_T'. When the
      coordinate has already been measured already, it won't have this value
      any more. */
   if(coord[0]==GAL_BLANK_SIZE_T)
@@ -1826,7 +1826,7 @@ columns_xy_extrema(struct mkcatalog_passparams *pp, double *oi, size_t *coord, i
                                                          block->type),
                                  block->ndim, block->dsize, coord);
 
-  /* Return the proper value: note that `coord' is in C standard: starting
+  /* Return the proper value: note that 'coord' is in C standard: starting
      from the slowest dimension and counting from zero. */
   if(oi[OCOL_NUMALL])
     switch(key)
@@ -1860,28 +1860,28 @@ columns_xy_extrema(struct mkcatalog_passparams *pp, double *oi, size_t *coord, i
 /* The magnitude error is directly derivable from the S/N:
 
    To derive the error in measuring the magnitude from the S/N, let's take
-   `F' as the flux, `Z' is the zeropoint, `M' is the magnitude, `S' is the
-   S/N, and `D' to stand for capital delta (or error in a value) then from
+   'F' as the flux, 'Z' is the zeropoint, 'M' is the magnitude, 'S' is the
+   S/N, and 'D' to stand for capital delta (or error in a value) then from
 
-      `M = -2.5*log10(F) + Z'
+      'M = -2.5*log10(F) + Z'
 
    we get the following equation after calculating the derivative with
    respect to F.
 
-      `dM/df = -2.5 * ( 1 / ( F * ln(10) ) )'
+      'dM/df = -2.5 * ( 1 / ( F * ln(10) ) )'
 
-   From the Tailor series, `DM' can be written as:
+   From the Tailor series, 'DM' can be written as:
 
-      `DM = dM/dF * DF'
+      'DM = dM/dF * DF'
 
    So
 
-      `DM = |-2.5/ln(10)| * DF/F'
+      'DM = |-2.5/ln(10)| * DF/F'
 
-   But `DF/F' is just the inverse of the Signal to noise ratio, or
-  `1/S'. So
+   But 'DF/F' is just the inverse of the Signal to noise ratio, or
+  '1/S'. So
 
-      `DM = 2.5 / ( S * ln(10) )'               */
+      'DM = 2.5 / ( S * ln(10) )'               */
 #define MAG_ERROR(P,ROW,O0C1) ( 2.5f                                    \
                                 / ( ( columns_sn((P),(ROW),(O0C1)) > 0  \
                                       ? columns_sn((P),(ROW),(O0C1))    \
@@ -1895,7 +1895,7 @@ columns_xy_extrema(struct mkcatalog_passparams *pp, double *oi, size_t *coord, i
 
 /* All the raw first and second pass information has been collected, now
    write them into the output columns. The list of columns here is in the
-   same order as `columns_alloc_set_out_cols', see there for the type of
+   same order as 'columns_alloc_set_out_cols', see there for the type of
    each column. */
 #define POS_V_G(ARRAY, SUMWHT_COL, NUMALL_COL, V_COL, G_COL)            \
   ( (ARRAY)[ SUMWHT_COL ]>0                                             \
@@ -2229,8 +2229,8 @@ columns_fill(struct mkcatalog_passparams *pp)
   for(column=p->clumpcols; column!=NULL; column=column->next)
     for(coind=0;coind<pp->clumpsinobj;++coind)
       {
-        /* `coind': clump-in-object-index.
-           `cind': clump-index (over all the catalog). */
+        /* 'coind': clump-in-object-index.
+           'cind': clump-index (over all the catalog). */
         cind   = sr + coind;
         colarr = column->array;
         key    = column->status;

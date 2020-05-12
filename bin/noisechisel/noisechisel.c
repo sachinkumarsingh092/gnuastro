@@ -213,7 +213,7 @@ noisechisel_output(struct noisechiselparams *p)
 
   /* Let the user know that the output is written. */
   if(!p->cp.quiet)
-    printf("  - Output written to `%s'.\n", p->cp.output);
+    printf("  - Output written to '%s'.\n", p->cp.output);
 }
 
 

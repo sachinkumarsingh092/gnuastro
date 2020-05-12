@@ -78,7 +78,7 @@ gal_dimension_is_different(gal_data_t *first, gal_data_t *second)
 
 
 /* Calculate the values necessary to increment/decrement along each
-   dimension of a dataset with size `dsize'. */
+   dimension of a dataset with size 'dsize'. */
 size_t *
 gal_dimension_increment(size_t ndim, size_t *dsize)
 {
@@ -187,10 +187,10 @@ gal_dimension_coord_to_index(size_t ndim, size_t *dsize, size_t *coord)
 
 
 
-/* You know the index (`ind') of a point/tile in an n-dimensional (`ndim')
-   array which has `dsize[i]' elements along dimension `i'. You want to
+/* You know the index ('ind') of a point/tile in an n-dimensional ('ndim')
+   array which has 'dsize[i]' elements along dimension 'i'. You want to
    know the coordinates of that point along each dimension. The output is
-   not actually returned, it must be allocated (`ndim' elements) before
+   not actually returned, it must be allocated ('ndim' elements) before
    calling this function. This function will just fill it. The reason for
    this is that this function will often be called with a loop and a single
    allocated space would be enough for the whole loop. */
@@ -335,7 +335,7 @@ dimension_collapse_sanity_check(gal_data_t *in, gal_data_t *weight,
 
   /* If there is no blank value, there is no point in calculating the
      number of points in each collapsed dataset (when necessary). In that
-     case, `cnum!=0'. */
+     case, 'cnum!=0'. */
   if(hasblank==0)
     *cnum=in->dsize[c_dim];
 
@@ -411,7 +411,7 @@ dimension_collapse_sizes(gal_data_t *in, size_t c_dim, size_t *outndim,
 #define COLLAPSE_CHECKBLANK(OIND,IIND) {                                \
     if(hasblank)                                                        \
       {                                                                 \
-        if(B==B) /* An integer type: blank can be checked with `=='. */ \
+        if(B==B) /* An integer type: blank can be checked with '=='. */ \
           {                                                             \
             if( inarr[IIND] != B )           COLLAPSE_WRITE(OIND,IIND); \
           }                                                             \
@@ -548,7 +548,7 @@ gal_dimension_collapse_sum(gal_data_t *in, size_t c_dim, gal_data_t *weight)
             __func__, in->type);
     }
 
-  /* If `num' is zero on any element, set its sum to NaN. */
+  /* If 'num' is zero on any element, set its sum to NaN. */
   if(num)
     {
       ii = num->array;
@@ -557,8 +557,8 @@ gal_dimension_collapse_sum(gal_data_t *in, size_t c_dim, gal_data_t *weight)
     }
 
   /* Remove the respective dimension in the WCS structure also (if any
-     exists). Note that `sum->ndim' has already been changed. So we'll use
-     `in->wcs'. */
+     exists). Note that 'sum->ndim' has already been changed. So we'll use
+     'in->wcs'. */
   gal_wcs_remove_dimension(sum->wcs, in->ndim-c_dim);
 
   /* Clean up and return. */
@@ -642,7 +642,7 @@ gal_dimension_collapse_mean(gal_data_t *in, size_t c_dim,
             __func__, in->type);
     }
 
-  /* If `num' is zero on any element, set its sum to NaN. */
+  /* If 'num' is zero on any element, set its sum to NaN. */
   if(num)
     {
       ii = num->array;
@@ -724,8 +724,8 @@ gal_dimension_collapse_number(gal_data_t *in, size_t c_dim)
     }
 
   /* Remove the respective dimension in the WCS structure also (if any
-     exists). Note that `sum->ndim' has already been changed. So we'll use
-     `in->wcs'. */
+     exists). Note that 'sum->ndim' has already been changed. So we'll use
+     'in->wcs'. */
   gal_wcs_remove_dimension(num->wcs, in->ndim-c_dim);
 
   /* Return. */
@@ -786,8 +786,8 @@ gal_dimension_collapse_minmax(gal_data_t *in, size_t c_dim, int max1_min0)
     }
 
   /* Remove the respective dimension in the WCS structure also (if any
-     exists). Note that `sum->ndim' has already been changed. So we'll use
-     `in->wcs'. */
+     exists). Note that 'sum->ndim' has already been changed. So we'll use
+     'in->wcs'. */
   gal_wcs_remove_dimension(minmax->wcs, in->ndim-c_dim);
 
   /* Clean up and return. */
@@ -832,7 +832,7 @@ gal_dimension_remove_extra(size_t ndim, size_t *dsize, struct wcsprm *wcs)
         /* Shift all subsequent dimensions to replace this one. */
         for(j=i;j<ndim-1;++j) dsize[j]=dsize[j+1];
 
-        /* Decrement the `i' and the total number of dimension. */
+        /* Decrement the 'i' and the total number of dimension. */
         --i;
         --ndim;
       }

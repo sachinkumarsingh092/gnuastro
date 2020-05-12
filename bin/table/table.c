@@ -89,7 +89,7 @@ table_selection_range(struct tableparams *p, gal_data_t *col)
   /* First, make sure everything is OK. */
   if(p->range==NULL)
     error(EXIT_FAILURE, 0, "%s: a bug! Please contact us to fix the "
-          "problem at %s. `p->range' should not be NULL at this point",
+          "problem at %s. 'p->range' should not be NULL at this point",
           __func__, PACKAGE_BUGREPORT);
 
   /* Allocations. */
@@ -103,7 +103,7 @@ table_selection_range(struct tableparams *p, gal_data_t *col)
   ((double *)(min->array))[0] = darr[0];
   ((double *)(max->array))[0] = darr[1];
 
-  /* Move `p->range' to the next element in the list and free the current
+  /* Move 'p->range' to the next element in the list and free the current
      one (we have already read its values and don't need it any more). */
   tmp=p->range;
   p->range=p->range->next;
@@ -180,8 +180,8 @@ table_selection_polygon(struct tableparams *p, gal_data_t *col1,
   gal_data_t *out=NULL;
   size_t i, psize=p->polygon->size/2;
 
-  /* Allocate the output array: This array will have a `0' for the points
-     which are inside the polygon and `1' for those that are outside of it
+  /* Allocate the output array: This array will have a '0' for the points
+     which are inside the polygon and '1' for those that are outside of it
      (to be masked/removed from the input). */
   out=gal_data_alloc(NULL, GAL_TYPE_UINT8, 1, col1->dsize, NULL, 0, -1, 1,
                      NULL, NULL, NULL);
@@ -194,9 +194,9 @@ table_selection_polygon(struct tableparams *p, gal_data_t *col1,
       point[0]=selection_polygon_read_point(col1, i);
       point[1]=selection_polygon_read_point(col2, i);
 
-      /* For `--inpolygon', if point is inside polygon, put 0, otherwise
+      /* For '--inpolygon', if point is inside polygon, put 0, otherwise
          1. Note that we are building a mask for the rows that must be
-         discarded, so we want `1' for the points we don't want. */
+         discarded, so we want '1' for the points we don't want. */
       oarr[i] = (in1out0
                  ? !gal_polygon_is_inside(p->polygon->array, point, psize)
                  :  gal_polygon_is_inside(p->polygon->array, point, psize));
@@ -214,8 +214,8 @@ table_selection_polygon(struct tableparams *p, gal_data_t *col1,
 
 
 
-/* Given a string dataset and a single string, return a `uint8_t' array
-   with the same size as the string dataset that has a `1' for all the
+/* Given a string dataset and a single string, return a 'uint8_t' array
+   with the same size as the string dataset that has a '1' for all the
    elements that are equal. */
 static gal_data_t *
 table_selection_string_eq_ne(gal_data_t *column, char *reference, int e0n1)
@@ -259,18 +259,18 @@ table_selection_equal_or_notequal(struct tableparams *p, gal_data_t *col,
   gal_data_t *arg = e0n1 ? p->notequal : p->equal;
 
   /* Note that this operator is used to make the "masked" array, so when
-     `e0n1==0' the operator should be `GAL_ARITHMETIC_OP_NE' and
+     'e0n1==0' the operator should be 'GAL_ARITHMETIC_OP_NE' and
      vice-versa.
 
-     For the merging with other elements, when `e0n1==0', we need the
-     `GAL_ARITHMETIC_OP_AND', but for `e0n1==1', it should be `OR'. */
+     For the merging with other elements, when 'e0n1==0', we need the
+     'GAL_ARITHMETIC_OP_AND', but for 'e0n1==1', it should be 'OR'. */
   int mergeop  = e0n1 ? GAL_ARITHMETIC_OP_OR : GAL_ARITHMETIC_OP_AND;
   int operator = e0n1 ? GAL_ARITHMETIC_OP_EQ : GAL_ARITHMETIC_OP_NE;
 
   /* First, make sure everything is OK. */
   if(arg==NULL)
     error(EXIT_FAILURE, 0, "%s: a bug! Please contact us to fix the "
-          "problem at %s. `p->range' should not be NULL at this point",
+          "problem at %s. 'p->range' should not be NULL at this point",
           __func__, PACKAGE_BUGREPORT);
 
   /* To easily parse the given values. */
@@ -322,7 +322,7 @@ table_selection_equal_or_notequal(struct tableparams *p, gal_data_t *col,
 
 
   /* Move the main pointer to the next possible call of the given
-     option. Note that `arg' already points to `p->equal' or `p->notequal',
+     option. Note that 'arg' already points to 'p->equal' or 'p->notequal',
      so it will automatically be freed with the next step.*/
   if(e0n1) p->notequal=p->notequal->next;
   else     p->equal=p->equal->next;
@@ -362,7 +362,7 @@ table_selection(struct tableparams *p)
           addmask=table_selection_range(p, tmp->col);
           break;
 
-        /* `--inpolygon' and `--outpolygon' need two columns. */
+        /* '--inpolygon' and '--outpolygon' need two columns. */
         case SELECT_TYPE_INPOLYGON:
         case SELECT_TYPE_OUTPOLYGON:
           addmask=table_selection_polygon(p, tmp->col, tmp->next->col,
@@ -489,10 +489,10 @@ table_sort(struct tableparams *p)
           "TIP: if you know the columns contents are all numbers that are "
           "just stored as strings, you can use this program to save the "
           "table as a text file, modify the column meta-data (for example "
-          "to type `i32' or `f32' instead of `strN'), then use this "
+          "to type 'i32' or 'f32' instead of 'strN'), then use this "
           "program again to save it as a FITS table.\n\n"
           "For more on column metadata in plain text format, please run "
-          "the following command (or see the `Gnuastro text table format "
+          "the following command (or see the 'Gnuastro text table format "
           "section of the book/manual):\n\n"
           "    $ info gnuastro \"gnuastro text table format\"");
 
@@ -512,7 +512,7 @@ table_sort(struct tableparams *p)
       case GAL_TYPE_FLOAT64: qsortfn=gal_qsort_index_single_float64_d; break;
       default:
         error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
-              "the problem. The code `%u' wasn't recognized as a data type",
+              "the problem. The code '%u' wasn't recognized as a data type",
               __func__, PACKAGE_BUGREPORT, p->sortcol->type);
       }
   else
@@ -530,7 +530,7 @@ table_sort(struct tableparams *p)
       case GAL_TYPE_FLOAT64: qsortfn=gal_qsort_index_single_float64_i; break;
       default:
         error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
-              "the problem. The code `%u' wasn't recognized as a data type",
+              "the problem. The code '%u' wasn't recognized as a data type",
               __func__, PACKAGE_BUGREPORT, p->sortcol->type);
       }
 
@@ -538,7 +538,7 @@ table_sort(struct tableparams *p)
   gal_qsort_index_single=p->sortcol->array;
   qsort(perm->array, perm->size, sizeof *s, qsortfn);
 
-  /* For a check (only on float32 type `sortcol'):
+  /* For a check (only on float32 type 'sortcol'):
   {
     float *f=p->sortcol->array;
     sf=(s=perm->array)+perm->size;
@@ -571,9 +571,9 @@ table_head_tail(struct tableparams *p)
     {
       /* If we are dealing with strings, we'll need to free the strings
          that the columns that will not be used point to (outside the
-         allocated array directly `gal_data_t'). We don't have to worry
+         allocated array directly 'gal_data_t'). We don't have to worry
          about the space for the actual pointers (they will be free'd by
-         `free' in any case, since they are in the initially allocated
+         'free' in any case, since they are in the initially allocated
          array).*/
       if(col->type==GAL_TYPE_STRING)
         {
@@ -586,8 +586,8 @@ table_head_tail(struct tableparams *p)
           for(i=start; i<end; ++i) { free(strarr[i]); strarr[i]=NULL; }
         }
 
-      /* For `--tail', we'll need to bring the last columns to the
-         start. Note that we are using `memmove' because we want to be safe
+      /* For '--tail', we'll need to bring the last columns to the
+         start. Note that we are using 'memmove' because we want to be safe
          with overlap. */
       if(p->tail!=GAL_BLANK_SIZE_T)
         memmove(col->array,
@@ -626,9 +626,9 @@ table_catcolumn(struct tableparams *p)
         {
           if(hdull) { hdu=hdull->v; hdull=hdull->next; }
           else
-            error(EXIT_FAILURE, 0, "not enough `--catcolhdu's. For every "
-                  "FITS table given to `--catcolumn', a call to "
-                  "`--catcolhdu' is necessary to identify its HDU/extension");
+            error(EXIT_FAILURE, 0, "not enough '--catcolhdu's. For every "
+                  "FITS table given to '--catcolumn', a call to "
+                  "'--catcolhdu' is necessary to identify its HDU/extension");
         }
       else hdu=NULL;
 
@@ -640,7 +640,7 @@ table_catcolumn(struct tableparams *p)
       /* Check the number of rows. */
       if(tocat->dsize[0]!=p->table->dsize[0])
         error(EXIT_FAILURE, 0, "%s: incorrect number of rows. The table given "
-              "to `--catcolumn' must have the same number of rows as the "
+              "to '--catcolumn' must have the same number of rows as the "
               "main argument (after all row-selections have been applied), "
               "but they have %zu and %zu rows respectively",
               gal_fits_name_save_as_string(filell->v, hdu), tocat->dsize[0],

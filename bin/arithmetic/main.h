@@ -51,8 +51,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* In every node of the operand linked list, only one of the `filename' or
-   `data' should be non-NULL. Otherwise it will be a bug and will cause
+/* In every node of the operand linked list, only one of the 'filename' or
+   'data' should be non-NULL. Otherwise it will be a bug and will cause
    problems. All the operands operate on this premise. */
 struct operand
 {

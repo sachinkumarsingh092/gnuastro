@@ -65,7 +65,7 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will compile and run a "
   "depends on. Hence you do not have to worry about explicitly linking "
   "with CFITSIO for example if you want to work on a FITS file, or with "
   "GSL if you want to use GNU Scientific Library's functions. The standard "
-  "compiler options of `-I', `-L', and `-l' are also available for further "
+  "compiler options of '-I', '-L', and '-l' are also available for further "
   "customization of the build.\n"
   GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
@@ -130,9 +130,9 @@ ui_initialize_options(struct buildprogparams *p,
           cp->coptions[i].mandatory=GAL_OPTIONS_NOT_MANDATORY;
           break;
 
-        /* `--ignorecase's default short format is `I', but here we want to
-           follow the compiler format, hence we need `I' for
-           `include'. Therefore, here, we'll change the key for `include'
+        /* '--ignorecase's default short format is 'I', but here we want to
+           follow the compiler format, hence we need 'I' for
+           'include'. Therefore, here, we'll change the key for 'include'
            to some large number just to avoid confusion.*/
         case GAL_OPTIONS_KEY_IGNORECASE:
           cp->coptions[i].key=20000;
@@ -163,18 +163,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
 {
   struct buildprogparams *p = state->input;
 
-  /* Pass `gal_options_common_params' into the child parser.  */
+  /* Pass 'gal_options_common_params' into the child parser.  */
   state->child_inputs[0] = &p->cp;
 
   /* In case the user incorrectly uses the equal sign (for example
-     with a short format or with space in the long format, then `arg`
+     with a short format or with space in the long format, then 'arg'
      start with (if the short version was called) or be (if the long
      version was called with a space) the equal sign. So, here we
      check if the first character of arg is the equal sign, then the
      user is warned and the program is stopped: */
   if(arg && arg[0]=='=')
-    argp_error(state, "incorrect use of the equal sign (`=`). For short "
-               "options, `=` should not be used and for long options, "
+    argp_error(state, "incorrect use of the equal sign ('='). For short "
+               "options, '=' should not be used and for long options, "
                "there should be no space between the option, equal sign "
                "and value");
 
@@ -219,21 +219,21 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /***************       Sanity Check         *******************/
 /**************************************************************/
 /* Read and check ONLY the options. When arguments are involved, do the
-   check in `ui_check_options_and_arguments'. */
+   check in 'ui_check_options_and_arguments'. */
 static void
 ui_read_check_only_options(struct buildprogparams *p)
 {
   size_t len;
 
-  /* If an `.la' file is given, make sure it has the correct suffix. */
+  /* If an '.la' file is given, make sure it has the correct suffix. */
   if(p->la)
     {
       len=strlen(p->la);
       if(len>=4)
         if(strcmp(&p->la[len-3], ".la"))
-          error(EXIT_FAILURE, 0, "`%s' is not a Libtool control file name "
-                "(with a `.la' suffix). The file name given to the `--la' "
-                "(`-a') option must be a Libtool control file", p->la);
+          error(EXIT_FAILURE, 0, "'%s' is not a Libtool control file name "
+                "(with a '.la' suffix). The file name given to the '--la' "
+                "('-a') option must be a Libtool control file", p->la);
     }
 }
 
@@ -279,23 +279,23 @@ ui_preparations(struct buildprogparams *p)
      options.c). */
   gal_list_str_reverse(&p->sourceargs);
 
-  /* Set the final output name. `EXEEXT' comes from the configuration
-     script (given by BuildProgram's `Makefile.am'). */
+  /* Set the final output name. 'EXEEXT' comes from the configuration
+     script (given by BuildProgram's 'Makefile.am'). */
   if(p->cp.output==NULL)
     p->cp.output=gal_checkset_automatic_output(&p->cp, p->sourceargs->v,
                                                EXEEXT);
 
-  /* Set the C compiler. Later we can add a check to make sure that `cc' is
+  /* Set the C compiler. Later we can add a check to make sure that 'cc' is
      actually in the PATH. */
   if(p->cc==NULL)
     {                                        /* No C compiler chosen. */
       if(p->noenv==0)
         {
-          p->cc=getenv("CC");                /* First check for `CC'. */
+          p->cc=getenv("CC");                /* First check for 'CC'. */
           if(p->cc==NULL)
-            p->cc=getenv("GCC");             /* Then check for `GCC'. */
+            p->cc=getenv("GCC");             /* Then check for 'GCC'. */
         }
-      if(p->cc==NULL) p->cc="gcc";           /* Default: `gcc'.       */
+      if(p->cc==NULL) p->cc="gcc";           /* Default: 'gcc'.       */
     }
 }
 
@@ -327,9 +327,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct buildprogparams *p)
   struct gal_options_common_params *cp=&p->cp;
 
 
-  /* Include the parameters necessary for argp from this program (`args.h')
-     and for the common options to all Gnuastro (`commonopts.h'). We want
-     to directly put the pointers to the fields in `p' and `cp', so we are
+  /* Include the parameters necessary for argp from this program ('args.h')
+     and for the common options to all Gnuastro ('commonopts.h'). We want
+     to directly put the pointers to the fields in 'p' and 'cp', so we are
      simply including the header here to not have to use long macros in
      those headers which make them hard to read and modify. This also helps
      in having a clean environment: everything in those headers is only

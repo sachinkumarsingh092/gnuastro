@@ -33,7 +33,7 @@ struct argp_option program_options[] =
       UI_KEY_GLOBALHDU,
       "STR",
       0,
-      "Use this HDU for all inputs, ignore `--hdu'.",
+      "Use this HDU for all inputs, ignore '--hdu'.",
       GAL_OPTIONS_GROUP_INPUT,
       &p->globalhdu,
       GAL_TYPE_STRING,

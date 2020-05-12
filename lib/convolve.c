@@ -128,8 +128,8 @@ struct spatial_params
 
 
 /* Define the overlap of the kernel and image over this part of the image,
-   the necessary input image parameters are stored in `overlap' (its
-   `array' and `dsize' elements).  */
+   the necessary input image parameters are stored in 'overlap' (its
+   'array' and 'dsize' elements).  */
 static int
 convolve_spatial_overlap(struct per_thread_spatial_prm *pprm, int tocorrect)
 {
@@ -164,9 +164,9 @@ convolve_spatial_overlap(struct per_thread_spatial_prm *pprm, int tocorrect)
       dim_full_overlap=1;
 
       /* When the tile is on the edge, some pixels in it can have full
-         overlap. So using the `dim_full_overlap', we will do the same
+         overlap. So using the 'dim_full_overlap', we will do the same
          thing we do for the tiles that don't overlap for them. When
-         `tocorrect!=0', then only pixels that are on the edge of the tile
+         'tocorrect!=0', then only pixels that are on the edge of the tile
          will get to this point, so it must always be checked. */
       if( tocorrect ? 1 : pprm->on_edge )
         {
@@ -181,7 +181,7 @@ convolve_spatial_overlap(struct per_thread_spatial_prm *pprm, int tocorrect)
                  With the start: assume that in this dimension, the pixel
                  is at position 2, while the kernel is 11 pixels wide (or 5
                  pixels in half-width). As seen below, the kernel should
-                 start from pixel `5-2=3' in this dimension and the overlap
+                 start from pixel '5-2=3' in this dimension and the overlap
                  size should decrease by the same amount.
 
                     image:            0 1 2 3 4 5 6 7 8 9 ...
@@ -193,7 +193,7 @@ convolve_spatial_overlap(struct per_thread_spatial_prm *pprm, int tocorrect)
                  no longer worried about the overlap or kernel starting
                  point, it is the width that we need to decrease it by:
 
-                   97 + 5 - 100 + 1 : The `1' is because we want the pixel
+                   97 + 5 - 100 + 1 : The '1' is because we want the pixel
                                       immediately after the end.
 
                     image:        ... 92 93 94 95 96 97 98 99 | 100 101 102
@@ -210,7 +210,7 @@ convolve_spatial_overlap(struct per_thread_spatial_prm *pprm, int tocorrect)
               if(is_start) *od -= *k/2 - *p;
               if(is_end)   *od -= *p + *k/2 - *h + 1;
 
-              /* Put the overlap size into the kernel's overlap `dsize'
+              /* Put the overlap size into the kernel's overlap 'dsize'
                  also and then use it to update the total size of the
                  overlap. */
               *kd++ = *od;
@@ -244,13 +244,13 @@ convolve_spatial_overlap(struct per_thread_spatial_prm *pprm, int tocorrect)
   while(++p<pf);
 
 
-  /* Update the `size' element of both overlap datasets. */
+  /* Update the 'size' element of both overlap datasets. */
   pprm->i_overlap->size = pprm->k_overlap->size = size;
 
 
   /* Make correction.
 
-      Normal mode (when `tocorrect==0'): add the host's starting location
+      Normal mode (when 'tocorrect==0'): add the host's starting location
          (necessary when convolution over the host/channel is treated
          independently). In this mode, until now we were working as if the
          the host/channel is the full image so the edges don't get
@@ -259,7 +259,7 @@ convolve_spatial_overlap(struct per_thread_spatial_prm *pprm, int tocorrect)
          proper place within the allocated array.
 
       To-correct mode: The boundaries were calculated with respect to the
-         block, so we don't need to correct `overlap_start'. But we need to
+         block, so we don't need to correct 'overlap_start'. But we need to
          correct the pixel position back to its original state (relative to
          the channel). */
   hs=pprm->host_start;
@@ -304,8 +304,8 @@ convolve_spatial_tile(struct per_thread_spatial_prm *pprm)
   size_t j, ndim=block->ndim, csize=tile->dsize[ndim-1];
   gal_data_t *i_overlap=pprm->i_overlap, *k_overlap=pprm->k_overlap;
 
-  /* Variables for scanning a tile (`i_*') and the region around every
-     pixel of a tile (`o_*'). */
+  /* Variables for scanning a tile ('i_*') and the region around every
+     pixel of a tile ('o_*'). */
   size_t start_fastdim;
   size_t i_inc, i_ninc, i_st_en[2];
 
@@ -315,17 +315,17 @@ convolve_spatial_tile(struct per_thread_spatial_prm *pprm)
 
 
   /* Starting pixel for the host of this tile. Note that when we are in
-     `convoverch' mode, `host' refers to the fully allocated block of
+     'convoverch' mode, 'host' refers to the fully allocated block of
      memory. */
   pprm->host=cprm->convoverch ? block : tile->block;
   gal_tile_start_coord(pprm->host, pprm->host_start);
 
 
   /* Set the starting and ending coordinates of this tile (recall that the
-     space for the start and end coordinates is stored in `p->pix'). When
-     `convoverch' is set, we want to convolve over the whole allocated
+     space for the start and end coordinates is stored in 'p->pix'). When
+     'convoverch' is set, we want to convolve over the whole allocated
      block, not just one channel. So in effect, it is the same as
-     `rel_block' in `gal_tile_start_end_coord'. */
+     'rel_block' in 'gal_tile_start_end_coord'. */
   gal_tile_start_end_coord(tile, pprm->pix, cprm->convoverch);
   start_fastdim = pprm->pix[ndim-1];
 
@@ -336,7 +336,7 @@ convolve_spatial_tile(struct per_thread_spatial_prm *pprm)
 
 
   /* If it isn't on the edge and we are correcting an already convolved
-     image (`tocorrect!=NULL'), then this tile can be ignored. */
+     image ('tocorrect!=NULL'), then this tile can be ignored. */
   if(cprm->tocorrect && pprm->on_edge==0) return;
 
 
@@ -346,7 +346,7 @@ convolve_spatial_tile(struct per_thread_spatial_prm *pprm)
   while( i_st_en[0] + i_inc <= i_st_en[1] )
     {
       /* Initialize the value along the fastest dimension (it is not
-         incremented during `gal_tile_block_increment'). */
+         incremented during 'gal_tile_block_increment'). */
       pprm->pix[ndim-1]=start_fastdim;
 
       /* Go over each pixel to convolve. */
@@ -356,7 +356,7 @@ convolve_spatial_tile(struct per_thread_spatial_prm *pprm)
           in_v = i_start + i_inc + j;
 
           /* If the input on this pixel is a NaN, then just set the output
-             to NaN too and go onto the next pixel. `in_v' is the pointer
+             to NaN too and go onto the next pixel. 'in_v' is the pointer
              on this pixel. */
           if( isnan(*in_v) )
             out[ in_v - in ]=NAN;
@@ -428,7 +428,7 @@ convolve_spatial_on_thread(void *inparam)
                                      "dsize");
 
 
-  /* Set all dsize values to 1 (the values within `overlap->dsize' will be
+  /* Set all dsize values to 1 (the values within 'overlap->dsize' will be
      changed during convolution). */
   for(i=0;i<ndim;++i) dsize[i]=1;
 
@@ -467,7 +467,7 @@ convolve_spatial_on_thread(void *inparam)
 
 
   /* Clean up, wait until all other threads finish, then return. In a
-     single thread situation, `tprm->b==NULL'. */
+     single thread situation, 'tprm->b==NULL'. */
   free(pprm->pix);
   free(pprm->host_start);
   free(pprm->kernel_start);
@@ -483,7 +483,7 @@ convolve_spatial_on_thread(void *inparam)
 
 
 /* General spatial convolve function. This function is called by both
-   `gal_convolve_spatial' and */
+   'gal_convolve_spatial' and */
 static gal_data_t *
 gal_convolve_spatial_general(gal_data_t *tiles, gal_data_t *kernel,
                              size_t numthreads, int edgecorrection,
@@ -498,7 +498,7 @@ gal_convolve_spatial_general(gal_data_t *tiles, gal_data_t *kernel,
     error(EXIT_FAILURE, 0, "%s: The number of dimensions between the kernel "
           "and input should be the same", __func__);
   if( block->type!=GAL_TYPE_FLOAT32 || kernel->type!=GAL_TYPE_FLOAT32 )
-    error(EXIT_FAILURE, 0, "%s: only accepts `float32' type input and "
+    error(EXIT_FAILURE, 0, "%s: only accepts 'float32' type input and "
           "kernel currently", __func__);
 
   /* It may happen that an input dataset is part of a linked list, but it
@@ -508,8 +508,8 @@ gal_convolve_spatial_general(gal_data_t *tiles, gal_data_t *kernel,
   if( tiles->block==NULL && tiles->next && tiles->next->block==NULL )
     error(EXIT_FAILURE, 0, "%s: the input is a linked list but not a "
           "tessellation (a list of tiles). This function is optimized to "
-          "work on a list of tiles. Please (temporarily) set the `next' "
-          "element of the input to `NULL' and call this function again",
+          "work on a list of tiles. Please (temporarily) set the 'next' "
+          "element of the input to 'NULL' and call this function again",
           __func__);
 
 
@@ -543,7 +543,7 @@ gal_convolve_spatial_general(gal_data_t *tiles, gal_data_t *kernel,
   errno=0;
   params.pprm=malloc(numthreads * sizeof *params.pprm);
   if(params.pprm==NULL)
-    error(EXIT_FAILURE, 0, "%s: %zu bytes for `params.pprm'",
+    error(EXIT_FAILURE, 0, "%s: %zu bytes for 'params.pprm'",
           __func__, numthreads * sizeof *params.pprm);
 
 
@@ -565,12 +565,12 @@ gal_convolve_spatial_general(gal_data_t *tiles, gal_data_t *kernel,
    convolution can be greatly sped up if it is done on separate tiles over
    the image (on multiple threads). So as input, you can either give tile
    values or one full array. Just note that if you give a single array as
-   input, the `next' element has to be `NULL'.*/
+   input, the 'next' element has to be 'NULL'.*/
 gal_data_t *
 gal_convolve_spatial(gal_data_t *tiles, gal_data_t *kernel,
                      size_t numthreads, int edgecorrection, int convoverch)
 {
-  /* When there isn't any tile structure, `convoverch' must be set to
+  /* When there isn't any tile structure, 'convoverch' must be set to
      one. Recall that the input can be a single full dataset also. */
   if(tiles->block==NULL) convoverch=1;
 
@@ -584,7 +584,7 @@ gal_convolve_spatial(gal_data_t *tiles, gal_data_t *kernel,
 
 
 /* Correct the edges of channels in an already convolved image when it was
-   initially convolved with `gal_convolve_spatial' with `convoverch==0'. In
+   initially convolved with 'gal_convolve_spatial' with 'convoverch==0'. In
    that case, strong boundaries exist on the tile edges. So if you later
    need to remove those boundaries, you can call this function, it will
    only do convolution on the tiles that are near the edge, not the full
@@ -598,12 +598,12 @@ gal_convolve_spatial_correct_ch_edge(gal_data_t *tiles, gal_data_t *kernel,
 
   /* Some small sanity checks. */
   if( gal_dimension_is_different(block, tocorrect) )
-    error(EXIT_FAILURE, 0, "%s: the `tocorrect' dataset has to have the "
-          "same dimensions/size as the block of the `tiles' input", __func__);
+    error(EXIT_FAILURE, 0, "%s: the 'tocorrect' dataset has to have the "
+          "same dimensions/size as the block of the 'tiles' input", __func__);
   if( block->type != tocorrect->type )
-    error(EXIT_FAILURE, 0, "%s: the `tocorrect' dataset has to have the same "
-          "type as the block of the `tiles' input. The given types are `%s' "
-          "and `%s' respectively", __func__,
+    error(EXIT_FAILURE, 0, "%s: the 'tocorrect' dataset has to have the same "
+          "type as the block of the 'tiles' input. The given types are '%s' "
+          "and '%s' respectively", __func__,
           gal_type_name(tocorrect->type, 1), gal_type_name(block->type, 1));
 
   /* Call the general function, which will do the correction. */

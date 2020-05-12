@@ -39,7 +39,7 @@ struct clumps_params
   gal_data_t            *snind; /* Array of clump S/N index (for check).   */
 
   /* For detections. */
-  gal_data_t        *labindexs; /* Array of `gal_data_t' with obj indexs.  */
+  gal_data_t        *labindexs; /* Array of 'gal_data_t' with obj indexs.  */
   size_t            totobjects; /* Total number of objects at any point.   */
   size_t             totclumps; /* Total number of clumps at any point.    */
 };

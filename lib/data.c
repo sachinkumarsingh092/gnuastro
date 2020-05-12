@@ -96,15 +96,15 @@ gal_data_alloc(void *array, uint8_t type, size_t ndim, size_t *dsize,
 
    Some notes:
 
-   - The `status' value is the only element that cannot be set by this
+   - The 'status' value is the only element that cannot be set by this
      function, it is initialized to zero.
 
-   - If no `array' is given, a blank array of the given size will be
+   - If no 'array' is given, a blank array of the given size will be
      allocated. If it is given the array pointer will be directly put here,
      so do not free it independently any more. If you want a separate copy
-     of a dataset, you should use `gal_data_copy', not this function.
+     of a dataset, you should use 'gal_data_copy', not this function.
 
-   - Space for the `name', `unit', and `comment' strings within the data
+   - Space for the 'name', 'unit', and 'comment' strings within the data
      structure are allocated here. So you can safely use literal strings,
      or statically allocated ones, or simply the strings from other data
      structures (and not have to worry about which one to free later).
@@ -141,8 +141,8 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
 
 
   /* Allocate space for the dsize array, only if the data are to have any
-     dimensions. Note that in our convention, a number has a `ndim=1' and
-     `dsize[0]=1', A 1D array also has `ndim=1', but `dsize[0]>1'. */
+     dimensions. Note that in our convention, a number has a 'ndim=1' and
+     'dsize[0]=1', A 1D array also has 'ndim=1', but 'dsize[0]>1'. */
   if(ndim)
     {
       /* Allocate dsize. */
@@ -153,7 +153,7 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
               __func__, ndim*sizeof *data->dsize);
 
 
-      /* Fill in the `dsize' array and in the meantime set `size': */
+      /* Fill in the 'dsize' array and in the meantime set 'size': */
       data->size=1;
       for(i=0;i<ndim;++i)
         {
@@ -217,17 +217,17 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
 
 
 /* Free the allocated contents of a data structure, not the structure
-   itsself. The reason that this function is separate from `gal_data_free'
+   itsself. The reason that this function is separate from 'gal_data_free'
    is that the data structure might be allocated as an array (statically
-   like `gal_data_t da[20]', or dynamically like `gal_data_t *da;
+   like 'gal_data_t da[20]', or dynamically like 'gal_data_t *da;
    da=malloc(20*sizeof *da);'). In both cases, a loop will be necessary to
    delete the allocated contents of each element of the data structure
    array, but not the structure its self. After that loop, if the array of
    data structures was statically allocated, you don't have to do
    anything. If it was dynamically allocated, we just have to run
-   `free(da)'.
+   'free(da)'.
 
-   Since we aren't freeing the `gal_data_t' its-self, after the allocated
+   Since we aren't freeing the 'gal_data_t' its-self, after the allocated
    space for each pointer is freed, the pointer is set to NULL for safety
    (to avoid possible re-calls).
 */
@@ -239,7 +239,7 @@ gal_data_free_contents(gal_data_t *data)
 
   if(data==NULL)
     error(EXIT_FAILURE, 0, "%s: the input data structure to "
-          "`gal_data_free_contents' was a NULL pointer", __func__);
+          "'gal_data_free_contents' was a NULL pointer", __func__);
 
   /* Free all the possible allocations. */
   if(data->name)    { free(data->name);    data->name    = NULL; }
@@ -327,14 +327,14 @@ gal_data_array_calloc(size_t size)
   errno=0;
   out=malloc(size*sizeof *out);
   if(out==NULL)
-    error(EXIT_FAILURE, errno, "%s: %zu bytes for `out'", __func__,
+    error(EXIT_FAILURE, errno, "%s: %zu bytes for 'out'", __func__,
           size*sizeof *out);
 
 
   /* Set the pointers to NULL if they didn't exist and the non-pointers to
      impossible integers (so the caller knows the array is only
-     allocated. `minmapsize' should be set when allocating the array and
-     should be set when you run `gal_data_initialize'. */
+     allocated. 'minmapsize' should be set when allocating the array and
+     should be set when you run 'gal_data_initialize'. */
   for(i=0;i<size;++i)
     {
       out[i].array      = NULL;
@@ -409,14 +409,14 @@ gal_data_array_free(gal_data_t *dataarr, size_t size, int free_array)
 /*************************************************************
  **************            Copying             ***************
  *************************************************************/
-/* Only to be used in `data_copy_from_string'. */
+/* Only to be used in 'data_copy_from_string'. */
 static void
 data_copy_to_string_not_parsed(char *string, void *to, uint8_t type)
 {
   if( strcmp(string, GAL_BLANK_STRING) )
     gal_blank_write(to, type);
   else
-    error(EXIT_FAILURE, 0, "%s: `%s' couldn't be parsed as `%s' type",
+    error(EXIT_FAILURE, 0, "%s: '%s' couldn't be parsed as '%s' type",
           __func__, string, gal_type_name(type, 1));
 }
 
@@ -424,7 +424,7 @@ data_copy_to_string_not_parsed(char *string, void *to, uint8_t type)
 
 
 
-/* The `from' array is an array of strings. We want to keep it as
+/* The 'from' array is an array of strings. We want to keep it as
    numbers. Note that the case where both input and output structures are
    string was */
 static void
@@ -436,9 +436,9 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
 
   /* Sanity check. */
   if(from->type!=GAL_TYPE_STRING)
-    error(EXIT_FAILURE, 0, "%s: `from' must have a string type.", __func__);
+    error(EXIT_FAILURE, 0, "%s: 'from' must have a string type.", __func__);
   if(from->block)
-    error(EXIT_FAILURE, 0, "%s: tiles not currently supported (`block' "
+    error(EXIT_FAILURE, 0, "%s: tiles not currently supported ('block' "
           "element must be NULL). Please contact us at %s so we can "
           "implement this feature", __func__, PACKAGE_BUGREPORT);
 
@@ -517,7 +517,7 @@ data_copy_from_string(gal_data_t *from, gal_data_t *to)
   }
 
 /* Convert any given type into a string by printing it into the elements of
-   the already allocated `to->array'. */
+   the already allocated 'to->array'. */
 static void
 data_copy_to_string(gal_data_t *from, gal_data_t *to)
 {
@@ -527,10 +527,10 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
 
   /* Sanity check */
   if(to->type!=GAL_TYPE_STRING)
-    error(EXIT_FAILURE, 0, "%s: `to' must have a string type", __func__);
+    error(EXIT_FAILURE, 0, "%s: 'to' must have a string type", __func__);
   if(from->block)
     error(EXIT_FAILURE, 0, "%s: tile inputs not currently supported "
-          "(`block' element must be NULL). Please contact us at %s so we "
+          "('block' element must be NULL). Please contact us at %s so we "
           "can implement this feature", __func__, PACKAGE_BUGREPORT);
 
   /* Do the copying */
@@ -580,7 +580,7 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "%s: type %d not recognized for `from->type'",
+      error(EXIT_FAILURE, 0, "%s: type %d not recognized for 'from->type'",
             __func__, from->type);
     }
 }
@@ -612,7 +612,7 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
     /* Parse over the input and copy it. */                             \
     while( s_e_ind[0] + increment <= s_e_ind[1] )                       \
       {                                                                 \
-        /* If we are on a tile, reset `i' and  `f' for each round. */   \
+        /* If we are on a tile, reset 'i' and  'f' for each round. */   \
         if(in!=iblock)                                                  \
           f = ( i = ist + increment ) + contig_len;                     \
                                                                         \
@@ -629,7 +629,7 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
             /* If the blank is a NaN value (only for floating point  */ \
             /* types), it will fail any comparison, so we'll exploit */ \
             /* this property in such cases. For other cases, a       */ \
-            /* `*i==ib' is enough.                                   */ \
+            /* '*i==ib' is enough.                                   */ \
             if(ib==ib) do *o++ = *i==ib ? ob : *i; while(++i<f);        \
             else       do *o++ = *i!=*i ? ob : *i; while(++i<f);        \
           }                                                             \
@@ -673,14 +673,14 @@ data_copy_to_string(gal_data_t *from, gal_data_t *to)
                                                                         \
     default:                                                            \
       error(EXIT_FAILURE, 0, "%s: type code %d not recognized for "     \
-            "`in->type'", "COPY_OT_SET", in->type);                     \
+            "'in->type'", "COPY_OT_SET", in->type);                     \
     }
 
 
 
 
 
-/* Wrapper for `gal_data_copy_to_new_type', but will copy to the same type
+/* Wrapper for 'gal_data_copy_to_new_type', but will copy to the same type
    as the input. Recall that if the input is a tile (a part of the input,
    which is not-contiguous if it has more than one dimension), then the
    output will have only the elements that cover the tile.*/
@@ -740,10 +740,10 @@ gal_data_copy_to_new_type_free(gal_data_t *in, uint8_t newtype)
         gal_data_free(in);
       else
         fprintf(stderr, "#####\nWarning from "
-                "`gal_data_copy_to_new_type_free'\n#####\n The input "
+                "'gal_data_copy_to_new_type_free'\n#####\n The input "
                 "dataset is a tile, not a contiguous (fully allocated) "
                 "patch of memory. So it has not been freed. Please use "
-                "`gal_data_copy_to_new_type' to avoid this warning.\n"
+                "'gal_data_copy_to_new_type' to avoid this warning.\n"
                 "#####");
       return out;
     }
@@ -753,21 +753,21 @@ gal_data_copy_to_new_type_free(gal_data_t *in, uint8_t newtype)
 
 
 
-/* Copy a given dataset (`in') into an already allocated dataset `out' (the
-   actual dataset and its `array' element). The meta-data of `in' (except
-   for `block') will be fully copied into `out' also. `out->size' will be
+/* Copy a given dataset ('in') into an already allocated dataset 'out' (the
+   actual dataset and its 'array' element). The meta-data of 'in' (except
+   for 'block') will be fully copied into 'out' also. 'out->size' will be
    used to find the available space in the allocated space.
 
-   When `in->size != out->size' this function will behave as follows:
+   When 'in->size != out->size' this function will behave as follows:
 
-      `out->size < in->size': it won't re-allocate the necessary space, it
+      'out->size < in->size': it won't re-allocate the necessary space, it
           will abort with an error, so please check before calling this
           function.
 
-      `out->size > in->size': it will update `out->size' and `out->dsize'
+      'out->size > in->size': it will update 'out->size' and 'out->dsize'
           to be the same as the input. So if you want to re-use a
           pre-allocated space with varying input sizes, be sure to reset
-          `out->size' before every call to this function. */
+          'out->size' before every call to this function. */
 void
 gal_data_copy_to_allocated(gal_data_t *in, gal_data_t *out)
 {
@@ -824,7 +824,7 @@ gal_data_copy_to_allocated(gal_data_t *in, gal_data_t *out)
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "%s: type %d not recognized for `out->type'",
+      error(EXIT_FAILURE, 0, "%s: type %d not recognized for 'out->type'",
             __func__, out->type);
     }
 
@@ -840,8 +840,8 @@ gal_data_copy_to_allocated(gal_data_t *in, gal_data_t *out)
 
 
 
-/* Just a wrapper around `gal_type_from_string_auto', to return a
-   `gal_data_t' dataset hosting the allocated number. */
+/* Just a wrapper around 'gal_type_from_string_auto', to return a
+   'gal_data_t' dataset hosting the allocated number. */
 gal_data_t *
 gal_data_copy_string_to_number(char *string)
 {

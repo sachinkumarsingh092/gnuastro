@@ -190,8 +190,8 @@ struct mkprofparams
   char       *mergedimgname;  /* Name of merged image.                    */
   int                  nwcs;  /* for WCSLIB: no. coord. representations.  */
   struct wcsprm        *wcs;  /* WCS information for this dataset.        */
-  size_t               ndim;  /* Number of dimensions (for `nomerged').   */
-                              /* We can't put it in `out' because it is   */
+  size_t               ndim;  /* Number of dimensions (for 'nomerged').   */
+                              /* We can't put it in 'out' because it is   */
                               /* meaning ful there.                       */
 };
 

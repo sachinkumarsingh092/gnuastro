@@ -154,11 +154,11 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
                       "THEIR PLACE (creating a wrong WCS in the output). "
                       "Please update the respective keywords of the input "
                       "to be numbers (see next line).\n\n"
-                      "WARNING: You can do this with Gnuastro's `astfits' "
-                      "program and the `--update' option. The minimal WCS "
-                      "keywords that need a numerical value are: `CRVAL1', "
-                      "`CRVAL2', `CRPIX1', `CRPIX2', `EQUINOX' and "
-                      "`CD%%_%%' (or `PC%%_%%', where the %% are integers), "
+                      "WARNING: You can do this with Gnuastro's 'astfits' "
+                      "program and the '--update' option. The minimal WCS "
+                      "keywords that need a numerical value are: 'CRVAL1', "
+                      "'CRVAL2', 'CRPIX1', 'CRPIX2', 'EQUINOX' and "
+                      "'CD%%_%%' (or 'PC%%_%%', where the %% are integers), "
                       "please see the FITS standard, and inspect your FITS "
                       "file to identify the full set of keywords that you "
                       "need correct (for example PV%%_%% keywords).\n\n");
@@ -206,9 +206,9 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
             /* A correctly useful WCS is present. When no PC matrix
                elements were present in the header, the default PC matrix
                (a unity matrix) is used. In this case WCSLIB doesn't set
-               `altlin' (and gives it a value of 0). In Gnuastro, later on,
+               'altlin' (and gives it a value of 0). In Gnuastro, later on,
                we might need to know the type of the matrix used, so in
-               such a case, we will set `altlin' to 1. */
+               such a case, we will set 'altlin' to 1. */
             if(wcs->altlin==0) wcs->altlin=1;
         }
     }
@@ -284,7 +284,7 @@ gal_wcs_copy(struct wcsprm *wcs)
       errno=0;
       out=malloc(sizeof *out);
       if(out==NULL)
-        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `out'",
+        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for 'out'",
               __func__, sizeof *out);
 
       /* Initialize the allocated WCS structure. The WCSLIB manual says "On
@@ -308,7 +308,7 @@ gal_wcs_copy(struct wcsprm *wcs)
 
 
 /* Remove the algorithm part of CTYPE (anything after, and including, a
-   `-') if necessary. */
+   '-') if necessary. */
 static void
 wcs_ctype_noalgorithm(char *str)
 {
@@ -372,7 +372,7 @@ gal_wcs_remove_dimension(struct wcsprm *wcs, size_t fitsdim)
   for(i=0;i<naxis;++i)
     {
       /* The dimensions are in FITS order, but counting starts from 0, so
-         we'll have to subtract 1 from `fitsdim'. */
+         we'll have to subtract 1 from 'fitsdim'. */
       if(i>fitsdim-1)
         {
           /* 1-D arrays. */
@@ -429,17 +429,17 @@ gal_wcs_remove_dimension(struct wcsprm *wcs, size_t fitsdim)
   naxis = wcs->naxis -= 1;
 
 
-  /* The `TAN' algorithm needs two dimensions. So we need to remove it when
+  /* The 'TAN' algorithm needs two dimensions. So we need to remove it when
      it can cause confusion. */
   switch(naxis)
     {
-    /* The `TAN' algorithm cannot be used for any single-dimensional
+    /* The 'TAN' algorithm cannot be used for any single-dimensional
        dataset. So we'll have to remove it if it exists. */
     case 1:
       wcs_ctype_noalgorithm(wcs->ctype[0]);
       break;
 
-    /* For any other dimensionality, `TAN' should be kept only when exactly
+    /* For any other dimensionality, 'TAN' should be kept only when exactly
        two dimensions have it. */
     default:
 
@@ -529,7 +529,7 @@ gal_wcs_on_tile(gal_data_t *tile)
    final matrix irrespective of the type of storage in the WCS
    structure. Recall that the FITS standard has several methods to store
    the matrix, which is up to this function to account for and return the
-   final matrix. The output is an allocated DxD matrix where `D' is the
+   final matrix. The output is an allocated DxD matrix where 'D' is the
    number of dimensions. */
 double *
 gal_wcs_warp_matrix(struct wcsprm *wcs)
@@ -541,7 +541,7 @@ gal_wcs_warp_matrix(struct wcsprm *wcs)
   errno=0;
   out=malloc(size*sizeof *out);
   if(out==NULL)
-    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `out'",
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for 'out'",
           __func__, size*sizeof *out);
 
   /* Fill in the array. */
@@ -574,7 +574,7 @@ gal_wcs_warp_matrix(struct wcsprm *wcs)
 
          Just note that the equations of the link above convert CROTAi to
          PC. But here we want the "final" matrix (after multiplication by
-         the `CDELT' values). So to speed things up, we won't bother
+         the 'CDELT' values). So to speed things up, we won't bother
          dividing and then multiplying by the same CDELT values in the
          off-diagonal elements. */
       crota2=wcs->crota[1];
@@ -595,17 +595,17 @@ gal_wcs_warp_matrix(struct wcsprm *wcs)
 
 
 
-/* According to the FITS standard, in the `PCi_j' WCS formalism, the matrix
-   elements m_{ij} are encoded in the `PCi_j' keywords and the scale
-   factors are encoded in the `CDELTi' keywords. There is also another
-   formalism (the `CDi_j' formalism) which merges the two into one
+/* According to the FITS standard, in the 'PCi_j' WCS formalism, the matrix
+   elements m_{ij} are encoded in the 'PCi_j' keywords and the scale
+   factors are encoded in the 'CDELTi' keywords. There is also another
+   formalism (the 'CDi_j' formalism) which merges the two into one
    matrix.
 
-   However, WCSLIB's internal operations are apparently done in the `PCi_j'
+   However, WCSLIB's internal operations are apparently done in the 'PCi_j'
    formalism. So its outputs are also all in that format by default. When
-   the input is a `CDi_j', WCSLIB will still read the image into the
-   `PCi_j' formalism and the `CDELTi's are set to 1. This function will
-   decompose the two matrices to give a reasonable `CDELTi' and `PCi_j' in
+   the input is a 'CDi_j', WCSLIB will still read the image into the
+   'PCi_j' formalism and the 'CDELTi's are set to 1. This function will
+   decompose the two matrices to give a reasonable 'CDELTi' and 'PCi_j' in
    such cases. */
 void
 gal_wcs_decompose_pc_cdelt(struct wcsprm *wcs)
@@ -643,13 +643,13 @@ gal_wcs_decompose_pc_cdelt(struct wcsprm *wcs)
       /* Clean up. */
       free(ps);
 
-      /* According to the `wcslib/wcs.h' header: "In particular, wcsset()
+      /* According to the 'wcslib/wcs.h' header: "In particular, wcsset()
          resets wcsprm::cdelt to unity if CDi_ja is present (and no
-         PCi_ja).". So apparently, when the input is a `CDi_j', it might
-         expect the `CDELTi' elements to be 1.0. But we have changed that
-         here, so we will correct the `altlin' element of the WCS structure
-         to make sure that WCSLIB only looks into the `PCi_j' and `CDELTi'
-         and makes no assumptioins about `CDELTi'. */
+         PCi_ja).". So apparently, when the input is a 'CDi_j', it might
+         expect the 'CDELTi' elements to be 1.0. But we have changed that
+         here, so we will correct the 'altlin' element of the WCS structure
+         to make sure that WCSLIB only looks into the 'PCi_j' and 'CDELTi'
+         and makes no assumptioins about 'CDELTi'. */
       wcs->altlin=1;
     }
 }
@@ -706,7 +706,7 @@ gal_wcs_pixel_scale(struct wcsprm *wcs)
 
 
   /* Write the full WCS rotation matrix into an array, irrespective of what
-     style it was stored in the wcsprm structure (`PCi_j' style or `CDi_j'
+     style it was stored in the wcsprm structure ('PCi_j' style or 'CDi_j'
      style). */
   a=gal_wcs_warp_matrix(wcs);
 
@@ -750,7 +750,7 @@ gal_wcs_pixel_scale(struct wcsprm *wcs)
       if(maxrow!=minrow && maxrow/minrow>1e5 && warning_printed==0)
         {
           fprintf(stderr, "\nWARNING: The input WCS matrix (possibly taken "
-                  "from the FITS header keywords starting with `CD' or `PC') "
+                  "from the FITS header keywords starting with 'CD' or 'PC') "
                   "contains values with very different scales (more than "
                   "10^5 different). This is probably due to floating point "
                   "errors. These values might bias the pixel scale (and "
@@ -758,14 +758,14 @@ gal_wcs_pixel_scale(struct wcsprm *wcs)
                   "You can see the respective matrix with one of the "
                   "following two commands (depending on how the FITS file "
                   "was written). Recall that if the desired extension/HDU "
-                  "isn't the default, you can choose it with the `--hdu' "
-                  "(or `-h') option before the `|' sign in these commands."
+                  "isn't the default, you can choose it with the '--hdu' "
+                  "(or '-h') option before the '|' sign in these commands."
                   "\n\n"
                   "    $ astfits file.fits -p | grep 'PC._.'\n"
                   "    $ astfits file.fits -p | grep 'CD._.'\n\n"
                   "You can delete the ones with obvious floating point "
                   "error values using the following command (assuming you "
-                  "want to delete `CD1_2' and `CD2_1'). Afterwards, you can "
+                  "want to delete 'CD1_2' and 'CD2_1'). Afterwards, you can "
                   "re-run your original command to remove this warning "
                   "message and possibly correct errors that it might have "
                   "caused.\n\n"
@@ -791,10 +791,10 @@ gal_wcs_pixel_scale(struct wcsprm *wcs)
   /* The raw pixel scale array produced from the singular value
      decomposition above is ordered based on values, not the input. So when
      the pixel scales in all the dimensions aren't the same (the units of
-     the dimensions differ), the order of the values in `pixelscale' will
+     the dimensions differ), the order of the values in 'pixelscale' will
      not necessarily correspond to the input's dimensions.
 
-     To correct the order, we can use the `V' matrix to find the original
+     To correct the order, we can use the 'V' matrix to find the original
      position of the pixel scale values and then use permutation to
      re-order it correspondingly. The column with the largest (absolute)
      value will be taken as the one to be used for each row. */
@@ -847,7 +847,7 @@ gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs)
   if(wcs->naxis!=2) return NAN;
 
   /* Check if the units of the axis are degrees or not. Currently all FITS
-     images I have worked with use `deg' for degrees. If other alternatives
+     images I have worked with use 'deg' for degrees. If other alternatives
      exist, we can add corrections later. */
   if( strcmp("deg", wcs->cunit[0]) || strcmp("deg", wcs->cunit[1]) )
     return NAN;
@@ -905,7 +905,7 @@ wcs_convert_sanity_check_alloc(gal_data_t *coords, struct wcsprm *wcs,
 
       /* Check the type of the input. */
       if(tmp->type!=GAL_TYPE_FLOAT64)
-        error(EXIT_FAILURE, 0, "%s: input coordinates must have `float64' "
+        error(EXIT_FAILURE, 0, "%s: input coordinates must have 'float64' "
               "type", func);
 
       /* Make sure it has a single dimension. */
@@ -951,7 +951,7 @@ wcs_convert_sanity_check_alloc(gal_data_t *coords, struct wcsprm *wcs,
 
 
 /* In Gnuastro, each column (coordinate for WCS conversion) is treated as a
-   separate array in a `gal_data_t' that are linked through a linked
+   separate array in a 'gal_data_t' that are linked through a linked
    list. But in WCSLIB, the input is a single array (with multiple
    columns). This function will convert between the two. */
 static void
@@ -1005,8 +1005,8 @@ wcs_convert_prepare_out(gal_data_t *coords, struct wcsprm *wcs, int inplace)
 
 /* Convert world coordinates to image coordinates given the input WCS
    structure. The input must be a linked list of data structures of float64
-   (`double') type. The top element of the linked list must be the first
-   coordinate and etc. If `inplace' is non-zero, then the output will be
+   ('double') type. The top element of the linked list must be the first
+   coordinate and etc. If 'inplace' is non-zero, then the output will be
    written into the input's allocated space. */
 gal_data_t *
 gal_wcs_world_to_img(gal_data_t *coords, struct wcsprm *wcs, int inplace)
@@ -1069,7 +1069,7 @@ gal_wcs_world_to_img(gal_data_t *coords, struct wcsprm *wcs, int inplace)
 
 
 
-/* Similar to `gal_wcs_world_to_img'. */
+/* Similar to 'gal_wcs_world_to_img'. */
 gal_data_t *
 gal_wcs_img_to_world(gal_data_t *coords, struct wcsprm *wcs, int inplace)
 {

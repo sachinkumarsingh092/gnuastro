@@ -21,9 +21,9 @@ PRACTICAL NOTES
 1. When creating the final PDF files here (usually at the end of the
 boostrapping step), you might get this error:
 
-convert: attempt to perform an operation not allowed by the security policy `EPS' @ error/constitute.c/IsCoderAuthorized/408.
+convert: attempt to perform an operation not allowed by the security policy 'EPS' @ error/constitute.c/IsCoderAuthorized/408.
 
-If you do, go to `/etc/ImageMagick-7/policy.xml', and uncomment the line
+If you do, go to '/etc/ImageMagick-7/policy.xml', and uncomment the line
 with the EPS,PDF,etc.... policy limitations. It was apparently due to a bug
 in Ghostscript that has been fixed since version 9.24
 (https://www.kb.cert.org/vuls/id/332928/).

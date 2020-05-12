@@ -153,18 +153,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
 {
   struct fitsparams *p = state->input;
 
-  /* Pass `gal_options_common_params' into the child parser.  */
+  /* Pass 'gal_options_common_params' into the child parser.  */
   state->child_inputs[0] = &p->cp;
 
   /* In case the user incorrectly uses the equal sign (for example
-     with a short format or with space in the long format, then `arg`
+     with a short format or with space in the long format, then 'arg'
      start with (if the short version was called) or be (if the long
      version was called with a space) the equal sign. So, here we
      check if the first character of arg is the equal sign, then the
      user is warned and the program is stopped: */
   if(arg && arg[0]=='=')
-    argp_error(state, "incorrect use of the equal sign (`=`). For short "
-               "options, `=` should not be used and for long options, "
+    argp_error(state, "incorrect use of the equal sign ('='). For short "
+               "options, '=' should not be used and for long options, "
                "there should be no space between the option, equal sign "
                "and value");
 
@@ -228,13 +228,13 @@ ui_check_copykeys(struct fitsparams *p)
   /* For copykeys, an output filename is mandatory. */
   if(p->cp.output==NULL || p->outhdu==NULL)
     error(EXIT_FAILURE, 0, "an output FITS extension (in an existing "
-          "FITS file, specified with the `--output' and `--outhdu') are "
-          "mandatory for running `--copykeys'");
+          "FITS file, specified with the '--output' and '--outhdu') are "
+          "mandatory for running '--copykeys'");
 
   /* Initialize the values. */
   p->copykeysrange[0]=p->copykeysrange[1]=GAL_BLANK_LONG;
 
-  /* Parse the string: `forl': "first-or-last". */
+  /* Parse the string: 'forl': "first-or-last". */
   while(*pt!='\0')
     {
       switch(*pt)
@@ -245,7 +245,7 @@ ui_check_copykeys(struct fitsparams *p)
           break;
         case '.':
           error(EXIT_FAILURE, 0, "the numbers in the argument to "
-                "`--section` (`-s') have to be integers. You input "
+                "'--section' ('-s') have to be integers. You input "
                 "includes a float number: %s", p->copykeys);
           break;
         case ' ': case '\t':
@@ -268,10 +268,10 @@ ui_check_copykeys(struct fitsparams *p)
           break;
           */
         default:
-          error(EXIT_FAILURE, 0, "value to `--copykeys' must only contain "
+          error(EXIT_FAILURE, 0, "value to '--copykeys' must only contain "
                 "integer numbers and these special characters between them: "
-                "`:' when necessary. But it is `%s' (the first "
-                "non-acceptable character is `%c').\n", p->copykeys, *pt);
+                "':' when necessary. But it is '%s' (the first "
+                "non-acceptable character is '%c').\n", p->copykeys, *pt);
           break;
         }
 
@@ -292,17 +292,17 @@ ui_check_copykeys(struct fitsparams *p)
 
   /* Basic sanity checks. */
   if( p->copykeysrange[1]==GAL_BLANK_LONG )
-    error(EXIT_FAILURE, 0, "no ending keyword number given to `--copykeys'. "
+    error(EXIT_FAILURE, 0, "no ending keyword number given to '--copykeys'. "
           "If you want to copy all the keywords after a certain one "
-          "(without worrying about how many there are), you can use `-1'.\n\n"
+          "(without worrying about how many there are), you can use '-1'.\n\n"
           "For example if you want to copy all the keywords after the 20th, "
-          "you can use `--copykeys=20,-1'. Generally, you can use negative "
+          "you can use '--copykeys=20,-1'. Generally, you can use negative "
           "numbers for the last keyword number to count from the end.");
   if( p->copykeysrange[0]<=0 )
-    error(EXIT_FAILURE, 0, "the first number given to `--copykeys' must be "
+    error(EXIT_FAILURE, 0, "the first number given to '--copykeys' must be "
           "positive");
   if( p->copykeysrange[1]>=0 && p->copykeysrange[0]>=p->copykeysrange[1] )
-    error(EXIT_FAILURE, 0, "the first number (%ld) given to `--copykeys' "
+    error(EXIT_FAILURE, 0, "the first number (%ld) given to '--copykeys' "
           "must be smaller than the second (%ld)", p->copykeysrange[0],
           p->copykeysrange[1]);
 
@@ -317,7 +317,7 @@ ui_check_copykeys(struct fitsparams *p)
 
 
 /* Read and check ONLY the options. When arguments are involved, do the
-   check in `ui_check_options_and_arguments'. */
+   check in 'ui_check_options_and_arguments'. */
 static void
 ui_read_check_only_options(struct fitsparams *p)
 {
@@ -333,18 +333,18 @@ ui_read_check_only_options(struct fitsparams *p)
       if(p->cp.hdu==NULL)
         error(EXIT_FAILURE, 0, "a HDU (extension) is necessary for keyword "
               "related options but none was defined. Please use the "
-              "`--hdu' (or `-h') option to select one");
+              "'--hdu' (or '-h') option to select one");
 
       /* If Copy keys has been given, read it and make sure its setup. */
       if(p->copykeys)
         ui_check_copykeys(p);
 
-      /* Currently `datetosec' must be called alone. */
+      /* Currently 'datetosec' must be called alone. */
       if( p->datetosec
           && (p->date || p->comment || p->history || p->asis || p->delete
               || p->rename || p->update || p->write || p->verify
               || p->printallkeys || p->copykeys) )
-        error(EXIT_FAILURE, 0, "`--datetosec' cannot currently be called "
+        error(EXIT_FAILURE, 0, "'--datetosec' cannot currently be called "
               "with any other option");
 
       /* Set the operating mode. */
@@ -368,14 +368,14 @@ ui_read_check_only_options(struct fitsparams *p)
         {
           /* Make sure the other HDU-related options aren't called. */
           if(p->remove || p->copy || p->cut)
-            error(EXIT_FAILURE, 0, "`--numhdus' or `--datasum' options "
+            error(EXIT_FAILURE, 0, "'--numhdus' or '--datasum' options "
                   "must be called alone");
 
           /* Make sure the HDU is given for the datasum option. */
           if( p->datasum && p->cp.hdu==NULL )
             error(EXIT_FAILURE, 0, "a HDU (extension) is necessary for the "
-                  " `--checksum' or `--datasum' options. Please use the "
-                  "`--hdu' (or `-h') option to select one");
+                  " '--checksum' or '--datasum' options. Please use the "
+                  "'--hdu' (or '-h') option to select one");
         }
       else
         {
@@ -439,9 +439,9 @@ ui_check_options_and_arguments(struct fitsparams *p)
 /**************************************************************/
 /*****************       Preparations      ********************/
 /**************************************************************/
-/* The `--update' and `--write' options take multiple values for each
+/* The '--update' and '--write' options take multiple values for each
    keyword, so here, we tokenize them and put them into a
-   `gal_fits_list_key_t' list. */
+   'gal_fits_list_key_t' list. */
 static void
 ui_fill_fits_headerll(gal_list_str_t *input, gal_fits_list_key_t **output,
                       char *option_name)
@@ -459,12 +459,12 @@ ui_fill_fits_headerll(gal_list_str_t *input, gal_fits_list_key_t **output,
       i=0;
       tailptr=NULL;
 
-      /* `c' is created in case of an error, so the input value can be
+      /* 'c' is created in case of an error, so the input value can be
          reported. */
       errno=0;
       original=malloc(strlen(tmp->v)+1);
       if(original==NULL)
-        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `original'",
+        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for 'original'",
               __func__, strlen(tmp->v)+1);
       strcpy(original, tmp->v);
 
@@ -521,14 +521,14 @@ ui_fill_fits_headerll(gal_list_str_t *input, gal_fits_list_key_t **output,
 
       /* Make sure the keyname and value (if necessary) is given. */
       if( keyname==NULL || (needsvalue && value==NULL) )
-        error(EXIT_FAILURE, 0, "`--%s' option string (%s) can't be parsed. "
+        error(EXIT_FAILURE, 0, "'--%s' option string (%s) can't be parsed. "
               "The general expected format is (a comment string and unit "
               "are optional):\n\n"
               "    --%s=KEYWORD,value,\"a comment string\",unit\n\n"
               "Any space characters around the the comma (,) characters "
               "will be seen as part of the respective token.\n\n"
               "Note that there are some exceptions (where no value is need)"
-              "please see the manual for more (`$ info astfits')",
+              "please see the manual for more ('$ info astfits')",
               option_name, original, option_name);
       /*
       printf("\n\n-%s-\n-%s-\n-%s-\n-%s-\n", keyname, value, comment, unit);
@@ -547,7 +547,7 @@ ui_fill_fits_headerll(gal_list_str_t *input, gal_fits_list_key_t **output,
               errno=0;
               fvalue=lp=malloc(sizeof *lp);
               if(lp==NULL)
-                error(EXIT_FAILURE, errno, "%s: %zu bytes for `lp'",
+                error(EXIT_FAILURE, errno, "%s: %zu bytes for 'lp'",
                       __func__, sizeof *lp);
               *lp=l;
             }
@@ -563,7 +563,7 @@ ui_fill_fits_headerll(gal_list_str_t *input, gal_fits_list_key_t **output,
                   fvalue=dp=malloc(sizeof *dp);
                   if(dp==NULL)
                     error(EXIT_FAILURE, errno, "%s: allocating %zu bytes "
-                          "for `dp'", __func__, sizeof *dp);
+                          "for 'dp'", __func__, sizeof *dp);
                   *dp=d;
                 }
               else
@@ -628,9 +628,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct fitsparams *p)
   struct gal_options_common_params *cp=&p->cp;
 
 
-  /* Include the parameters necessary for argp from this program (`args.h')
-     and for the common options to all Gnuastro (`commonopts.h'). We want
-     to directly put the pointers to the fields in `p' and `cp', so we are
+  /* Include the parameters necessary for argp from this program ('args.h')
+     and for the common options to all Gnuastro ('commonopts.h'). We want
+     to directly put the pointers to the fields in 'p' and 'cp', so we are
      simply including the header here to not have to use long macros in
      those headers which make them hard to read and modify. This also helps
      in having a clean environment: everything in those headers is only

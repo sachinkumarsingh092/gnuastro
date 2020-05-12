@@ -141,30 +141,30 @@ gal_dimension_remove_extra(size_t ndim, size_t *dsize, struct wcsprm *wcs);
 
    The inputs are:
 
-       `index': The index of the desired point.
+       'index': The index of the desired point.
 
-       `ndim':  The number of dimensions in the dataset.
+       'ndim':  The number of dimensions in the dataset.
 
-       `dsize': The size of the dataset along each dimension (C order).
+       'dsize': The size of the dataset along each dimension (C order).
 
-       `connectivity': The connectivity of the neighbors. This is a single
-                integer with a value between `1' and `ndim' (it is
+       'connectivity': The connectivity of the neighbors. This is a single
+                integer with a value between '1' and 'ndim' (it is
                 irrelevant for a 1D dataset). Below, the case for 3D data
-                is shown. Each `dn' corresponds to `dinc[n]'. See `dinc'
-                below for the `dinc' values.
+                is shown. Each 'dn' corresponds to 'dinc[n]'. See 'dinc'
+                below for the 'dinc' values.
 
-                   `1': At most ONE addition/subtraction. In 1D: only the
+                   '1': At most ONE addition/subtraction. In 1D: only the
                         first line should be used. In 2D, this is 4
                         connectivity. In 3D all the elements that share an
-                        2D-face with the cube at index `i'.
+                        2D-face with the cube at index 'i'.
 
                                        i - d0     i + d0        (1D, 2D & 3D)
                                        i - d1     i + d1        (2D & 3D)
                                        i - d2     i + d2        (3D)
 
-                   `2': At most TWO additions/subtractions. In 2D: 8
+                   '2': At most TWO additions/subtractions. In 2D: 8
                         connectivity. In 3D: all elements that share a 1D
-                        edge with the cube at index `i'.
+                        edge with the cube at index 'i'.
 
                                   i - d0 - d1     i - d0 + d1   (2D & 3D)
                                   i + d0 - d1     i + d0 + d1   (2D & 3D)
@@ -173,16 +173,16 @@ gal_dimension_remove_extra(size_t ndim, size_t *dsize, struct wcsprm *wcs);
                                   i - d1 - d2     i - d1 + d2   (3D)
                                   i + d1 - d2     i + d1 + d2   (3D)
 
-                   `3': At most THREE additions/subtractions (only for 3D
+                   '3': At most THREE additions/subtractions (only for 3D
                         and higher dimensions). All cubes that share a 0-D
-                        vertex with the cube at index `i'.
+                        vertex with the cube at index 'i'.
 
                              i - d0 - d1 - d2     i - d0 - d1 + d2
                              i - d0 + d1 - d2     i - d0 + d1 + d2
                              i + d0 - d1 - d2     i + d0 - d1 + d2
                              i + d0 + d1 - d2     i + d0 + d1 + d2
 
-        `dinc': An array keeping the length necessary to increment along
+        'dinc': An array keeping the length necessary to increment along
                 each dimension. You can make this array with the following
                 function:
 
@@ -190,17 +190,17 @@ gal_dimension_remove_extra(size_t ndim, size_t *dsize, struct wcsprm *wcs);
 
                 Don't forget to free it afterwards.
 
-        `operation': Any C operation. `nind' is a `size_t' type variable
+        'operation': Any C operation. 'nind' is a 'size_t' type variable
                 that is defined by this macro and will have the index of
-                each neighbor. You can use this `nind' for any processing
-                that you like on the neighbor. Note that `op' will be
+                each neighbor. You can use this 'nind' for any processing
+                that you like on the neighbor. Note that 'op' will be
                 repeated the number of times there is a neighbor.
 
 
    Implementation
    --------------
 
-   To be most efficient (avoid as many `if's as possible), we will start
+   To be most efficient (avoid as many 'if's as possible), we will start
    parsing the neighbors from the fastest dimension. When-ever the element
    is on the edge of the dataset in any dimension, we will store it in a
    bit-wise array (one bit for each dimension, to mark if it is on the edge
@@ -230,8 +230,8 @@ gal_dimension_remove_extra(size_t ndim, size_t *dsize, struct wcsprm *wcs);
     gdn_is_end=(uint8_t *)(&gdn_bitstr)+1;                              \
                                                                         \
     /* Start with the slowest dimension and see if it is on the edge */ \
-    /* or not, similar to `gal_dimension_index_to_coord'. In the */     \
-    /* process, also fill the `connectivity==1' neighbors. */           \
+    /* or not, similar to 'gal_dimension_index_to_coord'. In the */     \
+    /* process, also fill the 'connectivity==1' neighbors. */           \
     for(gdn_D=0;gdn_D<ndim;++gdn_D)                                     \
       {                                                                 \
         /* If this dimension is only one element wide, no neighbors. */ \
@@ -265,16 +265,16 @@ gal_dimension_remove_extra(size_t ndim, size_t *dsize, struct wcsprm *wcs);
               }                                                         \
           }                                                             \
                                                                         \
-        /* Change `ind' to the remainder of previous dimensions. */     \
+        /* Change 'ind' to the remainder of previous dimensions. */     \
         gdn_ind %= dinc[gdn_D];                                         \
       }                                                                 \
                                                                         \
     /* We now know if the index is on the edge or not. During the */    \
-    /* process above, we also finished the `connectivity==1' case. */   \
+    /* process above, we also finished the 'connectivity==1' case. */   \
     /* So we'll just have to find the rest of the terms. */             \
     if(connectivity>1 && ndim>1)                                        \
       {                                                                 \
-        /* Finalize `is_edge' (bit value 1 for respective dim.). */     \
+        /* Finalize 'is_edge' (bit value 1 for respective dim.). */     \
         gdn_is_edge=(uint8_t *)(&gdn_bitstr)+2;                         \
         *gdn_is_edge = *gdn_is_start | *gdn_is_end;                     \
                                                                         \

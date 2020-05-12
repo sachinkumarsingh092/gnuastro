@@ -34,14 +34,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /*****************************************************************/
 /**********                  Macros               ****************/
 /*****************************************************************/
-/* When one or both elements are NaN, the simple comparison, like `(tb >
+/* When one or both elements are NaN, the simple comparison, like '(tb >
    ta) - (tb < ta)', will give 0 (as if the elements are equal). However,
    some preference has to be given to the NaN element in a comparison,
    otherwise the output is not going to be reasonable. We also don't want
    to check NaNs on every comparison (it will slow down the processing).
 
    So we'll exploit the fact that when there comparison result doesn't
-   equal zero, we don't have any NaNs and this `COMPARE_FLOAT_POSTPROCESS'
+   equal zero, we don't have any NaNs and this 'COMPARE_FLOAT_POSTPROCESS'
    macro is called only when the comparison gives zero. Being larger or
    smaller isn't defined for NaNs, so we'll just put them in the end of the
    sorted list whether it is sorted by decreasing or increasing mode.*/

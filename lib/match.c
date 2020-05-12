@@ -126,9 +126,9 @@ match_coordinate_sanity_check_columns(gal_data_t *coord, char *info,
       if(tmp->type!=GAL_TYPE_FLOAT64)
         {
           if(inplace)
-            error(EXIT_FAILURE, 0, "%s: when `inplace' is activated, the "
-                  "input coordinates must have `float64' type. At least "
-                  "one node of the %s list has type of `%s'", __func__, info,
+            error(EXIT_FAILURE, 0, "%s: when 'inplace' is activated, the "
+                  "input coordinates must have 'float64' type. At least "
+                  "one node of the %s list has type of '%s'", __func__, info,
                   gal_type_name(tmp->type, 1));
           else
             *allf64=0;
@@ -203,7 +203,7 @@ match_coordinaes_sanity_check(gal_data_t *coord1, gal_data_t *coord2,
 
     default:
       error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
-            "the issue. The value %zu not recognized for `ndim'", __func__,
+            "the issue. The value %zu not recognized for 'ndim'", __func__,
             PACKAGE_BUGREPORT, ncoord1);
     }
 }
@@ -248,7 +248,7 @@ match_coordinates_prepare(gal_data_t *coord1, gal_data_t *coord2,
   gal_data_t *c, *tmp, *A=NULL, *B=NULL;
 
   /* Sort the datasets if they aren't sorted. If the dataset is already
-     sorted, then `inplace' is irrelevant. */
+     sorted, then 'inplace' is irrelevant. */
   if(sorted_by_first && allf64)
     {
       *A_out=coord1;
@@ -256,7 +256,7 @@ match_coordinates_prepare(gal_data_t *coord1, gal_data_t *coord2,
     }
   else
     {
-      /* Allocating a new list is only necessary when `inplace==0' or all
+      /* Allocating a new list is only necessary when 'inplace==0' or all
          the columns are double. */
       if( inplace && allf64 )
         {
@@ -318,7 +318,7 @@ match_coordinates_prepare(gal_data_t *coord1, gal_data_t *coord2,
 /********************************************************************/
 /*************            Coordinate matching           *************/
 /********************************************************************/
-/* Preparations for `match_coordinates_second_in_first'. */
+/* Preparations for 'match_coordinates_second_in_first'. */
 static void
 match_coordinates_sif_prepare(gal_data_t *A, gal_data_t *B,
                               double *aperture, size_t ndim, double **a,
@@ -485,7 +485,7 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
                                   struct match_coordinate_sfll **bina)
 {
   /* To keep things easy to read, all variables related to catalog 1 start
-     with an `a' and things related to catalog 2 are marked with a `b'. The
+     with an 'a' and things related to catalog 2 are marked with a 'b'. The
      redundant variables (those that equal a previous value) are only
      defined to make it easy to read the code.*/
   int iscircle=0;
@@ -501,40 +501,40 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
   match_coordinates_sif_prepare(A, B, aperture,  ndim, a, b, dist, c, s,
                                 &iscircle);
 
-  /* For each row/record of catalog `a', make a list of the nearest records
+  /* For each row/record of catalog 'a', make a list of the nearest records
      in catalog b within the maximum distance. Note that both catalogs are
      sorted by their first axis coordinate.*/
   for(ai=0;ai<ar;++ai)
     if(blow<br)
       {
-        /* Initialize `bina'. */
+        /* Initialize 'bina'. */
         bina[ai]=NULL;
 
         /* Find the first (lowest first axis value) row/record in catalog
-           `b' that is within the search radius for this record of catalog
-           `a'. `blow' is the index of the first element to start searching
-           in the catalog `b' for a match to `a[][ai]' (the record in
-           catalog a that is currently being searched). `blow' is only
+           'b' that is within the search radius for this record of catalog
+           'a'. 'blow' is the index of the first element to start searching
+           in the catalog 'b' for a match to 'a[][ai]' (the record in
+           catalog a that is currently being searched). 'blow' is only
            based on the first coordinate, not the second.
 
            Both catalogs are sorted by their first coordinate, so the
-           `blow' to search for the next record in catalog `a' will be
-           larger or equal to that of the previous catalog `a' record. To
+           'blow' to search for the next record in catalog 'a' will be
+           larger or equal to that of the previous catalog 'a' record. To
            account for possibly large distances between the records, we do
-           a search here to change `blow' if necessary before doing further
+           a search here to change 'blow' if necessary before doing further
            searching.*/
         for( blow=prevblow; blow<br && b[0][blow] < a[0][ai]-dist[0]; ++blow)
-          { /* This can be blank, the `for' does all we need :-). */ }
+          { /* This can be blank, the 'for' does all we need :-). */ }
 
 
-        /* `blow' is now found for this `ai' and will be used unchanged to
+        /* 'blow' is now found for this 'ai' and will be used unchanged to
            the end of the loop. So keep its value to help the search for
-           the next entry in catalog `a'. */
+           the next entry in catalog 'a'. */
         prevblow=blow;
 
 
-        /* Go through catalog `b' (starting at `blow') with a first axis
-           value smaller than the maximum acceptable range for `si'. */
+        /* Go through catalog 'b' (starting at 'blow') with a first axis
+           value smaller than the maximum acceptable range for 'si'. */
         for( bi=blow; bi<br && b[0][bi] <= a[0][ai] + dist[0]; ++bi )
           {
             /* Only consider records with a second axis value in the
@@ -553,25 +553,25 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
                 || ( b[1][bi] >= a[1][ai]-dist[1]
                      && b[1][bi] <= a[1][ai]+dist[1] ) )
               {
-                /* Now, `bi' is within the rectangular range of `ai'. But
+                /* Now, 'bi' is within the rectangular range of 'ai'. But
                    this is not enough to consider the two objects matched
                    for the following reasons:
 
                    1) Until now we have avoided calculations other than
                    larger or smaller on double precision floating point
-                   variables for efficiency. So the `bi' is within a square
-                   of side `dist[0]*dist[1]' around `ai' (not within a
+                   variables for efficiency. So the 'bi' is within a square
+                   of side 'dist[0]*dist[1]' around 'ai' (not within a
                    fixed radius).
 
-                   2) Other objects in the `b' catalog may be closer to
-                   `ai' than this `bi'.
+                   2) Other objects in the 'b' catalog may be closer to
+                   'ai' than this 'bi'.
 
-                   3) The closest `bi' to `ai' might be closer to another
-                   catalog `a' record.
+                   3) The closest 'bi' to 'ai' might be closer to another
+                   catalog 'a' record.
 
                    To address these problems, we will use a linked list to
-                   keep the indexes of the `b's near `ai', along with their
-                   distance. We only add the `bi's to this list that are
+                   keep the indexes of the 'b's near 'ai', along with their
+                   distance. We only add the 'bi's to this list that are
                    within the acceptable distance.
 
                    Since we are dealing with much fewer objects at this
@@ -596,7 +596,7 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
 
 
         /* If there was no objects within the acceptable distance, then the
-           linked list pointer will be NULL, so go on to the next `ai'. */
+           linked list pointer will be NULL, so go on to the next 'ai'. */
         if(bina[ai]==NULL)
           continue;
 
@@ -619,7 +619,7 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
 
 
 
-/* In `match_coordinates_second_in_first', we made an array of lists, here
+/* In 'match_coordinates_second_in_first', we made an array of lists, here
    we want to reverse that list to fix the second two issues that were
    discussed there. */
 void
@@ -630,25 +630,25 @@ match_coordinates_rearrange(gal_data_t *A, gal_data_t *B,
   float *fp, *fpf, r, *ainb;
   size_t ai, ar=A->size, br=B->size;
 
-  /* Allocate the space for `ainb' and initialize it to NaN (since zero is
+  /* Allocate the space for 'ainb' and initialize it to NaN (since zero is
      meaningful) in this context (both for indexs and also for
      floats). This is a two column array that will keep the distance and
-     index of the closest element in catalog `a' for each element in
+     index of the closest element in catalog 'a' for each element in
      catalog b. */
   errno=0; ainb=calloc(2*br, sizeof *ainb);
   if(ainb==NULL)
-    error(EXIT_FAILURE, errno, "%s: %zu bytes for `ainb'", __func__,
+    error(EXIT_FAILURE, errno, "%s: %zu bytes for 'ainb'", __func__,
           br*sizeof *ainb);
   fpf=(fp=ainb)+2*br; do *fp++=NAN; while(fp<fpf);
 
-  /* Go over each object in catalog `a' and re-distribute the near objects,
-     to find which ones in catalog `a' are within the search radius of
-     catalog b in a sorted manner. Note that we only need the `ai' with the
-     minimum distance to `bi', the rest are junk.*/
+  /* Go over each object in catalog 'a' and re-distribute the near objects,
+     to find which ones in catalog 'a' are within the search radius of
+     catalog b in a sorted manner. Note that we only need the 'ai' with the
+     minimum distance to 'bi', the rest are junk.*/
   for( ai=0; ai<ar; ++ai )
     while( bina[ai] )	/* As long as its not NULL.            */
       {
-	/* Pop out a `bi' and its distance to this `ai' from `bina'. */
+	/* Pop out a 'bi' and its distance to this 'ai' from 'bina'. */
 	match_coordinate_pop_from_sfll(&bina[ai], &bi, &r);
 
 	/* If nothing has been put here (the isnan condition below is
@@ -671,7 +671,7 @@ match_coordinates_rearrange(gal_data_t *A, gal_data_t *B,
   }
   */
 
-  /* Re-fill the bina array, but this time only with the `bi' that is
+  /* Re-fill the bina array, but this time only with the 'bi' that is
      closest to it. Note that bina was fully set to NULL after popping all
      the elements in the loop above.*/
   for( bi=0; bi<br; ++bi )
@@ -682,8 +682,8 @@ match_coordinates_rearrange(gal_data_t *A, gal_data_t *B,
 	r=ainb[bi*2+1];
 	ai=(size_t)(ainb[bi*2]);
 
-	/* Check if this is the first time we are associating a `bi' to
-	   this `ai'. If so, then just allocate a single element
+	/* Check if this is the first time we are associating a 'bi' to
+	   this 'ai'. If so, then just allocate a single element
 	   list. Otherwise, see if the distance is closer or not. If so,
 	   replace the values in the single node. */
 	if( bina[ai] )
@@ -764,17 +764,17 @@ gal_match_coordinates_output(gal_data_t *A, gal_data_t *B, size_t *A_perm,
                                  "Distance between the match.");
 
 
-  /* Allocate the `Bmatched' array which is a flag for which rows of the
+  /* Allocate the 'Bmatched' array which is a flag for which rows of the
      second catalog were matched. The columns that had a match will get a
      value of one while we are parsing them below. */
   Bmatched=gal_pointer_allocate(GAL_TYPE_UINT8, B->size, 1, __func__,
                                 "Bmatched");
 
 
-  /* Initialize the indexs. We want the first `nummatched' indexs in both
+  /* Initialize the indexs. We want the first 'nummatched' indexs in both
      outputs to be the matching rows. The non-matched rows should start to
      be indexed after the matched ones. So the first non-matched index is
-     at the index `nummatched'. */
+     at the index 'nummatched'. */
   match_i   = 0;
   nomatch_i = nummatched;
 
@@ -794,7 +794,7 @@ gal_match_coordinates_output(gal_data_t *A, gal_data_t *B, size_t *A_perm,
           aind[ match_i   ] = A_perm ? A_perm[ai] : ai;
           bind[ match_i++ ] = B_perm ? B_perm[bi] : bi;
 
-          /* Set a `1' for this object in the second catalog. This will
+          /* Set a '1' for this object in the second catalog. This will
              later be used to find which rows didn't match to fill in the
              output.. */
           Bmatched[ B_perm ? B_perm[bi] : bi ] = 1;
@@ -849,21 +849,21 @@ gal_match_coordinates_output(gal_data_t *A, gal_data_t *B, size_t *A_perm,
 /********************************************************************/
 /*************            Coordinate matching           *************/
 /********************************************************************/
-/* Match two positions: the two inputs (`coord1' and `coord2') should be
+/* Match two positions: the two inputs ('coord1' and 'coord2') should be
    lists of coordinates (each is a list of datasets). To speed up the
    search, this function will sort the inputs by their first column. If
    both are already sorted, give a non-zero value to
-   `sorted_by_first'. When sorting is necessary and `inplace' is non-zero,
+   'sorted_by_first'. When sorting is necessary and 'inplace' is non-zero,
    the actual inputs will be sorted. Otherwise, an internal copy of the
    inputs will be made which will be used (sorted) and later
-   freed. Therefore when `inplace==0', the input's won't be changed.
+   freed. Therefore when 'inplace==0', the input's won't be changed.
 
    IMPORTANT NOTE: the output permutations will correspond to the initial
-   inputs. Therefore, even when `inplace' is non-zero (and this function
+   inputs. Therefore, even when 'inplace' is non-zero (and this function
    changes the inputs' order), the output permutation will correspond to
    original inputs.
 
-   The output is a list of `gal_data_t' with the following columns:
+   The output is a list of 'gal_data_t' with the following columns:
 
        Node 1: First catalog index (counting from zero).
        Node 2: Second catalog index (counting from zero).
@@ -880,25 +880,25 @@ gal_match_coordinates(gal_data_t *coord1, gal_data_t *coord2,
   struct match_coordinate_sfll **bina;
 
   /* Do a small sanity check and make the preparations. After this point,
-     we'll call the two arrays `a' and `b'.*/
+     we'll call the two arrays 'a' and 'b'.*/
   match_coordinaes_sanity_check(coord1, coord2, aperture, inplace,
                                 &allf64);
   match_coordinates_prepare(coord1, coord2, sorted_by_first, inplace, allf64,
                             &A, &B, &A_perm, &B_perm, minmapsize);
 
 
-  /* Allocate the `bina' array (an array of lists). Let's call the first
-     catalog `a' and the second `b'. This array has `a->size' elements
-     (pointers) and for each, it keeps a list of `b' elements that are
+  /* Allocate the 'bina' array (an array of lists). Let's call the first
+     catalog 'a' and the second 'b'. This array has 'a->size' elements
+     (pointers) and for each, it keeps a list of 'b' elements that are
      nearest to it. */
   errno=0;
   bina=calloc(A->size, sizeof *bina);
   if(bina==NULL)
-    error(EXIT_FAILURE, errno, "%s: %zu bytes for `bina'", __func__,
+    error(EXIT_FAILURE, errno, "%s: %zu bytes for 'bina'", __func__,
           A->size*sizeof *bina);
 
 
-  /* All records in `b' that match each `a' (possibly duplicate). */
+  /* All records in 'b' that match each 'a' (possibly duplicate). */
   match_coordinates_second_in_first(A, B, aperture, bina);
 
 
@@ -922,7 +922,7 @@ gal_match_coordinates(gal_data_t *coord1, gal_data_t *coord2,
   if(B_perm) free(B_perm);
 
 
-  /* Set `nummatched' and return output. */
+  /* Set 'nummatched' and return output. */
   *nummatched = out ?  out->next->next->size : 0;
   return out;
 }

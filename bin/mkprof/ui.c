@@ -130,11 +130,11 @@ ui_profile_name_read(char *string, size_t row)
   else
     {
       if(row)
-        error(EXIT_FAILURE, 0, "`%s' not recognized as a profile function "
+        error(EXIT_FAILURE, 0, "'%s' not recognized as a profile function "
               "name in row %zu", string, row);
       else
-        error(EXIT_FAILURE, 0, "`%s' not recognized as a profile function "
-              "name in values to `--kernel' option", string);
+        error(EXIT_FAILURE, 0, "'%s' not recognized as a profile function "
+              "name in values to '--kernel' option", string);
     }
 
   return PROFILE_INVALID;
@@ -232,18 +232,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
 {
   struct mkprofparams *p = state->input;
 
-  /* Pass `gal_options_common_params' into the child parser.  */
+  /* Pass 'gal_options_common_params' into the child parser.  */
   state->child_inputs[0] = &p->cp;
 
   /* In case the user incorrectly uses the equal sign (for example
-     with a short format or with space in the long format, then `arg`
+     with a short format or with space in the long format, then 'arg'
      start with (if the short version was called) or be (if the long
      version was called with a space) the equal sign. So, here we
      check if the first character of arg is the equal sign, then the
      user is warned and the program is stopped: */
   if(arg && arg[0]=='=')
-    argp_error(state, "incorrect use of the equal sign (`=`). For short "
-               "options, `=` should not be used and for long options, "
+    argp_error(state, "incorrect use of the equal sign ('='). For short "
+               "options, '=' should not be used and for long options, "
                "there should be no space between the option, equal sign "
                "and value");
 
@@ -326,12 +326,12 @@ ui_parse_kernel(struct argp_option *option, char *arg,
     }
   else
     {
-      /* The first part of `arg' (before the first comma) is not
+      /* The first part of 'arg' (before the first comma) is not
          necessarily a number. So we need to separate the first part from
          the rest.*/
       c=arg;while(*c!='\0' && *c!=',') ++c;
       profile=arg;
-      arg = (*c=='\0') ? NULL : c+1;  /* the `point' profile doesn't need */
+      arg = (*c=='\0') ? NULL : c+1;  /* the 'point' profile doesn't need */
       *c='\0';                        /* any numbers.                     */
 
 
@@ -345,13 +345,13 @@ ui_parse_kernel(struct argp_option *option, char *arg,
       for(i=0;i<kernel->size;++i)
         if(darray[i]<=0)
           error(EXIT_FAILURE, 0, "value number %zu (%g) in the given list "
-                "of kernel parameters (`%s') is not acceptable. All "
-                "parameters to the `--kernel' option must be non-zero and "
+                "of kernel parameters ('%s') is not acceptable. All "
+                "parameters to the '--kernel' option must be non-zero and "
                 "positive", i+1, darray[i], arg);
 
 
       /* See if a 2D kernel is requested or a 3D kernel and keep the value
-         in `kernel->flag'. If no dimensionality is defined, then by
+         in 'kernel->flag'. If no dimensionality is defined, then by
          default, we'll assume it is 2D.*/
       c=profile;while(*c!='\0' && *c!='-') ++c;
       if(*c=='\0')
@@ -361,9 +361,9 @@ ui_parse_kernel(struct argp_option *option, char *arg,
           *c='\0';
           dstr=c+1;
           if( (dstr[1]!='d' && dstr[1]!='D') || dstr[2]!='\0')
-            error(EXIT_FAILURE, 0, "bad formatting in `--kernel' "
+            error(EXIT_FAILURE, 0, "bad formatting in '--kernel' "
                   "dimensionality. The dimensionality suffix must be either "
-                  "2d, 3d (not case sensitive). You have given `%s'", dstr);
+                  "2d, 3d (not case sensitive). You have given '%s'", dstr);
           switch(dstr[0])
             {
             case '2': kernel->flag=2; break;
@@ -376,21 +376,21 @@ ui_parse_kernel(struct argp_option *option, char *arg,
         }
 
 
-      /* Write the profile type code into `kernel->status'. If it starts
+      /* Write the profile type code into 'kernel->status'. If it starts
          with a digit, then the user might have given the code of the
          profile directly. In that case, parse the number. Otherwise,
-         let `ui_profile_name_read' find the value. */
+         let 'ui_profile_name_read' find the value. */
       if( isdigit(*profile) )
         {
           profcode=strtol(profile, &tailptr, 0);
           if(*tailptr!='\0')
-            error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' "
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "'%s' "
                           "couldn't be read as a profile code", profile);
           if(profcode<=0 || profcode>=PROFILE_MAXIMUM_CODE)
-            error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' "
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "'%s' "
                           "isn't a valid profile code. Please run with "
-                          "`--help' and see the acceptable codes in "
-                          "explanation of the `--fcol' option", profile);
+                          "'--help' and see the acceptable codes in "
+                          "explanation of the '--fcol' option", profile);
           kernel->status=profcode;
         }
       else
@@ -420,8 +420,8 @@ ui_parse_kernel(struct argp_option *option, char *arg,
          are needed. */
       if( kernel->size != need )
         error_at_line(EXIT_FAILURE, 0, filename, lineno, "as a %uD kernel, "
-                      "a `%s' profile needs %zu parameters, but %zu "
-                      "parameter%s given to `--kernel'", kernel->flag,
+                      "a '%s' profile needs %zu parameters, but %zu "
+                      "parameter%s given to '--kernel'", kernel->flag,
                       ui_profile_name_write(kernel->status), need,
                       kernel->size, kernel->size>1?"s are":" is");
 
@@ -456,9 +456,9 @@ ui_parse_coordinate_mode(struct argp_option *option, char *arg,
       else if (!strcmp(arg, "wcs"))
         *(uint8_t *)(option->value)=MKPROF_MODE_WCS;
       else
-        error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
-                      "`--mode') not recognized as a coordinate standard "
-                      "mode. Recognized values are `img' and `wcs'. This "
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "'%s' (value to "
+                      "'--mode') not recognized as a coordinate standard "
+                      "mode. Recognized values are 'img' and 'wcs'. This "
                       "option is necessary to identify the nature of your "
                       "input coordinates", arg);
       return NULL;
@@ -487,7 +487,7 @@ ui_parse_coordinate_mode(struct argp_option *option, char *arg,
 /***************       Sanity Check         *******************/
 /**************************************************************/
 /* Read and check ONLY the options. When arguments are involved, do the
-   check in `ui_check_options_and_arguments'. */
+   check in 'ui_check_options_and_arguments'. */
 static void
 ui_read_check_only_options(struct mkprofparams *p)
 {
@@ -495,7 +495,7 @@ ui_read_check_only_options(struct mkprofparams *p)
 
   /* When a no-merged image is to be created, type is necessary. */
   if( p->cp.type==GAL_TYPE_INVALID && p->nomerged==0)
-    error(EXIT_FAILURE, 0, "an output type `--type' is necessary when a "
+    error(EXIT_FAILURE, 0, "an output type '--type' is necessary when a "
           "merged image is to be built.");
 
   /* Check if one of the coordinate columns has been given, the other is
@@ -507,26 +507,26 @@ ui_read_check_only_options(struct mkprofparams *p)
   if(p->kernel==NULL)
     {
       if(p->mode==0)
-        error(EXIT_FAILURE, 0, "the `--mode' option is necessary when "
+        error(EXIT_FAILURE, 0, "the '--mode' option is necessary when "
               "building profiles from a catalog. It can take two values: "
-              "`img' or `wcs' which specify how to interpret the "
+              "'img' or 'wcs' which specify how to interpret the "
               "coordinate columns");
     }
 
-  /* The zeropoint magnitude is only necessary when `mcolisbrightness' is
+  /* The zeropoint magnitude is only necessary when 'mcolisbrightness' is
      not called.  */
   if( p->mcolisbrightness==0 && isnan(p->zeropoint) )
     error(EXIT_FAILURE, 0, "no zeropoint magnitude given. A zeropoint "
-          "magnitude is necessary when `--mcolisbrightness' is not called "
-          "(i.e., when the contents of `--mcol' must be interpretted as "
+          "magnitude is necessary when '--mcolisbrightness' is not called "
+          "(i.e., when the contents of '--mcol' must be interpretted as "
           "a magnitude, not brightness).");
 
-  /* Make sure no zero value is given for the `--mergedsize' option (only
+  /* Make sure no zero value is given for the '--mergedsize' option (only
      when it is necessary). */
   if(p->dsize && p->backname==NULL)
     for(i=0;p->dsize[i]!=GAL_BLANK_SIZE_T;++i)
       if(p->dsize[i]==0)
-        error(EXIT_FAILURE, 0, "values to `--mergedsize' option must not "
+        error(EXIT_FAILURE, 0, "values to '--mergedsize' option must not "
               "be zero");
 }
 
@@ -535,7 +535,7 @@ ui_read_check_only_options(struct mkprofparams *p)
 
 
 /* Sanity check on options AND arguments. If only option values are to be
-   checked, use `ui_read_check_only_options'. */
+   checked, use 'ui_read_check_only_options'. */
 static void
 ui_check_options_and_arguments(struct mkprofparams *p)
 {
@@ -544,14 +544,14 @@ ui_check_options_and_arguments(struct mkprofparams *p)
 
   /* If no kernel is given, make sure an input catalog is given, and if it
      is FITS, that the HDU is also provided. When a kernel option, we will
-     set a fiducial catalog name called `kernel.txt' to automatic output
+     set a fiducial catalog name called 'kernel.txt' to automatic output
      filename generation. */
   if(p->kernel)
     {
       if(p->catname)
-        error(EXIT_FAILURE, 0, "`--kernel' cannot be called with an input "
-              "catalog (`%s'). The parameters necessary to build a single "
-              "kernel output should be given to `--kernel', not in a "
+        error(EXIT_FAILURE, 0, "'--kernel' cannot be called with an input "
+              "catalog ('%s'). The parameters necessary to build a single "
+              "kernel output should be given to '--kernel', not in a "
               "catalog", p->catname);
       p->catname="kernel.option";
     }
@@ -560,7 +560,7 @@ ui_check_options_and_arguments(struct mkprofparams *p)
       if(p->catname)
         {
           if( gal_fits_name_is_fits(p->catname) && p->cp.hdu==NULL)
-            error(EXIT_FAILURE, 0, "no `hdu' specified for the input FITS "
+            error(EXIT_FAILURE, 0, "no 'hdu' specified for the input FITS "
                   "table '%s', to ", p->catname);
         }
     }
@@ -594,7 +594,7 @@ ui_check_options_and_arguments(struct mkprofparams *p)
   p->basename=gal_checkset_not_dir_part(p->mergedimgname);
 
 
-  /* If a merged image is requested (or `--kernel' the option is called),
+  /* If a merged image is requested (or '--kernel' the option is called),
      then delete the final filename if it exists. */
   if(p->nomerged==0 && p->kernel)
     gal_checkset_writable_remove(p->mergedimgname, p->cp.keep,
@@ -662,8 +662,8 @@ ui_read_cols_2d(struct mkprofparams *p)
 
   /* The name of the input catalog is only for informative steps from now
      on (we won't be dealing with the actual file any more). So if the
-     standard input was used (therefore `catname==NULL', set it to
-     `stdin'). */
+     standard input was used (therefore 'catname==NULL', set it to
+     'stdin'). */
   if(p->catname==NULL)
     gal_checkset_allocate_copy("standard-input", &p->catname);
 
@@ -686,8 +686,8 @@ ui_read_cols_2d(struct mkprofparams *p)
         case 1:
         case 2:
           colname = ( counter==1
-                      ? "first coordinate column (`--coordcol')"
-                      : "second coordinate column (`--coordcol')" );
+                      ? "first coordinate column ('--coordcol')"
+                      : "second coordinate column ('--coordcol')" );
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT64);
           switch(counter)
             {
@@ -711,7 +711,7 @@ ui_read_cols_2d(struct mkprofparams *p)
           else
             {
               /* Read the user's profile codes. */
-              colname="profile function code (`fcol')";
+              colname="profile function code ('fcol')";
               corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_UINT8);
               p->f=corrtype->array;
 
@@ -720,12 +720,12 @@ ui_read_cols_2d(struct mkprofparams *p)
                 if(p->f[i]<=PROFILE_INVALID || p->f[i]>=PROFILE_MAXIMUM_CODE)
                   error(EXIT_FAILURE, 0, "%s: row %zu, the function "
                         "code is %u. It should be >%d and <%d. Please run "
-                        "again with `--help' and check the acceptable "
+                        "again with '--help' and check the acceptable "
                         "codes.\n\nAlternatively, you can use alphabetic "
                         "strings to specify the profile functions, see the "
-                        "explanations under `fcol' from the command "
-                        "below (press the `SPACE' key to go down, and the "
-                        "`q' to return back to the command-line):\n\n"
+                        "explanations under 'fcol' from the command "
+                        "below (press the 'SPACE' key to go down, and the "
+                        "'q' to return back to the command-line):\n\n"
                         "    $ info %s\n", p->catname, i+1, p->f[i],
                         PROFILE_INVALID, PROFILE_MAXIMUM_CODE, PROGRAM_EXEC);
             }
@@ -733,7 +733,7 @@ ui_read_cols_2d(struct mkprofparams *p)
 
 
         case 4:
-          colname="radius (`rcol')";
+          colname="radius ('rcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->r=corrtype->array;
 
@@ -741,28 +741,28 @@ ui_read_cols_2d(struct mkprofparams *p)
           for(i=0;i<p->num;++i)
             if(p->f[i]!=PROFILE_POINT && p->r[i]<=0.0f)
               error(EXIT_FAILURE, 0, "%s: row %zu, the radius value %g is "
-                    "not acceptable for a `%s' profile. It has to be larger "
+                    "not acceptable for a '%s' profile. It has to be larger "
                     "than 0", p->catname, i+1, p->r[i],
                     ui_profile_name_write(p->f[i]));
           break;
 
 
         case 5:
-          colname="index (`ncol')";
+          colname="index ('ncol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->n=corrtype->array;
           break;
 
 
         case 6:
-          colname="position angle (`pcol')";
+          colname="position angle ('pcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->p1=corrtype->array;
           break;
 
 
         case 7:
-          colname="axis ratio (`qcol')";
+          colname="axis ratio ('qcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->q1=corrtype->array;
 
@@ -770,14 +770,14 @@ ui_read_cols_2d(struct mkprofparams *p)
           for(i=0;i<p->num;++i)
             if( p->f[i]!=PROFILE_POINT && (p->q1[i]<=0.0f || p->q1[i]>1.0f) )
               error(EXIT_FAILURE, 0, "%s: row %zu, the axis ratio value %g "
-                    "is not acceptable for a `%s' profile. It has to be >0 "
+                    "is not acceptable for a '%s' profile. It has to be >0 "
                     "and <=1", p->catname, i+1, p->q1[i],
                     ui_profile_name_write(p->f[i]));
           break;
 
 
         case 8:
-          colname="magnitude (`mcol')";
+          colname="magnitude ('mcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->m=corrtype->array;
           checkblank=0;          /* Magnitude can be NaN: to mask regions. */
@@ -785,7 +785,7 @@ ui_read_cols_2d(struct mkprofparams *p)
 
 
         case 9:
-          colname="truncation (`tcol')";
+          colname="truncation ('tcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->t=corrtype->array;
 
@@ -793,7 +793,7 @@ ui_read_cols_2d(struct mkprofparams *p)
           for(i=0;i<p->num;++i)
             if(p->f[i]!=PROFILE_POINT && p->t[i]<=0.0f)
               error(EXIT_FAILURE, 0, "%s: row %zu, the truncation radius "
-                    "value %g is not acceptable for a `%s' profile. It has "
+                    "value %g is not acceptable for a '%s' profile. It has "
                     "to be larger than 0", p->catname, i+1, p->t[i],
                     ui_profile_name_write(p->f[i]));
           break;
@@ -805,11 +805,11 @@ ui_read_cols_2d(struct mkprofparams *p)
           gal_tableintern_error_col_selection(p->catname, p->cp.hdu, "too "
                                               "many columns were selected "
                                               "by the given values to the "
-                                              "options ending in `col'.");
+                                              "options ending in 'col'.");
         }
 
       /* Sanity check and clean up.  Note that it might happen that the
-         input structure is already freed. In that case, `corrtype' will be
+         input structure is already freed. In that case, 'corrtype' will be
          NULL. */
       if(corrtype)
         {
@@ -819,7 +819,7 @@ ui_read_cols_2d(struct mkprofparams *p)
                   "Input columns cannot contain blank values", colname);
 
           /* Free the unnecessary sturcture information. The correct-type
-             (`corrtype') data structure's array is necessary for later
+             ('corrtype') data structure's array is necessary for later
              steps, so its pointer has been copied in the main program's
              structure. Hence, we should set the structure's pointer to
              NULL so the important data isn't freed.*/
@@ -838,12 +838,12 @@ ui_read_cols_2d(struct mkprofparams *p)
         {
           error(0, 0, "WARNING: atleast one single-valued profile (point, "
                 "flat, or circumference profiles) has a magnitude column "
-                "value of 0.0 while `--mforflatpix' or "
-                "`--mcolforbrightness' have also been given. In such cases "
+                "value of 0.0 while '--mforflatpix' or "
+                "'--mcolforbrightness' have also been given. In such cases "
                 "the profile's pixels will have a value of zero and thus "
                 "they will not be identifiable from the zero-valued "
                 "background. If this behavior is intended, this warning "
-                "can be suppressed with the `--quiet' (or `-q') option.\n");
+                "can be suppressed with the '--quiet' (or '-q') option.\n");
           break;
         }
 }
@@ -862,11 +862,11 @@ ui_read_cols_3d(struct mkprofparams *p)
   gal_data_t *cols, *tmp, *corrtype=NULL;
   gal_list_str_t *lines, *ccol, *colstrs=NULL;
 
-  /* The 3D-specific columns are not mandatory in `args.h', so we need to
+  /* The 3D-specific columns are not mandatory in 'args.h', so we need to
      check here if they are given or not before starting to read them. */
   if(p->p2col==NULL || p->p3col==NULL || p->q2col==NULL)
-    error(EXIT_FAILURE, 0, "at least one of `--p2col', `--p3col', or "
-          "`--q2col' have not been identified. When building a 3D profile, "
+    error(EXIT_FAILURE, 0, "at least one of '--p2col', '--p3col', or "
+          "'--q2col' have not been identified. When building a 3D profile, "
           "these three columns are also mandatory");
 
   /* The coordinate columns are a linked list of strings. */
@@ -920,10 +920,10 @@ ui_read_cols_3d(struct mkprofparams *p)
         case 2:
         case 3:
           colname = ( counter==1
-                      ? "first coordinate column (`--coordcol')"
+                      ? "first coordinate column ('--coordcol')"
                       : ( counter==2
-                          ? "second coordinate column (`--coordcol')"
-                          : "third coordinate column (`--coordcol')" ) );
+                          ? "second coordinate column ('--coordcol')"
+                          : "third coordinate column ('--coordcol')" ) );
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT64);
           switch(counter)
             {
@@ -947,7 +947,7 @@ ui_read_cols_3d(struct mkprofparams *p)
           else
             {
               /* Read the user's profile codes. */
-              colname="profile function code (`fcol')";
+              colname="profile function code ('fcol')";
               corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_UINT8);
               p->f=corrtype->array;
 
@@ -956,19 +956,19 @@ ui_read_cols_3d(struct mkprofparams *p)
                 if(p->f[i]<=PROFILE_INVALID || p->f[i]>=PROFILE_MAXIMUM_CODE)
                   error(EXIT_FAILURE, 0, "%s: row %zu, the function "
                         "code is %u. It should be >%d and <%d. Please run "
-                        "again with `--help' and check the acceptable "
+                        "again with '--help' and check the acceptable "
                         "codes.\n\nAlternatively, you can use alphabetic "
                         "strings to specify the profile functions, see the "
-                        "explanations under `fcol' from the command "
-                        "below (press the `SPACE' key to go down, and the "
-                        "`q' to return back to the command-line):\n\n"
+                        "explanations under 'fcol' from the command "
+                        "below (press the 'SPACE' key to go down, and the "
+                        "'q' to return back to the command-line):\n\n"
                         "    $ info %s\n", p->catname, i+1, p->f[i],
                         PROFILE_INVALID, PROFILE_MAXIMUM_CODE, PROGRAM_EXEC);
             }
           break;
 
         case 5:
-          colname="radius (`rcol')";
+          colname="radius ('rcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->r=corrtype->array;
 
@@ -976,37 +976,37 @@ ui_read_cols_3d(struct mkprofparams *p)
           for(i=0;i<p->num;++i)
             if(p->f[i]!=PROFILE_POINT && p->r[i]<=0.0f)
               error(EXIT_FAILURE, 0, "%s: row %zu, the radius value %g is "
-                    "not acceptable for a `%s' profile. It has to be larger "
+                    "not acceptable for a '%s' profile. It has to be larger "
                     "than 0", p->catname, i+1, p->r[i],
                     ui_profile_name_write(p->f[i]));
           break;
 
         case 6:
-          colname="index (`ncol')";
+          colname="index ('ncol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->n=corrtype->array;
           break;
 
         case 7:
-          colname="first euler angle (`pcol')";
+          colname="first euler angle ('pcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->p1=corrtype->array;
           break;
 
         case 8:
-          colname="second euler angle (`p2col')";
+          colname="second euler angle ('p2col')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->p2=corrtype->array;
           break;
 
         case 9:
-          colname="third euler angle (`p3col')";
+          colname="third euler angle ('p3col')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->p3=corrtype->array;
           break;
 
         case 10:
-          colname="axis ratio 1 (`qcol')";
+          colname="axis ratio 1 ('qcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->q1=corrtype->array;
 
@@ -1014,13 +1014,13 @@ ui_read_cols_3d(struct mkprofparams *p)
           for(i=0;i<p->num;++i)
             if( p->f[i]!=PROFILE_POINT && (p->q1[i]<=0.0f || p->q1[i]>1.0f) )
               error(EXIT_FAILURE, 0, "%s: row %zu, the first axis ratio "
-                    "value %g is not acceptable for a `%s' profile. It has "
+                    "value %g is not acceptable for a '%s' profile. It has "
                     "to be >0 and <=1", p->catname, i+1, p->q1[i],
                     ui_profile_name_write(p->f[i]));
           break;
 
         case 11:
-          colname="axis ratio 2 (`q2col')";
+          colname="axis ratio 2 ('q2col')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->q2=corrtype->array;
 
@@ -1028,20 +1028,20 @@ ui_read_cols_3d(struct mkprofparams *p)
           for(i=0;i<p->num;++i)
             if( p->f[i]!=PROFILE_POINT && (p->q2[i]<=0.0f || p->q2[i]>1.0f) )
               error(EXIT_FAILURE, 0, "%s: row %zu, the second axis ratio "
-                    "value %g is not acceptable for a `%s' profile. It has "
+                    "value %g is not acceptable for a '%s' profile. It has "
                     "to be >0 and <=1", p->catname, i+1, p->q2[i],
                     ui_profile_name_write(p->f[i]));
           break;
 
         case 12:
-          colname="magnitude (`mcol')";
+          colname="magnitude ('mcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->m=corrtype->array;
           checkblank=0;          /* Magnitude can be NaN: to mask regions. */
           break;
 
         case 13:
-          colname="truncation (`tcol')";
+          colname="truncation ('tcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT32);
           p->t=corrtype->array;
 
@@ -1049,7 +1049,7 @@ ui_read_cols_3d(struct mkprofparams *p)
           for(i=0;i<p->num;++i)
             if(p->f[i]!=PROFILE_POINT && p->t[i]<=0.0f)
               error(EXIT_FAILURE, 0, "%s: row %zu, the truncation radius "
-                    "value %g is not acceptable for a `%s' profile. It has "
+                    "value %g is not acceptable for a '%s' profile. It has "
                     "to be larger than 0", p->catname, i+1, p->t[i],
                     ui_profile_name_write(p->f[i]));
           break;
@@ -1060,11 +1060,11 @@ ui_read_cols_3d(struct mkprofparams *p)
           gal_tableintern_error_col_selection(p->catname, p->cp.hdu, "too "
                                               "many columns were selected "
                                               "by the given values to the "
-                                              "options ending in `col'.");
+                                              "options ending in 'col'.");
         }
 
       /* Sanity check and clean up.  Note that it might happen that the
-         input structure is already freed. In that case, `corrtype' will be
+         input structure is already freed. In that case, 'corrtype' will be
          NULL. */
       if(corrtype)
         {
@@ -1074,7 +1074,7 @@ ui_read_cols_3d(struct mkprofparams *p)
                   "Input columns cannot contain blank values", colname);
 
           /* Free the unnecessary sturcture information. The correct-type
-             (`corrtype') data structure's array is necessary for later
+             ('corrtype') data structure's array is necessary for later
              steps, so its pointer has been copied in the main program's
              structure. Hence, we should set the structure's pointer to
              NULL so the important data isn't freed.*/
@@ -1089,7 +1089,7 @@ ui_read_cols_3d(struct mkprofparams *p)
 
 
 /* It is possible to define the internal catalog through a catalog or the
-   `--kernel' option. This function will do the job. */
+   '--kernel' option. This function will do the job. */
 static void
 ui_prepare_columns(struct mkprofparams *p)
 {
@@ -1161,7 +1161,7 @@ ui_prepare_columns(struct mkprofparams *p)
             }
 
           /* 3rd-dim axis ratio <=1: No extra rotation is necessary and
-             `q2'can simply be put in the respective column. */
+             'q2'can simply be put in the respective column. */
           else
             {
               p->q2[0] = q2;
@@ -1173,11 +1173,11 @@ ui_prepare_columns(struct mkprofparams *p)
     {
       /* Make sure the number of coordinate columns and number of
          dimensions in outputs are the same. There is no problem if it is
-         more than `ndim'. In that case, the last values (possibly in
+         more than 'ndim'. In that case, the last values (possibly in
          configuration files) will be ignored. */
       if( gal_list_str_number(p->ccol) < p->ndim )
         error(EXIT_FAILURE, 0, "%zu coordinate columns (calls to "
-              "`--coordcol') given but output has %zu dimensions",
+              "'--coordcol') given but output has %zu dimensions",
               gal_list_str_number(p->ccol), p->ndim);
 
       /* Call the respective function. */
@@ -1187,7 +1187,7 @@ ui_prepare_columns(struct mkprofparams *p)
         case 3: ui_read_cols_3d(p);   break;
         default:
           error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
-                "resolve the issue. %zu not recognized for `p->ndim'",
+                "resolve the issue. %zu not recognized for 'p->ndim'",
                 __func__, PACKAGE_BUGREPORT, p->ndim);
         }
     }
@@ -1209,7 +1209,7 @@ ui_wcs_sanity_check(struct mkprofparams *p)
   if(p->crpix)
     {
       if(p->crpix->size!=ndim)
-        error(EXIT_FAILURE, 0, "%zu values given to `--crpix'. This must be "
+        error(EXIT_FAILURE, 0, "%zu values given to '--crpix'. This must be "
               "the same as the output dimension (%zu)", p->crpix->size, ndim);
       return 0;
     }
@@ -1218,7 +1218,7 @@ ui_wcs_sanity_check(struct mkprofparams *p)
   if(p->crval)
     {
       if(p->crval->size!=ndim)
-        error(EXIT_FAILURE, 0, "%zu values given to `--crval'. This must be "
+        error(EXIT_FAILURE, 0, "%zu values given to '--crval'. This must be "
               "the same as the output dimension (%zu)", p->crval->size, ndim);
       return 0;
     }
@@ -1227,7 +1227,7 @@ ui_wcs_sanity_check(struct mkprofparams *p)
   if(p->cdelt)
     {
       if(p->cdelt->size!=ndim)
-        error(EXIT_FAILURE, 0, "%zu values given to `--cdelt'. This must be "
+        error(EXIT_FAILURE, 0, "%zu values given to '--cdelt'. This must be "
               "the same as the output dimension (%zu)", p->cdelt->size, ndim);
       return 0;
     }
@@ -1236,7 +1236,7 @@ ui_wcs_sanity_check(struct mkprofparams *p)
   if(p->pc)
     {
       if(p->pc->size!=ndim*ndim)
-        error(EXIT_FAILURE, 0, "%zu values given to `--pc'. This must be "
+        error(EXIT_FAILURE, 0, "%zu values given to '--pc'. This must be "
               "the square as the output dimension (%zu)", p->pc->size,
               ndim*ndim);
       return 0;
@@ -1246,7 +1246,7 @@ ui_wcs_sanity_check(struct mkprofparams *p)
   if(p->cunit)
     {
       if(p->cunit->size!=ndim)
-        error(EXIT_FAILURE, 0, "%zu values given to `--cunit'. This must be "
+        error(EXIT_FAILURE, 0, "%zu values given to '--cunit'. This must be "
               "the same as the output dimension (%zu)", p->cunit->size, ndim);
       return 0;
     }
@@ -1255,7 +1255,7 @@ ui_wcs_sanity_check(struct mkprofparams *p)
   if(p->ctype)
     {
       if(p->ctype->size!=ndim)
-        error(EXIT_FAILURE, 0, "%zu values given to `--ctype'. This must be "
+        error(EXIT_FAILURE, 0, "%zu values given to '--ctype'. This must be "
               "the same as the output dimension (%zu)", p->ctype->size, ndim);
       return 0;
     }
@@ -1309,7 +1309,7 @@ ui_prepare_wcs(struct mkprofparams *p)
       /* IMPORTANT: At this point, we don't want the WCS to be over-sampled
          because if the user has given RA and Dec for the profiles, they
          need to be converted to non-oversampled and shifted image
-         coordinates. After the conversion (in `ui_finalize_coordinates')
+         coordinates. After the conversion (in 'ui_finalize_coordinates')
          we are going to correct for the oversampling in the WCS.*/
       wcs->crpix[i] = crpix[i];
       wcs->crval[i] = crval[i];
@@ -1347,7 +1347,7 @@ ui_prepare_canvas(struct mkprofparams *p)
       /* Read in the background image and its coordinates, note that when
          no merged image is desired, we just need the WCS information of
          the background image and the number of its dimensions. So
-         `ndim==0' and what `dsize' points to is irrelevant. */
+         'ndim==0' and what 'dsize' points to is irrelevant. */
       tdsize=gal_fits_img_info_dim(p->backname, p->backhdu, &tndim);
       p->wcs=gal_wcs_read(p->backname, p->backhdu, 0, 0, &p->nwcs);
       tndim=gal_dimension_remove_extra(tndim, tdsize, p->wcs);
@@ -1357,7 +1357,7 @@ ui_prepare_canvas(struct mkprofparams *p)
           /* If p->dsize was given as an option, free it. */
           if( p->dsize ) free(p->dsize);
 
-          /* Write the size of the background image into `dsize'. */
+          /* Write the size of the background image into 'dsize'. */
           p->dsize=gal_pointer_allocate(GAL_TYPE_SIZE_T, p->ndim, 0,
                                         __func__, "p->dsize");
           for(i=0;i<p->ndim;++i) p->dsize[i] = p->out->dsize[i];
@@ -1388,13 +1388,13 @@ ui_prepare_canvas(struct mkprofparams *p)
 
           /* Make sure it has the same number of elements as naxis. */
           if(p->ndim!=nshift)
-            error(EXIT_FAILURE, 0, "%zu and %zu elements given to `--ndim' "
-                  "and `--shift' respectively. These two numbers must be the "
+            error(EXIT_FAILURE, 0, "%zu and %zu elements given to '--ndim' "
+                  "and '--shift' respectively. These two numbers must be the "
                   "same", p->ndim, nshift);
         }
       else
         {
-          /* `prepforconv' is only valid when xshift and yshift are both
+          /* 'prepforconv' is only valid when xshift and yshift are both
              zero. Also, a PSF profile should exist in the image. */
           if(p->prepforconv)
             {
@@ -1516,15 +1516,15 @@ ui_finalize_coordinates(struct mkprofparams *p)
   double *cdelt=p->wcs->cdelt, *crpix=p->wcs->crpix;
 
   /* When the user specified RA and Dec columns, the respective values
-     where stored in the `p->x' and `p->y' arrays. So before proceeding, we
+     where stored in the 'p->x' and 'p->y' arrays. So before proceeding, we
      need to change them into actual image coordinates. */
   if(p->mode==MKPROF_MODE_WCS)
     {
-      /* Make list of coordinates for input of `gal_wcs_world_to_img'. */
+      /* Make list of coordinates for input of 'gal_wcs_world_to_img'. */
       for(i=0;i<ndim;++i)
         {
           /* Set the array pointer. Note that we read the WCS columns into
-         the `p->x', `p->y' and `p->z' arrays temporarily before. Here, we
+         the 'p->x', 'p->y' and 'p->z' arrays temporarily before. Here, we
          will convert them to image coordinates in place. */
           switch(i)
             {
@@ -1557,7 +1557,7 @@ ui_finalize_coordinates(struct mkprofparams *p)
                 "(%f, %f) coordinates into image coordinates", i, p->x[i],
                 p->y[i]);
 
-      /* We want the actual arrays of each `coords' column. So, first we'll
+      /* We want the actual arrays of each 'coords' column. So, first we'll
          set all the array elements to NULL, then free it. */
       for(tmp=coords;tmp!=NULL;tmp=tmp->next) tmp->array=NULL;
       gal_list_data_free(coords);
@@ -1569,7 +1569,7 @@ ui_finalize_coordinates(struct mkprofparams *p)
      non-over-sampled image.*/
   for(i=0;i<p->ndim;++i)
     {
-      /* Oversampling has already been applied in `p->shift'. Also note
+      /* Oversampling has already been applied in 'p->shift'. Also note
          that shift is in the C dimension ordring, while crpix is in FITS
          ordering. */
       crpix[i]  = crpix[i]*os + p->shift[ndim-i-1] - os/2;
@@ -1649,7 +1649,7 @@ ui_read_ndim(struct mkprofparams *p)
 
       /* Make sure the kernel and background are not given together. */
       if(p->backname)
-        error(EXIT_FAILURE, 0, "the `--kernel' and `--background' options "
+        error(EXIT_FAILURE, 0, "the '--kernel' and '--background' options "
               "cannot be called together");
     }
   else
@@ -1660,10 +1660,10 @@ ui_read_ndim(struct mkprofparams *p)
           /* Small sanity check. */
           if(p->backhdu==NULL)
             error(EXIT_FAILURE, 0, "no hdu specified for the background "
-                  "image %s. Please run again `--backhdu' option",
+                  "image %s. Please run again '--backhdu' option",
                   p->backname);
 
-          /* If `--nomerged' is given, we don't actually need to load the
+          /* If '--nomerged' is given, we don't actually need to load the
              image, we just need its WCS later. */
           if(p->nomerged)
             {
@@ -1699,7 +1699,7 @@ ui_read_ndim(struct mkprofparams *p)
 
           /* Make sure the dimensionality is supported. */
           if(p->ndim!=2 && p->ndim!=3)
-            error(EXIT_FAILURE, 0, "%zu values given to `--mergedsize'. "
+            error(EXIT_FAILURE, 0, "%zu values given to '--mergedsize'. "
                   "Currently only 2 or 3 dimensional outputs can be produced",
                   p->ndim);
         }
@@ -1717,7 +1717,7 @@ ui_preparations(struct mkprofparams *p)
      use). */
   ui_read_ndim(p);
 
-  /* Read in all the columns (necessary for `--prepforconf' when we want to
+  /* Read in all the columns (necessary for '--prepforconf' when we want to
      build the profiles). */
   ui_prepare_columns(p);
 
@@ -1845,9 +1845,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkprofparams *p)
   struct gal_options_common_params *cp=&p->cp;
 
 
-  /* Include the parameters necessary for argp from this program (`args.h')
-     and for the common options to all Gnuastro (`commonopts.h'). We want
-     to directly put the pointers to the fields in `p' and `cp', so we are
+  /* Include the parameters necessary for argp from this program ('args.h')
+     and for the common options to all Gnuastro ('commonopts.h'). We want
+     to directly put the pointers to the fields in 'p' and 'cp', so we are
      simply including the header here to not have to use long macros in
      those headers which make them hard to read and modify. This also helps
      in having a clean environment: everything in those headers is only

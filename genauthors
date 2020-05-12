@@ -78,9 +78,9 @@ fi
 
 
 # Set the version number. Note that this script is also run at the start of
-# the bootstrapping process. At that point we don't have the `.version'
-# file, so we will just rely on `.git describe'. Later during `make', this
-# scripot will be run again to set it using `git-version-gen'.
+# the bootstrapping process. At that point we don't have the '.version'
+# file, so we will just rely on '.git describe'. Later during 'make', this
+# scripot will be run again to set it using 'git-version-gen'.
 if [ -f "$1/.version" ]; then
     gnuastroversion="Gnuastro "$(cat "$1/.version")
 else

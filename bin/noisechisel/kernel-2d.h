@@ -48,7 +48,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    Convert it to C code
    --------------------
 
-   Put the following C program into a file called `kernel.c'.
+   Put the following C program into a file called 'kernel.c'.
 
      #include <stdio.h>
      #include <stdlib.h>
@@ -74,7 +74,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
                if(i % img->dsize[1] == 0 ) printf("\n\n");
              }
 
-           // We cannot use `\b' here, since we are writing directly
+           // We cannot use '\b' here, since we are writing directly
            // to the command-line, so we'll first write the number,
            // then decide if any subsequent character (a comma)
            // should be written.
@@ -96,7 +96,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    -----------------
 
    We can now compile and run that C program and put the outputs in
-   `kernel.c'. Once its created, copy the contents of `kernel-2d.h' after
+   'kernel.c'. Once its created, copy the contents of 'kernel-2d.h' after
    these comments.
 
      $ astbuildprog -q kernel.c > kernel-2d.h

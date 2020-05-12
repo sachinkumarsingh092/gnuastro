@@ -65,16 +65,16 @@ gal_permutation_check(size_t *permutation, size_t size)
 /***************          Apply permutation        *******************/
 /*********************************************************************/
 /* Re-order the input dataset based on the given permutation. If
-   `permutation' is NULL, then the input won't be touched (no re-ordering).
+   'permutation' is NULL, then the input won't be touched (no re-ordering).
 
-   This is a re-implementation of GSL's `gsl_permute' function (from its
-   `permutation/permute_source.c'). The reason we didn't use that function
-   was that it uses system-specific types (like `long' and `int') which are
+   This is a re-implementation of GSL's 'gsl_permute' function (from its
+   'permutation/permute_source.c'). The reason we didn't use that function
+   was that it uses system-specific types (like 'long' and 'int') which are
    not easily convertable to Gnuastro's width-based types. There is also a
    separate function for each type, heavily using macros to allow a "base"
    function to work on all the types. Thus it is hard to
    read/understand. Since we use fixed-width types, we can easily use
-   `memcpy' and have a type-agnostic implementation (only needing the width
+   'memcpy' and have a type-agnostic implementation (only needing the width
    of the type).
 
    As described in GSL's source code and manual, this implementation comes
@@ -139,7 +139,7 @@ gal_permutation_apply(gal_data_t *input, size_t *permutation)
 
 
 /* Apply the inverse of given permutation on the input dataset, see
-   `gal_permutation_apply_inverse'. */
+   'gal_permutation_apply_inverse'. */
 void
 gal_permutation_apply_inverse(gal_data_t *input, size_t *permutation)
 {

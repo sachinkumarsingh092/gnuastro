@@ -115,7 +115,7 @@ crop_verbose_final(struct cropparams *p)
           case 3:
             /* When the center wasn't checked it has a value of -1, and
                when it was checked and the center was filled, it has a
-               value of 1. So if `array[i]==0', we know that the file was
+               value of 1. So if 'array[i]==0', we know that the file was
                removed. */
             for(i=0;i<p->numout;++i)
               {
@@ -184,7 +184,7 @@ crop_write_to_log(struct onecropparams *crp)
 
         default:
           error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
-                "the problem. The value of %zu is not valid for `counter'",
+                "the problem. The value of %zu is not valid for 'counter'",
                 __func__, PACKAGE_BUGREPORT, counter);
         }
     }
@@ -225,7 +225,7 @@ crop_mode_img(void *inparam)
       onecrop(crp);
 
       /* If there was no overlap, then no FITS pointer is created, so
-         `numimg' should be set to zero. */
+         'numimg' should be set to zero. */
       if(crp->outfits==NULL) crp->numimg=0;
 
       /* Check the final output: */
@@ -312,7 +312,7 @@ crop_mode_wcs(void *inparam)
             if(crp->name==NULL) onecrop_name(crp);
 
             /* Increment the number of images used (necessary for the
-               header keywords that are written in `onecrop'). Then do the
+               header keywords that are written in 'onecrop'). Then do the
                crop. */
             ++crp->numimg;
             onecrop(crp);
@@ -325,9 +325,9 @@ crop_mode_wcs(void *inparam)
       while ( ++(crp->in_ind) < p->numin );
 
 
-      /* Correct in_ind. The loop above went until `in_ind' is one more
+      /* Correct in_ind. The loop above went until 'in_ind' is one more
          than the index for the last input image (that is how it exited the
-         loop). But `crp->in_ind' is needed later, so correct it here. */
+         loop). But 'crp->in_ind' is needed later, so correct it here. */
       --crp->in_ind;
 
 
@@ -420,7 +420,7 @@ crop(struct cropparams *p)
   errno=0;
   crp=malloc(nt*sizeof *crp);
   if(crp==NULL)
-    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `crp'",
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for 'crp'",
           __func__, nt*sizeof *crp);
 
 

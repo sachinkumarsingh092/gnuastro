@@ -94,7 +94,7 @@ gal_fits_io_error(int status, char *message)
  **************           FITS names           ***************
  *************************************************************/
 /* IMPORTANT NOTE: if other compression suffixes are add to this function,
-   include them in `gal_checkset_automatic_output', so the compression
+   include them in 'gal_checkset_automatic_output', so the compression
    suffix can be skipped when the user doesn't specify an output
    filename.*/
 int
@@ -123,7 +123,7 @@ gal_fits_name_is_fits(char *name)
 
 
 /* IMPORTANT NOTE: if other compression suffixes are add to this function,
-   include them in `gal_checkset_automatic_output', so the compression
+   include them in 'gal_checkset_automatic_output', so the compression
    suffix can be skipped when the user doesn't specify an output
    filename.*/
 int
@@ -151,7 +151,7 @@ gal_fits_suffix_is_fits(char *suffix)
 
 
 
-/* If the name is a FITS name, then put a `(hdu: ...)' after it and return
+/* If the name is a FITS name, then put a '(hdu: ...)' after it and return
    the string. If it isn't a FITS file, just print the name. Note that the
    space is allocated. */
 char *
@@ -318,7 +318,7 @@ gal_fits_type_to_datatype(uint8_t type)
     case GAL_TYPE_STRING:           return TSTRING;
 
     /* Types that depend on the host system. The C standard says that the
-       `short', `int' and `long' types are ATLEAST 2, 2, 4 bytes, so to be
+       'short', 'int' and 'long' types are ATLEAST 2, 2, 4 bytes, so to be
        safe, we will check all of them for the 32-bit types.*/
     case GAL_TYPE_UINT16:
       w=2;
@@ -332,9 +332,9 @@ gal_fits_type_to_datatype(uint8_t type)
       else if( sizeof(int)      == w )   return TINT;
       break;
 
-    /* On 32-bit systems, the length of `int' and `long' are both
+    /* On 32-bit systems, the length of 'int' and 'long' are both
        32-bits. But CFITSIO's LONG type is preferred because it is designed
-       to be 32-bit. Its `INT' type is not clearly defined and caused
+       to be 32-bit. Its 'INT' type is not clearly defined and caused
        problems when reading keywords.*/
     case GAL_TYPE_UINT32:
       w=4;
@@ -371,12 +371,12 @@ gal_fits_type_to_datatype(uint8_t type)
   /* If control reaches, here, there was a problem with the host types. */
   if(w)
     error(EXIT_FAILURE, 0, "%s: this system doesn't have a %d byte integer "
-          "type, so type `%s' cannot be written to FITS", __func__, w,
+          "type, so type '%s' cannot be written to FITS", __func__, w,
           gal_type_name(type, 1));
   else
     error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we can "
           "fix the problem. Control must not have reached the end for the "
-          "given type `%s'", __func__, PACKAGE_BUGREPORT,
+          "given type '%s'", __func__, PACKAGE_BUGREPORT,
           gal_type_name(type, 1));
   return -1;
 }
@@ -499,14 +499,14 @@ fits_type_correct(int *type, double bscale, char *bzero_str)
   int tofloat=1;
   char *tailptr, *bzero_u64="9223372036854775808";
 
-  /* If bzero_str is given and `bscale=1.0' the case might be that we are
+  /* If bzero_str is given and 'bscale=1.0' the case might be that we are
      dealing with an integer dataset that just needs a different sign. */
   if(bzero_str && bscale==1.0f)
     {
-      /* Read the `bzero' string as a `double' number. */
+      /* Read the 'bzero' string as a 'double' number. */
       bzero  = strtod(bzero_str, &tailptr);
       if(tailptr==bzero_str)
-        error(EXIT_FAILURE, 0, "%s: BZERO value `%s' couldn't be "
+        error(EXIT_FAILURE, 0, "%s: BZERO value '%s' couldn't be "
               "parsed as a number", __func__, bzero_str);
 
       /* Work based on type. For the default conversions defined by the
@@ -526,13 +526,13 @@ fits_type_correct(int *type, double bscale, char *bzero_str)
           if(bzero == 2147483648LU) { *type = GAL_TYPE_UINT32; tofloat=0; }
           break;
 
-        /* The `bzero' value for unsigned 64-bit integers has 19 decimal
-           digits, but a 64-bit floating point (`double' type) can only
+        /* The 'bzero' value for unsigned 64-bit integers has 19 decimal
+           digits, but a 64-bit floating point ('double' type) can only
            safely store 15 decimal digits. As a result, the safest way to
-           check the `bzero' value for this type is to compare it as a
+           check the 'bzero' value for this type is to compare it as a
            string. But all integers nearby (for example
-           `9223372036854775807') get rounded to this same value (when
-           stored as `double'). So we will also check the parsed number and
+           '9223372036854775807') get rounded to this same value (when
+           stored as 'double'). So we will also check the parsed number and
            if it equals this number, a warning will be printed. */
         case GAL_TYPE_INT64:
           if( !strcmp(bzero_str, bzero_u64) )
@@ -541,8 +541,8 @@ fits_type_correct(int *type, double bscale, char *bzero_str)
             if( bzero == 9223372036854775808LLU )
               {
                 fprintf(stderr, "\nWARNING in %s: the BZERO header keyword "
-                        "value (`%s') is very close (but not exactly equal) "
-                        "to `%s'. The latter value in the FITS standard is "
+                        "value ('%s') is very close (but not exactly equal) "
+                        "to '%s'. The latter value in the FITS standard is "
                         "used to identify that the dataset should be read as "
                         "unsigned 64-bit integers instead of signed 64-bit "
                         "integers. Depending on your version of CFITSIO, "
@@ -552,7 +552,7 @@ fits_type_correct(int *type, double bscale, char *bzero_str)
               }
           break;
 
-          /* For the other types (when `BSCALE=1.0f'), currently no
+          /* For the other types (when 'BSCALE=1.0f'), currently no
              correction is necessary, maybe later we can check if the
              scales are integers and set the integer output type to the
              smallest type that can allow the scaled values. */
@@ -679,7 +679,7 @@ gal_fits_hdu_format(char *filename, char *hdu)
 
 
 
-/* Open a given HDU and return the FITS pointer. `iomode' determines how
+/* Open a given HDU and return the FITS pointer. 'iomode' determines how
    the FITS file will be opened: only to read or to read and write. You
    should use the macros given by the CFITSIO header:
 
@@ -701,7 +701,7 @@ gal_fits_hdu_open(char *filename, char *hdu, int iomode)
     {
       switch(status)
         {
-        /* Since the default HDU is `1', when the file only has one
+        /* Since the default HDU is '1', when the file only has one
            extension, this error is common, so we will put a special
            notice. */
         case END_OF_FILE:
@@ -709,9 +709,9 @@ gal_fits_hdu_open(char *filename, char *hdu, int iomode)
             error(EXIT_FAILURE, 0, "%s has only one extension/HDU but you "
                   "have asked for the second HDU (hdu number 1 in CFITSIO)."
                   "\n\n"
-                  "To fix the problem please add `--hdu=0' (or `-h0') to "
+                  "To fix the problem please add '--hdu=0' (or '-h0') to "
                   "your command when calling Gnuastro's programs. For "
-                  "library users, please give a value of \"0\" to the HDU "
+                  "library users, please give a value of '0' to the HDU "
                   "argument.\n\n"
                   "FOOTNOTE -- When writing a new FITS file, Gnuastro leaves "
                   "the first HDU blank (with no data) and writes the "
@@ -736,12 +736,12 @@ gal_fits_hdu_open(char *filename, char *hdu, int iomode)
                             "the given file");
         }
 
-      error(EXIT_FAILURE, 0, "%s: extension/HDU `%s' doesn't exist. Please "
+      error(EXIT_FAILURE, 0, "%s: extension/HDU '%s' doesn't exist. Please "
             "run the following command to see the extensions/HDUs in "
-            "`%s':\n\n"
+            "'%s':\n\n"
             "    $ astfits %s\n\n"
             "The respective HDU number (or name, when present) may be used "
-            "with the `--hdu' option in Gnuastro's programs (or the `hdu' "
+            "with the '--hdu' option in Gnuastro's programs (or the 'hdu' "
             "argument in Gnuastro's libraries) to open the respective HDU.",
             filename, hdu, filename, filename);
     }
@@ -856,7 +856,7 @@ gal_fits_key_img_blank(uint8_t type)
             "data type", __func__, type);
     }
 
-  /* If `gal_blank_alloc_write' wasn't used (copy!=NULL), then allocate the
+  /* If 'gal_blank_alloc_write' wasn't used (copy!=NULL), then allocate the
      necessary space and fill it in. Note that the width of the signed and
      unsigned values doesn't differ, so we can use the actual input
      type. */
@@ -894,8 +894,8 @@ gal_fits_key_clean_str_value(char *string)
     if(string[end]!=' ')
       break;
 
-  /* Shift all the characters after the first one (which is a `'' back by
-     one and put the string ending characters on the `end'th element. */
+  /* Shift all the characters after the first one (which is a ''' back by
+     one and put the string ending characters on the 'end'th element. */
   cf=(c=string)+end; do *c=*(c+1); while(++c<cf);
   *cf='\0';
 }
@@ -903,11 +903,11 @@ gal_fits_key_clean_str_value(char *string)
 
 
 
-/* Fill the `tm' structure (defined in `time.h') with the values derived
+/* Fill the 'tm' structure (defined in 'time.h') with the values derived
    from a FITS format date-string and return the (optional) sub-second
    information as a double.
 
-   The basic FITS string is defined under the `DATE' keyword in the FITS
+   The basic FITS string is defined under the 'DATE' keyword in the FITS
    standard. For the more complete format which includes timezones, see the
    W3 standard: https://www.w3.org/TR/NOTE-datetime */
 char *
@@ -916,33 +916,33 @@ gal_fits_key_date_to_struct_tm(char *fitsdate, struct tm *tp)
   int hasT=0, hassq=0, usesdash=0, usesslash=0, hasZ=0;
   char *C, *cc, *c=NULL, *cf, *subsec=NULL, *nosubsec=fitsdate;
 
-  /* Initialize the `tm' structure to all-zero elements. In particular, The
-     FITS standard times are written in UTC, so, the time zone (`tm_zone'
+  /* Initialize the 'tm' structure to all-zero elements. In particular, The
+     FITS standard times are written in UTC, so, the time zone ('tm_zone'
      element, which specifies number of seconds to shift for the time zone)
-     has to be zero. The day-light saving flag (`isdst' element) also has
+     has to be zero. The day-light saving flag ('isdst' element) also has
      to be set to zero. */
   tp->tm_sec=tp->tm_min=tp->tm_hour=tp->tm_mday=tp->tm_mon=tp->tm_year=0;
   tp->tm_wday=tp->tm_yday=tp->tm_isdst=tp->tm_gmtoff=0;
   tp->tm_zone=NULL;
 
-  /* According to the FITS standard the `T' in the middle of the date and
+  /* According to the FITS standard the 'T' in the middle of the date and
      time of day is optional (the time is not mandatory). */
   cf=(c=fitsdate)+strlen(fitsdate);
   do
     switch(*c)
       {
-      case 'T':  hasT=1;      break; /* With `T' HH:MM:SS are defined.    */
+      case 'T':  hasT=1;      break; /* With 'T' HH:MM:SS are defined.    */
       case '-':  usesdash=1;  break; /* Day definition: YYYY-MM-DD.       */
       case '/':  usesslash=1; break; /* Day definition(old): DD/MM/YY.    */
       case '\'': hassq=1;     break; /* Wholly Wrapped in a single-quote. */
-      case 'Z':  hasZ=1;      break; /* When ends in `Z', means UTC. See  */
+      case 'Z':  hasZ=1;      break; /* When ends in 'Z', means UTC. See  */
                                    /* https://www.w3.org/TR/NOTE-datetime */
 
       /* In case we have sub-seconds in the string, we need to remove it
-         because `strptime' doesn't recognize sub-second resolution.*/
+         because 'strptime' doesn't recognize sub-second resolution.*/
       case '.':
         /* Allocate space (by copying the remaining full string and adding
-           a `\0' where necessary. */
+           a '\0' where necessary. */
         gal_checkset_allocate_copy(c, &subsec);
         gal_checkset_allocate_copy(fitsdate, &nosubsec);
 
@@ -972,19 +972,19 @@ gal_fits_key_date_to_struct_tm(char *fitsdate, struct tm *tp)
             )
         );
 
-  /* The value might have sub-seconds. In that case, `c' will point to a
-     `.' and we'll have to parse it as double. */
+  /* The value might have sub-seconds. In that case, 'c' will point to a
+     '.' and we'll have to parse it as double. */
   if( c==NULL || (*c!='.' && *c!='\0') )
-    error(EXIT_FAILURE, 0, "`%s' isn't in the FITS date format.\n\n"
+    error(EXIT_FAILURE, 0, "'%s' isn't in the FITS date format.\n\n"
           "According to the FITS standard, the date must be in one of "
           "these formats:\n"
           "   YYYY-MM-DD\n"
           "   YYYY-MM-DDThh:mm:ss\n"
-          "   YYYY-MM-DDThh:mm:ssZ   (Note the `Z',  see *) \n"
-          "   DD/MM/YY               (Note the `YY', see ^)\n"
+          "   YYYY-MM-DDThh:mm:ssZ   (Note the 'Z',  see *) \n"
+          "   DD/MM/YY               (Note the 'YY', see ^)\n"
           "   DD/MM/YYThh:mm:ss\n"
           "   DD/MM/YYThh:mm:ssZ\n\n"
-          "[*]: The `Z' is interpreted as being in the UTC Timezone.\n"
+          "[*]: The 'Z' is interpreted as being in the UTC Timezone.\n"
           "[^]: Gnuastro's FITS library (this program), interprets the "
           "older (two character for year) format, year values 68 to 99 as "
           "the years 1969 to 1999 and values 0 to 68 as the years 2000 to "
@@ -1006,7 +1006,7 @@ gal_fits_key_date_to_struct_tm(char *fitsdate, struct tm *tp)
    the keywords) into number of seconds since 1970/01/01, 00:00:00. Very
    useful to avoid calendar issues like number of days in a different
    months or leap years and etc. The remainder of the format string
-   (sub-seconds) will be put into the two pointer arguments: `subsec' is in
+   (sub-seconds) will be put into the two pointer arguments: 'subsec' is in
    double-precision floating point format and  */
 size_t
 gal_fits_key_date_to_seconds(char *fitsdate, char **subsecstr,
@@ -1017,7 +1017,7 @@ gal_fits_key_date_to_seconds(char *fitsdate, char **subsecstr,
   struct tm tp;
   void *outptr=subsec;
 
-  /* Fill in the `tp' elements with values read from the string. */
+  /* Fill in the 'tp' elements with values read from the string. */
   tmp=gal_fits_key_date_to_struct_tm(fitsdate, &tp);
 
   /* If the user cared about the remainder (sub-second string), then set it
@@ -1031,14 +1031,14 @@ gal_fits_key_date_to_seconds(char *fitsdate, char **subsecstr,
          (if the given pointer isn't NULL). */
       if(subsec)
         if( gal_type_from_string(&outptr, tmp, GAL_TYPE_FLOAT64) )
-          error(EXIT_FAILURE, 0, "%s: the sub-second portion of `%s' (or "
-                "`%s') couldn't be read as a number", __func__, fitsdate,
+          error(EXIT_FAILURE, 0, "%s: the sub-second portion of '%s' (or "
+                "'%s') couldn't be read as a number", __func__, fitsdate,
                 tmp);
     }
 
-  /* Convert the `tm' structure to `time_t'. Note that the system's
+  /* Convert the 'tm' structure to 'time_t'. Note that the system's
      timezone and daylight saving need to be subtracted from the output of
-     `mktime'. Otherwise the result will be different on different
+     'mktime'. Otherwise the result will be different on different
      host-system timezones (which is not what we want here: bug #57995). */
   t=mktime(&tp)-timezone-daylight;
 
@@ -1051,9 +1051,9 @@ gal_fits_key_date_to_seconds(char *fitsdate, char **subsecstr,
 
 
 /* Read the keyword values from a FITS pointer. The input should be a
-   linked list of `gal_data_t'. Before calling this function, you just have
-   to set the `name' and desired `type' values of each element in the list
-   to the keyword you want it to keep the value of. The given `name' value
+   linked list of 'gal_data_t'. Before calling this function, you just have
+   to set the 'name' and desired 'type' values of each element in the list
+   to the keyword you want it to keep the value of. The given 'name' value
    will be directly passed to CFITSIO to read the desired keyword. This
    function will allocate space to keep the value. Here is one example of
    using this function:
@@ -1070,31 +1070,31 @@ gal_fits_key_date_to_seconds(char *fitsdate, char **subsecstr,
 
       gal_data_array_free(keysll, N, 1);
 
-   If the `array' pointer of each keyword's dataset is not NULL, then it is
+   If the 'array' pointer of each keyword's dataset is not NULL, then it is
    assumed that the space has already been allocated. If it is NULL, then
    space will be allocated internally here.
 
    Strings need special consideration: the reason is that generally,
-   `gal_data_t' needs to also allow for array of strings (as it supports
+   'gal_data_t' needs to also allow for array of strings (as it supports
    arrays of integers for example). Hence two allocations will be done here
-   (one if `array!=NULL') and `keysll[i].array' must be interpretted as
-   `char **': one allocation for the pointer, one for the actual
+   (one if 'array!=NULL') and 'keysll[i].array' must be interpretted as
+   'char **': one allocation for the pointer, one for the actual
    characters. You don't have to worry about the freeing,
-   `gal_data_array_free' will free both allocations. So to read a string,
+   'gal_data_array_free' will free both allocations. So to read a string,
    one easy way would be the following:
 
       char *str, **strarray;
       strarr = keysll[i].array;
       str    = strarray[0];
 
-   If CFITSIO is unable to read a keyword for any reason the `status'
-   element of the respective `gal_data_t' will be non-zero. You can check
-   the successful reading of the keyword from the `status' value in each
-   keyword's `gal_data_t'. If it is zero, then the keyword was found and
+   If CFITSIO is unable to read a keyword for any reason the 'status'
+   element of the respective 'gal_data_t' will be non-zero. You can check
+   the successful reading of the keyword from the 'status' value in each
+   keyword's 'gal_data_t'. If it is zero, then the keyword was found and
    succesfully read. Otherwise, it a CFITSIO status value. You can use
-   CFITSIO's error reporting tools or `gal_fits_io_error' for reporting the
+   CFITSIO's error reporting tools or 'gal_fits_io_error' for reporting the
    reason. A tip: when the keyword doesn't exist, then CFITSIO's status
-   value will be `KEY_NO_EXIST'.
+   value will be 'KEY_NO_EXIST'.
 
    CFITSIO will start searching for the keywords from the last place in the
    header that it searched for a keyword. So it is much more efficient if
@@ -1124,7 +1124,7 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
                                           "tmp->dsize");
         tmp->ndim=tmp->size=tmp->dsize[0]=1;
 
-        /* When the type is a string, `tmp->array' is an array of pointers
+        /* When the type is a string, 'tmp->array' is an array of pointers
            to a separately allocated piece of memory. So we have to
            allocate that space here. If its not a string, then the
            allocated space above is enough to keep the value.*/
@@ -1165,7 +1165,7 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
 
         /* Allocate space for the keyword unit if necessary. Note that
            since there is no precise CFITSIO length for units, we will use
-           the `FLEN_COMMENT' length for units too (theoretically, the unit
+           the 'FLEN_COMMENT' length for units too (theoretically, the unit
            might take the full remaining area in the keyword). Also note
            that the unit is only optional, so it needs a separate CFITSIO
            function call which is done here.*/
@@ -1193,7 +1193,7 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
         if(tmp->comment && tmp->comment[0]=='\0')
           {free(tmp->comment); tmp->comment=NULL;}
 
-        /* Strings need to be cleaned (CFITSIO puts `'' around them with
+        /* Strings need to be cleaned (CFITSIO puts ''' around them with
            some (possiblly) extra space on the two ends of the string. */
       }
 }
@@ -1202,8 +1202,8 @@ gal_fits_key_read_from_ptr(fitsfile *fptr, gal_data_t *keysll,
 
 
 
-/* Same as `gal_fits_read_keywords_fptr', but accepts the filename and HDU
-   as input instead of an already opened CFITSIO `fitsfile' pointer. */
+/* Same as 'gal_fits_read_keywords_fptr', but accepts the filename and HDU
+   as input instead of an already opened CFITSIO 'fitsfile' pointer. */
 void
 gal_fits_key_read(char *filename, char *hdu, gal_data_t *keysll,
                   int readcomment, int readunit)
@@ -1323,7 +1323,7 @@ gal_fits_key_list_reverse(gal_fits_list_key_t **list)
   /* Only do the reversal if there is more than one element. */
   if(in && in->next)
     {
-      /* Fill the `reversed' list. */
+      /* Fill the 'reversed' list. */
       while(in!=NULL)
         {
           tmp=in->next;
@@ -1350,12 +1350,12 @@ gal_fits_key_write_title_in_ptr(char *title, fitsfile *fptr)
   int status=0;
   char *cp, *cpf, blankrec[80], titlerec[80];
 
-  /* Just in case title is `NULL'. */
+  /* Just in case title is 'NULL'. */
   if(title)
     {
       /* A small sanity check. */
       if( strlen(title) + strlen(GAL_FITS_KEY_TITLE_START) > 78 )
-        fprintf(stderr, "%s: FITS keyword title `%s' is too long to be fully "
+        fprintf(stderr, "%s: FITS keyword title '%s' is too long to be fully "
                 "included in the keyword record (80 characters, where the "
                 "title is prefixed with %zu space characters)",
                 __func__, title, strlen(GAL_FITS_KEY_TITLE_START));
@@ -1406,7 +1406,7 @@ gal_fits_key_write_filename(char *keynamebase, char *filename,
       errno=0;
       keyname=malloc(FLEN_KEYWORD);
       if(keyname==NULL)
-        error(EXIT_FAILURE, errno, "%s: %d bytes for `keyname'", __func__,
+        error(EXIT_FAILURE, errno, "%s: %d bytes for 'keyname'", __func__,
               FLEN_KEYWORD);
       if(len<maxlength)
         strcpy(keyname, keynamebase);
@@ -1457,7 +1457,7 @@ gal_fits_key_write_filename(char *keynamebase, char *filename,
               strcpy(keyname, keynamebase);
 
               /* Let the user know that  */
-              error(0,0, "%s: WARNING: `%s' is too long to fit "
+              error(0,0, "%s: WARNING: '%s' is too long to fit "
                     "into a FITS keyword value (max of %zu characters), "
                     "it will be truncated", __func__, filename,
                     maxlength);
@@ -1497,8 +1497,8 @@ gal_fits_key_write_wcsstr(fitsfile *fptr, char *wcsstr, int nkeyrec)
       keystart=&wcsstr[i*80];
 
       /* Write it if it isn't blank (first character is a space), or not a
-         comment (first 7 characters equal to `COMMENT'). The reason is
-         that WCSLIB adds a blank line and a `COMMENT' keyword saying its
+         comment (first 7 characters equal to 'COMMENT'). The reason is
+         that WCSLIB adds a blank line and a 'COMMENT' keyword saying its
          own version. But Gnuastro writes the version of WCSLIB as a
          separate keyword along with all other important software, so it is
          redundant and just makes the keywrods hard to read by eye.*/
@@ -1637,7 +1637,7 @@ gal_fits_key_write_version_in_ptr(gal_fits_list_key_t **keylist, char *title,
       gal_fits_key_write_in_ptr(keylist, fptr);
     }
 
-  /* Print `Versions and date' title. */
+  /* Print 'Versions and date' title. */
   gal_fits_key_write_title_in_ptr("Versions and date", fptr);
 
   /* Set the version of CFITSIO as a string. */
@@ -1740,11 +1740,11 @@ gal_fits_key_write_config(gal_fits_list_key_t **keylist, char *title,
  ***********            Array functions            ***********
  *************************************************************/
 
-/* Note that the FITS standard defines any array as an `image',
+/* Note that the FITS standard defines any array as an 'image',
    irrespective of how many dimensions it has. This function will return
    the Gnuastro-type, the number of dimensions and size along each
    dimension of the image along with its name and units if necessary (not
-   NULL). Note that `*dsize' will be allocated here, so it must not point
+   NULL). Note that '*dsize' will be allocated here, so it must not point
    to any already allocated space. */
 void
 gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
@@ -1771,7 +1771,7 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
   /* Define the names of the possibly existing important keywords about the
      dataset. We are defining these in the opposite order to be read by
      CFITSIO. The way Gnuastro writes the FITS keywords, the output will
-     first have `BZERO', then `BSCALE', then `EXTNAME', then, `BUNIT'.*/
+     first have 'BZERO', then 'BSCALE', then 'EXTNAME', then, 'BUNIT'.*/
   gal_list_data_add_alloc(&keysll, NULL, GAL_TYPE_STRING, 1, &dsize_key,
                           NULL, 0, -1, 1, "BUNIT", NULL, NULL);
   gal_list_data_add_alloc(&keysll, NULL, GAL_TYPE_STRING, 1, &dsize_key,
@@ -1819,8 +1819,8 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize,
     (*dsize)[i]=naxes[*ndim-1-i];
 
 
-  /* Clean up. Note that bzero_str, gets freed by `gal_data_free' (which is
-     called by `gal_list_data_free'. */
+  /* Clean up. Note that bzero_str, gets freed by 'gal_data_free' (which is
+     called by 'gal_list_data_free'. */
   gal_list_data_free(keysll);
 }
 
@@ -1877,16 +1877,16 @@ gal_fits_img_read(char *filename, char *hdu, size_t minmapsize,
     error(EXIT_FAILURE, 0, "%s (hdu: %s) has 0 dimensions! The most common "
           "cause for this is a wrongly specified HDU. In some FITS images, "
           "the first HDU doesn't have any data, the data is in subsequent "
-          "extensions. So probably reading the second HDU (with `--hdu=1' "
-          "or `-h1') will solve the problem (following CFITSIO's "
+          "extensions. So probably reading the second HDU (with '--hdu=1' "
+          "or '-h1') will solve the problem (following CFITSIO's "
           "convention, currently HDU counting starts from 0)." , filename,
           hdu);
 
 
   /* Set the fpixel array (first pixel in all dimensions). Note that the
-     `long' type will not be larger than 64-bits, so, we'll just assume it
+     'long' type will not be larger than 64-bits, so, we'll just assume it
      is 64-bits for space allocation. On 32-bit systems, this won't be a
-     problem, the space will be written/read as 32-bit `long' any way,
+     problem, the space will be written/read as 32-bit 'long' any way,
      we'll just have a few empty bytes that will be freed anyway at the end
      of this function. */
   fpixel=gal_pointer_allocate(GAL_TYPE_INT64, ndim, 0, __func__, "fpixel");
@@ -2044,13 +2044,13 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
   fptr=gal_fits_open_to_write(filename);
 
 
-  /* Fill the `naxes' array (in opposite order, and `long' type): */
+  /* Fill the 'naxes' array (in opposite order, and 'long' type): */
   for(i=0;i<ndim;++i) naxes[ndim-1-i]=towrite->dsize[i];
 
 
   /* Create the FITS file. Unfortunately CFITSIO doesn't have a macro for
      UINT64, TLONGLONG is only for (signed) INT64. So if the dataset has
-     that type, we'll have to convert it to `INT64' and in the mean-time
+     that type, we'll have to convert it to 'INT64' and in the mean-time
      shift its zero, we will then have to write the BZERO and BSCALE
      keywords accordingly. */
   if(block->type==GAL_TYPE_UINT64)
@@ -2159,7 +2159,7 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
   /* If a WCS structure is present, write it in */
   if(towrite->wcs)
     {
-      /* Decompose the `PCi_j' matrix and `CDELTi' vector. */
+      /* Decompose the 'PCi_j' matrix and 'CDELTi' vector. */
       gal_wcs_decompose_pc_cdelt(towrite->wcs);
 
       /* Convert the WCS information to text. */
@@ -2340,8 +2340,8 @@ gal_fits_tab_format(fitsfile *fitsptr)
       else if(!strcmp(value, "BINTABLE"))
         return GAL_TABLE_FORMAT_BFITS;
       else
-        error(EXIT_FAILURE, 0, "%s: the `XTENSION' keyword of this FITS "
-              "table (`%s') doesn't have a standard value", __func__, value);
+        error(EXIT_FAILURE, 0, "%s: the 'XTENSION' keyword of this FITS "
+              "table ('%s') doesn't have a standard value", __func__, value);
     }
   else
     {
@@ -2362,9 +2362,9 @@ gal_fits_tab_format(fitsfile *fitsptr)
 
 
 
-/* The general format of the TDISPn keywords in FITS is like this: `Tw.p',
-   where `T' specifies the general format, `w' is the width to be given to
-   this column and `p' is the precision. For integer types, percision is
+/* The general format of the TDISPn keywords in FITS is like this: 'Tw.p',
+   where 'T' specifies the general format, 'w' is the width to be given to
+   this column and 'p' is the precision. For integer types, percision is
    actually the minimum number of integers, for floats, it is the number of
    decimal digits beyond the decimal point. */
 static void
@@ -2410,7 +2410,7 @@ set_display_format(char *tdisp, gal_data_t *data, char *filename, char *hdu,
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "%s (hdu: %s): Format character `%c' in the "
+      error(EXIT_FAILURE, 0, "%s (hdu: %s): Format character '%c' in the "
             "value (%s) of the keyword %s not recognized in %s", filename, hdu,
             tdisp[0], tdisp, keyname, __func__);
     }
@@ -2423,8 +2423,8 @@ set_display_format(char *tdisp, gal_data_t *data, char *filename, char *hdu,
     case '.':      /* Width is set, go onto finding the precision. */
       data->disp_precision = strtol(&tailptr[1], &tailptr, 0);
       if(*tailptr!='\0')
-        error(EXIT_FAILURE, 0, "%s (hdu: %s): The value `%s' of the "
-              "`%s' keyword could not recognized (it doesn't finish after "
+        error(EXIT_FAILURE, 0, "%s (hdu: %s): The value '%s' of the "
+              "'%s' keyword could not recognized (it doesn't finish after "
               "the precision) in %s", filename, hdu, tdisp, keyname, __func__);
       break;
 
@@ -2435,8 +2435,8 @@ set_display_format(char *tdisp, gal_data_t *data, char *filename, char *hdu,
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "%s (hdu: %s): The value `%s' of the "
-            "`%s' keyword could not recognized (it doesn't have a `.', or "
+      error(EXIT_FAILURE, 0, "%s (hdu: %s): The value '%s' of the "
+            "'%s' keyword could not recognized (it doesn't have a '.', or "
             "finish, after the width) in %s", filename, hdu, tdisp,
             keyname, __func__);
     }
@@ -2449,7 +2449,7 @@ set_display_format(char *tdisp, gal_data_t *data, char *filename, char *hdu,
 
 /* The FITS standard for binary tables (not ASCII tables) does not allow
    unsigned types for short, int and long types, or signed char! So it has
-   `TSCALn' and `TZEROn' to scale the signed types to an unsigned type. It
+   'TSCALn' and 'TZEROn' to scale the signed types to an unsigned type. It
    does this internally, but since we need to define our data type and
    allocate space for it before actually reading the array, it is necessary
    to do this setting here.  */
@@ -2495,7 +2495,7 @@ fits_correct_bin_table_int_types(gal_data_t *allcols, int tfields,
 
 
 
-/* See the descriptions of `gal_table_info'. */
+/* See the descriptions of 'gal_table_info'. */
 gal_data_t *
 gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
                   size_t *numrows, int *tableformat)
@@ -2523,7 +2523,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
   allcols=gal_data_array_calloc(tfields);
 
 
-  /* See comments of `fits_correct_bin_table_int_types'. Here we are
+  /* See comments of 'fits_correct_bin_table_int_types'. Here we are
      allocating the space to keep these values. */
   errno=0;
   tscal=calloc(tfields, sizeof *tscal);
@@ -2548,17 +2548,17 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
 
       /* For string valued keywords, CFITSIO's function above, keeps the
          single quotes around the value string, one before and one
-         after. `gal_fits_key_clean_str_value' will remove these single
+         after. 'gal_fits_key_clean_str_value' will remove these single
          quotes and any possible trailing space within the allocated
          space.*/
       if(value[0]=='\'') gal_fits_key_clean_str_value(value);
 
       /* COLUMN DATA TYPE. According the the FITS standard, the value of
-         TFORM is most generally in this format: `rTa'. `T' is actually a
-         code of the datatype. `r' is the `repeat' counter and `a' is
+         TFORM is most generally in this format: 'rTa'. 'T' is actually a
+         code of the datatype. 'r' is the 'repeat' counter and 'a' is
          depreciated. Currently we can only read repeat==1 cases. When no
          number exists before the defined capital letter, it defaults to 1,
-         but if a number exists (for example `5D'), then the repeat is 5
+         but if a number exists (for example '5D'), then the repeat is 5
          (there are actually five values in each column). Note that
          value[0] is a single quote.*/
       if(strncmp(keyname, "TFORM", 5)==0)
@@ -2590,7 +2590,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
                       repeat=strtol(value+1, &tailptr, 0);
                       if(*tailptr!='\0')
                         error(EXIT_FAILURE, 0, "%s (hdu: %s): the value to "
-                              "keyword `%s' (`%s') is not in `Aw' format "
+                              "keyword '%s' ('%s') is not in 'Aw' format "
                               "(for strings) as required by the FITS "
                               "standard in %s", filename, hdu, keyname, value,
                               __func__);
@@ -2609,7 +2609,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
               tscal[index]=strtol(value, &tailptr, 0);
               if(*tailptr!='\0')
                 error(EXIT_FAILURE, 0, "%s (hdu: %s): value to %s keyword "
-                      "(`%s') couldn't be read as a number in %s", filename,
+                      "('%s') couldn't be read as a number in %s", filename,
                       hdu, keyname, value, __func__);
             }
         }
@@ -2623,7 +2623,7 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
               tzero[index]=strtoll(value, &tailptr, 0);
               if(*tailptr!='\0')
                 error(EXIT_FAILURE, 0, "%s (hdu: %s): value to %s keyword "
-                      "(`%s') couldn't be read as a number in %s", filename,
+                      "('%s') couldn't be read as a number in %s", filename,
                       hdu, keyname, value, __func__);
             }
         }
@@ -2741,7 +2741,7 @@ fits_tab_read_ascii_float_special(char *filename, char *hdu, fitsfile *fptr,
   for(i=0;i<numrows;++i)
     {
       /* Parse the string, if its not readable as a special number (like
-         `inf' or `nan', then just read it as a NaN. */
+         'inf' or 'nan', then just read it as a NaN. */
       tmp=strtod(strarr[i], &tailptr);
       if(tailptr==strarr[i]) tmp=NAN;
 
@@ -2798,7 +2798,7 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
           /* For a string column, we need an allocated array for each element,
              even in binary values. This value should be stored in the
              disp_width element of the data structure, which is done
-             automatically in `gal_fits_table_info'. */
+             automatically in 'gal_fits_table_info'. */
           if(out->type==GAL_TYPE_STRING)
             {
               strarr=out->array;
@@ -2821,10 +2821,10 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
              types, the FITS standard defines blanks as NaN (same as almost
              any other software like Gnuastro). However if a blank value is
              specified, CFITSIO will convert other special numbers like
-             `inf' to NaN also. We want to be able to distringuish `inf'
+             'inf' to NaN also. We want to be able to distringuish 'inf'
              and NaN here, so for floating point types in binary tables, we
              won't define any blank value. In ASCII tables, CFITSIO doesn't
-             read the `NAN' values (that it has written itself) unless we
+             read the 'NAN' values (that it has written itself) unless we
              specify a blank pointer/value. */
           isfloat = ( out->type==GAL_TYPE_FLOAT32
                       || out->type==GAL_TYPE_FLOAT64 );
@@ -2835,8 +2835,8 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
                         1, 1, out->size, blank, out->array, &anynul, &status);
 
           /* In the ASCII table format, CFITSIO might not be able to read
-             `INF' or `-INF'. In this case, it will set status to `BAD_C2D'
-             or `BAD_C2F'. So, we'll use our own parser for the column
+             'INF' or '-INF'. In this case, it will set status to 'BAD_C2D'
+             or 'BAD_C2F'. So, we'll use our own parser for the column
              values. */
           if( hdutype==ASCII_TBL
               && isfloat
@@ -2858,7 +2858,7 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
       gal_fits_io_error(status, NULL);
     }
 
-  /* There are no rows to read (`numrows==NULL'). Make an empty-sized
+  /* There are no rows to read ('numrows==NULL'). Make an empty-sized
      array. */
   else
     {
@@ -2891,10 +2891,10 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
 
 
 /* This function will allocate new copies for all elements to have the same
-   length as the maximum length and set all trailing elements to `\0' for
+   length as the maximum length and set all trailing elements to '\0' for
    those that are shorter than the length. The return value is the
    allocated space. If the dataset is not a string, the returned value will
-   be -1 (largest number of `size_t'). */
+   be -1 (largest number of 'size_t'). */
 static size_t
 fits_string_fixed_alloc_size(gal_data_t *data)
 {
@@ -2922,8 +2922,8 @@ fits_string_fixed_alloc_size(gal_data_t *data)
         error(EXIT_FAILURE, 0, "%s: %zu bytes for tmp", __func__,
               (maxlen+1)*sizeof *strarr[i]);
 
-      /* Put the old array into the newly allocated space. `tmp' was
-         cleared (all values set to `\0', so we don't need to set the final
+      /* Put the old array into the newly allocated space. 'tmp' was
+         cleared (all values set to '\0', so we don't need to set the final
          one explicity after the copy.*/
       for(j=0;strarr[i][j]!='\0';++j)
         tmp[j]=strarr[i][j];
@@ -2952,7 +2952,7 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tableformat,
   char *blank, **tform, **ttype, **tunit;
 
 
-  /* Allocate the arrays to keep the `tform' values */
+  /* Allocate the arrays to keep the 'tform' values */
   errno=0;
   tform=*outtform=malloc(numcols*sizeof *tform);
   if(tform==NULL)
@@ -2973,7 +2973,7 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tableformat,
   /* Go over each column and fill in these arrays. */
   for(col=cols; col!=NULL; col=col->next)
     {
-      /* Set the `ttype' and `tunit' values: */
+      /* Set the 'ttype' and 'tunit' values: */
       if( asprintf(&ttype[i], "%s", col->name ? col->name : "")<0 )
         error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       if( asprintf(&tunit[i], "%s", col->unit ? col->unit : "")<0 )
@@ -2994,7 +2994,7 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tableformat,
             /* We need to check if the blank value needs is larger than the
                expected width or not. Its initial width is set the output
                of the function above, but if the value is larger,
-               `asprintf' (which is used) will make it wider. */
+               'asprintf' (which is used) will make it wider. */
             blank = ( gal_blank_present(col, 0)
                       ? gal_blank_as_string(col->type, col->disp_width)
                       : NULL );
@@ -3093,9 +3093,9 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tableformat,
         error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       blank=gal_blank_as_string(col->type, col->disp_width);
 
-      /* When in exponential form (`tform' starting with `E'), CFITSIO
-         writes a NaN value as `NAN', but when in floating point form
-         (`tform' starting with `F'), it writes it as `nan'. So in the
+      /* When in exponential form ('tform' starting with 'E'), CFITSIO
+         writes a NaN value as 'NAN', but when in floating point form
+         ('tform' starting with 'F'), it writes it as 'nan'. So in the
          former case, we need to convert the string to upper case. */
       if(tform[0]=='E' || tform[0]=='e')
         for(c=blank; *c!='\0'; ++c) *c=toupper(*c);
@@ -3153,7 +3153,7 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tableformat,
 
 
 
-/* Write the given columns (a linked list of `gal_data_t') into a FITS
+/* Write the given columns (a linked list of 'gal_data_t') into a FITS
    table.*/
 void
 gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
@@ -3190,7 +3190,7 @@ gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
 
 
   /* Make the FITS file pointer. Note that tableformat was checked in
-     `fits_table_prepare_arrays'. */
+     'fits_table_prepare_arrays'. */
   tbltype = tableformat==GAL_TABLE_FORMAT_AFITS ? ASCII_TBL : BINARY_TBL;
   fits_create_tbl(fptr, tbltype, numrows, numcols, ttype, tform, tunit,
                   extname, &status);
@@ -3234,7 +3234,7 @@ gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
 
 
   /* Clean up and close the FITS file. Note that each element in the
-     `ttype' and `tunit' arrays just points to the respective string in the
+     'ttype' and 'tunit' arrays just points to the respective string in the
      column data structure, the space for each element of the array wasn't
      allocated.*/
   for(i=0;i<numcols;++i)

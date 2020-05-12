@@ -55,7 +55,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
  ********               Simple statistics                 *******
  ****************************************************************/
 /* Return the number of non-blank elements in an array as a single element,
-   `size_t' type data structure. */
+   'size_t' type data structure. */
 gal_data_t *
 gal_statistics_number(gal_data_t *input)
 {
@@ -65,7 +65,7 @@ gal_statistics_number(gal_data_t *input)
 
   /* If there is no blank values in the input, then the total number is
      just the size. */
-  if(gal_blank_present(input, 0)) /* `{}' necessary for `else'. */
+  if(gal_blank_present(input, 0)) /* '{}' necessary for 'else'. */
     { GAL_TILE_PARSE_OPERATE(input, NULL, 0, 1, {++counter;}); }
   else
     counter = input->size;
@@ -149,7 +149,7 @@ gal_statistics_sum(gal_data_t *input)
 
   /* See if the input actually has any elements. */
   if(input->size)
-    /* Parse the dataset. Note that in `gal_data_alloc' we set the `clear'
+    /* Parse the dataset. Note that in 'gal_data_alloc' we set the 'clear'
        flag to 1, so it will be 0.0f. */
     GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; *o += *i;});
 
@@ -174,12 +174,12 @@ gal_statistics_mean(gal_data_t *input)
 
   /* See if the input actually has any elements. */
   if(input->size)
-    /* Parse the dataset. Note that in `gal_data_alloc' we set the `clear'
+    /* Parse the dataset. Note that in 'gal_data_alloc' we set the 'clear'
        flag to 1, so it will be 0.0f. */
     GAL_TILE_PARSE_OPERATE(input, out, 0, 1, {++n; *o += *i;});
 
   /* Above, we calculated the sum and number, so if there were any elements
-     in the dataset (`n!=0'), divide the sum by the number, otherwise, put
+     in the dataset ('n!=0'), divide the sum by the number, otherwise, put
      a blank value in the output. */
   if(n) *((double *)(out->array)) /= n;
   else gal_blank_write(out->array, out->type);
@@ -271,7 +271,7 @@ gal_statistics_mean_std(gal_data_t *input)
 
 /* The input is a sorted array with no blank values, we want the median
    value to be put inside the already allocated space which is pointed to
-   by `median'. It is in the same type as the input. */
+   by 'median'. It is in the same type as the input. */
 #define MED_IN_SORTED(IT) {                                             \
     IT *a=sorted->array;                                                \
     *(IT *)median = n%2 ? a[n/2]  : (a[n/2]+a[n/2-1])/2;                \
@@ -308,7 +308,7 @@ statistics_median_in_sorted_no_blank(gal_data_t *sorted, void *median)
 
 
 /* Return the median value of the dataset in the same type as the input as
-   a one element dataset. If the `inplace' flag is set, the input data
+   a one element dataset. If the 'inplace' flag is set, the input data
    structure will be modified: it will have no blank values and will be
    sorted (increasing). */
 gal_data_t *
@@ -343,7 +343,7 @@ gal_statistics_quantile_index(size_t size, double quantile)
   /* Some sanity checks. */
   if(size==0)
     {
-      error(0, 0, "%s: `size' is 0. The quantile is not defined for "
+      error(0, 0, "%s: 'size' is 0. The quantile is not defined for "
               "a zero-sized array\n", __func__);
       return GAL_BLANK_SIZE_T;
     }
@@ -420,7 +420,7 @@ gal_statistics_quantile(gal_data_t *input, double quantile, int inplace)
 
 
 /* Return the index of the (first) point in the sorted dataset that has the
-   closest value to `value' (which has to be the same type as the `input'
+   closest value to 'value' (which has to be the same type as the 'input'
    dataset). */
 #define STATS_QFUNC_IND(IT) {                                           \
     IT *r, *a=nbs->array, *af=a+nbs->size, v=*((IT *)(value->array));   \
@@ -572,7 +572,7 @@ gal_statistics_quantile_function(gal_data_t *input, gal_data_t *value,
     size_t i, j;                                                        \
     TYPE *a=out->array, b;                                              \
                                                                         \
-    /* Write the blank value for this type into `b'. */                 \
+    /* Write the blank value for this type into 'b'. */                 \
     gal_blank_write(&b, out->type);                                     \
                                                                         \
     /* Go over the elements, and set the duplicates to blank. */        \
@@ -611,11 +611,11 @@ gal_statistics_unique(gal_data_t *input, int inplace)
     case GAL_TYPE_FLOAT32: UNIQUE_BYTYPE( float    ); break;
     case GAL_TYPE_FLOAT64: UNIQUE_BYTYPE( double   ); break;
     default:
-      error(EXIT_FAILURE, 0, "the `unique' operator doesn't support type "
-            "code `%u'", out->type);
+      error(EXIT_FAILURE, 0, "the 'unique' operator doesn't support type "
+            "code '%u'", out->type);
     }
 
-  /* Remove all blank elements (note that `gal_blank_remove' also corrects
+  /* Remove all blank elements (note that 'gal_blank_remove' also corrects
      the size of the dataset and sets it to 1D). */
   gal_blank_remove_realloc(out);
   return out;
@@ -674,7 +674,7 @@ struct statistics_mode_params
 
 
 /*
-  Given a mirror point (`m'), return the maximum distance between the
+  Given a mirror point ('m'), return the maximum distance between the
   mirror distribution and the original distribution.
 
   The basic idea behind finding the mode is comparing the mirrored CDF
@@ -684,28 +684,28 @@ struct statistics_mode_params
   checked, it then finds the maximum difference between the mirrored CDF
   about the given point and the input CDF.
 
-  `zf` keeps the value at the mirror (zero) point.  `i` is used to count
-  the pixels after the mirror in the mirror distribution. So `m+i` is the
+  'zf' keeps the value at the mirror (zero) point.  'i' is used to count
+  the pixels after the mirror in the mirror distribution. So 'm+i' is the
   index of the mirrored distribution and mf=zf+(zf-a[m-i])=2*zf-a[m-i] is
-  the mirrored flux at this point. Having found `mf', we find the `j` such
-  that a[m+j] has the nearest flux to `mf`.
+  the mirrored flux at this point. Having found 'mf', we find the 'j' such
+  that a[m+j] has the nearest flux to 'mf'.
 
   The desired difference between the input CDF and the mirrored one
-  for each `i` is then simply: `j-i`.
+  for each 'i' is then simply: 'j-i'.
 
-  Once `i` is incremented, `mf` will increase, so to find the new `j` we
-  don't need to begin looking from `j=0`. Remember that the array is
-  sorted, so the desired `j` is definitely larger than the previous
-  `j`. So, if we keep the previous `j` in `prevj` then, all we have to do
-  is to start incrementing `j` from `prevj`. This will really help in
-  speeding up the job :-D. Only for the first element, `prevj=0`. */
+  Once 'i' is incremented, 'mf' will increase, so to find the new 'j' we
+  don't need to begin looking from 'j=0'. Remember that the array is
+  sorted, so the desired 'j' is definitely larger than the previous
+  'j'. So, if we keep the previous 'j' in 'prevj' then, all we have to do
+  is to start incrementing 'j' from 'prevj'. This will really help in
+  speeding up the job :-D. Only for the first element, 'prevj=0'. */
 #define MIRR_MAX_DIFF(IT) {                                             \
     IT *a=p->data->array, zf=a[m], mf=2*zf-a[m-i];                      \
                                                                         \
     /* When a[m+j]>mf, we have reached the last pixel to check. Now, */ \
     /* we just have to see which one of a[m+j-1] or a[m+j] is closer */ \
-    /* to `mf'. We then change `j` accordingly and break out of the  */ \
-    /* `j' loop. */                                                     \
+    /* to 'mf'. We then change 'j' accordingly and break out of the  */ \
+    /* 'j' loop. */                                                     \
     for(j=prevj;j<size-m;++j)                                           \
       if(a[m+j]>mf)                                                     \
         {                                                               \
@@ -741,7 +741,7 @@ mode_mirror_max_index_diff(struct statistics_mode_params *p, size_t m)
   /* Go over the mirrored points. */
   for(i=1; i<p->numcheck && i<=m && m+i<size ;i+=p->interval)
     {
-      /* Find `j': the index of the closest point in the original
+      /* Find 'j': the index of the closest point in the original
          distribution that has a value similar to the mirror
          distribution. */
       switch(p->data->type)
@@ -770,8 +770,8 @@ mode_mirror_max_index_diff(struct statistics_mode_params *p, size_t m)
          has been found. We want the mirrored distribution to be within the
          actual distribution, not beyond it, so the only acceptable results
          are when i<j. But we also have noise, so we can't simply use that
-         as the criterion, small `j's with `i>j' are acceptable. So, only
-         when `i>j+errordiff' the result is not acceptable! */
+         as the criterion, small 'j's with 'i>j' are acceptable. So, only
+         when 'i>j+errordiff' the result is not acceptable! */
       if(i>j+errordiff)
         {
           maxdiff = MODE_MIRROR_ABOVE;
@@ -792,7 +792,7 @@ mode_mirror_max_index_diff(struct statistics_mode_params *p, size_t m)
 
 
 /* Find the mode through the Golden-section search. It is assumed that
-   `mode_mirror_max_index_diff' has one minimum (within the statistical
+   'mode_mirror_max_index_diff' has one minimum (within the statistical
    errors) in the function. To find that minimum, the golden section search
    algorithm is going to used. Read the Wikipedia article for a very nice
    introduction.
@@ -801,8 +801,8 @@ mode_mirror_max_index_diff(struct statistics_mode_params *p, size_t m)
    interval and thus decreasing the interval until a certain tolerance is
    reached.
 
-   If the input interval is on points `a' and `b', then the middle point
-   (lets call it `c', where c>a and c<b) to test should be positioned such
+   If the input interval is on points 'a' and 'b', then the middle point
+   (lets call it 'c', where c>a and c<b) to test should be positioned such
    that (b-c)/(c-a)=MODE_GOLDEN_RATIO. Once we open up this relation, we
    can find c using:
 
@@ -856,7 +856,7 @@ mode_golden_section(struct statistics_mode_params *p)
   /* +++++++++++++ Start of addition to the golden section search.
 
      The mirrored distribution's cumulative frequency plot has be lower
-     than the actual's cfp. If it isn't, `di` will be MODE_MIRROR_ABOVE. In
+     than the actual's cfp. If it isn't, 'di' will be MODE_MIRROR_ABOVE. In
      this case, the normal golden section minimization is not going to give
      us what we want. So we have this modification. In such cases, we want
      the search to go to the lower interval. */
@@ -916,28 +916,28 @@ mode_golden_section(struct statistics_mode_params *p)
 
 /* Once the mode is found, we need to do a quality control. This quality
    control is the measure of its symmetricity. Let's assume the mode index
-   is at `m', since an index is just a count, from the Poisson
-   distribution, the error in `m' is sqrt(m).
+   is at 'm', since an index is just a count, from the Poisson
+   distribution, the error in 'm' is sqrt(m).
 
-   Now, let's take `b' to be the first point that the difference between
+   Now, let's take 'b' to be the first point that the difference between
    the cumulative distribution of the mirror and actual data deviate more
    than sqrt(m). For a scale parameter, lets assume that the index of 5% of
-   `m` is `a`. We could have taken the distribution minimum, but the
+   'm' is 'a'. We could have taken the distribution minimum, but the
    scatter in the minimum can be too high!
 
    Now, the "symmetricity" of the mode can be defined as: (b-m)/(m-a). For
    a completly symmetric mode, this should be 1. Note that the search for
-   `b` only goes to the 95% of the distribution.  */
+   'b' only goes to the 95% of the distribution.  */
 #define MODE_SYM(IT) {                                                  \
     IT *a=p->data->array, af=0, bf=0, mf=0, fi;                         \
                                                                         \
-    /* Set the values at the mirror and at `a' (see above). */          \
+    /* Set the values at the mirror and at 'a' (see above). */          \
     mf=a[m];                                                            \
     af=a[ gal_statistics_quantile_index(2*m+1, MODE_SYM_LOW_Q) ];       \
     if(mf<=af) return 0;                                                \
                                                                         \
     /* This loop is very similar to that of */                          \
-    /* `mode_mirror_max_index_diff'. It will find the index where the */\
+    /* 'mode_mirror_max_index_diff'. It will find the index where the */\
     /* difference between the two cumulative frequency plots exceeds */ \
     /* that of the error in the mirror index.*/                         \
     for(i=1; i<topi-m ;i+=1)                                            \
@@ -1012,7 +1012,7 @@ mode_symmetricity(struct statistics_mode_params *p, size_t m, void *b_val)
 
 
 
-/* Return the mode and related parameters in a float64 `gal_data_t' with
+/* Return the mode and related parameters in a float64 'gal_data_t' with
    the following elements in its array, the array:
 
       array[0]: mode
@@ -1022,13 +1022,13 @@ mode_symmetricity(struct statistics_mode_params *p, size_t m, void *b_val)
 
   The inputs are:
 
-    - `input' is the input dataset, it doesn't have to be sorted and can
+    - 'input' is the input dataset, it doesn't have to be sorted and can
       have blank values.
 
-    - `mirrordist' is the maximum distance after the mirror point to check
+    - 'mirrordist' is the maximum distance after the mirror point to check
       as a multiple of sigma.
 
-    - `inplace' is either 0 or 1. If it is 1 and the input array has blank
+    - 'inplace' is either 0 or 1. If it is 1 and the input array has blank
       values and is not sorted, then the removal of blank values and
       sorting will occur in-place (input will be modified): all blank
       elements in the input array will be removed and it will be sorted. */
@@ -1051,7 +1051,7 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
   /* A small sanity check. */
   if(mirrordist<=0)
     error(EXIT_FAILURE, 0, "%s: %f not acceptable as a value to "
-          "`mirrordist'. Only positive values can be given to it",
+          "'mirrordist'. Only positive values can be given to it",
           __func__, mirrordist);
 
 
@@ -1060,7 +1060,7 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
 
 
   /* It can happen that the whole array is blank. In such cases,
-     `p.data->size==0', so set all output elements to NaN and return. */
+     'p.data->size==0', so set all output elements to NaN and return. */
   oa=out->array;
   if(p.data->size==0) { oa[0]=oa[1]=oa[2]=oa[3]=NAN; return out; }
 
@@ -1092,7 +1092,7 @@ gal_statistics_mode(gal_data_t *input, float mirrordist, int inplace)
 
 
   /* Do the golden-section search iteration, read the mode value from the
-     input array and save it in the `tmptype' data structure that has the
+     input array and save it in the 'tmptype' data structure that has the
      same type as the input. */
   modeindex = mode_golden_section(&p);
   memcpy( tmptype->array,
@@ -1184,7 +1184,7 @@ statistics_make_mirror(gal_data_t *noblank_sorted, size_t index,
 
 
 /* Make a mirrored histogram and cumulative frequency plot with the mirror
-   distribution of the input with a value at `value'.
+   distribution of the input with a value at 'value'.
 
    The output is a linked list of data structures: the first is the bins
    with one bin at the mirror point, the second is the histogram with a
@@ -1339,7 +1339,7 @@ gal_statistics_is_sorted(gal_data_t *input, int updateflags)
 
         default:
           error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
-                "the problem. The value %d is not recognized for `out'",
+                "the problem. The value %d is not recognized for 'out'",
                 __func__, PACKAGE_BUGREPORT, out);
         }
     }
@@ -1351,7 +1351,7 @@ gal_statistics_is_sorted(gal_data_t *input, int updateflags)
 
 
 /* This function is ignorant to blank values, if you want to make sure
-   there is no blank values, you can call `gal_blank_remove' first. */
+   there is no blank values, you can call 'gal_blank_remove' first. */
 #define STATISTICS_SORT(QSORT_F) {                                      \
     qsort(input->array, input->size, gal_type_sizeof(input->type), QSORT_F); \
   }
@@ -1397,7 +1397,7 @@ gal_statistics_sort_increasing(gal_data_t *input)
 
 
 
-/* See explanations above `gal_statistics_sort_increasing'. */
+/* See explanations above 'gal_statistics_sort_increasing'. */
 void
 gal_statistics_sort_decreasing(gal_data_t *input)
 {
@@ -1441,12 +1441,12 @@ gal_statistics_sort_decreasing(gal_data_t *input)
 
 
 /* Return a dataset that doesn't have blank values and is sorted. If the
-   `inplace' value is set to 1, then the input array will be modified,
+   'inplace' value is set to 1, then the input array will be modified,
    otherwise, a new array will be allocated with the desired properties. So
-   if it is already sorted and has blank values, the `inplace' variable is
+   if it is already sorted and has blank values, the 'inplace' variable is
    irrelevant.
 
-   This function can also work on tiles, in that case, `inplace' is
+   This function can also work on tiles, in that case, 'inplace' is
    useless, because a tile doesn't own its dataset and the dataset is not
    contiguous. */
 gal_data_t *
@@ -1460,7 +1460,7 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
     {
       /* If this is a tile, then first we have to copy it into a contiguous
          piece of memory. After this step, we will only be dealing with
-         `contig' (for a contiguous patch of memory). */
+         'contig' (for a contiguous patch of memory). */
       if(input->block)
         {
           /* Copy the input into a contiguous patch of memory. */
@@ -1468,15 +1468,15 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
 
           /* When the data was a tile, we have already copied the array
              into a separate allocated space. So to avoid any further
-             copying, we will just set the `inplace' variable to 1. */
+             copying, we will just set the 'inplace' variable to 1. */
           inplace=1;
         }
       else contig=input;
 
 
       /* Make sure there are no blanks in the array that will be
-         used. After this step, we won't be dealing with `input' any more,
-         but with `noblank'. */
+         used. After this step, we won't be dealing with 'input' any more,
+         but with 'noblank'. */
       if( gal_blank_present(contig, 1) )
         {
           /* See if we should allocate a new dataset to remove blanks or if
@@ -1487,7 +1487,7 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
       else noblank=contig;
 
       /* Make sure the array is sorted. After this step, we won't be
-         dealing with `noblank' any more but with `sorted'. */
+         dealing with 'noblank' any more but with 'sorted'. */
       if(noblank->size)
         {
           if( gal_statistics_is_sorted(noblank, 1) )
@@ -1562,21 +1562,21 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
 
    Input arguments:
 
-     * The `input' set you want to apply the bins to. This is only
+     * The 'input' set you want to apply the bins to. This is only
        necessary if the range argument is not complete, see below. If
-       `range' has all the necessary information, you can pass a NULL
-       pointer for `input'.
+       'range' has all the necessary information, you can pass a NULL
+       pointer for 'input'.
 
-     * The `inrange' data structure keeps the desired range along each
+     * The 'inrange' data structure keeps the desired range along each
        dimension of the input data structure, it has to be in float32
        type. Note that if
 
          - If you want the full range of the dataset (in any dimensions,
-           then just set `range' to NULL and the range will be specified
+           then just set 'range' to NULL and the range will be specified
            from the minimum and maximum value of the dataset.
 
          - If there is one element for each dimension in range, then it is
-           viewed as a quantile (Q), and the range will be: `Q to 1-Q'.
+           viewed as a quantile (Q), and the range will be: 'Q to 1-Q'.
 
          - If there are two elements for each dimension in range, then they
            are assumed to be your desired minimum and maximum values. When
@@ -1585,7 +1585,7 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
 
      * The number of bins: must be larger than 0.
 
-     * `onebinstart' A desired value for onebinstart. Note that with this
+     * 'onebinstart' A desired value for onebinstart. Note that with this
         option, the bins won't start and end exactly on the given range
         values, it will be slightly shifted to accommodate this
         request.
@@ -1604,7 +1604,7 @@ gal_statistics_regular_bins(gal_data_t *input, gal_data_t *inrange,
 
   /* Some sanity checks. */
   if(numbins==0)
-    error(EXIT_FAILURE, 0, "%s: `numbins' cannot be given a value of 0",
+    error(EXIT_FAILURE, 0, "%s: 'numbins' cannot be given a value of 0",
           __func__);
   if(input->size==0)
     error(EXIT_FAILURE, 0, "%s: input's size is 0", __func__);
@@ -1650,7 +1650,7 @@ gal_statistics_regular_bins(gal_data_t *input, gal_data_t *inrange,
           else max=ra[1];
         }
 
-      /* Clean up: if `range' was allocated. */
+      /* Clean up: if 'range' was allocated. */
       if(range!=inrange) gal_data_free(range);
     }
   /* No range was given, find the minimum and maximum. */
@@ -1714,11 +1714,11 @@ gal_statistics_regular_bins(gal_data_t *input, gal_data_t *inrange,
 
 
 /* Make a histogram of all the elements in the given dataset with bin
-   values that are defined in the `inbins' structure (see
-   `gal_statistics_regular_bins'). `inbins' is not mandatory, if you pass a
+   values that are defined in the 'inbins' structure (see
+   'gal_statistics_regular_bins'). 'inbins' is not mandatory, if you pass a
    NULL pointer, the bins structure will be built within this function
-   based on the `numbins' input. As a result, when you have already defined
-   the bins, `numbins' is not used. */
+   based on the 'numbins' input. As a result, when you have already defined
+   the bins, 'numbins' is not used. */
 
 #define HISTOGRAM_TYPESET(IT) {                                         \
     IT *a=input->array, *af=a+input->size;                              \
@@ -1726,8 +1726,8 @@ gal_statistics_regular_bins(gal_data_t *input, gal_data_t *inrange,
       if(*a>=min && *a<=max)                                            \
         {                                                               \
           h_i=(*a-min)/binwidth;                                        \
-          /* When `*a' is the largest element (within floating point */ \
-          /* errors), `h_i' can be one element larger than the       */ \
+          /* When '*a' is the largest element (within floating point */ \
+          /* errors), 'h_i' can be one element larger than the       */ \
           /* number of bins. But since its in the dataset, we need   */ \
           /* to count it. So we'll put it in the last bin.           */ \
           ++h[ h_i - (h_i==hist->size ? 1 : 0) ];                       \
@@ -1749,7 +1749,7 @@ gal_statistics_histogram(gal_data_t *input, gal_data_t *bins, int normalize,
      either use the old implementation, or GSL's histogram
      functionality. */
   if(bins==NULL)
-    error(EXIT_FAILURE, 0, "%s: `bins' is NULL", __func__);
+    error(EXIT_FAILURE, 0, "%s: 'bins' is NULL", __func__);
   if(bins->status!=GAL_STATISTICS_BINS_REGULAR)
     error(EXIT_FAILURE, 0, "%s: the input bins are not regular. Currently "
           "it is only implemented for regular bins", __func__);
@@ -1757,9 +1757,9 @@ gal_statistics_histogram(gal_data_t *input, gal_data_t *bins, int normalize,
     error(EXIT_FAILURE, 0, "%s: input's size is 0", __func__);
 
 
-  /* Check if normalize and `maxone' are not called together. */
+  /* Check if normalize and 'maxone' are not called together. */
   if(normalize && maxone)
-    error(EXIT_FAILURE, 0, "%s: only one of `normalize' and `maxone' may "
+    error(EXIT_FAILURE, 0, "%s: only one of 'normalize' and 'maxone' may "
           "be given", __func__);
 
 
@@ -1853,14 +1853,14 @@ gal_statistics_histogram(gal_data_t *input, gal_data_t *bins, int normalize,
 
 
 /* Make a cumulative frequency plot (CFP) of all the elements in the given
-   dataset with bin values that are defined in the `bins' structure (see
-   `gal_statistics_regular_bins').
+   dataset with bin values that are defined in the 'bins' structure (see
+   'gal_statistics_regular_bins').
 
    The CFP is built from the histogram: in each bin, the value is the sum
    of all previous bins in the histogram. Thus, if you have already
    calculated the histogram before calling this function, you can pass it
-   onto this function as the data structure in `bins->next'. If
-   `bin->next!=NULL', then it is assumed to be the histogram. If it is
+   onto this function as the data structure in 'bins->next'. If
+   'bin->next!=NULL', then it is assumed to be the histogram. If it is
    NULL, then the histogram will be calculated internally and freed after
    the job is finished.
 
@@ -1988,9 +1988,9 @@ gal_statistics_cfp(gal_data_t *input, gal_data_t *bins, int normalize)
 
    Inputs:
 
-     - `multip': multiple of the standard deviation,
+     - 'multip': multiple of the standard deviation,
 
-     - `param' must be positive and determines the type of clipping:
+     - 'param' must be positive and determines the type of clipping:
 
          - param<1.0: interpretted as a tolerance level to stop clipping.
 
@@ -2052,23 +2052,23 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
 
   /* Some sanity checks. */
   if( multip<=0 )
-    error(EXIT_FAILURE, 0, "%s: `multip', must be greater than zero. The "
+    error(EXIT_FAILURE, 0, "%s: 'multip', must be greater than zero. The "
           "given value was %g", __func__, multip);
   if( param<=0 )
-    error(EXIT_FAILURE, 0, "%s: `param', must be greater than zero. The "
+    error(EXIT_FAILURE, 0, "%s: 'param', must be greater than zero. The "
           "given value was %g", __func__, param);
   if( param >= 1.0f && ceil(param) != param )
-    error(EXIT_FAILURE, 0, "%s: when `param' is larger than 1.0, it is "
+    error(EXIT_FAILURE, 0, "%s: when 'param' is larger than 1.0, it is "
           "interpretted as an absolute number of clips. So it must be an "
           "integer. However, your given value %g", __func__, param);
   if( (nbs->flag & GAL_DATA_FLAG_SORT_CH)==0 )
     error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
-          "problem. `nbs->flag', doesn't have the `GAL_DATA_FLAG_SORT_CH' "
+          "problem. 'nbs->flag', doesn't have the 'GAL_DATA_FLAG_SORT_CH' "
           "bit activated", __func__, PACKAGE_BUGREPORT);
   if( (nbs->flag & GAL_DATA_FLAG_SORTED_I)==0
       && (nbs->flag & GAL_DATA_FLAG_SORTED_D)==0 )
     error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
-          "problem. `nbs' isn't sorted", __func__, PACKAGE_BUGREPORT);
+          "problem. 'nbs' isn't sorted", __func__, PACKAGE_BUGREPORT);
 
 
   /* Allocate the necessary spaces. */
@@ -2128,7 +2128,7 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
       while(num<maxnum && size)
         {
           /* Find the average and Standard deviation, note that both
-             `start' and `size' will be different in the next round. */
+             'start' and 'size' will be different in the next round. */
           nbs->array = start;
           nbs->size = oldsize = size;
 
@@ -2158,13 +2158,13 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
                    num+1, size, *med, *mean, *std);
 
           /* If we are to work by tolerance, then check if we should jump
-             out of the loop. Normally, `oldstd' should be larger than std,
+             out of the loop. Normally, 'oldstd' should be larger than std,
              because the possible outliers have been removed. If it is not,
              it means that we have clipped too much and must stop anyway,
              so we don't need an absolute value on the difference!
 
              Note that when all the elements are identical after the clip,
-             `std' will be zero. In this case we shouldn't calculate the
+             'std' will be zero. In this case we shouldn't calculate the
              tolerance (because it will be infinity and thus lager than the
              requested tolerance level value).*/
           if( bytolerance && num>0 )
@@ -2207,7 +2207,7 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
           gal_data_free(median_d);
         }
 
-      /* If we were in tolerance mode and `num' and `maxnum' are equal (the
+      /* If we were in tolerance mode and 'num' and 'maxnum' are equal (the
          loop didn't stop by tolerance), so the outputs should be NaN. */
       out->status=num;
       if( size==0 || (bytolerance && num==maxnum) )
@@ -2413,10 +2413,10 @@ gal_statistics_outlier_flat_cfp(gal_data_t *input, size_t numprev,
 
   /* Sanity checks. */
   if(thresh<=0)
-    error(EXIT_FAILURE, 0, "%s: the value of `thresh' (%g) must be "
+    error(EXIT_FAILURE, 0, "%s: the value of 'thresh' (%g) must be "
           "positive", __func__, thresh);
   if(numprev==0)
-    error(EXIT_FAILURE, 0, "%s: `numprev' (%zu) cannot be zero", __func__,
+    error(EXIT_FAILURE, 0, "%s: 'numprev' (%zu) cannot be zero", __func__,
           numprev);
 
   /* Remove all blanks and sort the dataset. */

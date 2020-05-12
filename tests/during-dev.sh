@@ -16,11 +16,11 @@
 #      build directories) so if you need to make lots of temporary test
 #      files, there they won't get mixed up with non-output files.
 #
-# Combined with the `developer-build', this script can be used to greatly
+# Combined with the 'developer-build', this script can be used to greatly
 # simplify the development process. After running that script once, for
 # subsequent builds during your development, you can run this script from
-# the top source directory (by running `./tests/during-dev.sh', or giving
-# this to the `compile' command in Emacs). Note that you have to set the
+# the top source directory (by running './tests/during-dev.sh', or giving
+# this to the 'compile' command in Emacs). Note that you have to set the
 # first few variables (directories, utility name, arguments and options)
 # manually before each major development activity.
 #
@@ -34,7 +34,7 @@
 #     git checkout -- tests/during-dev.sh
 #
 # This file can also be used as a model to write a test for the work you
-# have done (to be checked with `make check'). Just copy and paste an
+# have done (to be checked with 'make check'). Just copy and paste an
 # existing test from the utility and replace the last few lines based on
 # this file.
 #
@@ -64,9 +64,9 @@
 # ====================
 
 # Set the basic test directories. If you are building over the source
-# directory, then set `builddir' to `./'. If you want the outputs to be in
-# the top source directory, set it to `./'. Since 'build' is the assumed
-# symbolic link in `developer-build', it is also assumed in the version
+# directory, then set 'builddir' to './'. If you want the outputs to be in
+# the top source directory, set it to './'. Since 'build' is the assumed
+# symbolic link in 'developer-build', it is also assumed in the version
 # controlled version of this script. Note, if your directory names have
 # space characters in them, quote the full value
 numjobs=8
@@ -104,7 +104,7 @@ if [ x"$utilname" = x ]; then echo "utilname is not set."; exit 1; fi
 if [ x"$builddir" = x ]; then echo "builddir is not set."; exit 1; fi
 
 
-# Make sure `utilname' doesn't start with `ast' (a common mistake).
+# Make sure 'utilname' doesn't start with 'ast' (a common mistake).
 astprefix="${utilname:0:3}"
 if [ x"$astprefix" = x"ast" ]; then
     echo "'utilname' must not start with 'ast'."; exit 1;
@@ -174,7 +174,7 @@ if make -j$numjobs -C "$builddir"; then
     fi
     cp $cfiles .gnuastro/
 
-    # Append `lastconfig' option to `gnuastro.conf', so the program doesn't
+    # Append 'lastconfig' option to 'gnuastro.conf', so the program doesn't
     # go into the system headers.
     echo ""               >> .gnuastro/gnuastro.conf
     echo " lastconfig 1"  >> .gnuastro/gnuastro.conf

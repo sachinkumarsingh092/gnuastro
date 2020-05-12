@@ -28,12 +28,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <math.h>
 #include <wcslib/wcs.h>
 
-/* When we are within Gnuastro's building process, `IN_GNUASTRO_BUILD' is
+/* When we are within Gnuastro's building process, 'IN_GNUASTRO_BUILD' is
    defined. In the build process, installation information (in particular
-   the `restrict' replacement) is kept in `config.h' (top source
+   the 'restrict' replacement) is kept in 'config.h' (top source
    directory). When building a user's programs, this information is kept in
-   `gnuastro/config.h'. Note that all `.c' files in Gnuastro's source must
-   start with the inclusion of `config.h' and that `gnuastro/config.h' is
+   'gnuastro/config.h'. Note that all '.c' files in Gnuastro's source must
+   start with the inclusion of 'config.h' and that 'gnuastro/config.h' is
    only created at installation time (not present during the building of
    Gnuastro). */
 #ifndef IN_GNUASTRO_BUILD
@@ -66,11 +66,11 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 /* Flag values for the dataset. Note that these are bit-values, so to be
-   more clear, we'll use hexadecimal notation: `0x1' (=1), `0x2' (=2),
-   `0x4' (=4), `0x8' (=8), `0x10' (=16), `0x20' (=32) and so on. */
+   more clear, we'll use hexadecimal notation: '0x1' (=1), '0x2' (=2),
+   '0x4' (=4), '0x8' (=8), '0x10' (=16), '0x20' (=32) and so on. */
 
-/* Number of bytes in the unsigned integer hosting the bit-flags (`flag'
-   element) of `gal_data_t'. */
+/* Number of bytes in the unsigned integer hosting the bit-flags ('flag'
+   element) of 'gal_data_t'. */
 #define GAL_DATA_FLAG_SIZE         1
 
 /* Bit 0: The has-blank flag has been checked, so a flag value of 0 for the
@@ -105,15 +105,15 @@ __BEGIN_C_DECLS  /* From C++ preparations */
    mmap (keep data outside of RAM)
    -------------------------------
 
-     `mmap' is C's facility to keep the data on the HDD/SSD instead of
+     'mmap' is C's facility to keep the data on the HDD/SSD instead of
      inside the RAM. This can be very useful for large data sets which can
      be very memory intensive. Ofcourse, the speed of operation greatly
      decreases when defining not using RAM, but that is worth it because
-     increasing RAM might not be possible. So in `gal_data_t' when the size
+     increasing RAM might not be possible. So in 'gal_data_t' when the size
      of the requested array (in bytes) is larger than a certain minimum
      size (in bytes), Gnuastro won't write the array in memory but on
      non-volatile memory (like HDDs and SSDs) as a file in the
-     `./.gnuastro' directory of the directory it was run from.
+     './.gnuastro' directory of the directory it was run from.
 
          - If mmapname==NULL, then the array is allocated (using malloc, in
            the RAM), otherwise its is mmap'd (is actually a file on the
@@ -123,9 +123,9 @@ __BEGIN_C_DECLS  /* From C++ preparations */
            derivative data structures to follow the same number and decide
            if they should be mmap'd or allocated.
 
-         - `minmapsize' ==  0: array is definitely mmap'd.
+         - 'minmapsize' ==  0: array is definitely mmap'd.
 
-         - `minmapsize' == -1: array is definitely in RAM.
+         - 'minmapsize' == -1: array is definitely in RAM.
 
 
    block (work with only a subset of the data)
@@ -135,8 +135,8 @@ __BEGIN_C_DECLS  /* From C++ preparations */
      or tiles, not necessarily overlapping. In such a way that you can work
      on each independently. One option is to copy that region to a separate
      allocated space, but in many contexts this isn't necessary and infact
-     can be a big burden on CPU/Memory usage. The `block' pointer in
-     `gal_data_t' is defined for situations where allocation is not
+     can be a big burden on CPU/Memory usage. The 'block' pointer in
+     'gal_data_t' is defined for situations where allocation is not
      necessary: you just want to read the data or write to it
      independently, or in coordination with, other regions of the
      dataset. Added with parallel processing, this can greatly improve the
@@ -160,35 +160,35 @@ __BEGIN_C_DECLS  /* From C++ preparations */
                 |*|                       |
                 ---------------------------
 
-     To use `gal_data_t's block concept, you allocate a `gal_data_t *tile'
+     To use 'gal_data_t's block concept, you allocate a 'gal_data_t *tile'
      which is initialized with the pointer to the first element in the
-     sub-array (as its `array' argument). Note that this is not necessarily
+     sub-array (as its 'array' argument). Note that this is not necessarily
      the first element in the larger array. You can set the size of the
      tile along with the initialization as you please. Recall that, when
-     given a non-NULL pointer as `array', `gal_data_initialize' (and thus
-     `gal_data_alloc') do not allocate any space and just uses the given
-     pointer for the new `array' element of the `gal_data_t'. So your
-     `tile' data structure will not be pointing to a separately allocated
+     given a non-NULL pointer as 'array', 'gal_data_initialize' (and thus
+     'gal_data_alloc') do not allocate any space and just uses the given
+     pointer for the new 'array' element of the 'gal_data_t'. So your
+     'tile' data structure will not be pointing to a separately allocated
      space.
 
-     After the allocation is done, you just point `tile->block' to the
-     `gal_data_t' which hosts the larger array. Afterwards, the programs
-     that take in the `sub' array can check the `block' pointer to see how
+     After the allocation is done, you just point 'tile->block' to the
+     'gal_data_t' which hosts the larger array. Afterwards, the programs
+     that take in the 'sub' array can check the 'block' pointer to see how
      to deal with dimensions and increments (strides) while working on the
-     `sub' datastructure. For example to increment along the vertical
-     dimension, the program must look at index i+W (where `W' is the width
+     'sub' datastructure. For example to increment along the vertical
+     dimension, the program must look at index i+W (where 'W' is the width
      of the larger array, not the tile).
 
      Since the block structure is defined as a pointer, arbitrary levels of
      tesselation/griding are possible. Therefore, just like a linked list,
-     it is important to have the `block' pointer of the largest dataset set
+     it is important to have the 'block' pointer of the largest dataset set
      to NULL. Normally, you won't have to worry about this, because
-     `gal_data_initialize' (and thus `gal_data_alloc') will set it to NULL
+     'gal_data_initialize' (and thus 'gal_data_alloc') will set it to NULL
      by default (just remember not to change it). You can then only change
-     the `block' element for the tiles you define over the allocated space.
+     the 'block' element for the tiles you define over the allocated space.
 
      In Gnuastro, there is a separate library for tiling operations called
-     `tile.h', see the functions there for tools to effectively use this
+     'tile.h', see the functions there for tools to effectively use this
      feature. This approach to dealing with parts of a larger block was
      inspired from the way the GNU Scientific Library does it in the
      "Vectors and Matrices" chapter.
@@ -197,7 +197,7 @@ typedef struct gal_data_t
 {
   /* Basic information on array of data. */
   void     *restrict array;  /* Array keeping data elements.               */
-  uint8_t             type;  /* Type of data (see `gnuastro/type.h').      */
+  uint8_t             type;  /* Type of data (see 'gnuastro/type.h').      */
   size_t              ndim;  /* Number of dimensions in the array.         */
   size_t            *dsize;  /* Size of array along each dimension.        */
   size_t              size;  /* Total number of data-elements.             */
@@ -217,13 +217,13 @@ typedef struct gal_data_t
   char            *comment;  /* A more detailed description of the data.   */
 
   /* For printing */
-  int             disp_fmt;  /* See `gal_table_diplay_formats'.            */
+  int             disp_fmt;  /* See 'gal_table_diplay_formats'.            */
   int           disp_width;  /* Width of space to print in ASCII.          */
   int       disp_precision;  /* Precision to print in ASCII.               */
 
   /* Pointers to other data structures. */
   struct gal_data_t  *next;  /* To use it as a linked list if necessary.   */
-  struct gal_data_t *block;  /* `gal_data_t' of hosting block, see above.  */
+  struct gal_data_t *block;  /* 'gal_data_t' of hosting block, see above.  */
 } gal_data_t;
 
 

@@ -57,13 +57,13 @@ gal_checkset_gsl_rng(uint8_t envseed_bool, const char **name,
   gsl_rng *rng;
 
   /* Let GSL read the environment and convert the type name (as string) to
-     `gsl_rng_type'. After this function, `gsl_rng_default' contains the
-     generator's type and `gsl_rng_default_seed' contains the (possibly)
+     'gsl_rng_type'. After this function, 'gsl_rng_default' contains the
+     generator's type and 'gsl_rng_default_seed' contains the (possibly)
      given seed.*/
   gsl_rng_env_setup();
 
   /* Allocate the random number generator based on the requested type and
-     save its name. If no `GSL_RNG_TYPE' is set, then use a fixed
+     save its name. If no 'GSL_RNG_TYPE' is set, then use a fixed
      generator.*/
   rng=gsl_rng_alloc(secure_getenv("GSL_RNG_TYPE")
                     ? gsl_rng_default
@@ -71,7 +71,7 @@ gal_checkset_gsl_rng(uint8_t envseed_bool, const char **name,
   *name = gsl_rng_name(rng);
 
   /* Initialize the random number generator, depending on the
-     `envseed_bool' argument. */
+     'envseed_bool' argument. */
   *seed = ( envseed_bool
             ? gsl_rng_default_seed
             : gal_timing_time_based_rng_seed() );
@@ -270,7 +270,7 @@ gal_checkset_not_dir_part(char *filename)
   size_t i, l;
   char *out, *tmp=filename;
 
-  /* Find the first `/' to identify the directory */
+  /* Find the first '/' to identify the directory */
   l=strlen(filename);
   for(i=l;i!=0;--i)
     if(filename[i]=='/')
@@ -312,7 +312,7 @@ gal_checkset_check_file(char *filename)
 
 
 
-/* Similar to `gal_checkset_check_file', but will report the result instead
+/* Similar to 'gal_checkset_check_file', but will report the result instead
    of doing it quietly. */
 int
 gal_checkset_check_file_return(char *filename)
@@ -343,14 +343,14 @@ gal_checkset_writable_notexist(char *filename)
   char *dir;
   FILE *tmpfile;
 
-  /* If the filename is `NULL' everything is ok (it doesn't exist)! In some
+  /* If the filename is 'NULL' everything is ok (it doesn't exist)! In some
      cases, a NULL filename is interpretted to mean standard output. */
   if(filename==NULL) return 1;
 
   /* We want to make sure that we can open and write to this file. But
      the user might have asked to not delete the file, so the
      contents should not be changed. Therefore we have to open it with
-     `r+`. */
+     'r+'. */
   errno=0;
   tmpfile=fopen(filename, "r+");
   if (tmpfile)                        /* The file opened. */
@@ -387,10 +387,10 @@ gal_checkset_writable_notexist(char *filename)
 
 
 
-/* Check if a file exists and can be opened. If the `keep' value is
+/* Check if a file exists and can be opened. If the 'keep' value is
    non-zero, then the file will remain untouched, otherwise, it will be
    deleted (since most programs need to make a clean output). When the file
-   is to be deleted and `dontdelete' has a non-zero value, then the file
+   is to be deleted and 'dontdelete' has a non-zero value, then the file
    won't be deleted, but the program will abort with an error, informing
    the user that the output can't be made. */
 void
@@ -399,7 +399,7 @@ gal_checkset_writable_remove(char *filename, int keep, int dontdelete)
   char *dir;
   FILE *tmpfile;
 
-  /* If the filename is `NULL' everything is ok (it doesn't exist)! In some
+  /* If the filename is 'NULL' everything is ok (it doesn't exist)! In some
      cases, a NULL filename is interpretted to mean standard output. */
   if(filename==NULL)
     return;
@@ -407,7 +407,7 @@ gal_checkset_writable_remove(char *filename, int keep, int dontdelete)
   /* We want to make sure that we can open and write to this file. But
      the user might have asked to not delete the file, so the
      contents should not be changed. Therefore we have to open it with
-     `r+`. */
+     'r+'. */
   errno=0;
   tmpfile=fopen(filename, "r+");
   if (tmpfile)                        /* The file opened. */
@@ -423,8 +423,8 @@ gal_checkset_writable_remove(char *filename, int keep, int dontdelete)
           /* Make sure it is ok to delete the file. */
           if(dontdelete)
             error(EXIT_FAILURE, 0, "%s already exists and you have "
-                  "asked to not remove it with the `--dontdelete` "
-                  "(`-D`) option", filename);
+                  "asked to not remove it with the '--dontdelete' "
+                  "('-D') option", filename);
 
           /* Delete the file: */
           errno=0;
@@ -444,7 +444,7 @@ gal_checkset_writable_remove(char *filename, int keep, int dontdelete)
       errno=0;
       if( access(dir, W_OK) )
         error(EXIT_FAILURE, errno, "cannot create any file(s) in the "
-              "directory `%s'", dir);
+              "directory '%s'", dir);
 
       /* Clean up. */
       free(dir);
@@ -537,15 +537,15 @@ gal_checkset_automatic_output(struct gal_options_common_params *cp,
       l=strlen(inname);
       for(i=l-1;i!=0;--i)
         {
-          /* We don't want to touch anything before a `/' (directory
+          /* We don't want to touch anything before a '/' (directory
              names). We are only concerned with file names here. */
           if(out[i]=='/')
             {
-              /* When `/' is the last input character, then the input is
+              /* When '/' is the last input character, then the input is
                  clearly not a filename, but a directory name. In this
                  case, adding a suffix is meaningless (a suffix belongs to
                  a filename for Gnuastro's tools). So close the string
-                 after the `/' and leave the loop. However, if the `/'
+                 after the '/' and leave the loop. However, if the '/'
                  isn't the last input name charector, there is probably a
                  filename (without a "." suffix), so break from the
                  loop. No further action is required, since we initially
@@ -557,9 +557,9 @@ gal_checkset_automatic_output(struct gal_options_common_params *cp,
             }
 
           /* The input file names can be compressed names (for example
-             `.fits.gz'). Currently the only compressed formats
+             '.fits.gz'). Currently the only compressed formats
              (decompressed within CFITSIO) are listed in
-             `gal_fits_name_is_fits' and `gal_fits_suffix_is_fits'.*/
+             'gal_fits_name_is_fits' and 'gal_fits_suffix_is_fits'.*/
           else if(out[i]=='.' && !( ( out[i+1]=='g' && out[i+2]=='z' )
                                     || (out[i+1]=='f' && out[i+2]=='z' )
                                     || out[i+1]=='Z' ) )
@@ -596,8 +596,8 @@ gal_checkset_automatic_output(struct gal_options_common_params *cp,
 
 
 /* Check write-ability by trying to make a temporary file. Return 0 if the
-   directory is writable, and `errno' if it isn't. We won't be using
-   `facccessat' because its not available on some systems (macOS 10.9 and
+   directory is writable, and 'errno' if it isn't. We won't be using
+   'facccessat' because its not available on some systems (macOS 10.9 and
    earlier, see https://github.com/conda-forge/staged-recipes/pull/9723
    ). */
 static int
@@ -608,7 +608,7 @@ checkset_directory_writable(char *dirname)
   char *tmpname;
 
   /* Set the template for the temporary file (accounting for the possible
-     extra `/'). */
+     extra '/'). */
   if(dirname[strlen(dirname)-1]=='/')
     tmpname=gal_checkset_malloc_cat(dirname, "gnuastroXXXXXX");
   else
@@ -664,18 +664,18 @@ gal_checkset_check_dir_write_add_slash(char **dirname)
   printf("\n\n%s\n\n", tmpname);
   if( write(file_d, buf, strlen(buf)) == -1 )
     error(EXIT_FAILURE, errno, "%s: writing to this temporary file to "
-          "check the given `%s` directory", tmpname, indir);
+          "check the given '%s' directory", tmpname, indir);
   */
   errno=0;
   if( close(file_d) == -1 )
     error(EXIT_FAILURE, errno, "%s: Closing this temporary file to check "
-          "the given `%s` directory", tmpname, indir);
+          "the given '%s' directory", tmpname, indir);
 
   /* Delete the temporary file: */
   errno=0;
   if(unlink(tmpname)==-1)
     error(EXIT_FAILURE, errno, "%s: removing this temporary file made "
-          "to check the given `%s directory`", tmpname, indir);
+          "to check the given '%s directory'", tmpname, indir);
 
   /* Remove the extra characters that were added for the random name. */
   tmpname[strlen(tmpname)-14]='\0';
@@ -691,7 +691,7 @@ gal_checkset_check_dir_write_add_slash(char **dirname)
 /* If the given directory exists and is writable, then nothing is done and
    this function returns 0. If it doesn't, it will be created. If it fails
    at creating the file, or the file isn't writable it returns a non-zero
-   value: the errno, which can be directly used in `error'. */
+   value: the errno, which can be directly used in 'error'. */
 int
 gal_checkset_mkdir(char *dirname)
 {
@@ -709,6 +709,6 @@ gal_checkset_mkdir(char *dirname)
     /* The directory exists, see if its writable. */
     errnum=checkset_directory_writable(dirname);
 
-  /* Return the final `errno'. */
+  /* Return the final 'errno'. */
   return errnum;
 }

@@ -28,10 +28,10 @@
 # ----------------------------
 #
 # This directory will keep the default configuration files for all the
-# programs. If it already exists, delete it. `mkdir_p' is the equivalent to
-# GNU's `mkdir -p' which might not exist on some systems. It comes from
+# programs. If it already exists, delete it. 'mkdir_p' is the equivalent to
+# GNU's 'mkdir -p' which might not exist on some systems. It comes from
 # Autoconf's tests and is exported to the test shell scripts from the
-# `tests/Makefile.am' file.
+# 'tests/Makefile.am' file.
 $mkdir_p .gnuastro
 
 
@@ -44,7 +44,7 @@ $mkdir_p .gnuastro
 # Copy the common options while adding the following optios only for make
 # check.
 #
-#   - `lastconfig' will make sure that the program stop searching for
+#   - 'lastconfig' will make sure that the program stop searching for
 #     configuration files after this one.
 #
 #   - Log files are not necessary during tests, they are mainly used for
@@ -68,7 +68,7 @@ rm addedoptions.txt
 # Bring utility configuration files
 # ---------------------------------
 #
-# Each utility's configuration file is copied in the `tests' directory for
+# Each utility's configuration file is copied in the 'tests' directory for
 # easy readability. Note that some programs may need to build their
 # configuration files during compilation. Hence, their configuration files
 # are in the build directory, not the source directory.

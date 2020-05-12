@@ -114,14 +114,14 @@ operands_remove_name(struct arithmeticparams *p, char *name)
           else     p->named   = tmp->next;
         }
 
-      /* Set this node as the `prev' pointer. */
+      /* Set this node as the 'prev' pointer. */
       prev=tmp;
     }
 
   /* A small sanity check. */
   if(removed==NULL)
     error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
-          "problem. `removed' must not be NULL at this point", __func__,
+          "problem. 'removed' must not be NULL at this point", __func__,
           PACKAGE_BUGREPORT);
 
   /* Nothing in the list points to it now. So we can safely modify and
@@ -136,7 +136,7 @@ operands_remove_name(struct arithmeticparams *p, char *name)
 
 
 
-/* Pop a dataset and keep it in the `named' list for later use. */
+/* Pop a dataset and keep it in the 'named' list for later use. */
 void
 operands_set_name(struct arithmeticparams *p, char *token)
 {
@@ -151,8 +151,8 @@ operands_set_name(struct arithmeticparams *p, char *token)
         tofree=operands_remove_name(p, varname);
         gal_data_free(tofree);
 
-        /* IMPORTANT: we MUST break here! `tmp' does't point to the right
-           place any more. We can define a `prev' node and modify it on
+        /* IMPORTANT: we MUST break here! 'tmp' does't point to the right
+           place any more. We can define a 'prev' node and modify it on
            every attempt, but since there is only one dataset with a given
            name, that is redundant and will just make the program slow. */
         break;
@@ -169,11 +169,11 @@ operands_set_name(struct arithmeticparams *p, char *token)
       /* Add the top popped operand to the list of names. */
       gal_list_data_add(&p->named, operands_pop(p, "set"));
 
-      /* Write the requested name into this dataset. But note that `name'
+      /* Write the requested name into this dataset. But note that 'name'
          MUST be already empty. So to be safe, we'll do a sanity check. */
       if(p->named->name)
         error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
-              "the problem. The `name' element should be NULL at this "
+              "the problem. The 'name' element should be NULL at this "
               "point, but it isn't", __func__, PACKAGE_BUGREPORT);
       gal_checkset_allocate_copy(varname, &p->named->name);
     }
@@ -235,7 +235,7 @@ operands_copy_named(struct arithmeticparams *p, char *name)
   /* A small sanity check. */
   if(out==NULL)
     error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s to fix the "
-          "problem. The requested name `%s' couldn't be found in the list",
+          "problem. The requested name '%s' couldn't be found in the list",
           __func__, PACKAGE_BUGREPORT, name);
 
   /* Return. */
@@ -280,10 +280,10 @@ operands_add(struct arithmeticparams *p, char *filename, gal_data_t *data)
       errno=0;
       newnode=malloc(sizeof *newnode);
       if(newnode==NULL)
-        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `newnode'",
+        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for 'newnode'",
               __func__, sizeof *newnode);
 
-      /* If the `filename' is the name of a dataset, then use a copy of it.
+      /* If the 'filename' is the name of a dataset, then use a copy of it.
          otherwise, do the basic analysis. */
       if( filename && operands_is_name(p, filename) )
         {
@@ -345,7 +345,7 @@ operands_pop(struct arithmeticparams *p, char *operator)
   /* If the operand linked list has finished, then give an error and
      exit. */
   if(operands==NULL)
-    error(EXIT_FAILURE, 0, "not enough operands for the \"%s\" operator",
+    error(EXIT_FAILURE, 0, "not enough operands for the '%s' operator",
           operator);
 
   /* Set the dataset. If filename is present then read the file
@@ -362,8 +362,8 @@ operands_pop(struct arithmeticparams *p, char *operator)
       data->ndim=gal_dimension_remove_extra(data->ndim, data->dsize, NULL);
 
       /* Arithmetic changes the contents of a dataset, so the existing name
-         (in the FITS `EXTNAME' keyword) should not be passed on beyond
-         this point. Also, in Arithmetic, the `name' element is used to
+         (in the FITS 'EXTNAME' keyword) should not be passed on beyond
+         this point. Also, in Arithmetic, the 'name' element is used to
          identify variables. */
       if(data->name) { free(data->name); data->name=NULL; }
 

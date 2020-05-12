@@ -155,8 +155,8 @@ interpolate_close_neighbors_on_thread(void *in_prm)
          tiled dataset, the caller might want to interpolate the values of
          each channel separately (not mix values from different
          channels). In such a case, the tiles of each channel (and their
-         values in `input' are contiguous. So we need to correct
-         `tprm->indexs[i]' (which is the index over the whole tessellation,
+         values in 'input' are contiguous. So we need to correct
+         'tprm->indexs[i]' (which is the index over the whole tessellation,
          including all channels). */
       if(correct_index)
         {
@@ -248,7 +248,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
           /* If there are no more meshes to add to the queue, then this
              shows, there were not enough points for
              interpolation. Normally, this loop should only be exited
-             through the `currentnum>=numnearest' check above. */
+             through the 'currentnum>=numnearest' check above. */
           if(sQ==NULL)
             error(EXIT_FAILURE, 0, "%s: only %zu neighbors found while "
                   "you had asked to use %zu neighbors for close neighbor "
@@ -324,9 +324,9 @@ interpolate_copy_input(gal_data_t *input, int aslinkedlist)
 
 
 
-/* Interpolate blank values in an array. If the `tl!=NULL', then it is
+/* Interpolate blank values in an array. If the 'tl!=NULL', then it is
    assumed that the tile values correspond to given tessellation. Such that
-   `input[i]' corresponds to `tiles[i]' in the tessellation. */
+   'input[i]' corresponds to 'tiles[i]' in the tessellation. */
 gal_data_t *
 gal_interpolate_close_neighbors(gal_data_t *input,
                                 struct gal_tile_two_layer_params *tl,
@@ -405,8 +405,8 @@ gal_interpolate_close_neighbors(gal_data_t *input,
 
   /* If we are given a list of datasets, make the necessary
      allocations. The reason we are doing this after a check of
-     `aslinkedlist' is that the `input' might have a `next' element, but
-     the caller might not have called `aslinkedlist'. */
+     'aslinkedlist' is that the 'input' might have a 'next' element, but
+     the caller might not have called 'aslinkedlist'. */
   prm.out->next=NULL;
   if(aslinkedlist)
     for(tin=input->next; tin!=NULL; tin=tin->next)
@@ -546,12 +546,12 @@ gal_interpolate_1d_make_gsl_spline(gal_data_t *X, gal_data_t *Y, int type_1d)
     }
 
   /* Initializations. Note that if Y doesn't have any blank elements and is
-     already in `double' type, then we don't need to make a copy. */
+     already in 'double' type, then we don't need to make a copy. */
   Yd = ( (Yhasblank || Y->type!=GAL_TYPE_FLOAT64)
          ? gal_data_copy_to_new_type(Y, GAL_TYPE_FLOAT64)
          : Y );
   Xd = ( X
-         /* Has to be `Yhasblank', we KNOW X doesn't have blank values. */
+         /* Has to be 'Yhasblank', we KNOW X doesn't have blank values. */
          ? ( (Yhasblank || X->type!=GAL_TYPE_FLOAT64)
              ? gal_data_copy_to_new_type(X, GAL_TYPE_FLOAT64)
              : X )
@@ -751,8 +751,8 @@ gal_interpolate_1d_blank(gal_data_t *in, int type_1d)
       }
       */
 
-      /* Set the blank flags, note that `GAL_DATA_FLAG_BLANK_CH' is already set
-         by the top call to `gal_blank_present'. */
+      /* Set the blank flags, note that 'GAL_DATA_FLAG_BLANK_CH' is already set
+         by the top call to 'gal_blank_present'. */
       if(hasblank)
         in->flag |=  GAL_DATA_FLAG_HASBLANK;
       else

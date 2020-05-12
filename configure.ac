@@ -75,10 +75,10 @@ LT_INIT
 
 # This macro will let the libraries know that we are now in the Gnuastro
 # build system, not on the user's system. While we are building Gnuastro,
-# we have the important installation information in `config.h'. But in the
+# we have the important installation information in 'config.h'. But in the
 # user's own programs, this information is defined in
-# `gnuastro/config.h'. With this macro, the installed headers can decide
-# if the latter should be included or not. Note that `gnuastro/config.h'
+# 'gnuastro/config.h'. With this macro, the installed headers can decide
+# if the latter should be included or not. Note that 'gnuastro/config.h'
 # is only built at installation time and doesn't exist when building
 # Gnuastro. Therefore, this macro must not be defined in a user's program.
 AC_DEFINE([IN_GNUASTRO_BUILD], [1], [In building, not usage])
@@ -87,12 +87,12 @@ AC_DEFINE([IN_GNUASTRO_BUILD], [1], [In building, not usage])
 
 
 
-# See if `make check' should be made with Valgrind. This should be done
+# See if 'make check' should be made with Valgrind. This should be done
 # before checking the compilation flags because it can re-write
-# `enable-debug').
+# 'enable-debug').
 AC_ARG_ENABLE(check-with-valgrind,
               [AS_HELP_STRING([--enable-check-with-valgrind],
-                              [Run `make check' programs within Valgrind])],
+                              [Run 'make check' programs within Valgrind])],
               [AS_IF([test "x$enable_check_with_valgrind" != xno],
                      [enable_check_with_valgrind=yes])],
               [enable_check_with_valgrind=no])
@@ -101,7 +101,7 @@ AS_IF([test "x$enable_check_with_valgrind" = "xyes"],
         enable_debug=yes;
         AC_CHECK_PROG(has_valgrind, valgrind, [yes], [no])
         AS_IF([test "x$has_valgrind" = "xno"],
-              [AC_MSG_ERROR([Valgrind not found. Please install it or don't use `--enable-check-with-valgrind'])])
+              [AC_MSG_ERROR([Valgrind not found. Please install it or don't use '--enable-check-with-valgrind'])])
       ])
 AM_CONDITIONAL([COND_CHECK_WITH_VALGRIND], [test "x$enable_check_with_valgrind" = "xyes"])
 
@@ -125,15 +125,15 @@ CXXFLAGS="-Wall $cflags_add $CXXFLAGS"
 
 
 
-# See if the C++ compiler was present. `CXX' has already been set by
-# `AC_PROG_CXX' (above). According to the Autoconf manual: "if none of the
-# [AC_PROG_CXX] checks succeed, then as a last resort [it will] set `CXX'
-# to `g++'". Therefore, we can't rely on it to see if the compiler
+# See if the C++ compiler was present. 'CXX' has already been set by
+# 'AC_PROG_CXX' (above). According to the Autoconf manual: "if none of the
+# [AC_PROG_CXX] checks succeed, then as a last resort [it will] set 'CXX'
+# to 'g++'". Therefore, we can't rely on it to see if the compiler
 # executable is actually usable. Therefore tests that rely on it will
-# fail. Unfortunately some OSs (like Fedora), don't install `g++' with
-# `gcc', so it may not always be present. To fix this, here we are just
-# using `AC_CHECK_PROG' to see if the `CXX' executable is reachable in the
-# search path and if it isn't, we'll disable the C++ check during `make
+# fail. Unfortunately some OSs (like Fedora), don't install 'g++' with
+# 'gcc', so it may not always be present. To fix this, here we are just
+# using 'AC_CHECK_PROG' to see if the 'CXX' executable is reachable in the
+# search path and if it isn't, we'll disable the C++ check during 'make
 # check' with an Automake conditional.
 AC_CHECK_PROG(has_cxx, $CXX, "yes", "no")
 AM_CONDITIONAL([COND_HASCXX], [test "x$has_cxx" = "xyes"])
@@ -155,8 +155,8 @@ CC="$PTHREAD_CC"
 
 
 
-# See if the C++ compiler understands `-Qunused-arguments'. AX_PTHREAD adds
-# puts this option in `PTHREAD_CFLAGS' when the C compiler knows this
+# See if the C++ compiler understands '-Qunused-arguments'. AX_PTHREAD adds
+# puts this option in 'PTHREAD_CFLAGS' when the C compiler knows this
 # option. We then pass it to CFLAGS and CXXFLAGS above. But as reported in
 # bug #52490, it can happen that sometimes, the C++ compiler doesn't
 # recognize it. So we need to do a separate check for C++.
@@ -177,7 +177,7 @@ CXXFLAGS="$cxxflags_tmp"
 
 
 
-# Check if `malloc(0)' returns valid pointer
+# Check if 'malloc(0)' returns valid pointer
 AC_FUNC_MALLOC
 
 
@@ -209,9 +209,9 @@ anywarnings=no
 
 
 
-# Remove any occurance of the current directory `./', `.', or the full
+# Remove any occurance of the current directory './', '.', or the full
 # address of the current directory in PATH. The main problem is the
-# `libtool' executable which Gnuastro builds internally in the top build
+# 'libtool' executable which Gnuastro builds internally in the top build
 # directory. However, we also need to know if the system has libtool or
 # not.
 AC_MSG_CHECKING(if PATH contains current directory)
@@ -219,21 +219,21 @@ oldPATH=$PATH
 currpwd=$(pwd)
 
 # The first call to SED will remove any occurance of the current directory:
-# `./', `.', or the full address.
+# './', '.', or the full address.
 #
-#    NOTE 1: We cannot simply remove all `.'s, because hidden directories
-#            (like the `~/.local' that is suggested for local
+#    NOTE 1: We cannot simply remove all '.'s, because hidden directories
+#            (like the '~/.local' that is suggested for local
 #            installations) will also be altered.
 #
-#    NOTE 2: An empty string in the list of strings (separated by `:')
-#            means the current directory. This includes cases like: `::',
-#            or a leading and trailing `:'. So after all the removals of
+#    NOTE 2: An empty string in the list of strings (separated by ':')
+#            means the current directory. This includes cases like: '::',
+#            or a leading and trailing ':'. So after all the removals of
 #            the current directory, we will remove all such cases.
 #
-#    NOTE 3: The SED separator can be any character immediately after `s',
-#            it doesn't just have to be the commonly used `/'. Since `$pwd'
-#            will possibly contain many `/'s, it is much more easier to use
-#            a differen separator (`|' in this call to SED).
+#    NOTE 3: The SED separator can be any character immediately after 's',
+#            it doesn't just have to be the commonly used '/'. Since '$pwd'
+#            will possibly contain many '/'s, it is much more easier to use
+#            a differen separator ('|' in this call to SED).
 PATH=$(AS_ECHO([$PATH]) | $SED -e 's|'"$currpwd"'||g' \
                                -e 's|\.\.*//*||g'     \
                                -e 's|:\.\.*:|:|g'     \
@@ -288,7 +288,7 @@ AS_IF([test "x$LIBGSL" = x],
       [LDADD="$LTLIBGSL $LDADD"; LIBS="$LIBGSL $LIBS"])
 
 
-# Since version 0.42, if `libcurl' is installed, CFITSIO will link with it
+# Since version 0.42, if 'libcurl' is installed, CFITSIO will link with it
 # and thus it will be necessary to explicitly link with libcurl also. If it
 # doesn't exist on the system, then CFITSIO won't link with it and there is
 # no problem for Gnuastro either. So there is no need to stop the configure
@@ -312,7 +312,7 @@ AS_IF([test "x$LIBCURL" = x], [],
 
 
 # Older versions of CFITSIO don't install a shared library, only a static
-# one. Eventhough we add `-lm' to LDADD, on some systems, it complains
+# one. Eventhough we add '-lm' to LDADD, on some systems, it complains
 # about not finding basic math libraries. Therefore the configure script
 # can't find CFITSIO, eventhough it exists. The solution is to manually add
 # the math-library as a dependency of CFITSIO.
@@ -383,7 +383,7 @@ AM_CONDITIONAL([COND_HASLIBTIFF], [test "x$has_libtiff" = "xyes"])
 
 
 # Check libgit2. Note that very old versions of libgit2 don't have the
-# `git_libgit2_init' function.
+# 'git_libgit2_init' function.
 AC_ARG_WITH([libgit2],
             [AS_HELP_STRING([--without-libgit2],
                             [disable support for libgit2])],
@@ -409,12 +409,12 @@ AS_IF([test "x$has_libgit2" = "x1"], [], [anywarnings=yes])
 #
 # Once we know that a library exsits, we need to check if it has some
 # features or not. This must be done _after_ checking the existance of
-# _all_ the libraries, because they may add elements to `LIBS'/`LDADD' that
+# _all_ the libraries, because they may add elements to 'LIBS'/'LDADD' that
 # causes possibly different versions of the libraries to be read.
 
-# GSL's `gsl_interp_steffen' isn't a function. So we'll need to use
-# `AC_LINK_IFELSE'. However, AC_LINK_IFELSE doesn't use `LDADD', so we'll
-# have to temporarily add `LDADD' to LIBS, then set it back to the
+# GSL's 'gsl_interp_steffen' isn't a function. So we'll need to use
+# 'AC_LINK_IFELSE'. However, AC_LINK_IFELSE doesn't use 'LDADD', so we'll
+# have to temporarily add 'LDADD' to LIBS, then set it back to the
 # original.
 AC_MSG_CHECKING(if GSL supports Steffen splines)
 AC_LINK_IFELSE([AC_LANG_PROGRAM(
@@ -426,7 +426,7 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(
                 gsl_version_old=yes; anywarnings=yes;])
 
 
-# If the CFITSIO library has the `fits_is_reentrant' function (it was added
+# If the CFITSIO library has the 'fits_is_reentrant' function (it was added
 # since version 3.30 of April 2012).
 AC_CHECK_LIB([cfitsio], [fits_is_reentrant], [has_fits_is_reentrant=1],
              [has_fits_is_reentrant=0], [-lm])
@@ -436,7 +436,7 @@ AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_FITS_IS_REENTRANT],
 AC_SUBST(HAVE_FITS_IS_REENTRANT, [$has_fits_is_reentrant])
 
 
-# If the WCS library has the `wcslib_version' function.
+# If the WCS library has the 'wcslib_version' function.
 AC_CHECK_LIB([wcs], [wcslib_version], [has_wcslib_version=1],
              [has_wcslib_version=0], [-lcfitsio -lm])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_WCSLIB_VERSION], [$has_wcslib_version],
@@ -444,7 +444,7 @@ AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_WCSLIB_VERSION], [$has_wcslib_version],
 AC_SUBST(HAVE_WCSLIB_VERSION, [$has_wcslib_version])
 
 
-# If the pthreads library has `pthread_barrier_wait'.
+# If the pthreads library has 'pthread_barrier_wait'.
 AC_CHECK_LIB([pthread], [pthread_barrier_wait], [has_pthread_barrier=1],
              [has_pthread_barrier=0])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_PTHREAD_BARRIER], [$has_pthread_barrier],
@@ -479,8 +479,8 @@ AS_IF([test "x$has_libtool" = "xyes"],
         AC_MSG_RESULT( $has_gnulibtool )],
       [ has_gnulibtool=no ])
 
-# When either the `libtool' executable isn't GNU or it doesn't exist, then
-# look for `glibtool'.
+# When either the 'libtool' executable isn't GNU or it doesn't exist, then
+# look for 'glibtool'.
 AS_IF([test "x$has_gnulibtool" = "xyes"],
       [ gnulibtool_exec=libtool ],
       [ AC_CHECK_PROG(has_glibtool, glibtool, [yes], [no])
@@ -488,10 +488,10 @@ AS_IF([test "x$has_gnulibtool" = "xyes"],
                [has_gnulibtool=yes; gnulibtool_exec=glibtool],
                [has_gnulibtool=no; anywarnings=yes] ) ])
 
-# Older versions of GNU Libtool have problems with the `dash' shell (a
-# minimalist shell) and will crash (due to not having the `+=' operator),
+# Older versions of GNU Libtool have problems with the 'dash' shell (a
+# minimalist shell) and will crash (due to not having the '+=' operator),
 # see bug #54430. So we need to check if the system's libtool and shell
-# (called by `sh' as in C's `system' function within BuildProgram) can work
+# (called by 'sh' as in C's 'system' function within BuildProgram) can work
 # with each other. If not, we need to search for Bash and tell BuildProgram
 # to use Bash instead of the default. But older versions of Bash also don't
 # support this operator, so we'll have to check with Bash is well.
@@ -509,7 +509,7 @@ AS_IF([test "x$has_gnulibtool" = "xyes"],
         ltargs="--quiet --tag=CC --mode=link $CC $cprog -O3 -o $outname"
 
         # Check the shells, starting with known shells and ultimately
-        # trying with `sh' (can be any shell).
+        # trying with 'sh' (can be any shell).
         AS_IF([test "x$has_bash" = "xyes"],
               [AS_IF(bash -c "$gnulibtool_exec $ltargs" > /dev/null 2>&1,
                      [libtool_shell="bash"],
@@ -522,7 +522,7 @@ AS_IF([test "x$has_gnulibtool" = "xyes"],
 
         # Clean up: note that no output might have been generated (when no
         # proper shell was found). Therefore, for deleting the output file,
-        # we'll call `rm' with `-f' so it doesn't complain with an error in
+        # we'll call 'rm' with '-f' so it doesn't complain with an error in
         # such cases.
         rm $cprog
         rm -f $outname
@@ -564,8 +564,8 @@ AS_IF([test "x$has_ghostscript" = "xyes"],
        gsversion=$(gs --version)
        AX_COMPARE_VERSION([9.10], [gt], [$gsversion], [has_ghostscript=no])
        AC_MSG_RESULT( $gsversion )])
-# Note: `has_ghostscript' can be set to `no' within the AS_IF above, so
-# `anywarnings' cannot be an [RUN-IF-FALSE] argument to the AS_IF above.
+# Note: 'has_ghostscript' can be set to 'no' within the AS_IF above, so
+# 'anywarnings' cannot be an [RUN-IF-FALSE] argument to the AS_IF above.
 AS_IF([test "x$has_ghostscript" = "xno"], [anywarnings=yes])
 AM_CONDITIONAL([COND_HASGHOSTSCRIPT], [test "x$has_ghostscript" = "xyes"])
 
@@ -624,15 +624,15 @@ AS_IF([test "x$missing_mandatory" = "xyes"],
         AS_ECHO(["dependencies in one command. See the link below:"])
         AS_ECHO(["  https://www.gnu.org/s/gnuastro/manual/html_node/Dependencies-from-package-managers.html"])
         AS_ECHO([""])
-        AS_ECHO(["If you have already installed a dependency (for example in \`/install/path'),"])
+        AS_ECHO(["If you have already installed a dependency (for example in '/install/path'),"])
         AS_ECHO(["but this script can't link with it, add the path to the LDFLAGS, CPPFLAGS and"])
         AS_ECHO(["LD_LIBRARY_PATH environment variables before running configure. For example"])
-        AS_ECHO(["with the following commands (just correct the \`/install/path' part)."])
+        AS_ECHO(["with the following commands (just correct the '/install/path' part)."])
         AS_ECHO(["  $ export LDFLAGS=\"\$LDFLAGS -L/install/path/lib\""])
         AS_ECHO(["  $ export CPPFLAGS=\"\$CPPFLAGS -I/install/path/include\""])
         AS_ECHO(["  $ export LD_LIBRARY_PATH=\"\$LD_LIBRARY_PATH:/install/path/lib\""])
         AS_ECHO([""])
-        AS_ECHO(["[TIP:] Put these commands in your startup file (for example \`~/.bashrc') to"])
+        AS_ECHO(["[TIP:] Put these commands in your startup file (for example '~/.bashrc') to"])
         AS_ECHO(["avoid similar problems later. See the link below to learn more:"])
         AS_ECHO(["  https://www.gnu.org/s/gnuastro/manual/html_node/Installation-directory.html"])
         AS_ECHO([""])
@@ -654,7 +654,7 @@ gl_INIT
 # Check if Gnulib tests should be done:
 AC_ARG_ENABLE([gnulibcheck],
               [AS_HELP_STRING([--enable-gnulibcheck],
-  	            [In `make check', also test GNU Gnulib.])],
+  	            [In 'make check', also test GNU Gnulib.])],
 	      [enable_gnulibcheck=yes], [enable_gnulibcheck=no])
 AM_CONDITIONAL([COND_GNULIBCHECK], [test $enable_gnulibcheck = yes])
 
@@ -662,10 +662,10 @@ AM_CONDITIONAL([COND_GNULIBCHECK], [test $enable_gnulibcheck = yes])
 
 
 
-# Gnulib checks for the proper name for the C99 equivalent `restrict'
-# keyword and puts it in the `ac_cv_c_restrict' variable. If none exists,
-# it will put a `no' inside of this variable. As described in the output
-# `bootstrapped/m4/gnulib-common.m4', this is only necessary until Autoconf
+# Gnulib checks for the proper name for the C99 equivalent 'restrict'
+# keyword and puts it in the 'ac_cv_c_restrict' variable. If none exists,
+# it will put a 'no' inside of this variable. As described in the output
+# 'bootstrapped/m4/gnulib-common.m4', this is only necessary until Autoconf
 # 2.70 is released. Afterwards, we can use AC_C_RESTRICT.
 AS_IF([test "x$ac_cv_c_restrict" = "xno"],
       [gal_restrict_replace=], [gal_restrict_replace=$ac_cv_c_restrict])
@@ -797,7 +797,7 @@ AC_ARG_ENABLE([warp],
 
 
 
-# If we had a "ayes" variable to be "true" if there was a `yes'. So any
+# If we had a "ayes" variable to be "true" if there was a 'yes'. So any
 # program that is not explicitly requested must be ignored and vice versa
 # (if no programs were explicitly requested, then enable all that weren't
 # disabled).
@@ -925,10 +925,10 @@ AC_CONFIG_FILES([Makefile
 # Printing guiding messages. Autoconf will make the variable
 # enable_guide_message from the first argument to AC_ARG_ENABLE. It will
 # also give it a value. From the Autoconf manual, we see that
-# `--disable-guide-message' is equivalent to a value of `no', while with no
-# argument, the value will default to `yes'. In the last argument to
+# '--disable-guide-message' is equivalent to a value of 'no', while with no
+# argument, the value will default to 'yes'. In the last argument to
 # AC_ARG_ENABLE, we also specify the default behavior (when it isn't given
-# at all), here we want the default to be `yes'.
+# at all), here we want the default to be 'yes'.
 AC_ARG_ENABLE([guide-message],
               [AS_HELP_STRING([--disable-guide-message],
                    [No messages after each build step.])],
@@ -1013,8 +1013,8 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO(["    harm the rest of Gnuastro's building and installation. Gnuastro has"])
                AS_ECHO(["    its own internal implementation of GNU Libtool to build its self. This"])
                AS_ECHO(["    warning is only to let you know that BuildProgram will not be"])
-               AS_ECHO(["    part of this build. The executable names searched were \`libtool'"])
-               AS_ECHO(["    and \`glibtool'. The shells searched were \`sh', \`bash' and \`zsh'."])
+               AS_ECHO(["    part of this build. The executable names searched were 'libtool'"])
+               AS_ECHO(["    and 'glibtool'. The shells searched were 'sh', 'bash' and 'zsh'."])
                AS_ECHO([])
                AS_IF([test "x$has_gnulibtool" = "xyes"],
                      [AS_ECHO(["    -- GNU Libtool is present, but couldn't be run in tested shells."])
@@ -1029,7 +1029,7 @@ AS_IF([test x$enable_guide_message = xyes],
         AS_IF([test "x$has_ghostscript" = "xno"],
               [dependency_notice=yes
                AS_ECHO(["  - GPL GhostScript (https://www.ghostscript.com) version 9.10 or later,"])
-               AS_ECHO(["    with the executable name \`gs', was not found in your PATH environment"])
+               AS_ECHO(["    with the executable name 'gs', was not found in your PATH environment"])
                AS_ECHO(["    variable. If PDF outputs are desired, the respective tool it will abort"])
                AS_ECHO(["    with an EPS output which you can convert to PDF by other means."])
                AS_ECHO([]) ])
@@ -1059,7 +1059,7 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO(["    a command and install a matching one, someone might install a"])
                AS_ECHO(["    fake command with the name of one that is not installed. You can"])
                AS_ECHO(["    always run a program in the current directory by explicity adding"])
-               AS_ECHO(["    a \`./' before it's name. Run the following command after"])
+               AS_ECHO(["    a './' before it's name. Run the following command after"])
                AS_ECHO(["    installing Gnuastro to learn more about PATH:"])
                AS_ECHO(["        $ info gnuastro \"Installation directory\""])
                AS_ECHO([]) ])

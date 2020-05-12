@@ -37,9 +37,9 @@ struct params
 
 
 /* This is the main worker function which will be called by the different
-   threads. `gal_threads_params' is defined in `gnuastro/threads.h' and
+   threads. 'gal_threads_params' is defined in 'gnuastro/threads.h' and
    contains the pointer to the paramter we want. Note that its input and
-   output must have `void *' types. */
+   output must have 'void *' types. */
 void *
 worker_on_thread(void *in_prm)
 {
@@ -77,8 +77,8 @@ worker_on_thread(void *in_prm)
 /* A simple program to open a FITS image, distributes its pixels between
    different threads and print the value of each pixel and the thread it
    was assigned to, this will test both the opening of a FITS file and also
-   the multi-threaded functions. After running `make check' you can see the
-   outputs in `tests/multithread.log'.
+   the multi-threaded functions. After running 'make check' you can see the
+   outputs in 'tests/multithread.log'.
 
    Please run the following command for an explanation on easily linking
    and compiling C programs that use Gnuastro's libraries (without having

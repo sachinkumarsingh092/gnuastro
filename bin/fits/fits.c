@@ -58,8 +58,8 @@ fits_has_error(struct fitsparams *p, int actioncode, char *string, int status)
     case FITS_ACTION_REMOVE:        action="removed";      break;
 
     default:
-      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at `%s' so we "
-            "can fix this problem. The value of `actioncode' must not be %d",
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at '%s' so we "
+            "can fix this problem. The value of 'actioncode' must not be %d",
             __func__, PACKAGE_BUGREPORT, actioncode);
     }
 
@@ -114,7 +114,7 @@ fits_print_extension_info(struct fitsparams *p)
                           "number of rows and columns.");
   gal_list_data_add_alloc(&cols, NULL, GAL_TYPE_STRING, 1, &numext, NULL, 1,
                           -1, 1, "HDU_TYPE", "name", "Image data type or "
-                          "`table' format (ASCII or binary).");
+                          "'table' format (ASCII or binary).");
   gal_list_data_add_alloc(&cols, NULL, GAL_TYPE_STRING, 1, &numext, NULL, 1,
                           -1, 1, "EXTNAME", "name", "Extension name of this "
                           "HDU (EXTNAME in FITS).");
@@ -154,7 +154,7 @@ fits_print_extension_info(struct fitsparams *p)
           break;
 
         default:
-          error(EXIT_FAILURE, 0, "%s: a bug! the `hdutype' code %d not "
+          error(EXIT_FAILURE, 0, "%s: a bug! the 'hdutype' code %d not "
                 "recognized", __func__, hdutype);
         }
 
@@ -178,9 +178,9 @@ fits_print_extension_info(struct fitsparams *p)
       status=0;
 
 
-      /* Write the size into a string. `sprintf' returns the number of
-         written characters (excluding the `\0'). So for each dimension's
-         size that is written, we add to `nc' (the number of
+      /* Write the size into a string. 'sprintf' returns the number of
+         written characters (excluding the '\0'). So for each dimension's
+         size that is written, we add to 'nc' (the number of
          characters). Note that FITS allows blank extensions, in those
          cases, return "0". */
       if(ndim>0)
@@ -230,11 +230,11 @@ fits_print_extension_info(struct fitsparams *p)
   if(!p->cp.quiet)
     {
       printf("%s\nRun on %s-----\n", PROGRAM_STRING, ctime(&p->rawtime));
-      printf("HDU (extension) information: `%s'.\n", p->filename);
-      printf(" Column 1: Index (counting from 0, usable with `--hdu').\n");
-      printf(" Column 2: Name (`EXTNAME' in FITS standard, usable with "
-             "`--hdu').\n");
-      printf(" Column 3: Image data type or `table' format (ASCII or "
+      printf("HDU (extension) information: '%s'.\n", p->filename);
+      printf(" Column 1: Index (counting from 0, usable with '--hdu').\n");
+      printf(" Column 2: Name ('EXTNAME' in FITS standard, usable with "
+             "'--hdu').\n");
+      printf(" Column 3: Image data type or 'table' format (ASCII or "
              "binary).\n");
       printf(" Column 4: Size of data in HDU.\n");
       printf("-----\n");
@@ -325,7 +325,7 @@ fits_hdu_remove(struct fitsparams *p, int *r)
 
 
 
-/* This is similar to the library's `gal_fits_open_to_write', except that
+/* This is similar to the library's 'gal_fits_open_to_write', except that
    it won't create an empty first extension.*/
 fitsfile *
 fits_open_to_write_no_blank(char *filename)
@@ -387,7 +387,7 @@ fits_hdu_copy(struct fitsparams *p, int cut1_copy0, int *r)
         *r=fits_has_error(p, FITS_ACTION_COPY, hdu, status);
       status=0;
 
-      /* If this is a `cut' operation, then remove the extension. */
+      /* If this is a 'cut' operation, then remove the extension. */
       if(cut1_copy0)
         {
           if( fits_delete_hdu(in, &hdutype, &status) )
@@ -414,7 +414,7 @@ fits(struct fitsparams *p)
 
   switch(p->mode)
     {
-    /* Keywords, we have a separate set of functions in `keywords.c'. */
+    /* Keywords, we have a separate set of functions in 'keywords.c'. */
     case FITS_MODE_KEY:
       r=keywords(p);
       break;

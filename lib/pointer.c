@@ -38,16 +38,16 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Increment a give pointer depending on the given type.
 
-   When working with the `array' elements of `gal_data_t', we are actually
-   dealing with `void *' pointers. Pointer arithmetic doesn't apply to
-   `void *', because the system doesn't know how much space each element
+   When working with the 'array' elements of 'gal_data_t', we are actually
+   dealing with 'void *' pointers. Pointer arithmetic doesn't apply to
+   'void *', because the system doesn't know how much space each element
    has to increment the pointer respectively.
 
    So, here, we will use the type information to find the increment. This
-   is mainly useful when dealing with the `block' pointer of a tile over a
-   larger image. This function reads the address as a `char *' type (note
-   that `char' is guaranteed to have a size of 1 (byte)). It then
-   increments the `char *' by `increment*sizeof(type)' */
+   is mainly useful when dealing with the 'block' pointer of a tile over a
+   larger image. This function reads the address as a 'char *' type (note
+   that 'char' is guaranteed to have a size of 1 (byte)). It then
+   increments the 'char *' by 'increment*sizeof(type)' */
 void *
 gal_pointer_increment(void *pointer, size_t increment, uint8_t type)
 {
@@ -60,7 +60,7 @@ gal_pointer_increment(void *pointer, size_t increment, uint8_t type)
 
 
 /* Find the number of values between two void pointers with a given
-   type. See the explanations before `gal_data_ptr_increment'. */
+   type. See the explanations before 'gal_data_ptr_increment'. */
 size_t
 gal_pointer_num_between(void *earlier, void *later, uint8_t type)
 {
@@ -73,7 +73,7 @@ gal_pointer_num_between(void *earlier, void *later, uint8_t type)
 
 
 /* Allocate an array based on the value of type. Note that the argument
-   `size' is the number of elements, necessary in the array, the number of
+   'size' is the number of elements, necessary in the array, the number of
    bytes each element needs will be determined internaly by this function
    using the datatype argument, so you don't have to worry about it. */
 void *
@@ -90,7 +90,7 @@ gal_pointer_allocate(uint8_t type, size_t size, int clear,
     {
       if(varname)
         error(EXIT_FAILURE, errno, "%s: %zu bytes couldn't be allocated "
-              "for variable `%s'", funcname ? funcname : __func__,
+              "for variable '%s'", funcname ? funcname : __func__,
               size * gal_type_sizeof(type), varname);
       else
         error(EXIT_FAILURE, errno, "%s: %zu bytes couldn't be allocated",
@@ -115,7 +115,7 @@ gal_pointer_allocate_mmap(uint8_t type, size_t size, int clear,
   size_t bsize=size*gal_type_sizeof(type);
 
 
-  /* Check if the `.gnuastro_mmap' folder exists, write the file there. If
+  /* Check if the '.gnuastro_mmap' folder exists, write the file there. If
      it doesn't exist, then make it. If it can't be built, we'll make a
      randomly named file in the current directory. */
   gal_checkset_allocate_copy("./.gnuastro_mmap/", &dirname);
@@ -124,12 +124,12 @@ gal_pointer_allocate_mmap(uint8_t type, size_t size, int clear,
       /* The directory couldn't be built. Free the old name. */
       free(dirname);
 
-      /* Set `dirname' to NULL so it knows not to write in a directory. */
+      /* Set 'dirname' to NULL so it knows not to write in a directory. */
       dirname=NULL;
     }
 
 
-  /* Set the filename. If `dirname' couldn't be allocated, directly make
+  /* Set the filename. If 'dirname' couldn't be allocated, directly make
      the memory map file in the current directory (just as a hidden
      file). */
   if( asprintf(filename, "%sXXXXXX", dirname?dirname:"./.gnuastro_mmap_")<0 )
@@ -156,13 +156,13 @@ gal_pointer_allocate_mmap(uint8_t type, size_t size, int clear,
   /* Inform the user. */
   if(!quietmmap)
     error(EXIT_SUCCESS, 0, "%s: temporary %zu byte file (consider "
-          "`--minmapsize')", *filename, bsize);
+          "'--minmapsize')", *filename, bsize);
 
 
   /* Write to the newly set file position so the space is allocated. To do
-     this, we are simply writing `uc' (a byte with value 0) into the space
-     we identified by `lseek' (above). This will ensure that this space is
-     set a side for this array and prepare us to use `mmap'. */
+     this, we are simply writing 'uc' (a byte with value 0) into the space
+     we identified by 'lseek' (above). This will ensure that this space is
+     set a side for this array and prepare us to use 'mmap'. */
   if( write(filedes, &uc, 1) == -1)
     error(EXIT_FAILURE, errno, "%s: %s: unable to write one byte at the "
           "%zu-th position", __func__, *filename, bsize);
@@ -178,7 +178,7 @@ gal_pointer_allocate_mmap(uint8_t type, size_t size, int clear,
               "finite number of mmap allocations. It is recommended to use "
               "ordinary RAM allocation for smaller arrays and keep mmap'd "
               "allocation only for the large volumes.\n\n", __func__);
-      error(EXIT_FAILURE, errno, "couldn't map %zu bytes into the file `%s'",
+      error(EXIT_FAILURE, errno, "couldn't map %zu bytes into the file '%s'",
             bsize, *filename);
     }
 

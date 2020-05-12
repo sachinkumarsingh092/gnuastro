@@ -2,7 +2,7 @@
 
 # This script will configure and build Gnuastro in parallel inside another
 # directory (to keep the source and build directories separate). By default
-# it is in the tmpfs directory of the RAM. Run with `--help' for a more
+# it is in the tmpfs directory of the RAM. Run with '--help' for a more
 # complete description.
 #
 # Original author:
@@ -449,7 +449,7 @@ fi
 # Upload the tarball to the requested server.
 if [ x$upload = x1 ]; then
     # Get the base package name, and use it to make a generic tarball
-    # name. Note that with the `--upload' option, `--dist' is also
+    # name. Note that with the '--upload' option, '--dist' is also
     # activated, so the tarball is already built and ready by this
     # step.
     tarball=$(ls *.tar.lz)

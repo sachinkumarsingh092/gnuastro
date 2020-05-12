@@ -87,7 +87,7 @@ struct cropparams
   uint8_t       zeroisnotblank;  /* ==1: In float or double, keep 0.0.    */
   uint8_t              noblank;  /* ==1: no blank (out of image) pixels.  */
   char                 *suffix;  /* Ending of output file name.           */
-  gal_data_t    *incheckcenter;  /* Value given to `--checkcenter'.       */
+  gal_data_t    *incheckcenter;  /* Value given to '--checkcenter'.       */
   gal_data_t           *center;  /* Center position of crop.              */
   gal_data_t            *width;  /* Width of crop when defined by center. */
   char                *catname;  /* Name of input catalog.                */

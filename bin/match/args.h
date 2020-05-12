@@ -81,7 +81,7 @@ struct argp_option program_options[] =
       UI_KEY_OUTCOLS,
       "STR",
       0,
-      "Out cols in CSV, `a': first, `b': second input.",
+      "Out cols in CSV, 'a': first, 'b': second input.",
       GAL_OPTIONS_GROUP_OUTPUT,
       &p->outcols,
       GAL_OPTIONS_NO_ARG_TYPE,

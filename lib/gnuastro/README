@@ -14,7 +14,7 @@ Inside of Gnuastro, the directory is given the same name to make Gnuastro's
 internal code similar to what a user would use in their own programs once
 the header files are installed. The headers that are not installed are kept
 in the parent directory of this directory mixed with the actual library
-`.c' source files.
+'.c' source files.
 
 
 

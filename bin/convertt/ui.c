@@ -172,18 +172,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
 {
   struct converttparams *p = state->input;
 
-  /* Pass `gal_options_common_params' into the child parser.  */
+  /* Pass 'gal_options_common_params' into the child parser.  */
   state->child_inputs[0] = &p->cp;
 
   /* In case the user incorrectly uses the equal sign (for example
-     with a short format or with space in the long format, then `arg`
+     with a short format or with space in the long format, then 'arg'
      start with (if the short version was called) or be (if the long
      version was called with a space) the equal sign. So, here we
      check if the first character of arg is the equal sign, then the
      user is warned and the program is stopped: */
   if(arg && arg[0]=='=')
-    argp_error(state, "incorrect use of the equal sign (`=`). For short "
-               "options, `=` should not be used and for long options, "
+    argp_error(state, "incorrect use of the equal sign ('='). For short "
+               "options, '=' should not be used and for long options, "
                "there should be no space between the option, equal sign "
                "and value");
 
@@ -243,16 +243,16 @@ ui_colormap_sanity_check(struct converttparams *p)
   else if( !strcmp(strarr[0],"gray") || !strcmp(strarr[0],"grey"))
                                       { ccode=COLOR_GRAY; nparams=0; }
   else
-    error(EXIT_FAILURE, 0, "`%s' not recognized as a colormap given "
-          "to `--colormap'", strarr[0]);
+    error(EXIT_FAILURE, 0, "'%s' not recognized as a colormap given "
+          "to '--colormap'", strarr[0]);
   p->colormap->status=ccode;
 
   /* Check if the proper number of parameters are given for this color
      space. Note that the actual colorspace name is the first element in
-     `monotocolor'. */
+     'monotocolor'. */
   if(p->colormap->size!=1 && p->colormap->size != (nparams+1) )
-    error(EXIT_FAILURE, 0, "%zu parameters given to `--monotocolor' for "
-          "the `%s' color space (which needs %zu)",
+    error(EXIT_FAILURE, 0, "%zu parameters given to '--monotocolor' for "
+          "the '%s' color space (which needs %zu)",
           p->colormap->size-1, strarr[0], nparams);
 
   /* Allocate the necessary space for the parameters (when
@@ -272,7 +272,7 @@ ui_colormap_sanity_check(struct converttparams *p)
             case COLOR_HSV: farray[0]=0; farray[1]=360; break;
             default:
               error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at "
-                    "%s to fix the problem. The value `%d' is not "
+                    "%s to fix the problem. The value '%d' is not "
                     "recognized for a color space that needs default "
                     "parameters", __func__, PACKAGE_BUGREPORT,
                     p->colormap->status);
@@ -282,8 +282,8 @@ ui_colormap_sanity_check(struct converttparams *p)
         {
           /* Increment the array pointer (temporarily) so we can read
              the rest of the parameters as float32. Note that we can't
-             use `+=' because it is a `void *' pointer. We'll have to
-             use `strarry', because its type is defined. */
+             use '+=' because it is a 'void *' pointer. We'll have to
+             use 'strarry', because its type is defined. */
           p->colormap->size-=1;
           p->colormap->array = strarr + 1;
           p->colormap->next=gal_data_copy_to_new_type(p->colormap,
@@ -309,7 +309,7 @@ ui_colormap_sanity_check(struct converttparams *p)
 
 
 /* Read and check ONLY the options. When arguments are involved, do the
-   check in `ui_check_options_and_arguments'. */
+   check in 'ui_check_options_and_arguments'. */
 static void
 ui_read_check_only_options(struct converttparams *p)
 {
@@ -321,7 +321,7 @@ ui_read_check_only_options(struct converttparams *p)
     {
       p->fluxlow=gal_data_copy_string_to_number(p->fluxlowstr);
       if(p->fluxlow==NULL)
-        error(EXIT_FAILURE, 0, "value to the `--fluxlow' (`-L', %s) "
+        error(EXIT_FAILURE, 0, "value to the '--fluxlow' ('-L', %s) "
               "couldn't be read as a number", p->fluxlowstr);
     }
 
@@ -329,7 +329,7 @@ ui_read_check_only_options(struct converttparams *p)
     {
       p->fluxhigh=gal_data_copy_string_to_number(p->fluxhighstr);
       if(p->fluxhigh==NULL)
-        error(EXIT_FAILURE, 0, "value to the `--fluxhigh' (`-H', %s) "
+        error(EXIT_FAILURE, 0, "value to the '--fluxhigh' ('-H', %s) "
               "couldn't be read as a number", p->fluxhighstr);
     }
 
@@ -339,8 +339,8 @@ ui_read_check_only_options(struct converttparams *p)
                           p->fluxhigh, p->fluxlow);
 
       if( *((unsigned char *)cond->array) == 0 )
-        error(EXIT_FAILURE, 0, "The value of `--fluxlow' must be less "
-              "than `--fluxhigh'");
+        error(EXIT_FAILURE, 0, "The value of '--fluxlow' must be less "
+              "than '--fluxhigh'");
 
       gal_data_free(cond);
     }
@@ -357,8 +357,8 @@ ui_read_check_only_options(struct converttparams *p)
 static void
 ui_check_options_and_arguments(struct converttparams *p)
 {
-  /* Reverse the `inputnames' linked list if it was given (recall that we
-     also accept input from the standard input). Note that the `hdu' linked
+  /* Reverse the 'inputnames' linked list if it was given (recall that we
+     also accept input from the standard input). Note that the 'hdu' linked
      list was reversed during option parsing, so we don't need to do it
      here any more. */
   gal_list_str_reverse(&p->inputnames);
@@ -394,7 +394,7 @@ ui_make_change_struct(char *arg)
   size_t len=0, counter=0;
   struct change *out=NULL, *last=NULL, *ch;
 
-  /* First set all the delimiters to `\0' and count the number of
+  /* First set all the delimiters to '\0' and count the number of
      characters in the full string. */
   while(*p!='\0')
     {
@@ -415,11 +415,11 @@ ui_make_change_struct(char *arg)
           ++counter;
           data=gal_data_copy_string_to_number(p);
           if(data==NULL)
-            error(EXIT_FAILURE, 0, "`%s' (input number %zu to the "
-                  "`--change' option) couldn't be read as a number", p,
+            error(EXIT_FAILURE, 0, "'%s' (input number %zu to the "
+                  "'--change' option) couldn't be read as a number", p,
                   counter);
 
-          /* Go to the end of this number (until you reach a `\0'). */
+          /* Go to the end of this number (until you reach a '\0'). */
           while(*p!='\0') {++p; continue;}
 
           /* Put the data structure in the correct place. When the counter is
@@ -430,15 +430,15 @@ ui_make_change_struct(char *arg)
               errno=0;
               ch=malloc(sizeof *ch);
               if(ch==NULL)
-                error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `ch'",
+                error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for 'ch'",
                       __func__, sizeof *ch);
 
               /* If the last structure has already been defined (!=NULL)
-                 then we should set its next element to `ch' and change it
-                 to point to `ch'. On the other hand, when this is the
-                 first structure to be created, then `last==NULL', so to
-                 start off the process, we should put `ch' into both the
-                 `out' and `last' lists.. */
+                 then we should set its next element to 'ch' and change it
+                 to point to 'ch'. On the other hand, when this is the
+                 first structure to be created, then 'last==NULL', so to
+                 start off the process, we should put 'ch' into both the
+                 'out' and 'last' lists.. */
               if(last)
                 {
                   last->next=ch;
@@ -447,7 +447,7 @@ ui_make_change_struct(char *arg)
               else
                 out=last=ch;
 
-              /* Put `data' in the `from' element, and since this is the
+              /* Put 'data' in the 'from' element, and since this is the
                  last structure, set its next element to NULL. */
               last->from=data;
               last->next=NULL;
@@ -520,7 +520,7 @@ ui_make_channels_ll(struct converttparams *p)
             hdu=gal_list_str_pop(&p->hdus);
           else
             error(EXIT_FAILURE, 0, "not enough HDUs. Every input FITS image "
-                  "needs a HDU, you can use the `--hdu' (`-h') option once "
+                  "needs a HDU, you can use the '--hdu' ('-h') option once "
                   "for each input FITS image (in the same order)");
 
           /* Read in the array and its WCS information. */
@@ -639,15 +639,15 @@ ui_prepare_input_channels(struct converttparams *p)
 
   /* If there are multiple color channels, then ignore the monotocolor
      option if it is given. But if there is only one, make sure that the
-     `colormap' option is actually given.*/
+     'colormap' option is actually given.*/
   if( p->numch==1 )
     {
       if( p->colormap==NULL )
         error(EXIT_FAILURE, 0, "no colormap! When there is only one input "
               "channel, it is necessary to specify a color map. For "
-              "example `gray', `hsv', `viridis' or `sls'.\n\n"
+              "example 'gray', 'hsv', 'viridis' or 'sls'.\n\n"
               "For more on ConvertType's color mapping, see the "
-              "description under `--colormap' in the Gnuastro book:\n\n"
+              "description under '--colormap' in the Gnuastro book:\n\n"
               "   $ info astconvertt");
     }
   else if( p->numch>1 && p->colormap )
@@ -728,7 +728,7 @@ ui_prepare_input_channels(struct converttparams *p)
         }
 
       /* This is the final (to be used) data structure, so keep its pointer
-         in case the next one is blank and this structure's `next' element
+         in case the next one is blank and this structure's 'next' element
          must be corrected. */
       prev=tmp;
     }
@@ -738,7 +738,7 @@ ui_prepare_input_channels(struct converttparams *p)
 
 
 
-/* We know cp->output is a known suffix, we just don't know if it has a `.`
+/* We know cp->output is a known suffix, we just don't know if it has a '.'
    before it or not. If it doesn't, one will be added to it and the output
    name will be set using the automatic output function. */
 void
@@ -755,7 +755,7 @@ ui_add_dot_use_automatic_output(struct converttparams *p)
         break;
       }
 
-  /* If the suffix does not start with a `.', put one there. */
+  /* If the suffix does not start with a '.', put one there. */
   if(suffix[0]!='.')
     {
       if( asprintf(&tmp, ".%s", suffix)<0 )
@@ -773,7 +773,7 @@ ui_add_dot_use_automatic_output(struct converttparams *p)
 
 
 /* Set output name, not that for ConvertType, the output option value is
-   mandatory (in `args.h'). So by the time the program reaches here, we
+   mandatory (in 'args.h'). So by the time the program reaches here, we
    know it exists. */
 static void
 ui_set_output(struct converttparams *p)
@@ -793,11 +793,11 @@ ui_set_output(struct converttparams *p)
     {
       /* Small sanity checks. */
       if(p->quality == GAL_BLANK_UINT8)
-        error(EXIT_FAILURE, 0, "the `--quality' (`-u') option is necessary "
+        error(EXIT_FAILURE, 0, "the '--quality' ('-u') option is necessary "
               "for jpeg outputs, but it has not been given");
       if(p->quality > 100)
-        error(EXIT_FAILURE, 0, "`%u' is larger than 100. The value to the "
-              "`--quality' (`-u') option must be between 1 and 100 "
+        error(EXIT_FAILURE, 0, "'%u' is larger than 100. The value to the "
+              "'--quality' ('-u') option must be between 1 and 100 "
               "(inclusive)", p->quality);
 
       /* Preparations. */
@@ -816,8 +816,8 @@ ui_set_output(struct converttparams *p)
   else if(gal_eps_name_is_eps(cp->output))
     {
       if(p->borderwidth==0 && p->widthincm==0)
-        error(EXIT_FAILURE, 0, "at least one of `--widthincm' (`-u'), or "
-              "`--borderwidth (`-b') options are necessary for an EPS "
+        error(EXIT_FAILURE, 0, "at least one of '--widthincm' ('-u'), or "
+              "'--borderwidth ('-b') options are necessary for an EPS "
               "output");
       p->outformat=OUT_FORMAT_EPS;
       if( gal_eps_suffix_is_eps(cp->output) )
@@ -828,8 +828,8 @@ ui_set_output(struct converttparams *p)
   else if(gal_pdf_name_is_pdf(cp->output))
     {
       if(p->borderwidth==0 && p->widthincm==0)
-        error(EXIT_FAILURE, 0, "at least one of `--widthincm' (`-u'), or "
-              "`--borderwidth (`-b') options are necessary for a PDF "
+        error(EXIT_FAILURE, 0, "at least one of '--widthincm' ('-u'), or "
+              "'--borderwidth ('-b') options are necessary for a PDF "
                  "output");
       p->outformat=OUT_FORMAT_PDF;
       if( gal_pdf_suffix_is_pdf(cp->output) )
@@ -841,7 +841,7 @@ ui_set_output(struct converttparams *p)
     {
       p->outformat=OUT_FORMAT_TXT;
 
-      /* If the given value is `stdout', then set p->cp.output to NULL, so
+      /* If the given value is 'stdout', then set p->cp.output to NULL, so
          the result will be printed to the standard output. */
       if( !strcmp(p->cp.output, "stdout") )
         {
@@ -851,8 +851,8 @@ ui_set_output(struct converttparams *p)
       else
         {
           /* Plain text files don't have any unique set of suffixes. So,
-             here, we will just adopt two of the most common ones: `txt' or
-             `dat'. If the output is just one of these two suffixes, then
+             here, we will just adopt two of the most common ones: 'txt' or
+             'dat'. If the output is just one of these two suffixes, then
              we will use automatic output to generate the full name,
              otherwise, we'll just take the user's given value as the
              filename. */
@@ -863,7 +863,7 @@ ui_set_output(struct converttparams *p)
           /* If output type is not an image, there should only be one color
              channel: */
           if(p->numch>1)
-            error(EXIT_FAILURE, 0, "text output (`--output=%s`) can only be "
+            error(EXIT_FAILURE, 0, "text output ('--output=%s') can only be "
                   "completed with one input color channel. You have given "
                   "%zu. Note that some formats (for example JPEG) can have "
                   "more than one color channel in each file. You can first "
@@ -923,9 +923,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct converttparams *p)
   struct gal_options_common_params *cp=&p->cp;
 
 
-  /* Include the parameters necessary for argp from this program (`args.h')
-     and for the common options to all Gnuastro (`commonopts.h'). We want
-     to directly put the pointers to the fields in `p' and `cp', so we are
+  /* Include the parameters necessary for argp from this program ('args.h')
+     and for the common options to all Gnuastro ('commonopts.h'). We want
+     to directly put the pointers to the fields in 'p' and 'cp', so we are
      simply including the header here to not have to use long macros in
      those headers which make them hard to read and modify. This also helps
      in having a clean environment: everything in those headers is only

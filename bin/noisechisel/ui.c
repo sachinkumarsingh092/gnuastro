@@ -144,7 +144,7 @@ ui_initialize_options(struct noisechiselparams *p,
 
         case GAL_OPTIONS_KEY_TABLEFORMAT:
           cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
-          cp->coptions[i].doc="`txt', `fits-ascii', `fits-binary'.";
+          cp->coptions[i].doc="'txt', 'fits-ascii', 'fits-binary'.";
           break;
         }
     }
@@ -160,18 +160,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
 {
   struct noisechiselparams *p = state->input;
 
-  /* Pass `gal_options_common_params' into the child parser.  */
+  /* Pass 'gal_options_common_params' into the child parser.  */
   state->child_inputs[0] = &p->cp;
 
   /* In case the user incorrectly uses the equal sign (for example
-     with a short format or with space in the long format, then `arg`
+     with a short format or with space in the long format, then 'arg'
      start with (if the short version was called) or be (if the long
      version was called with a space) the equal sign. So, here we
      check if the first character of arg is the equal sign, then the
      user is warned and the program is stopped: */
   if(arg && arg[0]=='=')
-    argp_error(state, "incorrect use of the equal sign (`=`). For short "
-               "options, `=` should not be used and for long options, "
+    argp_error(state, "incorrect use of the equal sign ('='). For short "
+               "options, '=' should not be used and for long options, "
                "there should be no space between the option, equal sign "
                "and value");
 
@@ -219,34 +219,34 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /***************       Sanity Check         *******************/
 /**************************************************************/
 /* Read and check ONLY the options. When arguments are involved, do the
-   check in `ui_check_options_and_arguments'. */
+   check in 'ui_check_options_and_arguments'. */
 static void
 ui_read_check_only_options(struct noisechiselparams *p)
 {
   /* If the convolved option is given, then the convolved HDU is also
      mandatory. */
   if(p->convolvedname && p->chdu==NULL)
-    error(EXIT_FAILURE, 0, "no value given to `--chdu'. When the "
-          "`--convolved' option is called (to specify a convolved image "
+    error(EXIT_FAILURE, 0, "no value given to '--chdu'. When the "
+          "'--convolved' option is called (to specify a convolved image "
           "and avoid convolution) it is mandatory to also specify a HDU "
           "for it");
 
   /* Make sure that the no-erode-quantile is not smaller or equal to
      qthresh. */
   if( p->noerodequant <= p->qthresh)
-    error(EXIT_FAILURE, 0, "the quantile for no erosion (`--noerodequant') "
-          "must be larger than the base quantile threshold (`--qthresh', "
-          "or `-t'). You have provided %.4f and %.4f for the former and "
+    error(EXIT_FAILURE, 0, "the quantile for no erosion ('--noerodequant') "
+          "must be larger than the base quantile threshold ('--qthresh', "
+          "or '-t'). You have provided %.4f and %.4f for the former and "
           "latter, respectively", p->noerodequant, p->qthresh);
 
   /* For the options that make tables, the table formation option is
      mandatory. */
   if( p->checksn && p->cp.tableformat==0 )
-    error(EXIT_FAILURE, 0, "`--tableformat' is necessary with the "
-          "`--checksn' option.\n"
-          "Please see description for `--tableformat' after running the "
-          "following command for more information (use `SPACE' to go down "
-          "the page and `q' to return to the command-line):\n\n"
+    error(EXIT_FAILURE, 0, "'--tableformat' is necessary with the "
+          "'--checksn' option.\n"
+          "Please see description for '--tableformat' after running the "
+          "following command for more information (use 'SPACE' to go down "
+          "the page and 'q' to return to the command-line):\n\n"
           "    $ info gnuastro \"Input Output options\"");
 
   /* Kernel checks. */
@@ -259,7 +259,7 @@ ui_read_check_only_options(struct noisechiselparams *p)
       if( gal_fits_name_is_fits(p->kernelname) && p->khdu==NULL )
         error(EXIT_FAILURE, 0, "no HDU specified for kernel. When the "
               "kernel is a FITS file, a HDU must also be specified. You "
-              "can use the `--khdu' option and give it the HDU number "
+              "can use the '--khdu' option and give it the HDU number "
               "(starting from zero), extension name, or anything "
               "acceptable by CFITSIO");
     }
@@ -273,8 +273,8 @@ ui_read_check_only_options(struct noisechiselparams *p)
       /* If its FITS, see if a HDU has been provided. */
       if( gal_fits_name_is_fits(p->widekernelname) && p->whdu==NULL )
         error(EXIT_FAILURE, 0, "no HDU specified for the given wide kernel "
-              "(`%s'). When the wide kernel is a FITS file, a HDU must also "
-              "be specified. You can use the `--whdu' option and give it the "
+              "('%s'). When the wide kernel is a FITS file, a HDU must also "
+              "be specified. You can use the '--whdu' option and give it the "
               "HDU number (starting from zero), extension name, or any "
               "HDU identifier acceptable by CFITSIO", p->widekernelname);
     }
@@ -284,11 +284,11 @@ ui_read_check_only_options(struct noisechiselparams *p)
      (higher-is-better), not the contamination level
      (lower-is-better). This actually happened in a few cases: where we
      wanted a false detection rate of 0.0001 (a super-high value!), and
-     instead of inputing 0.9999, we mistakenly gave `--snquant' a value of
-     `0.0001'. We were thus fully confused with the output (an extremely
+     instead of inputing 0.9999, we mistakenly gave '--snquant' a value of
+     '0.0001'. We were thus fully confused with the output (an extremely
      low value) and thought its a bug, while it wasn't! */
   if(p->snquant<0.1)
-    fprintf(stderr, "\nWARNING: Value of `--snquant' (`-c') is %g. Note "
+    fprintf(stderr, "\nWARNING: Value of '--snquant' ('-c') is %g. Note "
             "that this is not a contamination rate (where lower is "
             "better), it is a purity rate (where higher is better). If you "
             "intentionally asked for such a low purity level, please "
@@ -312,7 +312,7 @@ ui_check_options_and_arguments(struct noisechiselparams *p)
       if( gal_fits_name_is_fits(p->inputname) && p->cp.hdu==NULL )
         error(EXIT_FAILURE, 0, "no HDU specified for input. When the input "
               "is a FITS file, a HDU must also be specified, you can use "
-              "the `--hdu' (`-h') option and give it the HDU number "
+              "the '--hdu' ('-h') option and give it the HDU number "
               "(starting from zero), extension name, or anything "
               "acceptable by CFITSIO");
     }
@@ -515,7 +515,7 @@ ui_prepare_tiles(struct noisechiselparams *p)
       gal_fits_img_write(check, tl->tilecheckname, NULL, PROGRAM_NAME);
       gal_data_free(check);
 
-      /* If `continueaftercheck' hasn't been called, abort NoiseChisel. */
+      /* If 'continueaftercheck' hasn't been called, abort NoiseChisel. */
       if(!p->continueaftercheck)
         ui_abort_after_check(p, tl->tilecheckname, NULL,
                              "showing all tiles over the image");
@@ -537,7 +537,7 @@ ui_ngb_check(size_t value, char *optionname, size_t ndim)
     case 2:
       if(value!=4 && value!=8)
         error(EXIT_FAILURE, 0, "%zu is not an acceptable value for "
-              "`--%s'. Acceptable values for 2D inputs are 4 or 8",
+              "'--%s'. Acceptable values for 2D inputs are 4 or 8",
               value, optionname);
       break;
     case 3:
@@ -573,7 +573,7 @@ ui_preparations_read_input(struct noisechiselparams *p)
                                             p->input->dsize,
                                             p->input->wcs);
 
-  /* When the input doesn't have a name, use `INPUT'. */
+  /* When the input doesn't have a name, use 'INPUT'. */
   if(p->input->name==NULL)
     gal_checkset_allocate_copy("INPUT", &p->input->name);
 
@@ -641,8 +641,8 @@ ui_preparations(struct noisechiselparams *p)
 
       /* Make sure the convolved image is the same size as the input. */
       if( gal_dimension_is_different(p->input, p->conv) )
-        error(EXIT_FAILURE, 0, "%s (hdu %s), given to `--convolved' and "
-              "`--convolvehdu', is not the same size as NoiseChisel's "
+        error(EXIT_FAILURE, 0, "%s (hdu %s), given to '--convolved' and "
+              "'--convolvehdu', is not the same size as NoiseChisel's "
               "input: %s (hdu: %s)", p->convolvedname, p->chdu,
               p->inputname, p->cp.hdu);
     }
@@ -695,9 +695,9 @@ ui_read_check_inputs_setup(int argc, char *argv[],
   struct gal_options_common_params *cp=&p->cp;
 
 
-  /* Include the parameters necessary for argp from this program (`args.h')
-     and for the common options to all Gnuastro (`commonopts.h'). We want
-     to directly put the pointers to the fields in `p' and `cp', so we are
+  /* Include the parameters necessary for argp from this program ('args.h')
+     and for the common options to all Gnuastro ('commonopts.h'). We want
+     to directly put the pointers to the fields in 'p' and 'cp', so we are
      simply including the header here to not have to use long macros in
      those headers which make them hard to read and modify. This also helps
      in having a clean environment: everything in those headers is only
@@ -807,12 +807,12 @@ ui_abort_after_check(struct noisechiselparams *p, char *filename,
 
   if(file2name)
     {
-      if( asprintf(&name, "`%s' and `%s'", filename, file2name)<0 )
+      if( asprintf(&name, "'%s' and '%s'", filename, file2name)<0 )
         error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
     }
   else
     {
-      if( asprintf(&name, "`%s'", filename)<0 )
+      if( asprintf(&name, "'%s'", filename)<0 )
         error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
     }
 
@@ -824,7 +824,7 @@ ui_abort_after_check(struct noisechiselparams *p, char *filename,
           "%s (%s) has been created.\n\n"
           "If you want %s to continue its processing AND save any "
           "requested check outputs, please run it again with "
-          "`--continueaftercheck'.\n"
+          "'--continueaftercheck'.\n"
           "------------------------------------------------\n",
           PROGRAM_NAME, name, description, PROGRAM_NAME);
 

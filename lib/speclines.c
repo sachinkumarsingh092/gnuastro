@@ -185,7 +185,7 @@ gal_speclines_line_angstrom(int linecode)
     case GAL_SPECLINES_LYALPHA:       return GAL_SPECLINES_ANGSTROM_LYALPHA;
     case GAL_SPECLINES_LYLIMIT:       return GAL_SPECLINES_ANGSTROM_LYLIMIT;
     default:
-      error(EXIT_FAILURE, 0, "%s: `%d' not recognized line identifier",
+      error(EXIT_FAILURE, 0, "%s: '%d' not recognized line identifier",
             __func__, linecode);
     }
   return NAN;

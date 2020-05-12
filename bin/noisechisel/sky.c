@@ -92,7 +92,7 @@ sky_mean_std_undetected(void *in_prm)
 
       /* Correct the fake binary tile's properties to be the same as this
          one, then count the number of zero valued elements in it. Note
-         that the `CHECK_BLANK' flag of `GAL_TILE_PARSE_OPERATE' is set to
+         that the 'CHECK_BLANK' flag of 'GAL_TILE_PARSE_OPERATE' is set to
          1. So blank values in the input array are not counted. */
       bintile->size=tile->size;
       bintile->dsize=tile->dsize;
@@ -109,14 +109,14 @@ sky_mean_std_undetected(void *in_prm)
         {
           /* Re-initialize the usage array's size information (will be
              corrected to this tile's size by
-             `gal_data_copy_to_allocated'). */
+             'gal_data_copy_to_allocated'). */
           busage->ndim = fusage->ndim = ndim;
           busage->size = fusage->size = p->maxtcontig;
           gal_data_copy_to_allocated(tile,    fusage);
           gal_data_copy_to_allocated(bintile, busage);
 
 
-          /* Set all the non-zero pixels in `busage' to NaN in `fusage'. */
+          /* Set all the non-zero pixels in 'busage' to NaN in 'fusage'. */
           busage->flag = fusage->flag = 0;
           gal_blank_flag_apply(fusage, busage);
 
@@ -136,7 +136,7 @@ sky_mean_std_undetected(void *in_prm)
             {
               /* Copy the sigma-clipped mean and STD to their respective
                  places in the tile arrays. But first, make sure
-                 `sigmaclip' has the same type as the sky and std
+                 'sigmaclip' has the same type as the sky and std
                  arrays. */
               sigmaclip=gal_data_copy_to_new_type_free(sigmaclip, type);
               memcpy(gal_pointer_increment(p->sky->array, tind, type),
@@ -291,8 +291,8 @@ sky_subtract(struct noisechiselparams *p)
 
   /* A small sanity check. */
   if(p->sky->type!=GAL_TYPE_FLOAT32)
-    error(EXIT_FAILURE, 0, "%s: only `float32' type is acceptable "
-          "for sky values. but `p->sky' has type `%s'", __func__,
+    error(EXIT_FAILURE, 0, "%s: only 'float32' type is acceptable "
+          "for sky values. but 'p->sky' has type '%s'", __func__,
           gal_type_name(p->sky->type, 1));
 
   /* Go over all the tiles. */

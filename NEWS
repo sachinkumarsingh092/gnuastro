@@ -8,13 +8,13 @@ See the end of the file for license conditions.
 ** New features
 
   Arithmetic:
-   - New `quantile' operator for coadding datasets.
-   - New `size' operator to report length of dataset in requested dimension.
-   - When `--wcsfile' is given the value `none', output will not have any WCS.
+   - New 'quantile' operator for coadding datasets.
+   - New 'size' operator to report length of dataset in requested dimension.
+   - When '--wcsfile' is given the value 'none', output will not have any WCS.
 
   CosmicCalculator:
    --listlines: list the pre-defined spectral line wavelengths and names
-     (which you can use with the `--obsline' and `--lineatz' options). This
+     (which you can use with the '--obsline' and '--lineatz' options). This
      is convenient when you forget the specific name of the spectral line
      used within Gnuastro.
 
@@ -22,21 +22,21 @@ See the end of the file for license conditions.
    --polygon: can now also crop concave polygons (when atleast one inner
      angle is more than 180 degrees). Concave polygons occur a lot in deep
      astronomical imaging: in the shape of the deepest regions.
-   --polygonsort: Sort the given set of vertices to the `--polygon'
+   --polygonsort: Sort the given set of vertices to the '--polygon'
      option. For a concave polyton, the sorting will be correct, but for a
      convex polygon, there is no unique solution/sorting, so it may not be
      what you expect, see the manual.
 
   Fits:
    --datasum: Calculate and print the given HDU's "datasum" to stdout.
-   --datetosec: Can also account for `Z' in the end of the date-time
-     string. According to `https://www.w3.org/TR/NOTE-datetime', a `Z'
+   --datetosec: Can also account for 'Z' in the end of the date-time
+     string. According to 'https://www.w3.org/TR/NOTE-datetime', a 'Z'
      effectively means no time zone, or UTC time (which is the default in
      FITS). It still doesn't account for time zone hours of the w3.org
      standard.
 
   MakeCatalog:
-   --sigmaclip: define sigma-clipping parameters for the new `--sigclip-*'
+   --sigmaclip: define sigma-clipping parameters for the new '--sigclip-*'
      columns.
    --forcereadstd: Read the standard deviation image even if not needed by
      any columns. This is useful when you want the surface brightness
@@ -50,20 +50,20 @@ See the end of the file for license conditions.
   Table:
    --equal: Can now work on columns with string type also.
    --notequal: Can now work on columns with string type also.
-   --polygon: Polygon to use in `--inpolygon' or `--outpolygon'.
-   --inpolygon: Select rows that are inside the polygon of `--polygon'.
-   --outpolygon: Select rows that are outside the polygon of `--polygon'.
+   --polygon: Polygon to use in '--inpolygon' or '--outpolygon'.
+   --inpolygon: Select rows that are inside the polygon of '--polygon'.
+   --outpolygon: Select rows that are outside the polygon of '--polygon'.
    --catcolumn: Concatenate tables by column (keeping number of rows fixed).
    --catcolhdu: Specify the HDU/extension of the FITS files of --catcolumn.
    - New operators in column arithmetic:
-     - `ra-to-degree': Convert Right Ascension (HH:MM:SS) to degrees.
-     - `dec-to-degree': Convert Declination (DD:MM:SS) to degrees.
-     - `degree-to-ra': Convert degrees to Right Ascension (HH:MM:SS).
-     - `degree-to-dec': Convert degrees to Declination (HH:MM:SS).
+     - 'ra-to-degree': Convert Right Ascension (HH:MM:SS) to degrees.
+     - 'dec-to-degree': Convert Declination (DD:MM:SS) to degrees.
+     - 'degree-to-ra': Convert degrees to Right Ascension (HH:MM:SS).
+     - 'degree-to-dec': Convert degrees to Declination (HH:MM:SS).
 
   Library:
    - GAL_SPECLINES_INVALID_MAX: Total number of spectral lines, plus 1.
-   - GAL_ARITHMETIC_OP_QUANTILE: operator for `gal_arithmetic'.
+   - GAL_ARITHMETIC_OP_QUANTILE: operator for 'gal_arithmetic'.
    - gal_txt_trim_space: trim white space before and after a string.
    - gal_polygon_is_convex: identify if a polygon is convex or concave.
    - gal_polygon_is_inside: if point is inside polygon (convex or concave).
@@ -82,12 +82,12 @@ See the end of the file for license conditions.
 
   All programs and libraries:
    --minmapsize: Gnuastro's programs no longer attempt to write
-     memory-mapped files under `.gnuastro'. They will only attempt to write
-     them under the `.gnuastro_mmap' directory. Until now, when an internal
+     memory-mapped files under '.gnuastro'. They will only attempt to write
+     them under the '.gnuastro_mmap' directory. Until now, when an internal
      array needed to be memory-mapped, Gnuastro's programs (through the
-     `pointer.h' library) would first try writing the mmap files in the
-     `.gnuastro' directory. When it failed it would attempt writing in the
-     `.gnuastro_mmap' directory. However, `.gnuastro' is also used to store
+     'pointer.h' library) would first try writing the mmap files in the
+     '.gnuastro' directory. When it failed it would attempt writing in the
+     '.gnuastro_mmap' directory. However, '.gnuastro' is also used to store
      configuration files (which are hand-written and thus valuable). Mixing
      the two types of source (configuration files) and automatically
      generated (memory-mapped) files is very problematic.
@@ -98,8 +98,8 @@ See the end of the file for license conditions.
 
   Crop:
    --polygon: by default it will no longer attempt to sort the polygon
-     vertices, sorting can be requested with the new `--polygonsort' option.
-   --polygonout: is the new name for `--outpolygon'. Having `polygon' at
+     vertices, sorting can be requested with the new '--polygonsort' option.
+   --polygonout: is the new name for '--outpolygon'. Having 'polygon' at
      the start of the option name, makes it easier to find in the help list
      and also to understand generally.
 
@@ -120,14 +120,14 @@ See the end of the file for license conditions.
 
   Table:
    - In Column arithmetic, when columns must be specified by their number,
-     that number should be distinguished with a `$' before it (for example
-     `$1' means the first column). Until now, this character was `c', but
+     that number should be distinguished with a '$' before it (for example
+     '$1' means the first column). Until now, this character was 'c', but
      the new identifying character is very similar to AWK, allowing easier
      adoption and is also more clear. It is just important to put the total
-     `arith' string within single quotes, not double quotes.
+     'arith' string within single quotes, not double quotes.
 
   Library:
-   - gal_polygon_is_inside_convex: new name for `gal_polygon_pin'.
+   - gal_polygon_is_inside_convex: new name for 'gal_polygon_pin'.
 
 ** Bugs fixed
   bug #57300: MakeCatalog memory crash when input dataset has units.
@@ -150,7 +150,7 @@ See the end of the file for license conditions.
      scripts effectively to automate your analysis.
 
   Arithmetic:
-   - The new `add-dimension' operator will stack the popped operands in a
+   - The new 'add-dimension' operator will stack the popped operands in a
      higher-dimensional dataset. For example to build a 3D cube from
      individual 2D images/slices.
    --onedonstdout: when the output is one-dimensional, print the values on
@@ -159,12 +159,12 @@ See the end of the file for license conditions.
   BuildProgram:
    - Will use common environment variables like LDFLAGS, CPPFLAGS and CC to
      help in customizing the build of your program.
-   --cc: custom C compiler to use. Until now, `gcc' was hard-coded into the
+   --cc: custom C compiler to use. Until now, 'gcc' was hard-coded into the
      source and there was no way to choose a custom C compiler.
    --noenv: With this option, no environment variables will be read.
 
   ConvertType:
-   - New `viridis' colormap (value for the `--colormap' option). This is
+   - New 'viridis' colormap (value for the '--colormap' option). This is
      the default colormap of Python's Matplotlib, and is available in many
      other plotting tools like LaTeX's PGFPlots.
 
@@ -210,7 +210,7 @@ See the end of the file for license conditions.
      --p2col: Second Euler angle (X-Z-X order).
      --p3col: Third Euler angle (X-Z-X order).
      --q2col: Axis ratio (major/dim3 in 3D).
-   - The `--kernel' option can build 3D kernels, see the description of
+   - The '--kernel' option can build 3D kernels, see the description of
      this option in the book for examples and details on how to run it.
 
   Match:
@@ -218,7 +218,7 @@ See the end of the file for license conditions.
      generated from 3D data cubes), see book for more.
 
   NoiseChisel:
-   - arXiv:1909.11230 added in papers to cite (with the `--cite' option):
+   - arXiv:1909.11230 added in papers to cite (with the '--cite' option):
      this paper describes the major changes made to NoiseChisel in the last
      10 stable releases since the 2015 paper, most importantly how Segment
      has been separated and the new growth strategy. It is therefore
@@ -226,7 +226,7 @@ See the end of the file for license conditions.
      NoiseChisel.
 
   Segment:
-   - arXiv:1909.11230 added in papers to cite (with the `--cite' option):
+   - arXiv:1909.11230 added in papers to cite (with the '--cite' option):
      this paper describes why Segment has been separated from NoiseChisel
      and some important updates to it compared to the 2015 paper, it is
      therefore necessary to cite it along with that paper when using
@@ -239,12 +239,12 @@ See the end of the file for license conditions.
 
   Table:
    --equal: Output only rows that have a value equal to the given value in
-     the given column. For example `--equal=ID,2,4,5' will select only rows
-     that have a value of 2, 4 and 5 in the `ID' column.
+     the given column. For example '--equal=ID,2,4,5' will select only rows
+     that have a value of 2, 4 and 5 in the 'ID' column.
    --notequal: Output only rows that have a different value compared to the
      values given to this option in the given column.
    - Column Arithmetic operators:
-     - `angular-distance': a new operator to easily find the angular
+     - 'angular-distance': a new operator to easily find the angular
        distance (along a great circle) between points in various table
        columns, or the distances of all the points in the table rows with a
        fixed point. See the book for examples and better explanation.
@@ -283,8 +283,8 @@ See the end of the file for license conditions.
   Installation:
    - With the the following options at configure time, its possible to
      build Gnuastro without the optional libraries (even if they are
-     present on the host system): `--without-libjpeg', `--without-libtiff',
-     `--without-libgit2'.
+     present on the host system): '--without-libjpeg', '--without-libtiff',
+     '--without-libgit2'.
 
   All programs:
    - When an array is memory-mapped to non-volatile space (like the
@@ -292,13 +292,13 @@ See the end of the file for license conditions.
      its size. Later, when its deleted, a warning/message is also printed,
      informing you that it has been deleted. These warnings can be very
      useful when you actually have enough RAM, but forget to increase the
-     `--minmapsize' value (therefore significantly slowing down the
+     '--minmapsize' value (therefore significantly slowing down the
      program). When you don't have enough RAM, but don't want to be annoyed
-     with the warnings, you can use the new `--quietmmap' option to disable
+     with the warnings, you can use the new '--quietmmap' option to disable
      them.
 
   Arithmetic:
-   - `unique' operator removes all duplicate (and blank) elements from the
+   - 'unique' operator removes all duplicate (and blank) elements from the
      dataset and returns a single-dimension output, containing only the
      unique values in the dataset.
 
@@ -306,7 +306,7 @@ See the end of the file for license conditions.
    - Can also crop 3D datasets (data cubes). A 3D crop has the same syntax
      as the old 2D mode, only when the dataset is 3D, three coordinates
      (values, ranges or catalog-columns) should be given to the relevant
-     option. Just note that `--polygon' crops are still not supported in
+     option. Just note that '--polygon' crops are still not supported in
      3D.
 
   CosmicCalculator:
@@ -315,7 +315,7 @@ See the end of the file for license conditions.
      and observed wavelength and the redshift to use will be calculated
      internally. For many lines, it is possible to give the line name
      instead of its rest-frame wavelength. For example
-     `--obsline=lyalpha,6000' will use the redshift where the Lyman-alpha
+     '--obsline=lyalpha,6000' will use the redshift where the Lyman-alpha
      line has been shifted to 6000 Angstroms.
    --usedredshift: Print the used redshift as a "Specific calculation" (in
      line with other single-valued calculations).
@@ -330,7 +330,7 @@ See the end of the file for license conditions.
      measurement. Until now sigma-clipping results included a lot of
      visually useful information, which also made automatic usage of
      results hard. These options fix this issue. Please see the example in
-     the book under `--sigclip-median' for a nice use case.
+     the book under '--sigclip-median' for a nice use case.
 
   Table:
    - Column arithmetic. It is now possible to apply many operations on the
@@ -338,21 +338,21 @@ See the end of the file for license conditions.
      Arithmetic, but on table columns. The operators and notation is just
      like the Arithmetic program. See the "Column Arithmetic" section of
      the book for a detailed discussion and several examples.
-   - WCS to Image coordinate conversion with `wcstoimg' and `imgtowcs'. For
-     example if the input catalog has at least an `ID' column and two `RA'
-     and `DEC' columns, the set of options below will produce 5 columns
+   - WCS to Image coordinate conversion with 'wcstoimg' and 'imgtowcs'. For
+     example if the input catalog has at least an 'ID' column and two 'RA'
+     and 'DEC' columns, the set of options below will produce 5 columns
      where the last two columns are the image coordinates for each row
-     based on the WCS in `a.fits':
-           `-cID,RA,DEC -c"arith RA DEC wcstoimg" --wcsfile=a.fits'
+     based on the WCS in 'a.fits':
+           '-cID,RA,DEC -c"arith RA DEC wcstoimg" --wcsfile=a.fits'
    --head: Only output the given number of rows from the top of columns.
    --tail: Only output the given number of rows from the bottom of columns.
 
   Library:
-   - New `speclines.h' library functions and macros related to spectral
+   - New 'speclines.h' library functions and macros related to spectral
      lines. It has many macros with line wavelengths, and several functions
      for using them in combination with their names.
    - list.h: Functions to return the last element in linked lists. For
-     example `gal_list_sizet_last' or `gal_list_data_last'.
+     example 'gal_list_sizet_last' or 'gal_list_data_last'.
    - gal_arithmetic_operator_string: Return operator string from code.
    - gal_arithmetic_set_operator: Return operator code from string.
    - gal_blank_initialize_array: Initialize an array with blank values.
@@ -361,46 +361,46 @@ See the end of the file for license conditions.
    - gal_fits_img_info_dim: Only return the size information of a dataset.
    - GAL_TYPE_INT: Corresponding to respective width based on system.
    - GAL_TYPE_UINT: Corresponding to respective width based on system.
-   - GAL_BLANK_INT: Blank value for `int' (can be 16-bit or 32-bit).
-   - GAL_BLANK_UINT: Blank value for unsigned `int' (can be 16-bit or 32-bit).
+   - GAL_BLANK_INT: Blank value for 'int' (can be 16-bit or 32-bit).
+   - GAL_BLANK_UINT: Blank value for unsigned 'int' (can be 16-bit or 32-bit).
 
 ** Removed features
 
 ** Changed features
 
   Installation:
-   - Better `./configure' tests (using Gnulib's `AC_LIB_HAVE_LINKFLAGS') to
-     avoid some crashes during `make' when the host had multiple
+   - Better './configure' tests (using Gnulib's 'AC_LIB_HAVE_LINKFLAGS') to
+     avoid some crashes during 'make' when the host had multiple
      conflicting versions of some dependencies (GSL in particular).
 
   Arithmetic:
    - The output of co-adding operators is no longer the same type as the
-     input in general. The output of the `min' and `max' operators are
-     still the same type as the input. However the `number' and
-     `sigclip-number' operators will output an unsigned 32-bit integer type
-     and the rest (`sum', `mean', `std', `median', `sigclip-median',
-     `sigclip-mean' and `sigclip-std') return 32-bit floating point
+     input in general. The output of the 'min' and 'max' operators are
+     still the same type as the input. However the 'number' and
+     'sigclip-number' operators will output an unsigned 32-bit integer type
+     and the rest ('sum', 'mean', 'std', 'median', 'sigclip-median',
+     'sigclip-mean' and 'sigclip-std') return 32-bit floating point
      datasets
 
   MakeCatalog:
    - When a clumps catalog is requested, MakeCatalog will automatically
      deduce the total number of clumps (at a small cost in
      performance). Until now, it was mandatory for the clumps label dataset
-     to contain the total number of clumps in the `NUMLABS' keyword.
+     to contain the total number of clumps in the 'NUMLABS' keyword.
 
   Library:
    - gal_statistics_outlier_flat_cfp: Improved implementation with new API.
-   - New `quietmmap' argument added to the following functions (as the
-     argument following `minmapsize'). For more, see the description above
-     of the new similarly named option to all programs: `gal_array_read'
-     `gal_array_read_to_type', `gal_array_read_one_ch',
-     `gal_array_read_one_ch_to_type', `gal_data_alloc',
-     `gal_data_initialize', `gal_fits_img_read',
-     `gal_fits_img_read_to_type', `gal_fits_img_read_kernel',
-     `gal_fits_tab_read', `gal_jpeg_read', `gal_label_indexs',
-     `gal_list_data_add_alloc', `gal_match_coordinates',
-     `gal_pointer_allocate_mmap', `gal_table_read', `gal_tiff_read' and
-     `gal_txt_image_read'
+   - New 'quietmmap' argument added to the following functions (as the
+     argument following 'minmapsize'). For more, see the description above
+     of the new similarly named option to all programs: 'gal_array_read'
+     'gal_array_read_to_type', 'gal_array_read_one_ch',
+     'gal_array_read_one_ch_to_type', 'gal_data_alloc',
+     'gal_data_initialize', 'gal_fits_img_read',
+     'gal_fits_img_read_to_type', 'gal_fits_img_read_kernel',
+     'gal_fits_tab_read', 'gal_jpeg_read', 'gal_label_indexs',
+     'gal_list_data_add_alloc', 'gal_match_coordinates',
+     'gal_pointer_allocate_mmap', 'gal_table_read', 'gal_tiff_read' and
+     'gal_txt_image_read'
 
   Book:
    - The two larger tutorials ("General program usage tutorial", and
@@ -443,54 +443,54 @@ See the end of the file for license conditions.
      option's value).
 
   Arithmetic:
-   - The new `tofile-' and `tofilefree-' operators will save the top
+   - The new 'tofile-' and 'tofilefree-' operators will save the top
      operand into a file. They can be very handy in debugging/understanding
      an Arithmetic command (especially as it gets complicated), or to
      produce multiple files/extensions with a single call to Arithmetic.
    - Four new operators have been added to allow coadding multiple datasets
-     into one using sigma-clipping: `sigclip-number', `sigclip-mean',
-     `sigclip-median', and `sigclip-std'. These are very useful when
+     into one using sigma-clipping: 'sigclip-number', 'sigclip-mean',
+     'sigclip-median', and 'sigclip-std'. These are very useful when
      several inputs have strong outliers that affect the median, or the
      mean is required.
    - Multithreaded operation for the following operators that
-     combine/co-add multiple inputs into one output with same size: `min',
-     `max', `number', `sum', `mean', `std', `median', `sigclip-number',
-     `sigclip-median', `sigclip-mean', `sigclip-std'.
+     combine/co-add multiple inputs into one output with same size: 'min',
+     'max', 'number', 'sum', 'mean', 'std', 'median', 'sigclip-number',
+     'sigclip-median', 'sigclip-mean', 'sigclip-std'.
    --wcsfile and --wcshdu: these two options can be used to specify a
      different file for reading the WCS of the output. This is useful when
      the default (the WCS of the first dataset that is read) is not the
      required one.
    --interpmetric: new option that is necessary with the
-     `interpolate-medianngb' operator. For more, see the description of
+     'interpolate-medianngb' operator. For more, see the description of
      this option in NoiseChisel.
 
   Fits:
-   - Add "title" to group FITS keywords with `--write=/,"title name". This
+   - Add "title" to group FITS keywords with '--write=/,"title name". This
      "title" is composed of two keyword records/lines: a blank one (all
-     whitespace), followed by another starting with `/' and ending in any
+     whitespace), followed by another starting with '/' and ending in any
      string given to this option. This visually separates the keywords and
      acts as a title. Classifying the keywords into contextually similar
      groups greatly helps in visual inspection and is encouraged.
-   - Calculate and write `CHECKSUM' and `DATASUM' integrity keywords into
-     the specified header using `--write=checksum' (for both) or
-     `--write=datasum' (only for `DATASUM').
+   - Calculate and write 'CHECKSUM' and 'DATASUM' integrity keywords into
+     the specified header using '--write=checksum' (for both) or
+     '--write=datasum' (only for 'DATASUM').
    --datetosec: Convert the FITS date format (old or new) to number of
      seconds since since the Unix epoch time (1970-01-01,00:00:00). The
-     FITS date format (for example `YYYY-MM-DDThh:mm:ss') is hard to use
+     FITS date format (for example 'YYYY-MM-DDThh:mm:ss') is hard to use
      for automatic processing (requires calendar peculiarities like number
      of days in each month, or leap years and etc). With this option a
      single integer is returned that can be used for example to sort FITS
      files by date keywords without worrying about calendar peculiarities.
-   --verify: confirm if the `DATASUM' and `CHECKSUM' keyword values agree
+   --verify: confirm if the 'DATASUM' and 'CHECKSUM' keyword values agree
      with the specified HDU's content and/or data.
    --copykeys: Copy several keyword records (in a given range) from one
      FITS HDU/extension into another (possibly in another file).
-   --outhdu: The name/number of the output HDU (for `--copykeys').
+   --outhdu: The name/number of the output HDU (for '--copykeys').
 
   Match:
    - All the columns from one of the input catalogs can now be merged with
-     any of the columns of the second using the special `_all' name of
-     `--outcols'. For example the output of `--outcols=a_all,b5' will
+     any of the columns of the second using the special '_all' name of
+     '--outcols'. For example the output of '--outcols=a_all,b5' will
      contain all the columns from the first input and the 5th column of the
      second input. This greatly simplifies the merging of different table
      columns into one.
@@ -521,39 +521,39 @@ See the end of the file for license conditions.
        image) to define separate pseudo-detections. If its stronger,
        pseudo-detections that are touching on the corner will be identified
        as one.
-     --dopening: The number of openings to do after applying `--dthresh'.
-     --dopeningngb: The connectivity (4 or 8) to use for `--dopening'.
+     --dopening: The number of openings to do after applying '--dthresh'.
+     --dopeningngb: The connectivity (4 or 8) to use for '--dopening'.
 
   Statistics:
    --interpmetric: Similar to NoiseChisel.
 
   Table:
    --range: Limit the output rows to those with a value within the given
-     numeric range with this format: `--range=COL,low,high'. This is very
+     numeric range with this format: '--range=COL,low,high'. This is very
      useful when only certain rows of the input are required not the
      output. The advantage over piping to AWK is that you can save the
      output directly to FITS (preserving the metadata). See the book for
      more.
    --sort: Sort the output rows based on the value of the given column in
      ascending order.
-   --descending: When called with `--sort', will arrange the output rows in
+   --descending: When called with '--sort', will arrange the output rows in
      descending order.
 
   Installed scripts:
    With this release, Gnuastro also installs Bash scripts for common
    higher-level usage of (possibly multiple) programs. These scripts have a
-   `astscript-*' name, to easily show up on the command-line as Gnuastro
+   'astscript-*' name, to easily show up on the command-line as Gnuastro
    executables with the other Gnuastro programs, but are identifiable from
    them. They support options just like the programs (which can be listed
-   with `--help'). Please see the new "Installed scripts" chapter of the
+   with '--help'). Please see the new "Installed scripts" chapter of the
    book for more.
    - astscript-sort-by-night: New Gnuastro executable, using Gnuastro's
      Fits program to identify files with dates in the same night (possibly
      spanning two calendar dates).
 
   Library:
-    GAL_BLANK_LONG: new macro for the `long' type blank value.
-    GAL_BLANK_ULONG: new macro for the `unsigned long' type blank value.
+    GAL_BLANK_LONG: new macro for the 'long' type blank value.
+    GAL_BLANK_ULONG: new macro for the 'unsigned long' type blank value.
     gal_blank_number: Return the number of blank elements in a dataset.
     gal_dimension_dist_radial: Radial distance between two coordinates.
     gal_fits_key_date_to_struct_tm: FITS date format to C broken-down time.
@@ -570,14 +570,14 @@ See the end of the file for license conditions.
 ** Changed features
 
   Arithmetic:
-   - `num' operator is renamed to `number'.
-   - `numvalue' operator is renamed to `numbervalue'.
-   - `--dontdelete' will append the output to any existing file. Note that
+   - 'num' operator is renamed to 'number'.
+   - 'numvalue' operator is renamed to 'numbervalue'.
+   - '--dontdelete' will append the output to any existing file. Note that
      this change is only in Arithmetic, other programs will still just
      complain and abort.
 
   ConvertType:
-   --forcemin & --forcemax: until now, `--flminbyte' and `--flmaxbyte' were
+   --forcemin & --forcemax: until now, '--flminbyte' and '--flmaxbyte' were
      used to force the range of conversion to color channels (even if the
      range is beyond the limits of the dataset). With the introduction of
      color maps in Gnuastro 0.8, it is also necessary to force a range on
@@ -591,25 +591,25 @@ See the end of the file for license conditions.
      mean square (the correct definition of the Sky standard deviation).
 
   NoiseChisel:
-   --ignoreblankintiles: Until now `--ignoreblankinsky', would specify if
+   --ignoreblankintiles: Until now '--ignoreblankinsky', would specify if
      blank values should also be written into the tiled Sky and Sky
      standard deviation outputs. But NoiseChisel can optionally produce
-     many more tiled outputs (for example with `--checkqthresh'). So the
-     option was renamed to `--ignoreblankintiles' to highlight that the
+     many more tiled outputs (for example with '--checkqthresh'). So the
+     option was renamed to '--ignoreblankintiles' to highlight that the
      status of blank elements can be set in all tiled outputs.
 
   Statistics:
    --ignoreblankintiles: similar to same option in NoiseChisel.
 
   Table:
-   --colinfoinstdout: now corresponds to the `-O' short option. Until this
-     version, the `-s' short option was used for it. But with the new
-     `--sort' option, `-s' may cause confusion.
+   --colinfoinstdout: now corresponds to the '-O' short option. Until this
+     version, the '-s' short option was used for it. But with the new
+     '--sort' option, '-s' may cause confusion.
 
   Library
    gal_arithmetic: new argument: number of threads to use (when relevant).
-   gal_eps_write: new argument: optional bit-optimization with `dontoptimize'.
-   gal_pdf_write: new argument: optional bit-optimization with `dontoptimize'.
+   gal_eps_write: new argument: optional bit-optimization with 'dontoptimize'.
+   gal_pdf_write: new argument: optional bit-optimization with 'dontoptimize'.
 
 ** Bugs fixed
   bug #55313: Fits program writing --write values in reverse order
@@ -641,7 +641,7 @@ See the end of the file for license conditions.
    - Standard input (for example from pipes) is now available to feed input
      to all programs that accept plain text input (ConvertType, Convolve,
      Match, MakeProfiles, Statistics, Table).
-   - Updated acknowledgment statement (output of `--cite' option).
+   - Updated acknowledgment statement (output of '--cite' option).
 
   Arithmetic:
     --onedasimage: write output as an image if it has one dimension, not table.
@@ -657,9 +657,9 @@ See the end of the file for license conditions.
 
   Convolve:
     - Convolves 1D arrays (table columns, for example spectra)
-      also. Therefore two new options have been added to it: `--column'
-      (`-c', similar to other programs that read table columns), and
-      `--kernelcolumn' (to specify the column of the kernel in its own
+      also. Therefore two new options have been added to it: '--column'
+      ('-c', similar to other programs that read table columns), and
+      '--kernelcolumn' (to specify the column of the kernel in its own
       file/extension).
 
   Fits:
@@ -672,7 +672,7 @@ See the end of the file for license conditions.
       pixel-value distribution test due to the flatness of the extended
       profiles, can be identified and removed as outliers in comparison
       with the other passed tiles. The outlier finding algorithm
-      (`gal_statistics_outlier_positive': a new library function) uses the
+      ('gal_statistics_outlier_positive': a new library function) uses the
       distribution of distances between the sorted elements and is
       configured with these options.
        --outliersclip: Sigma-clipping parameters for the process.
@@ -693,7 +693,7 @@ See the end of the file for license conditions.
           the Sky over the tiles that have a sufficiently large fraction of
           undetected pixels. This is done to decrease the bias caused by
           faint un-detected wings of bright galaxies or stars, see
-          description of `--minskyfrac' for more. Until now the reference
+          description of '--minskyfrac' for more. Until now the reference
           for this fraction was the whole tile size (irrespective of how
           many blank elements it contains). With this option, it is now
           possible to ask for ignoring blank pixels when calculating the
@@ -702,7 +702,7 @@ See the end of the file for license conditions.
 
   Statistics:
     - If an input table has only one column, Statistics won't complain and
-      abort when no `--column' (`-c') is given: there is only one column to
+      abort when no '--column' ('-c') is given: there is only one column to
       use anyway, so it will be used. In the absence of which column to
       use, it will still complain and abort if the input has more than one
       column.
@@ -733,29 +733,29 @@ See the end of the file for license conditions.
 
   Arithmetic:
     - If the output has one dimension, it will be written as a table, not a
-      FITS image/array. This can be changed with the new `--onedasimage'
+      FITS image/array. This can be changed with the new '--onedasimage'
       option.
 
   Convolve:
-    - The short option for `--numchannels' is now `-n'. Until now, it was
-      `-c', but that would conflict with the short option used for
-      `--column' in all the other programs that also read from a table.
+    - The short option for '--numchannels' is now '-n'. Until now, it was
+      '-c', but that would conflict with the short option used for
+      '--column' in all the other programs that also read from a table.
 
   MakeProfiles:
-    --mergedsize: new name for the old `--naxis' option. Since the option
+    --mergedsize: new name for the old '--naxis' option. Since the option
           names and values are now written into the FITS header of the
           output, this option's name would get confused with the mandatory
-          FITS keyword `NAXIS'.
+          FITS keyword 'NAXIS'.
 
   NoiseChisel:
     - Until now, the mode's quantile was used to identify tiles with no
       significant signal. But from this version, the mean's quantile in
       each tile is used instead. The reason is that the mean is more
-      sensitive to outliers (signal). Therefore the old `--modmedqdiff' is
-      now called `--meanmedqdiff' .
+      sensitive to outliers (signal). Therefore the old '--modmedqdiff' is
+      now called '--meanmedqdiff' .
 
   Statistics:
-    --meanmedqdiff: new name for `--modmedqdiff'. Similar to NoiseChisel.
+    --meanmedqdiff: new name for '--modmedqdiff'. Similar to NoiseChisel.
 
   Library:
     - gal_array_read: list of strings (from standard input) acceptable.
@@ -780,7 +780,7 @@ See the end of the file for license conditions.
   bug #54579: NoiseChisel pseudo-detection failure when dataset is negative.
   bug #54782: Segment's check image not removing sky clumps some tiles.
   bug #54810: Arithmetic crash when previously named operand renamed.
-  bug #55025: MakeCatalog's `--prepforconv' option being ignored.
+  bug #55025: MakeCatalog's '--prepforconv' option being ignored.
   bug #55079: Blank EPS or PDF page when width options not given.
   bug #55157: No sanity check on values given to Crop's --section.
   bug #55295: Crash when more than one collapse operator called.
@@ -796,18 +796,18 @@ See the end of the file for license conditions.
 
   Installation:
     --enable-debug: debugging flags, no optimization, no shared libraries.
-    --enable-check-with-valgrind: Run `make check' tests within Valgrind.
+    --enable-check-with-valgrind: Run 'make check' tests within Valgrind.
 
   Arithmetic:
-    - `set-A': Set a name (`A' in this case) for the popped dataset. This
+    - 'set-A': Set a name ('A' in this case) for the popped dataset. This
                allows only reading the dataset it into memory once and
                possibly using it many times.
-    - `fill-holes': Flip background (0) pixels surrounded by foreground (1).
-    - `collapse-sum': collapse/remove a dimension by summing over it.
-    - `collapse-min': collapse/remove a dimension by using minimum value.
-    - `collapse-max': collapse/remove a dimension by using maximum value.
-    - `collapse-mean': collapse/remove a dimension by averaging over it.
-    - `collapse-number': Number of elements included in the collapse.
+    - 'fill-holes': Flip background (0) pixels surrounded by foreground (1).
+    - 'collapse-sum': collapse/remove a dimension by summing over it.
+    - 'collapse-min': collapse/remove a dimension by using minimum value.
+    - 'collapse-max': collapse/remove a dimension by using maximum value.
+    - 'collapse-mean': collapse/remove a dimension by averaging over it.
+    - 'collapse-number': Number of elements included in the collapse.
 
   CosmicCalculator:
     - Default cosmology set to Plank 2018 results (Paper VI).
@@ -837,12 +837,12 @@ See the end of the file for license conditions.
     --checkcenter: the units of value depend on mode (image or WCS).
 
   MakeCatalog:
-    - `--checkuplim': new name for `--checkupperlimit'.
-    - `--brightnessnoriver': new name for `--noriverbrightness'.
+    - '--checkuplim': new name for '--checkupperlimit'.
+    - '--brightnessnoriver': new name for '--noriverbrightness'.
 
   Library:
-    - gal_txt_write: new `colinfoinstdout' argument.
-    - gal_table_write: new `colinfoinstdout' argument.
+    - gal_txt_write: new 'colinfoinstdout' argument.
+    - gal_table_write: new 'colinfoinstdout' argument.
 
 ** Bugs fixed
 
@@ -924,7 +924,7 @@ See the end of the file for license conditions.
     --rawoutput: only output the detection labels and Sky and its STD.
     --ignoreblankinsky: don't set the pixels that are blank in the input to
       blank in the Sky and Sky standard deviation outputs (when
-      `--oneelempertile' is not called).
+      '--oneelempertile' is not called).
     --label: label the connected detections. Until now this was the default
       behavior. However, from this release, NoiseChisel is only in charge
       of detection. Segmentation is done by a new program (Segment). Since
@@ -939,7 +939,7 @@ See the end of the file for license conditions.
 
   Libraries:
     gal_array_read: read array from any of known formats (FITS, TIFF, JPEG,...).
-    gal_array_read_to_type: similar to `gal_array_read', but to given type.
+    gal_array_read_to_type: similar to 'gal_array_read', but to given type.
     gal_array_read_one_ch: Read a dataset, abort if it has multiple channels.
     gal_array_read_one_ch_to_type: Make sure input is in one channel and type.
     gal_binary_label_holes: label the holes within the foreground.
@@ -949,11 +949,11 @@ See the end of the file for license conditions.
     gal_eps_to_pt: Converts dataset size to PostScript points.
     gal_eps_write: Writes a dataset into an EPS file.
     gal_interpolate_1d_blank: Fill blank elements through interpolation.
-    gal_interpolate_1d_make_gsl_spline: Allocate and initalize `gsl_spline'.
+    gal_interpolate_1d_make_gsl_spline: Allocate and initalize 'gsl_spline'.
     gal_jpeg_name_is_jpeg: Returns 1 if given filename is JPEG.
     gal_jpeg_suffix_is_jpeg: Returns 1 if given suffix is JPEG.
-    gal_jpeg_read: Reads input JPEG image into `gal_data_t'.
-    gal_jpeg_write: Writes a `gal_data_t' into a JPEG file.
+    gal_jpeg_read: Reads input JPEG image into 'gal_data_t'.
+    gal_jpeg_write: Writes a 'gal_data_t' into a JPEG file.
     gal_label_grow_indexs: grow known indexs into desired areas.
     gal_label_watershed: apply watershed algorithm on desired region.
     gal_label_clump_significance: measure significance of all clumps in region.
@@ -968,7 +968,7 @@ See the end of the file for license conditions.
     gal_tiff_name_is_tiff: check if name contains a TIFF suffix.
     gal_tiff_suffix_is_tiff: check if suffix is a TIFF suffix.
     gal_tiff_dir_string_read: convert a string to a TIFF directory number.
-    gal_tiff_read: Read the contents of a TIFF "directory" to `gal_data_t'.
+    gal_tiff_read: Read the contents of a TIFF "directory" to 'gal_data_t'.
 
 ** Removed features
 
@@ -984,10 +984,10 @@ See the end of the file for license conditions.
     --skysubtracted: no longer necessary, included in noise measuremnts.
 
   Library:
-    - The macros `GAL_STATISTICS_SORTED_NOT',
-      `GAL_STATISTICS_SORTED_INVALID', `GAL_STATISTICS_SORTED_INCREASING',
-      `GAL_STATISTICS_SORTED_DECREASING': these macros are removed because
-      we already have the `GAL_DATA_FLAG_SORT*'' bit-flags in `gal_data_t'.
+    - The macros 'GAL_STATISTICS_SORTED_NOT',
+      'GAL_STATISTICS_SORTED_INVALID', 'GAL_STATISTICS_SORTED_INCREASING',
+      'GAL_STATISTICS_SORTED_DECREASING': these macros are removed because
+      we already have the 'GAL_DATA_FLAG_SORT*'' bit-flags in 'gal_data_t'.
 
 
 ** Changed features
@@ -1002,9 +1002,9 @@ See the end of the file for license conditions.
     --comment: can be called/written multiple times in one run.
 
   MakeCatalog:
-    - The `WCLUMPS' keyword in the objects labeled image is no longer used
+    - The 'WCLUMPS' keyword in the objects labeled image is no longer used
          to see if a clumps catalog should also be made. To build a clumps
-         catalog, you can now use the `--clumpscat' option.
+         catalog, you can now use the '--clumpscat' option.
     - Estimation of noise-level is now done per-pixel over the whole
          label. Until now the average noise level was used.
     --objectsfile has been removed. The main input argument is now assumed
@@ -1015,7 +1015,7 @@ See the end of the file for license conditions.
     do segmentation any more. The new Segment program is in charge of
     segmentation. Many of the changes below are due to this new limited
     scope of NoiseChisel.
-    --kernel: value `none' will disable convolution.
+    --kernel: value 'none' will disable convolution.
     - Renamed options:
       --convolvedhdu ==> --chdu
       --wkhdu        ==> --whdu
@@ -1023,7 +1023,7 @@ See the end of the file for license conditions.
       --checkdetsn   ==> --checksn
       --detquant     ==> --snquant
     - By default the output detection map is a binary image (values of 0 or 1).
-    - With no output name, the output has a `_detected.fits' suffix.
+    - With no output name, the output has a '_detected.fits' suffix.
 
   Segment:
     - [Previously in NoiseChisel]: For finding true clumps, the difference
@@ -1039,34 +1039,34 @@ See the end of the file for license conditions.
          still acceptable also).
 
   Libraries:
-    gal_binary_holes_fill: new name for `gal_binary_fill_holes'.
-    gal_dimension_is_different: new name for `gal_data_dsize_is_different'.
+    gal_binary_holes_fill: new name for 'gal_binary_fill_holes'.
+    gal_dimension_is_different: new name for 'gal_data_dsize_is_different'.
     gal_fits_img_read: now only reads the data not the WCS, therefore it no
         longer needs the last two arguments. A subsequent call to
-        `gal_wcs_read' can be used to read the WCS information in the file.
-    gal_pointer_increment: new name for `gal_data_ptr_increment'.
-    gal_pointer_num_between: new name for `gal_data_ptr_dist'.
-    gal_pointer_allocate: replaces `gal_data_malloc_array' and
-        `gal_data_calloc_array', through an argument you can ask for the
+        'gal_wcs_read' can be used to read the WCS information in the file.
+    gal_pointer_increment: new name for 'gal_data_ptr_increment'.
+    gal_pointer_num_between: new name for 'gal_data_ptr_dist'.
+    gal_pointer_allocate: replaces 'gal_data_malloc_array' and
+        'gal_data_calloc_array', through an argument you can ask for the
         allocated memory to be cleared or not.
     gal_qsort_TYPE_i: new name for gal_qsort_TYPE_increasing.
     gal_qsort_TYPE_d: new name for gal_qsort_TYPE_decreasing.
     gal_statistics_is_sorted: can now also update the bit-flags regarding
         the sorted nature of the input (to optimize future calls to the
         function).
-    gal_statistics_quantile_function: returns `inf' or `-inf' if the given
+    gal_statistics_quantile_function: returns 'inf' or '-inf' if the given
         value is smaller than the minimum or larger than the maximum of the
         input dataset's range. Until now, it would return blank in such
         cases.
-    gal_statistics_number: the output dataset now has a `size_t' type. Until
-        now it was `uint64_t'.
+    gal_statistics_number: the output dataset now has a 'size_t' type. Until
+        now it was 'uint64_t'.
 
 ** Bugs fixed
 
   bug #50957: --version output not possible on Mac OS X
   bug #52979: Many unused result warnings for asprintf in some compilers.
   bug #53122: Configure time CPPFLAGS and LDFLAGS don't pass to BuildProgram.
-  bug #53142: Crash when printing values with the `--onlyversion' option.
+  bug #53142: Crash when printing values with the '--onlyversion' option.
   bug #53147: NULL value of onlyversion option causing a crash.
   bug #53226: Match output directory ignored when making multiple files.
   bug #53230: Statistics program bad results on integer columns with limits.
@@ -1096,68 +1096,68 @@ See the end of the file for license conditions.
   New Program and library: Match is a new program that will match two given
   inputs (currently catalogs). Its output is the re-arranged inputs with
   the same number of rows/records such that all the rows match. The main
-  work is also done with the new low-level `gal_match_catalog' library
+  work is also done with the new low-level 'gal_match_catalog' library
   function which can also be used in more generic contexts.
 
-  All programs: a value of `0' to the `--numthreads' option will use the
+  All programs: a value of '0' to the '--numthreads' option will use the
   number of threads available to the system at run time.
 
-  Arithmetic: The new operators `filter-median' and `filter-mean' can be
+  Arithmetic: The new operators 'filter-median' and 'filter-mean' can be
   used to filter (smooth) the input. The size of the filter can be set as
   the other operands to these operators.
 
-  BuildProgram: The new `--la' option allows the identification of a
-  different Libtool `.la' file for Libtool linking information.
+  BuildProgram: The new '--la' option allows the identification of a
+  different Libtool '.la' file for Libtool linking information.
 
-  BuildProgram: The new `--deletecompiled' option will delete the compiled
+  BuildProgram: The new '--deletecompiled' option will delete the compiled
   program after running it.
 
   CosmicCalculator: all the various cosmological calculations can now be
   requested individually in one line with a specific option added for each
-  calculation (for example `--age' or `--luminositydist' for the age of the
+  calculation (for example '--age' or '--luminositydist' for the age of the
   universe at a given redshift or the luminosity distance). Therefore the
-  old `--onlyvolume' and `--onlyabsmagconv' options are now removed. To
+  old '--onlyvolume' and '--onlyabsmagconv' options are now removed. To
   effectively use these new features, please review the "Invoking
   CosmicCalculator" section of the book.
 
   Fits: when an extension/HDU is identified on the command-line with the
-  `--hdu' option and no operation is requested, the full list of header
-  keywords in that HDU will be printed (as if only `--printallkeys' was
+  '--hdu' option and no operation is requested, the full list of header
+  keywords in that HDU will be printed (as if only '--printallkeys' was
   called).
 
   MakeCatalog: physical nature agnostic WCS column names. Previously the
   first WCS axis was always assumed to be RA and the second DEC. So for
   example even if you had a spectrum (with X and wavelength as the two WCS
-  dimensions), you would have to ask for `--ra' and `--dec'. The new `--w1'
-  and `--w2' options are now generic and don't assume any particular type
+  dimensions), you would have to ask for '--ra' and '--dec'. The new '--w1'
+  and '--w2' options are now generic and don't assume any particular type
   only their order in the FITS header. MakeCatalog now also uses the CTYPE
   and CUNIT keywords to set the names and units of its output columns. The
-  `--ra' and `--dec' options are now just internal aliases for `--w1' or
-  `--w2' which will be determined based on the input's CTYPE keyword. Also
-  the new `--geow1', `--geow2', `--clumpsw1', `--clumpsw2',
-  `--clumpsgeow1', `--clumpsgeow2' options replace the old options
-  `--geora', `--geodec', `--clumpsra', `--clumpsdec', `--clumpsgeora',
-  `--clumpsgeodec'. No alias is currently defined for the latter group.
+  '--ra' and '--dec' options are now just internal aliases for '--w1' or
+  '--w2' which will be determined based on the input's CTYPE keyword. Also
+  the new '--geow1', '--geow2', '--clumpsw1', '--clumpsw2',
+  '--clumpsgeow1', '--clumpsgeow2' options replace the old options
+  '--geora', '--geodec', '--clumpsra', '--clumpsdec', '--clumpsgeora',
+  '--clumpsgeodec'. No alias is currently defined for the latter group.
 
-  MakeCatalog: the new `--uprange' option allows you to specify a range for
+  MakeCatalog: the new '--uprange' option allows you to specify a range for
   the random values around each object. This is useful when the noise
   properties of the dataset vary gradually and sampling from the whole
   dataset might produce biased results.
 
-  NoiseChisel: with the new `--convolved' and `--convolvedhdu' options,
+  NoiseChisel: with the new '--convolved' and '--convolvedhdu' options,
   NoiseChisel will not convolve the input any more and use the given
   dataset instead. In many cases, as the inputs get larger, convolution is
   the most time consuming step of NoiseChisel. With this option, you can
   greatly speed up your tests (to find the best parameters by varying them,
   for a given analysis). See the book for more information and examples.
 
-  NoiseChisel: with the new `--widekernel' option it is now possible to use
+  NoiseChisel: with the new '--widekernel' option it is now possible to use
   a wider kernel to identify which tiles contain signal. The rest of the
   steps (identifying the quantile threshold on the selected tiles and etc)
-  are done on the dataset convolved with `--kernel' as they were
+  are done on the dataset convolved with '--kernel' as they were
   before. Since it is time consuming, this is an optional feature.
 
-  NoiseChisel: with the new `--qthreshtilequant' option, it is now possible
+  NoiseChisel: with the new '--qthreshtilequant' option, it is now possible
   to discard high-valued (outlier) tiles before estimating qthresh over the
   whole image. This can be useful in detecting very large diffuse/flat
   regions that would otherwise be detected as background (and effectively
@@ -1167,42 +1167,42 @@ See the end of the file for license conditions.
   signal contiguity, not by blind dilation. The growth process is the same
   as the growing of clumps to define objects. Only for true detections, the
   growth occurs in the noise. You can configure this growth with the
-  `--detgrowquant' and `--detgrowmaxholesize'. With this new feature it is
+  '--detgrowquant' and '--detgrowmaxholesize'. With this new feature it is
   now possible to detect signal out to much lower surface brightness limits
   and the detections don't look boxy any more.
 
   Cosmology library: A new set of cosmology functions are now included in
-  the library (declared in `gnuastro/cosmology.h'). These functions are
+  the library (declared in 'gnuastro/cosmology.h'). These functions are
   also used in the CosmicCalculator program.
 
-  `gal_table_read' can now return the number of columns matched with each
+  'gal_table_read' can now return the number of columns matched with each
   input column (for example with regular expressions), a new argument has
   been added to allow this feature.
 
-  `gal_fits_key_img_blank': returns the value that must be used in the
+  'gal_fits_key_img_blank': returns the value that must be used in the
   BLANK keyword for the given type as defined by the FITS standard.
 
-  `gal_txt_write' and `gal_fits_tab_write' now accept an extension name as
+  'gal_txt_write' and 'gal_fits_tab_write' now accept an extension name as
   argument to allow a name for the FITS extension they write.
 
-  `gal_box_bound_ellipse_extent' will return the maximum extent of an
+  'gal_box_bound_ellipse_extent' will return the maximum extent of an
   ellipse along each axis from the ellipse center in floating point.
 
 ** Removed features
 
-  Installation: The `--enable-bin-op-*' configuration options that were
+  Installation: The '--enable-bin-op-*' configuration options that were
   introduced in Gnuastro 0.3 have been removed. By managing the arithmetic
   functions in a better manner (a separate source file for each operator),
   compilation for all types (when done in parallel) takes about the same
   time as it took with the default (only four) types until now.
 
-  MakeCatalog: `--zeropoint' option doesn't have a short option name any
-  more. Previously it was `-z' which was confusing because `-x' and `-y'
+  MakeCatalog: '--zeropoint' option doesn't have a short option name any
+  more. Previously it was '-z' which was confusing because '-x' and '-y'
   were used to refer to image coordinate positions.
 
-  NoiseChisel: The `--dilate' and `--dilatengb' options have been
+  NoiseChisel: The '--dilate' and '--dilatengb' options have been
   removed. Growing of true detections is no longer done through dilation
-  but through the `--detgrowquant' and `--detgrowmaxholesize' options (see
+  but through the '--detgrowquant' and '--detgrowmaxholesize' options (see
   above).
 
 ** Changed features
@@ -1215,32 +1215,32 @@ See the end of the file for license conditions.
   now, two separate FITS files would be created. Plain text outputs are the
   same as before (two files will be created).
 
-  `gal_binary_fill_holes' now accepts a `connectivity' and `maxsize'
+  'gal_binary_fill_holes' now accepts a 'connectivity' and 'maxsize'
   argument to specify the connectivity of the holes and the maximum size of
   acceptable holes to fill.
 
-  `gal_fits_img_read' and `gal_fits_img_read_to_type' now also read the WCS
+  'gal_fits_img_read' and 'gal_fits_img_read_to_type' now also read the WCS
   structure of the extension/HDU in a FITS file and have two extra
-  arguments: `hstartwcs' and `hendwcs'. With these options it is possible
+  arguments: 'hstartwcs' and 'hendwcs'. With these options it is possible
   to limit the range of header keywords to read the WCS, similar to how
-  they are used in `gal_wcs_read'.
+  they are used in 'gal_wcs_read'.
 
-  `gal_txt_write', `gal_table_write_log', `gal_fits_tab_write' and
-  `gal_txt_write' don't have the `dontdelete' argument any more. The action
+  'gal_txt_write', 'gal_table_write_log', 'gal_fits_tab_write' and
+  'gal_txt_write' don't have the 'dontdelete' argument any more. The action
   they take if the file already exists depends on the file: for FITS, a new
   extension will be added and for text, they will abort with an error.
 
-  `gal_tile_block_write_const_value' and `gal_tile_full_values_write' now
-  accept a new `withblank' option to set all pixels that are blank in the
+  'gal_tile_block_write_const_value' and 'gal_tile_full_values_write' now
+  accept a new 'withblank' option to set all pixels that are blank in the
   tile's block to be blank in the check image.
 
-  `gal_wcs_pixel_area_arcsec2' will return NaN (instead of aborting) when
+  'gal_wcs_pixel_area_arcsec2' will return NaN (instead of aborting) when
   input is unreasonable (not two dimensions or not in units of degrees).
 
-  `gal_wcs_world_to_img' and `gal_wcs_img_to_world': Until now, these two
+  'gal_wcs_world_to_img' and 'gal_wcs_img_to_world': Until now, these two
   WCS conversion functions would explicitly assume RA and Dec and work
   based on input arrays (so for example it was also necessary to give the
-  number of elements and etc). They now accept `gal_data_t' as input for
+  number of elements and etc). They now accept 'gal_data_t' as input for
   the input coordinates, thus their API has been greatly simplified and
   their functionality increased.
 
@@ -1271,113 +1271,113 @@ See the end of the file for license conditions.
 
 ** New features
 
-  All programs: `.fit' is now a recognized FITS file suffix.
+  All programs: '.fit' is now a recognized FITS file suffix.
 
   All programs: ASCII text files (tables) created with CRLF line
   terminators (for example text files created in MS Windows) are now also
   readable as input when necessary.
 
-  Arithmetic: now has a new `--globalhdu' (`-g') option which can be used
+  Arithmetic: now has a new '--globalhdu' ('-g') option which can be used
   once for all the input images.
 
-  MakeNoise: with the new `--sigma' (`-s') option, it is now possible to
+  MakeNoise: with the new '--sigma' ('-s') option, it is now possible to
   directly request the noise sigma or standard deviation. When this option
-  is called, the `--background', `--zeropoint' and other option values will
+  is called, the '--background', '--zeropoint' and other option values will
   be ignored.
 
-  MakeProfiles: the new `--kernel' option can make a kernel image without
+  MakeProfiles: the new '--kernel' option can make a kernel image without
   the need to define a catalog. With this option, a catalog (or
   accompanying background image) must not be given.
 
-  MakeProfiles: the new `--pc', `--cunit' and `--ctype' options can be used
+  MakeProfiles: the new '--pc', '--cunit' and '--ctype' options can be used
   to specify the PC matrix, CUNIT and CTYPE world coordinate system
   keywords of the output FITS file.
 
-  MakeProfiles: the new `distance' profile will save the radial distance of
+  MakeProfiles: the new 'distance' profile will save the radial distance of
   each pixel. This may be used to define your own profiles that are not
   currently supported in MakeProfiles.
 
-  MakeProfiles: with the new `--mcolisbrightness' ("mcol-is-brightness")
-  option, the `--mcol' values of the catalog will be interpretted as total
+  MakeProfiles: with the new '--mcolisbrightness' ("mcol-is-brightness")
+  option, the '--mcol' values of the catalog will be interpretted as total
   brightness (sum of pixel values), not magnitude.
 
-  NoiseChisel: with the new `--dilatengb' option, it is now possible to
+  NoiseChisel: with the new '--dilatengb' option, it is now possible to
   identify the connectivity of the final dilation.
 
   Library: Functions that read data from an ASCII text file
-  (`gal_txt_table_info', `gal_txt_table_read', `gal_txt_image_read') now
+  ('gal_txt_table_info', 'gal_txt_table_read', 'gal_txt_image_read') now
   also operate on files with CRLF line terminators.
 
 ** Removed features
 
 ** Changed features
 
-  Crop: The new `--center' option is now used to define the center of a
-  single crop. Hence the old `--ra', `--dec', `--xc', `--yc' have been
+  Crop: The new '--center' option is now used to define the center of a
+  single crop. Hence the old '--ra', '--dec', '--xc', '--yc' have been
   removed. This new option can take multiple values (one value for each
   dimension). Fractions are also acceptable.
 
-  Crop: The new `--width' option is now used to define the width of a
-  single crop. Hence the old `--iwidth', `--wwidth' were removed. The units
-  to interpret the value to the option are specified by the `--mode'
-  option. With the new `--width' option it is also possible to define a
+  Crop: The new '--width' option is now used to define the width of a
+  single crop. Hence the old '--iwidth', '--wwidth' were removed. The units
+  to interpret the value to the option are specified by the '--mode'
+  option. With the new '--width' option it is also possible to define a
   non-square crop (different widths along each dimension). In WCS mode, its
   units are no longer arcseconds but are the same units of the WCS (degrees
-  for angles). `--width' can also accept fractions. So to set a width of 5
-  arcseconds, you can give it a value of `5/3600' for the angular
+  for angles). '--width' can also accept fractions. So to set a width of 5
+  arcseconds, you can give it a value of '5/3600' for the angular
   dimensions.
 
-  Crop: The new `--coordcol' option is now used to determine the catalog
-  columns that define coordinates. Hence the old `--racol', `--deccol',
-  `--xcol', and `--ycol' have been removed. This new option can be called
+  Crop: The new '--coordcol' option is now used to determine the catalog
+  columns that define coordinates. Hence the old '--racol', '--deccol',
+  '--xcol', and '--ycol' have been removed. This new option can be called
   multiple times and the order of its calling will be used for the column
   containing the center in the respective dimension (in FITS format).
 
-  MakeNoise: the old `--stdadd' (`-s') option has been renamed to
-  `--instrumental' (`-i') to be more clear.
+  MakeNoise: the old '--stdadd' ('-s') option has been renamed to
+  '--instrumental' ('-i') to be more clear.
 
-  MakeProfiles: The new `--naxis' and `--shift' options can take multiple
+  MakeProfiles: The new '--naxis' and '--shift' options can take multiple
   values for each dimension (separated by a comma). This replaces the old
-  `--naxis1', `--naxis2' and `--xshift' and `--yshift' options.
+  '--naxis1', '--naxis2' and '--xshift' and '--yshift' options.
 
-  MakeProfiles: The new `--ccol' option can take the center coordinate
-  columns of the catalog (in multiple calls) and the new `--mode' option is
+  MakeProfiles: The new '--ccol' option can take the center coordinate
+  columns of the catalog (in multiple calls) and the new '--mode' option is
   used to identify what standard to interpret them in (image or
-  WCS). Together, these replace the old `--xcol', `--ycol', `--racol' and
-  `--deccol'.
+  WCS). Together, these replace the old '--xcol', '--ycol', '--racol' and
+  '--deccol'.
 
-  MakeProfiles: The new `--crpix', `--crval' and `--cdelt' options now
+  MakeProfiles: The new '--crpix', '--crval' and '--cdelt' options now
   accept multiple values separated by a comma. So they replace the old
-  `--crpix1', `--crpix2', `--crval1', `--crval2' and `--resolution'
+  '--crpix1', '--crpix2', '--crval1', '--crval2' and '--resolution'
   options.
 
-  `gal_data_free_contents': when the input `gal_data_t' is a tile, its
-  `array' element will not be freed. This enables safe usage of this
-  function (and thus `gal_data_free') on tiles without worrying about the
+  'gal_data_free_contents': when the input 'gal_data_t' is a tile, its
+  'array' element will not be freed. This enables safe usage of this
+  function (and thus 'gal_data_free') on tiles without worrying about the
   memory block associated with the tile.
 
-  `gal_box_bound_ellipse' is the new name for the old
-  `gal_box_ellipse_in_box' (to be more clear and avoid repetition of the
-  term `box'). The input position angle is now also in degrees, not
+  'gal_box_bound_ellipse' is the new name for the old
+  'gal_box_ellipse_in_box' (to be more clear and avoid repetition of the
+  term 'box'). The input position angle is now also in degrees, not
   radians.
 
-  `gal_box_overlap' now works on data of any dimensionality and thus also
+  'gal_box_overlap' now works on data of any dimensionality and thus also
   needs the number of dimensions (elements in each input array).
 
-  `gal_box_border_from_center' now accepts an array of coordinates as one
+  'gal_box_border_from_center' now accepts an array of coordinates as one
   argument and the number of dimensions as another. This allows it to work
   on any dimensionality.
 
-  `gal_fits_img_info' now also returns the name and units of the dataset
+  'gal_fits_img_info' now also returns the name and units of the dataset
   (if they aren't NULL). So it takes two extra arguments.
 
-  `gal_wcs_pixel_scale' now replaces the old `gal_wcs_pixel_scale_deg',
+  'gal_wcs_pixel_scale' now replaces the old 'gal_wcs_pixel_scale_deg',
   since it doesn't only apply to degrees. The pixel scale units are defined
   by the units of the WCS.
 
-  `GAL_TILE_PARSE_OPERATE' (only when `OTHER' is given) can now parse and
+  'GAL_TILE_PARSE_OPERATE' (only when 'OTHER' is given) can now parse and
   operate on different datasets independent of the size of allocated block
-  of memory (the tile sizes of `IN' and `OTHER' have to be identical, but
+  of memory (the tile sizes of 'IN' and 'OTHER' have to be identical, but
   not their allocated blocks of memory). Until now, it was necessary for
   the two blocks to have the same size and this is no longer the case.
 
@@ -1411,7 +1411,7 @@ See the end of the file for license conditions.
 * Noteworthy changes in release 0.3 (library 1.0.0) (2017-06-01) [stable]
 
   This is a full re-write of Gnuastro. Most importantly, Gnuastro now has a
-  new generic data container (`gal_data_t'). This new container can now
+  new generic data container ('gal_data_t'). This new container can now
   deal natively with all standard numeric data types, work in RAM or
   HDD/SSD, keep data in any dimensions and has enabled many other very
   useful features. Some of the most prominent of the new features are
@@ -1421,9 +1421,9 @@ See the end of the file for license conditions.
 
   As discussed below, some program names have changed, if you have a
   previous version of Gnuastro installed from source, it is recommended to
-  uninstall it first (with `make uninstall' using the corresponding
+  uninstall it first (with 'make uninstall' using the corresponding
   tarball), then install this new version. Building Gnuastro can be slow,
-  so please build in parallel with Make's `-j8' option (to build on 8
+  so please build in parallel with Make's '-j8' option (to build on 8
   threads).
 
 ** New programs or library features
@@ -1435,10 +1435,10 @@ See the end of the file for license conditions.
   functions are shown below, also see the "Library demos" section of the
   book for some complete working example:
 
-     -- `gal_table_read' and `gal_table_write' will read and write data to
+     -- 'gal_table_read' and 'gal_table_write' will read and write data to
         plain text, FITS ASCII and FITS Binary formats.
 
-     -- `gal_fits_img_read' and `gal_fits_img_write' can read a FITS image
+     -- 'gal_fits_img_read' and 'gal_fits_img_write' can read a FITS image
         to memory or write a FITS image from memory.
 
   Gnuastro now defines a simple comment line format to keep basic
@@ -1457,24 +1457,24 @@ See the end of the file for license conditions.
   in a FITS file along with basic information. It can copy a whole HDU to
   another file, or delete a HDU from a FITS file. To get the previous
   behavior of listing all the keywords in a FITS HDU, you can run it with
-  the `-p' option.
+  the '-p' option.
 
   All programs now write data into the second HDU of a FITS file to allow a
   clean first HDU. Note that following CFITSIO, HDU counting still starts
   from zero, so FITS images and tables written by Gnuastro in a new file
-  can always be accessed with the `--hdu=1' option (which is now the
+  can always be accessed with the '--hdu=1' option (which is now the
   default).
 
   If any program is run within a Git version controlled directory, a
-  `COMMIT' header keyword will be added to the created FITS files, see the
+  'COMMIT' header keyword will be added to the created FITS files, see the
   "Output headers" section of the book for a discussion on the usefulness
   of this new feature.
 
   BuildProgram: a new program to easily compile, link and run a C program
   you have written with Gnuastro's libraries without having to worry about
   which libraries (Gnuastro dependencies) your program needs. Debugging
-  (`-g'), optimizations (`-O'), warnings (`-W'), include search path
-  (`-I'), link search path (`-L'), and linked libraries (`-l') compiler
+  ('-g'), optimizations ('-O'), warnings ('-W'), include search path
+  ('-I'), link search path ('-L'), and linked libraries ('-l') compiler
   options are also supported. BuildProgram will greatly facilitate the easy
   usage of Gnuastro's libraries.
 
@@ -1494,7 +1494,7 @@ See the end of the file for license conditions.
 
   All Gnuastro programs that read and write tables can now do so in plain
   text table format or in FITS ASCII or FITS Binary tables. Depending on
-  the filename or with the new `--tableformat' common option to all
+  the filename or with the new '--tableformat' common option to all
   programs.
 
   The option management system in all Gnuastro programs has been completely
@@ -1502,18 +1502,18 @@ See the end of the file for license conditions.
   listed below. For developers, you will notice that there is no more usage
   of macros and adding new options has become much more easier.
 
-     -- All programs will now also look for a `gnuastro.conf' configuration
+     -- All programs will now also look for a 'gnuastro.conf' configuration
         file to keep common options for all programs in every directory.
 
-     -- The `--lastconfig' option can be used on the command-line or in any
+     -- The '--lastconfig' option can be used on the command-line or in any
         configuration file to stop parsing any further configuration files.
 
-     -- The `--config' option can now be used to identify any arbitrary
+     -- The '--config' option can now be used to identify any arbitrary
         file to be parsed as a configuration file. Any file that is given
         to this option is parsed immediately.
 
-     -- The `--printparams' option now also prints the short documentation
-        of each option (same description in `--help') after its value.
+     -- The '--printparams' option now also prints the short documentation
+        of each option (same description in '--help') after its value.
 
   It is now possible to choose columns in tables based on column names as
   well as column numbers. It is also possible to search for columns based
@@ -1521,22 +1521,22 @@ See the end of the file for license conditions.
   counting now starts from 1 (one), not 0 (as before). See the new
   "Selecting table columns" section for more on these new features.
 
-  Where relevant, all programs now accept a `--type' option that you can
+  Where relevant, all programs now accept a '--type' option that you can
   use to specify the numerical datatype of the output.
 
-  With the new common option `--minmapsize', you can specify a minimum size
+  With the new common option '--minmapsize', you can specify a minimum size
   of an array (in bytes) to store data in SSD/HDD and not in RAM. This can
   be instrumental when you are dealing with large datasets, or even smaller
   ones, but when your RAM is getting full.
 
   Making a log file is now optional and users have to explicitly ask for it
-  with the `--log' option.
+  with the '--log' option.
 
   Slower building of Gnuastro: Binary operators (e.g., plus or multiply)
   are now done in the native type of the input dataset. Doing so for all
   the different combinations of types, greatly slows down the initial
-  compilation of Gnuastro (after running `make'). So for every type there
-  is now a `--enable-bin-op-*' configure time option. When the dataset's
+  compilation of Gnuastro (after running 'make'). So for every type there
+  is now a '--enable-bin-op-*' configure time option. When the dataset's
   type isn't compiled (only for the binary operators), it will be converted
   to a compiled type and then converted back in the end.
 
@@ -1551,9 +1551,9 @@ See the end of the file for license conditions.
   and the modulo operator).
 
   ConvertType: can also print the input dataset to the command-line
-  (`stdout'). To use this feature set the output filename to `stdout'.
+  ('stdout'). To use this feature set the output filename to 'stdout'.
 
-  Convolve now has the `--minsharpspec' option to specify the minimum
+  Convolve now has the '--minsharpspec' option to specify the minimum
   spectrum value to use in deconvolution (matching PSFs).
 
   Crop: when in WCS mode it can still only work on aligned images. However,
@@ -1572,19 +1572,19 @@ See the end of the file for license conditions.
   pixel projected size, fully derived in the book), it now also reports the
   surface brightness in magnitudes/arcsec^2 also.
 
-  MakeProfiles: Profile codes now start from `1' (until now they started
-  from `0').
+  MakeProfiles: Profile codes now start from '1' (until now they started
+  from '0').
 
   MakeProfiles: now accepts the radial function of profiles as
   human-readable strings instead of a code for each profile (which was very
   cryptic, although codes are also still acceptable). For example in the
-  profile column you can now write `sersic' instead of the code `1'.
+  profile column you can now write 'sersic' instead of the code '1'.
 
-  NoiseChisel: the new `--cleandilated' option will remove dilated objects
+  NoiseChisel: the new '--cleandilated' option will remove dilated objects
   that have a low S/N (it is mainly useful on very clean or mock images).
   For non-clean noise, it will result in a decrease of completeness. With
   this new option, NoiseChisel will also print detection S/N values when
-  run with the `--checkdetsn' option.
+  run with the '--checkdetsn' option.
 
   Statistics: now reads table columns as well as images and does basic
   operations on them. It can also only work on a certain range of the data
@@ -1598,17 +1598,17 @@ See the end of the file for license conditions.
   mode's quantile similar to what NoiseChisel does to find its initial
   threshold.
 
-  Statistics: has several new single valued calculations: `--quantile',
-  `--quantfunc' (quantile function), `--mode', `--modequant', `--modesym',
-  and `--modesymvalue'.
+  Statistics: has several new single valued calculations: '--quantile',
+  '--quantfunc' (quantile function), '--mode', '--modequant', '--modesym',
+  and '--modesymvalue'.
 
-  Warp: align the image with the celestial coordinates using the `--align'
+  Warp: align the image with the celestial coordinates using the '--align'
   option.
 
   Warp: standard modular warpings can now be requested without an input
-  matrix, using the following options: `--shear', `--flip', `--project',
-  `--rotate', `--scale', `--translate'. Any number of these transformations
-  (along with the `--align' option) can be called on the command-line and
+  matrix, using the following options: '--shear', '--flip', '--project',
+  '--rotate', '--scale', '--translate'. Any number of these transformations
+  (along with the '--align' option) can be called on the command-line and
   they will be applied in the same order to create one warping matrix. By
   default the WCS will also be corrected.
 
@@ -1616,49 +1616,49 @@ See the end of the file for license conditions.
 
   Mask image options have been removed from all programs. Instead, all
   programs can work directly on data with blank values. So when some pixels
-  must be masked, the Arithmetic program's `where' operator can be used to
+  must be masked, the Arithmetic program's 'where' operator can be used to
   select special pixels and set them to blank. In particular bit-wise
   operations are now available in Arithmetic to use bit-mask
   images. Managing all these different choices in every program would only
   confuse the user (with too many options).
 
-  Arithmetic: the `x' letter is now used to represent the multiplication
-  operator. Previously it was `*' which needed quotation and was thus very
+  Arithmetic: the 'x' letter is now used to represent the multiplication
+  operator. Previously it was '*' which needed quotation and was thus very
   inconvenient.
 
-  Convolve: the old `--frequency' and `--spatial' options have been removed
-  and are replaced by `--domain' which accepts values of `frequency' and
-  `spatial'.
+  Convolve: the old '--frequency' and '--spatial' options have been removed
+  and are replaced by '--domain' which accepts values of 'frequency' and
+  'spatial'.
 
-  Convolve: the old `--viewfreqsteps' was changed to `--checkfreqsteps' to
+  Convolve: the old '--viewfreqsteps' was changed to '--checkfreqsteps' to
   fit with the general style of such check images in all Gnuastro's
   programs.
 
-  Crop: `--section' syntax is now inclusive in both bounds.
+  Crop: '--section' syntax is now inclusive in both bounds.
 
   Crop: only checks if the center of a crop is filled when the crop was
-  defined by its center (for example with `--ra' and `--dec'). The verbose
+  defined by its center (for example with '--ra' and '--dec'). The verbose
   outputs of Crop are also not cryptic 0s or 1s. The are human readable
   text.
 
-  Crop: doesn't have separate `--imgmode' and `--wcsmode' options any
-  more. There is now a single `--mode' option which accepts values of `img'
-  or `wcs'.
+  Crop: doesn't have separate '--imgmode' and '--wcsmode' options any
+  more. There is now a single '--mode' option which accepts values of 'img'
+  or 'wcs'.
 
-  MakeProfiles: the old `--inputascanvas' is now called `--clearcanvas'.
+  MakeProfiles: the old '--inputascanvas' is now called '--clearcanvas'.
 
   MakeProfiles: until now, it would abort with an error when the input
   columns had blank values. But for masking, it might happen that you set a
   blank magnitude. So this check has now been removed when reading the
   magnitude column.
 
-  NoiseChisel: default value of the `--minskyfrac' option (new name for the
-  old `--minbfrac') is now 0.7 as opposed to 0.5. This will allow much
+  NoiseChisel: default value of the '--minskyfrac' option (new name for the
+  old '--minbfrac') is now 0.7 as opposed to 0.5. This will allow much
   better estimation of noise properties (by default). It may be slightly
   too high for a crowded field, but the users can change it on the
   command-line (or in a configuration file) for such datasets.
 
-  NoiseChisel: when it is run with any of the `--check' options, it will
+  NoiseChisel: when it is run with any of the '--check' options, it will
   abort after all the check images have been created. This is very useful
   for checking your parameters until each step and not be distracted (or
   have to wait) for later steps to finish.
@@ -1667,35 +1667,35 @@ See the end of the file for license conditions.
   calculate sigma-clipped results by default (with no options). It will
   just print some basic information.
 
-  Table: Previously, if a column was requested, the `-i' option would be
+  Table: Previously, if a column was requested, the '-i' option would be
   ignored. But it often happens that the users forget a column name after
   already typing several of their desired columns. So the opposite behavior
   is preferred. Because when more than a couple of columns are needed, you
   will probably forget the column identifiers of the last few and having to
-  retype everything is very frustrating. Something like how `--help' takes
+  retype everything is very frustrating. Something like how '--help' takes
   precedence over all other options.
 
   Table: to select column(s) by regular expression searching, the name now
-  has to be put in `/ /' (similar to AWK). If a value isn't in `/ /', the
+  has to be put in '/ /' (similar to AWK). If a value isn't in '/ /', the
   programs will only select a column with the exact match.
 
   Warp: when a 2 by 2 matrix is given, the FITS pixel positions (which
   define the center of a pixel as an integer) are automatically implemented
   internally, see "Invoking Warp" in the manual for more.
 
-  Warp: the old `--nofitscorrect' option has been changed to
-  `--centeroncorner' to be more clear. The new option is now more general
+  Warp: the old '--nofitscorrect' option has been changed to
+  '--centeroncorner' to be more clear. The new option is now more general
   than before and also works on warping with a matrix, not just on modular
   warpings.
 
-  Warp: the old `--nowcscorrection' option has been given a more clear name
-  of `--keepwcs'. With this option, Warp will not apply the warp the
+  Warp: the old '--nowcscorrection' option has been given a more clear name
+  of '--keepwcs'. With this option, Warp will not apply the warp the
   input's WCS structure.
 
-  Warp: the old `--maxblankfrac' option has been changed to
-  `--coveredfrac'. Until now, Warp would only look for the fraction of
+  Warp: the old '--maxblankfrac' option has been changed to
+  '--coveredfrac'. Until now, Warp would only look for the fraction of
   input blank/NaN pixel area over the output pixel. But this would be
-  useless on the edges of the image. So the new `--coveredfrac' option
+  useless on the edges of the image. So the new '--coveredfrac' option
   takes the acceptable fraction of output pixel area that must be covered
   by input pixels in order to give that output pixel a value. You can use
   this to set edge pixels that are not fully covered in the new grid to
@@ -1703,7 +1703,7 @@ See the end of the file for license conditions.
 
 ** Bugs fixed
 
-  Using `%zu' to print `size_t' variables for clean build on 32-bit
+  Using '%zu' to print 'size_t' variables for clean build on 32-bit
   systems.
 
   Crash in Table for some operating systems due to memory is now fixed (bug
@@ -1756,12 +1756,12 @@ See the end of the file for license conditions.
 
   Shared libraries and headers are now installed. The libraries can be used
   in C and C++ programs. This release includes the following headers:
-  `gnuastro.h', `array.h', `box.h', `fits.h', `linkedlist.h', `mesh.h',
-  `polygon.h', `qsort.h', `spatialconvolve.h', `statistics.h', `threads.h',
-  `wcs.h', `txtarray.h' (task #13765).
+  'gnuastro.h', 'array.h', 'box.h', 'fits.h', 'linkedlist.h', 'mesh.h',
+  'polygon.h', 'qsort.h', 'spatialconvolve.h', 'statistics.h', 'threads.h',
+  'wcs.h', 'txtarray.h' (task #13765).
 
   Gnuastro now comes with a script in its top source directory
-  (`tmpfs-config-make') to configure and build it in the tmpfs (on the
+  ('tmpfs-config-make') to configure and build it in the tmpfs (on the
   RAM), for those systems that have it. See the new "Configure and build in
   RAM" section in the book for more (task #14100).
 
@@ -1770,27 +1770,27 @@ See the end of the file for license conditions.
   MakeProfiles also accepts WCS positions (task #13566).
 
   Flat profiles in MakeProfiles can be given a profile specific value. The
-  new `--mforflatpix' option MakeProfile will use the value in the
+  new '--mforflatpix' option MakeProfile will use the value in the
   magnitude column as a fixed value for each pixel. This can be very useful
   in defining a mask, or creating segmentation maps or labeled images (task
   #14115).
 
   MakeProfiles can now use input image as canvas. Instead of specifying the
-  WSC and image size parameters manually. With the new `--inputascanvas'
+  WSC and image size parameters manually. With the new '--inputascanvas'
   option, MakeProfiles will get this information (along with blank pixels)
   from an already existing image (task #14116).
 
   Type of output in MakeProfiles and Arithmetic can be specified with the
-  `--type' option.
+  '--type' option.
 
-  Magnitude error column in MakeCatalog with the `--magnitudeerr' option.
+  Magnitude error column in MakeCatalog with the '--magnitudeerr' option.
 
   Arithmetic now has new conditional (task #13870) and logical operators
   (task #14153) along with an operator for actions only when conditions are
-  true: `where'. The new `isblank' operator will also enable you to select
+  true: 'where'. The new 'isblank' operator will also enable you to select
   blank, or masked, pixels (task #14146).
 
-  The `--noerodequant' in NoiseChisel enables it to detect small and
+  The '--noerodequant' in NoiseChisel enables it to detect small and
   sharper profiles by disabling erosion on pixels above a certain quantile
   (task #14139).
 
@@ -1803,10 +1803,10 @@ See the end of the file for license conditions.
 
 ** Changes in behavior
 
-  The two MakeProfiles options `--setconsttonan', `--setconsttomin' have
-  been removed (see `--mforflatpix' above for their alternative).
+  The two MakeProfiles options '--setconsttonan', '--setconsttomin' have
+  been removed (see '--mforflatpix' above for their alternative).
 
-  MakeCatalog makes clump catalog only when asked (when the `WCLUMPS'
+  MakeCatalog makes clump catalog only when asked (when the 'WCLUMPS'
   header exists in the objects HDU). This can be very useful in cases like
   aperture photometry, when the object labels are not generated by
   NoiseChisel and so a clump image doesn't exist (task #14122).
@@ -1814,7 +1814,7 @@ See the end of the file for license conditions.
   Default cosmological parameters in CosmicCalculator set to Plank 2015
   results: A&A (2016), 594, A13 (arXiv 1502.01589).
 
-  The `--envseed' option (to read random number generator type and seed
+  The '--envseed' option (to read random number generator type and seed
   from the environment) to MakeProfiles and MakeNoise can also be given in
   the configuration files.
 
@@ -1829,24 +1829,24 @@ See the end of the file for license conditions.
   MakeCatalog's problem in checking the sizes of all input images is now
   fixed.
 
-  NoiseChisel's problem with reading the `--kernel' option is now
+  NoiseChisel's problem with reading the '--kernel' option is now
   corrected (bug #46750).
 
   lib/mesh.c's problem in correctly calculating the mesh sizes was
   corrected (bug #47611).
 
-  `make check' will not look into system utility configuration files. In
+  'make check' will not look into system utility configuration files. In
   the previous release, if Gnuastro was already installed, the
   configuration files already present on the system would also be read. Now
   only configuration files in the tested package are used (bug #47833).
 
   Ghostscript's version is now checked at configure time after its
-  existence. ConvertType uses the `-dPDFFitPage' option to Ghostscript
+  existence. ConvertType uses the '-dPDFFitPage' option to Ghostscript
   which was introduced in version 9.10, so older versions would pass
-  configure but at `make check' time, the PDF test would fail. Now this
+  configure but at 'make check' time, the PDF test would fail. Now this
   test is skipped (bug #47868).
 
-  Most tests would fail when `make check -jN' was run (to do the checks on
+  Most tests would fail when 'make check -jN' was run (to do the checks on
   N threads). A dependency structure has now been defined to fix this
   problem and greatly speed up the testing process (bug #47957).
 
@@ -1865,32 +1865,32 @@ See the end of the file for license conditions.
 
 ** New features
 
-  All the utilities that would produce a log file now have a `--nolog'
+  All the utilities that would produce a log file now have a '--nolog'
   option to avoid printing a log file.
 
-  The tiled image compression convention (.fits.fz, created with `fpack')
+  The tiled image compression convention (.fits.fz, created with 'fpack')
   files can now be used as input in the utilities.
 
   ImageCrop can now also crop a polygon from the input image. The polygon
   vertices can be given in the world or image coordinates. The simple
-  `--polygon' option will keep the insides of the polygon while the
-  `--outpolygon' will keep the outside of the polygon.
+  '--polygon' option will keep the insides of the polygon while the
+  '--outpolygon' will keep the outside of the polygon.
 
   ImageCrop and ImageWarp can now read the WCS information of a FITS header
-  from a specific region with the `--hstartwcs' and `--hendwcs'. In some
+  from a specific region with the '--hstartwcs' and '--hendwcs'. In some
   older FITS images, when the WCS distortions were not as standardized as
   now, there were cases which would confuse WCSLIB.
 
   NoiseChisel can now save the grown clumps image instead of the original
-  clumps image in the output with the `--grownclumps' option.
+  clumps image in the output with the '--grownclumps' option.
 
-  Convolve can now do deconvolution with the `--makekernel' option.
+  Convolve can now do deconvolution with the '--makekernel' option.
 
-  MakeProfiles now has a `--setconsttonan' option which will fill the
+  MakeProfiles now has a '--setconsttonan' option which will fill the
   constant profiles with a NaN (blank) value, not a number, allowing the
   creations of elliptical masked regions for example.
 
-  Header can now import a keyword directly from a string with the `--asis'
+  Header can now import a keyword directly from a string with the '--asis'
   option.
 
   MakeCatalog can now output the geometric (average position independent of
@@ -1900,11 +1900,11 @@ See the end of the file for license conditions.
   example semi-major axis, semi-minor axis, and position angle). This can
   also be done both in standard flux weighted and geometric methods too.
 
-  MakeCatalog now has a `--threshold' function to only use pixels above a
+  MakeCatalog now has a '--threshold' function to only use pixels above a
   given threshold in each object or clump. This is useful to avoid diffuse
   regions in calculations.
 
-  MakeCatalog now has a `--noriverbrightness' option. With this option it
+  MakeCatalog now has a '--noriverbrightness' option. With this option it
   is possible to calculate the clump flux without subtracting the river
   pixels on its circumference.
 
@@ -1912,7 +1912,7 @@ See the end of the file for license conditions.
   determined at run-time for each program. Therefore it is now easily
   possible to built Gnuastro on one system to use on another (commonly done
   in the GNU/Linux package managers). Therefore ./configure no longer has a
-  `--with-numthreads' option.
+  '--with-numthreads' option.
 
   Every commit in Gnuastro's history (after implementing this feature) can
   now be given a unique version number. Since the version number is printed
@@ -1923,14 +1923,14 @@ See the end of the file for license conditions.
   controlled history. Also all the authors that have contributed to
   Gnuastro are included in the second (copyright) page of the PDF book.
 
-  All the bootstrapped directories are now moved with a new `bootstrapped'
+  All the bootstrapped directories are now moved with a new 'bootstrapped'
   directory in the top source directory. This significantly cleans up this
   directory, allowing users to more easily find the hand-written Gnuastro
   source files they like.
 
-  A `bug-gnuastro' Info page was created so users can easily go to that
+  A 'bug-gnuastro' Info page was created so users can easily go to that
   page for information on how to submit bug reports. It is accessible on
-  the command line with the command `info bug-gnuastro'.
+  the command line with the command 'info bug-gnuastro'.
 
 ** Changes in behavior
 
@@ -1948,8 +1948,8 @@ See the end of the file for license conditions.
   NoiseChisel no longer outputs a sky subtracted image. This job can now be
   done with the new Arithmetic utility.
 
-  NoiseChisel's `--segsnhistnbins' option was renamed to
-  `--clumpsnhistnbins'.
+  NoiseChisel's '--segsnhistnbins' option was renamed to
+  '--clumpsnhistnbins'.
 
 ** Improvements
 
@@ -1962,8 +1962,8 @@ See the end of the file for license conditions.
   were commonly not enough points in large mesh sizes and this would add
   scatter. With ImageCrop's polygon capabilities, it is now easily possible
   to cut out the region that has uniform noise properties (depth and
-  correlated noise). Therefore the old `--checkdetectionsn' and
-  `checkclumpsn' options are no longer present.
+  correlated noise). Therefore the old '--checkdetectionsn' and
+  'checkclumpsn' options are no longer present.
 
   When building from the version controlled source, the whole bootstrapping
   process is done with one script. In the previous version, all the
@@ -1971,7 +1971,7 @@ See the end of the file for license conditions.
   old manual).
 
   All the build steps now report what was done and suggest the next
-  step. This feature can be disabled with the `--disable-guide-message' at
+  step. This feature can be disabled with the '--disable-guide-message' at
   configure time.
 
 

@@ -118,7 +118,7 @@ struct tableparams
   uint8_t              sortin;  /* If the sort column is in the output. */
   time_t              rawtime;  /* Starting time of the program.        */
   gal_data_t       **colarray;  /* Array of columns, with arithmetic.   */
-  size_t          numcolarray;  /* Number of elements in `colarray'.    */
+  size_t          numcolarray;  /* Number of elements in 'colarray'.    */
 
   /* For arithmetic operators. */
   gal_list_str_t  *wcstoimg_p;  /* Pointer to the node.                 */

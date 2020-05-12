@@ -106,8 +106,8 @@ statistics_print_one_row(struct statisticsparams *p)
   for(tmp=p->singlevalue; tmp!=NULL; tmp=tmp->next)
     switch(tmp->v)
       {
-      /* Calculate respective values. Checking with `if(num==NULL)' gives
-         compiler warnings of `this if clause does not guard ...'. So we
+      /* Calculate respective values. Checking with 'if(num==NULL)' gives
+         compiler warnings of 'this if clause does not guard ...'. So we
          are using this empty-if and else statement. */
       case UI_KEY_NUMBER:
         num = num ? num : gal_statistics_number(p->input);           break;
@@ -211,7 +211,7 @@ statistics_print_one_row(struct statisticsparams *p)
 
       /* Print the number. Note that we don't want any extra white space
          characters before or after the printed outputs. So we have defined
-         `counter' to add a single white space character before any element
+         'counter' to add a single white space character before any element
          except the first one. */
       toprint=gal_type_to_string(out->array, out->type, 0);
       printf("%s%s", counter ? " " : "", toprint);
@@ -415,7 +415,7 @@ statistics_on_tile(struct statisticsparams *p)
                     "recognized", __func__, PACKAGE_BUGREPORT, operation->v);
             }
 
-          /* Put the output value into the `values' array and clean up. */
+          /* Put the output value into the 'values' array and clean up. */
           tmp=gal_data_copy_to_new_type_free(tmp, type);
           memcpy(gal_pointer_increment(values->array, tind++, values->type),
                  tmp->array, gal_type_sizeof(type));
@@ -503,7 +503,7 @@ print_ascii_plot(struct statisticsparams *p, gal_data_t *plot,
 
 
 
-/* Data structure that must be fed into `gal_statistics_regular_bins'.*/
+/* Data structure that must be fed into 'gal_statistics_regular_bins'.*/
 static gal_data_t *
 set_bin_range_params(struct statisticsparams *p)
 {
@@ -587,7 +587,7 @@ write_output_table(struct statisticsparams *p, gal_data_t *table,
   use_auto_output = p->cp.output ? (p->numoutfiles>1 ? 1 : 0) : 1;
 
 
-  /* Set the `fix' and `suffix' strings. Note that `fix' is necessary in
+  /* Set the 'fix' and 'suffix' strings. Note that 'fix' is necessary in
      every case, even when no automatic output is to be used. Since it is
      used to determine the format of the output. */
   fix = ( p->cp.output
@@ -665,20 +665,20 @@ save_hist_and_or_cfp(struct statisticsparams *p)
   /* Set the histogram as the next pointer of bins. This is again necessary
      in both cases: when only a histogram is requested, it is used for the
      plotting. When only a CFP is desired, it is used as input into
-     `gal_statistics_cfp'. */
+     'gal_statistics_cfp'. */
   bins->next=hist;
 
 
   /* Make the cumulative frequency plot if the user wanted it. Make the
-     CFP, note that for the CFP, `maxbinone' and `normalize' are the same:
+     CFP, note that for the CFP, 'maxbinone' and 'normalize' are the same:
      the last bin (largest value) must be one. So if any of them are given,
      then set the last argument to 1.*/
   if(p->cumulative)
     cfp=gal_statistics_cfp(p->input, bins, p->normalize || p->maxbinone);
 
 
-  /* FITS tables don't accept `uint64_t', so to be consistent, we'll conver
-     the histogram and CFP to `uint32_t'.*/
+  /* FITS tables don't accept 'uint64_t', so to be consistent, we'll conver
+     the histogram and CFP to 'uint32_t'.*/
   if(hist->type==GAL_TYPE_UINT64)
     hist=gal_data_copy_to_new_type_free(hist, GAL_TYPE_UINT32);
   if(cfp && cfp->type==GAL_TYPE_UINT64)
@@ -766,7 +766,7 @@ print_mirror_hist_cfp(struct statisticsparams *p)
 /*******************************************************************/
 /**************           Basic information          ***************/
 /*******************************************************************/
-/* To keep things in `print_basics' clean, we'll define the input data
+/* To keep things in 'print_basics' clean, we'll define the input data
    here, then only print the values there. */
 void
 print_input_info(struct statisticsparams *p)
@@ -874,7 +874,7 @@ print_basics(struct statisticsparams *p)
   tmp=gal_statistics_mode(p->input, mirrdist, 1);
   d=tmp->array;
   if(d[2]>GAL_STATISTICS_MODE_GOOD_SYM)
-    {        /* Same format as `gal_data_write_to_string' */
+    {        /* Same format as 'gal_data_write_to_string' */
       printf("  %-*s %.10g\n", namewidth, "Mode:", d[0]);
       printf("  %-*s %.10g\n", namewidth, "Mode quantile:", d[1]);
     }
@@ -888,7 +888,7 @@ print_basics(struct statisticsparams *p)
   free(str);
 
   /* Print the mean and standard deviation. Same format as
-     `gal_data_write_to_string' */
+     'gal_data_write_to_string' */
   printf("  %-*s %.10g\n", namewidth, "Mean:", mean);
   printf("  %-*s %.10g\n", namewidth, "Standard deviation:", std);
 

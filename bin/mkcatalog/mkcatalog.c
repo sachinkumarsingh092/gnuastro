@@ -134,8 +134,8 @@ mkcatalog_single_object(void *in_prm)
                                   NULL, NULL, NULL);
 
       /* Set the blank checked flag to 1. By definition, this dataset won't
-         have any blank values. Also `flag' is initialized to `0'. So we
-         just have to set the checked flag (`GAL_DATA_FLAG_BLANK_CH') to
+         have any blank values. Also 'flag' is initialized to '0'. So we
+         just have to set the checked flag ('GAL_DATA_FLAG_BLANK_CH') to
          one to inform later steps that there are no blank values. */
       pp.up_vals->flag |= GAL_DATA_FLAG_BLANK_CH;
     }
@@ -275,8 +275,8 @@ mkcatalog_wcs_conversion(struct mkcatalogparams *p)
       /* Definitions */
       c=NULL;
 
-      /* Set `c' for the columns that must be corrected. Note that this
-         `switch' statement doesn't need any `default', because there are
+      /* Set 'c' for the columns that must be corrected. Note that this
+         'switch' statement doesn't need any 'default', because there are
          probably columns that don't need any correction. */
       switch(column->status)
         {
@@ -307,8 +307,8 @@ mkcatalog_wcs_conversion(struct mkcatalogparams *p)
       /* Definitions */
       c=NULL;
 
-      /* Set `c' for the columns that must be corrected. Note that this
-         `switch' statement doesn't need any `default', because there are
+      /* Set 'c' for the columns that must be corrected. Note that this
+         'switch' statement doesn't need any 'default', because there are
          probably columns that don't need any correction. */
       switch(column->status)
         {
@@ -442,7 +442,7 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
       gal_list_str_add(&comments, str, 0);
     }
 
-  /* Write the date. However, `ctime' is going to put a new-line character
+  /* Write the date. However, 'ctime' is going to put a new-line character
      in the end of its string, so we are going to remove it manually. */
   if( asprintf(&str, "%s started on %s", PROGRAM_NAME, ctime(&p->rawtime))<0 )
     error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
@@ -546,7 +546,7 @@ mkcatalog_outputs_same_start(struct mkcatalogparams *p, int o0c1,
                                  "because no STD image used.", &str);
       gal_list_str_add(&comments, str, 0);
       gal_checkset_allocate_copy("Ask for column that uses the STD image, "
-                                 "or `--forcereadstd'.", &str);
+                                 "or '--forcereadstd'.", &str);
       gal_list_str_add(&comments, str, 0);
     }
 
@@ -592,7 +592,7 @@ sort_clumps_by_objid(struct mkcatalogparams *p)
   /* Make sure everything is fine. */
   if(p->hostobjid_c==NULL || p->numclumps_c==NULL)
     error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
-          "problem. `p->hostobjid_c' and `p->numclumps_c' must not be "
+          "problem. 'p->hostobjid_c' and 'p->numclumps_c' must not be "
           "NULL.", __func__, PACKAGE_BUGREPORT);
 
 
@@ -683,7 +683,7 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
         printf("  - Catalog(s) complete, writing spectra.\n");
 
       /* Start counting and writing the files. Note that due to some
-         conditions (for example in debugging), a `p->spectra[i]' may not
+         conditions (for example in debugging), a 'p->spectra[i]' may not
          actually contain any data. So we'll also count the number of
          spectra that are written. */
       scounter=0;
@@ -743,14 +743,14 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
           if(outisfits)
             {
               if(p->objectcols)
-                printf("  - Spectra in %zu extensions named `SPECTRUM_NN'.\n",
+                printf("  - Spectra in %zu extensions named 'SPECTRUM_NN'.\n",
                        p->numobjects);
               else
                 printf("  - Output: %s (Spectra in %zu extensions named "
-                       "`SPECTRUM_NN').\n)", p->objectsout, p->numobjects);
+                       "'SPECTRUM_NN').\n)", p->objectsout, p->numobjects);
             }
           else
-            printf("  - Spectra in %zu files with `-spec-NN.txt' suffix.\n",
+            printf("  - Spectra in %zu files with '-spec-NN.txt' suffix.\n",
                    p->numobjects);
         }
     }

@@ -8,7 +8,7 @@ This file is primarily intended for the Gnuastro maintainer and lists the
 set of operations to do for making each release. This should be done after
 all the commits needed for this release have been completed.
 
- - [STABLE] Run a spell-check (in emacs, with `M-x ispell') on the new
+ - [STABLE] Run a spell-check (in emacs, with 'M-x ispell') on the new
    parts of the book. You can put them in a test file with this command,
    just replace X.X with the previous version:
 
@@ -17,8 +17,8 @@ all the commits needed for this release have been completed.
 
 
  - [STABLE] Check if THANKS, and the book's Acknowledgments section have
-   everyone in `doc/announce-acknowledge.txt' in them. To see who has been
-   added in the `THANKS' file since the last stable release (to add in the
+   everyone in 'doc/announce-acknowledge.txt' in them. To see who has been
+   added in the 'THANKS' file since the last stable release (to add in the
    book), you can use this command:
 
        $ git diff gnuastro_vP.P..HEAD THANKS
@@ -30,7 +30,7 @@ all the commits needed for this release have been completed.
    are very useful in making the package build cleanly on other systems.
 
    If you don't actually want to make a Debian release, in the end, instead
-   of running `git push', just delete the top commits that you made in the
+   of running 'git push', just delete the top commits that you made in the
    three branchs with the following command
 
        $ git checkout master
@@ -53,17 +53,17 @@ all the commits needed for this release have been completed.
 
 
  - Run the following commands to keep the list of people who contributed
-   code and those that must be acknowledged for the announcement (`P.P' is
+   code and those that must be acknowledged for the announcement ('P.P' is
    the previous version).
 
      $ git shortlog gnuastro_vP.P...HEAD --numbered --summary > ~/people.txt
      $ cat doc/announce-acknowledge.txt >> ~/people.txt
 
-     [STABLE] Remove the names in `doc/announce-acknowledge.txt'.
+     [STABLE] Remove the names in 'doc/announce-acknowledge.txt'.
 
 
  - [STABLE] Correct the version links, and date, in the webpage
-   (`doc/gnuastro.en.html' and `doc/gnuastro.fr.html'). Note that this is
+   ('doc/gnuastro.en.html' and 'doc/gnuastro.fr.html'). Note that this is
    not for upload at this stage, it is only for the version control.
 
 
@@ -80,8 +80,8 @@ all the commits needed for this release have been completed.
      $ ./bootstrap --copy --gnulib-srcdir=/path/to/updated/gnulib
 
 
- - Update the version and build Gnuastro, all done with the `-p' option of
-   `./developer-build'. But we'll give it a `pure-junk' directory so it
+ - Update the version and build Gnuastro, all done with the '-p' option of
+   './developer-build'. But we'll give it a 'pure-junk' directory so it
    doesn't actually upload the build.
 
      $ ./developer-build -p pure-junk
@@ -93,7 +93,7 @@ all the commits needed for this release have been completed.
      $ make distcheck -j8
 
 
- - [STABLE]: After the `make distcheck' is safely finished, tag the release:
+ - [STABLE]: After the 'make distcheck' is safely finished, tag the release:
 
      $ cd ..
      $ git tag -a gnuastro_vX.X
@@ -104,11 +104,11 @@ all the commits needed for this release have been completed.
 
      $ ./developer-build -a -c -C -d
      $ cd build
-     $ make dist dist-lzip       # to build `tar.gz' and `tar.lz'.
+     $ make dist dist-lzip       # to build 'tar.gz' and 'tar.lz'.
 
 
- - Upload the tarball with the command below: Note that `gnupload'
-   uses `ncftpput' which comes with the `ncftp' package. The replaces
+ - Upload the tarball with the command below: Note that 'gnupload'
+   uses 'ncftpput' which comes with the 'ncftp' package. The replaces
    are necessary for the symbolic links.
 
    - Set the key-ID as a variable for easy steps later:
@@ -133,15 +133,15 @@ all the commits needed for this release have been completed.
    directory to build the full webpage with this script. We will build with
    debug flags so the build completes fast.
 
-   IMPORTANT NOTE: don't end the directory with a `/'. The directory should
-   be the one that has `CVSROOT' in it.
+   IMPORTANT NOTE: don't end the directory with a '/'. The directory should
+   be the one that has 'CVSROOT' in it.
 
        $ ./configure --enable-debug
        $ make -j8
        $ cd doc
        $ ./forwebpage /path/to/local/copy/of/webpage
 
-   If any of the files have a `?' in front of them, run these two commands
+   If any of the files have a '?' in front of them, run these two commands
    in the webpage directory:
 
        $ cvs add filename1 filename2 filename3
@@ -160,8 +160,8 @@ all the commits needed for this release have been completed.
 
  - Prepare the announcement, this command will calculate the checksums and
    also make the links ready. You just have to add a starting and ending
-   similar to previous announcements in a text editor. In the `XXXX', put
-   `stable' or `alpha' and in YYYY, put `ftp' for a stable, and `alpha' for
+   similar to previous announcements in a text editor. In the 'XXXX', put
+   'stable' or 'alpha' and in YYYY, put 'ftp' for a stable, and 'alpha' for
    an alpha release.
 
      $ cd build
@@ -173,23 +173,23 @@ all the commits needed for this release have been completed.
 
 
  - Based on previous announcements, add an intro, the NEWS file and the
-   contents of `~/people.txt' to the announcement.
+   contents of '~/people.txt' to the announcement.
 
 
  - Add the size of the files (in mega-bytes) to the announcement.
 
 
- - Run a spell-check on the announcement and remove `~/people.txt'.
+ - Run a spell-check on the announcement and remove '~/people.txt'.
 
      $ rm ~/people.txt
 
 
- - Announce the release on `info-gnuastro@gnu.org', `info-gnu@gnu.org'
+ - Announce the release on 'info-gnuastro@gnu.org', 'info-gnu@gnu.org'
    (only for STABLE) and Savannah news (only for STABLE).
 
 
- - [STABLE] Open `configure.ac' and increment `GAL_CURRENT' for the next
-   release. See the `Updating library version information' section of the
+ - [STABLE] Open 'configure.ac' and increment 'GAL_CURRENT' for the next
+   release. See the 'Updating library version information' section of the
    GNU Libtool manual as a guide. Note that we are assuming that until the
    next release some change will be made in the library.
 
@@ -220,10 +220,10 @@ Steps necessary to Package Gnuastro for Debian.
 
 
  - It would help to use the most recent versions of packages in Debian. To
-   do that, you can update the `/etc/apt/sources.list' file. You can get
+   do that, you can update the '/etc/apt/sources.list' file. You can get
    the current releases from this webpage:
    http://ftp.debian.org/debian/. See which release is currently the
-   `testing' release and replace its name with the one that is currently
+   'testing' release and replace its name with the one that is currently
    present in that file. Afterwards, run these commands:
 
      $ sudo apt-get update
@@ -246,7 +246,7 @@ Steps necessary to Package Gnuastro for Debian.
      DEBFULLNAME="Your name"
      DEBEMAIL=your@email.address
 
-   Then add these lines to `~/.quiltrc':
+   Then add these lines to '~/.quiltrc':
 
      QUILT_PATCHES=debian/patches
      QUILT_NO_DIFF_INDEX=1
@@ -258,7 +258,7 @@ Steps necessary to Package Gnuastro for Debian.
 
 
  - If you don't already have the Git repository, clone it with the
-   following command. A `gnuastro' directory will be built, but to setup
+   following command. A 'gnuastro' directory will be built, but to setup
    the other to main branches, you'll need to go into the cloned directory
    and checkout to them manually.
 
@@ -291,8 +291,8 @@ Steps necessary to Package Gnuastro for Debian.
 
 
  - [ALPHA] Build an ASCII-armored, detached signature for the tarball with
-   this command (it will make a `.asc' file by default, so use that instead
-   of `.sig' in the two following steps).
+   this command (it will make a '.asc' file by default, so use that instead
+   of '.sig' in the two following steps).
 
      $ gpg -b --armor gnuastro-X.Y.ZZZZ-ZZZZ.tar.gz
 
@@ -311,8 +311,8 @@ Steps necessary to Package Gnuastro for Debian.
      $ export ver=A.B.CCC
 
 
- - Make a standard symbolic link to the tarball (IMPORTANT: the `dash' is
-   changed to an `underscore' and an `orig' is added), then go into the
+ - Make a standard symbolic link to the tarball (IMPORTANT: the 'dash' is
+   changed to an 'underscore' and an 'orig' is added), then go into the
    cloned directory.
 
      $ mv gnuastro-$ver-XXXX.tar.gz      gnuastro_$ver.orig.tar.gz
@@ -320,19 +320,19 @@ Steps necessary to Package Gnuastro for Debian.
      $ cd gnuastro
 
 
- - You need to checkout to the `upstream' branch, clean everything that was
+ - You need to checkout to the 'upstream' branch, clean everything that was
    in it and unpack this release's raw package source files into it as
    shown below.
 
      $ git checkout upstream
-     $ mv .git ../gnuastro-tmp-git         # We want to keep `.git'.
+     $ mv .git ../gnuastro-tmp-git         # We want to keep '.git'.
      $ rm -rf ./* ./.*                     # Delete everything.
-     $ mv ../gnuastro-tmp-git .git         # Bring back the `.git' directory.
+     $ mv ../gnuastro-tmp-git .git         # Bring back the '.git' directory.
      $ tar xf ../gnuastro_$ver.orig.tar.gz --strip-components=1
 
 
- - We now need to commit these into the `upstream' branch of the Git
-   history, tag it and run `pristine-tar' on it.
+ - We now need to commit these into the 'upstream' branch of the Git
+   history, tag it and run 'pristine-tar' on it.
 
      $ git add --all
      $ git commit -m "Upstream Gnuastro $ver"
@@ -341,15 +341,15 @@ Steps necessary to Package Gnuastro for Debian.
                     -s ../gnuastro_$ver.orig.tar.gz.asc
 
 
- - We are done with the `upstream' and `pristine-tar' branches and can
-   checkout `master' and merge with the upstream branch:
+ - We are done with the 'upstream' and 'pristine-tar' branches and can
+   checkout 'master' and merge with the upstream branch:
 
      $ git checkout master
      $ git merge upstream
 
 
  - Check the current Debian policy version and update it in
-   `debian/control'. The policy can be found here:
+   'debian/control'. The policy can be found here:
    https://www.debian.org/doc/debian-policy/
 
      $ emacs debian/control
@@ -357,35 +357,35 @@ Steps necessary to Package Gnuastro for Debian.
 
  - If the soname of the shared libraries has changed:
 
-     - Rename the file `debian/libgnuastroX.install' (set `X' to the new
+     - Rename the file 'debian/libgnuastroX.install' (set 'X' to the new
        soname).
 
-     - In `debian/control', change all the old sonames to the new value.
+     - In 'debian/control', change all the old sonames to the new value.
 
 
- - Update `debian/changelog' with all the Debian-related changes (since
+ - Update 'debian/changelog' with all the Debian-related changes (since
    merging with the upstream branch). Gnuastro's changes don't need to be
    mentioned here. If there was no major changes, just say "New upstream
    version".
 
-   IMPORTANT: An official release should have `unstable' after the
+   IMPORTANT: An official release should have 'unstable' after the
    version. But if you just want to make sure Gnuastro builds on all
-   systems for testing, it should be `experimental'.
+   systems for testing, it should be 'experimental'.
 
    When changing the state (from experimental to unstable or vice versa)
-   add the following line in `debian/changelog' (this is necessary to avoid
+   add the following line in 'debian/changelog' (this is necessary to avoid
    Lintian warnings):
 
    Experimental -> Unstable: "Switch to unstable for upstream stable release"
    Unstable -> Experimental: "Switch to experimental to prepare transition".
 
 
- - Update your version of `pbuilder':
+ - Update your version of 'pbuilder':
 
      $ sudo pbuilder update
 
 
- - Run `pdebuild' to build the package (needs sudo).
+ - Run 'pdebuild' to build the package (needs sudo).
 
      $ sudo pdebuild
 
@@ -397,7 +397,7 @@ Steps necessary to Package Gnuastro for Debian.
 
 
  - Commit the contents of the new release (should be just the contents of
-   the `debian' directory).
+   the 'debian' directory).
 
      $ git add --all
      $ git status                         # For a visual check

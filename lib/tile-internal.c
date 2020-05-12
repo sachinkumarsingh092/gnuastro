@@ -35,7 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro-internal/tile-internal.h>
 
 
-/* The main working function for `threshold_no_outlier'. The main
+/* The main working function for 'threshold_no_outlier'. The main
    purpose/problem is this: when we have channels, the qthresh values for
    each channel should be treated independently. */
 static void
@@ -56,9 +56,9 @@ tileinternal_no_outlier_work(gal_data_t *first, gal_data_t *second,
 
   /* Correct the arrays (if necessary). IMPORTANT: The datasets are
      multi-dimensional. However, when estimating the quantile, their
-     dimensionality doesn't matter (only the `size' element is checked by
-     `gal_statistics_quantile', not `ndim' or `dsize'). So we just need to
-     correct `size' if channels are to be considered. */
+     dimensionality doesn't matter (only the 'size' element is checked by
+     'gal_statistics_quantile', not 'ndim' or `dsize'). So we just need to
+     correct 'size' if channels are to be considered. */
   if(start || tottilesinch!=first->size)
     {
       /* Keep the original values for re-setting later. */
@@ -92,7 +92,7 @@ tileinternal_no_outlier_work(gal_data_t *first, gal_data_t *second,
       o = *((float *)(outlier->array));
       for(i=0;i<first->size;++i)
         /* Just note that we have blank (NaN) values, so to avoid doing a
-           NaN check with `isnan', we will check if the value is below the
+           NaN check with 'isnan', we will check if the value is below the
            quantile, if it succeeds (isn't NaN and is below the quantile),
            then we'll put it's actual value, otherwise, a NaN. */
         arr1[i] = arr1[i]<=o ? arr1[i] : NAN;
@@ -170,7 +170,7 @@ gal_tileinternal_no_outlier(gal_data_t *first, gal_data_t *second,
 
   /* A small sanity check: */
   if(first->size!=tl->tottiles)
-    error(EXIT_FAILURE, 0, "%s: `first->size' and `tl->tottiles' must have "
+    error(EXIT_FAILURE, 0, "%s: 'first->size' and 'tl->tottiles' must have "
           "the same value, but they don't: %zu, %zu", __func__, first->size,
           tl->tottiles);
 

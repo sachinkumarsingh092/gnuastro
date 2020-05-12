@@ -23,9 +23,9 @@
 
 
 ## List of programs (scripts in this directory) to install under the
-## `prefix/bin' directory (`bin_SCRIPTS'), files necessary to distribute
-## with the tarball (`EXTRA_DIST') and output files (to be cleaned with
-## `make clean).
+## 'prefix/bin' directory ('bin_SCRIPTS'), files necessary to distribute
+## with the tarball ('EXTRA_DIST') and output files (to be cleaned with
+## 'make clean').
 bin_SCRIPTS = astscript-sort-by-night
 
 EXTRA_DIST = sort-by-night.in
@@ -36,7 +36,7 @@ CLEANFILES = $(bin_SCRIPTS)
 
 
 
-## Command to do basic substitutions (anything surrounded by an `@').
+## Command to do basic substitutions (anything surrounded by an '@').
 do_subst = sed -e 's,[@]VERSION[@],$(VERSION),g' \
                -e 's,[@]SCRIPT_NAME[@],$@,g'
 

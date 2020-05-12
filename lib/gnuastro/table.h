@@ -54,7 +54,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-/* `printf' default formattings. Note that the string type shouldn't have
+/* 'printf' default formattings. Note that the string type shouldn't have
    any precision and for the width,  */
 #define GAL_TABLE_DEF_WIDTH_STR       6
 #define GAL_TABLE_DEF_WIDTH_INT       6
@@ -72,7 +72,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 /* Particular display formats for different types: Integers or floating
    point numbers can be printed in various display formats. The values here
-   are stored in `gal_data_t' when necessary to help in printing of the
+   are stored in 'gal_data_t' when necessary to help in printing of the
    data.*/
 enum gal_table_diplay_formats
 {

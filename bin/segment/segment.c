@@ -128,7 +128,7 @@ segment_initialize(struct segmentparams *p)
   p->clabel->wcs=gal_wcs_copy(p->input->wcs);
 
 
-  /* Prepare the `binary', `clabel' and `olabel' arrays. */
+  /* Prepare the 'binary', 'clabel' and 'olabel' arrays. */
   b=p->binary->array;
   o=p->olabel->array;
   f=p->input->array; cf=(c=p->clabel->array)+p->clabel->size;
@@ -210,8 +210,8 @@ segment_relab_noseg(struct clumps_thread_params *cltprm)
    have to be allocated prior to entering this function.
 
    The way to find connected objects is through an adjacency matrix. It is
-   a square matrix with a side equal to numobjs. So to see if regions `a`
-   and `b` are connected. All we have to do is to look at element
+   a square matrix with a side equal to numobjs. So to see if regions 'a'
+   and 'b' are connected. All we have to do is to look at element
    a*numobjs+b or b*numobjs+a and get the answer. Since the number of
    objects in a given region will not be too high, this is efficient. */
 static void
@@ -323,7 +323,7 @@ segment_relab_to_objects(struct clumps_thread_params *cltprm)
                 /* For easy reading. */
                 ave=sums[ii]/nums[ii];
 
-                /* In case the average is negative (only possible if `sums'
+                /* In case the average is negative (only possible if 'sums'
                    is negative), don't change the adjacency: it is already
                    initialized to zero. Note that even an area of 1 is
                    acceptable, and we put no area criteria here, because
@@ -370,18 +370,18 @@ segment_relab_to_objects(struct clumps_thread_params *cltprm)
     }
 
   /* There was no list of diffuse pixels, this happens when the user sets a
-     very high `gthresh' threshold and wants to make sure that each clump
+     very high 'gthresh' threshold and wants to make sure that each clump
      is a separate object. So we need to define the number of objects and
-     `clumptoobj' manually. */
+     'clumptoobj' manually. */
   else
     {
-      /* Allocate the `clumptoobj' array. */
+      /* Allocate the 'clumptoobj' array. */
       cltprm->clumptoobj = gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &amwidth,
                                           NULL, 1, p->cp.minmapsize,
                                           p->cp.quietmmap, NULL, NULL, NULL);
       clumptoobj = cltprm->clumptoobj->array;
 
-      /* Fill in the `clumptoobj' array with the indexs of the objects. */
+      /* Fill in the 'clumptoobj' array with the indexs of the objects. */
       for(i=0;i<amwidth;++i) clumptoobj[i]=i;
 
       /* Set the number of objects. */
@@ -487,7 +487,7 @@ segment_relab_overall(struct clumps_thread_params *cltprm)
   if(clprm->p->cp.numthreads>1)
     pthread_mutex_unlock(&clprm->labmutex);
 
-  /* Increase all the object labels by `startinglab'. */
+  /* Increase all the object labels by 'startinglab'. */
   if( onlyclumps )
     {
       if(cltprm->numtrueclumps>0)
@@ -551,7 +551,7 @@ segment_on_threads(void *in_prm)
       cltprm.numinitclumps = cltprm.numtrueclumps = cltprm.numobjects = 0;
 
 
-      /* The `topinds' array is only necessary when the user wants to
+      /* The 'topinds' array is only necessary when the user wants to
          ignore true clumps with a peak touching a river. */
       if(p->keepmaxnearriver==0)
         {
@@ -587,7 +587,7 @@ segment_on_threads(void *in_prm)
          the user has also asked for a check image, we can break out of the
          loop at that point.
 
-         Note that the array of `gal_data_t' that keeps the S/N table for
+         Note that the array of 'gal_data_t' that keeps the S/N table for
          each detection is allocated before threading starts. However, when
          the user wants to inspect the steps, this function is called
          multiple times. So we need to avoid over-writing the allocations. */
@@ -648,7 +648,7 @@ segment_on_threads(void *in_prm)
 
               /* If the user has asked for grown clumps in the clumps image
                  instead of the raw clumps, then replace the indexs in the
-                 `clabel' array is well. In this case, there will always be
+                 'clabel' array is well. In this case, there will always be
                  one "clump". */
               if(p->grownclumps)
                 {
@@ -752,7 +752,7 @@ segment_save_sn_table(struct clumps_params *clprm)
 
 
   /* Find the total number of clumps in all the initial detections. Recall
-     that the `size' values were one more than the actual number because
+     that the 'size' values were one more than the actual number because
      the labelings start from 1. */
   for(i=1;i<p->numdetections+1;++i)
     if( clprm->sn[i].size > 1 )
@@ -788,10 +788,10 @@ segment_save_sn_table(struct clumps_params *clprm)
 
 
   /* Write the comments. */
-  gal_list_str_add(&comments, "See also: `CLUMPS_ALL_DET' HDU of "
-                   "output with `--checksegmentation'.", 1);
-  if( asprintf(&msg, "S/N values of `nan': clumps smaller than "
-               "`--snminarea' of %zu.", p->snminarea)<0 )
+  gal_list_str_add(&comments, "See also: 'CLUMPS_ALL_DET' HDU of "
+                   "output with '--checksegmentation'.", 1);
+  if( asprintf(&msg, "S/N values of 'nan': clumps smaller than "
+               "'--snminarea' of %zu.", p->snminarea)<0 )
     error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_list_str_add(&comments, msg, 0);
   gal_list_str_add(&comments, "S/N of clumps over detected regions.", 1);
@@ -839,7 +839,7 @@ segment_detections(struct segmentparams *p)
 
 
   /* Initialize the necessary thread parameters. Note that since the object
-     labels begin from one, the `sn' array will have one extra element.*/
+     labels begin from one, the 'sn' array will have one extra element.*/
   clprm.p=p;
   clprm.sky0_det1=1;
   clprm.totclumps=0;
@@ -897,7 +897,7 @@ segment_detections(struct segmentparams *p)
               if(!p->cp.quiet)
                 {
                   if( asprintf(&msg, "Identified clumps over detections  "
-                               "(HDU: `%s').", demo->name)<0 )
+                               "(HDU: '%s').", demo->name)<0 )
                     error(EXIT_FAILURE, 0, "%s: asprintf allocation",
                           __func__);
                   gal_timing_report(NULL, msg, 2);
@@ -911,7 +911,7 @@ segment_detections(struct segmentparams *p)
               if(!p->cp.quiet)
                 {
                   if( asprintf(&msg, "True clumps found                  "
-                               "(HDU: `%s').", demo->name)<0 )
+                               "(HDU: '%s').", demo->name)<0 )
                     error(EXIT_FAILURE, 0, "%s: asprintf allocation",
                           __func__);
                   gal_timing_report(NULL, msg, 2);
@@ -927,7 +927,7 @@ segment_detections(struct segmentparams *p)
                   gal_timing_report(NULL, "Identify objects...",
                                     1);
                   if( asprintf(&msg, "True clumps grown                  "
-                               "(HDU: `%s').", demo->name)<0 )
+                               "(HDU: '%s').", demo->name)<0 )
                     error(EXIT_FAILURE, 0, "%s: asprintf allocation",
                           __func__);
                   gal_timing_report(NULL, msg, 2);
@@ -941,7 +941,7 @@ segment_detections(struct segmentparams *p)
               if(!p->cp.quiet)
                 {
                   if( asprintf(&msg, "Identified objects over detections "
-                               "(HDU: `%s').", demo->name)<0 )
+                               "(HDU: '%s').", demo->name)<0 )
                     error(EXIT_FAILURE, 0, "%s: asprintf allocation",
                           __func__);
                   gal_timing_report(NULL, msg, 2);
@@ -955,7 +955,7 @@ segment_detections(struct segmentparams *p)
               if(!p->cp.quiet)
                 {
                   if( asprintf(&msg, "Objects grown to cover full area   "
-                               "(HDU: `%s').", demo->name)<0 )
+                               "(HDU: '%s').", demo->name)<0 )
                     error(EXIT_FAILURE, 0, "%s: asprintf allocation",
                           __func__);
                   gal_timing_report(NULL, msg, 2);
@@ -969,7 +969,7 @@ segment_detections(struct segmentparams *p)
               if(!p->cp.quiet)
                 {
                   if( asprintf(&msg, "Clumps given their final label     "
-                               "(HDU: `%s').", demo->name)<0 )
+                               "(HDU: '%s').", demo->name)<0 )
                     error(EXIT_FAILURE, 0, "%s: asprintf allocation",
                           __func__);
                   gal_timing_report(NULL, msg, 2);
@@ -983,7 +983,7 @@ segment_detections(struct segmentparams *p)
               if(!p->cp.quiet)
                 {
                   if( asprintf(&msg, "Objects given their final label    "
-                               "(HDU: `%s').", demo->name)<0 )
+                               "(HDU: '%s').", demo->name)<0 )
                     error(EXIT_FAILURE, 0, "%s: asprintf allocation",
                           __func__);
                   gal_timing_report(NULL, msg, 2);
@@ -1136,7 +1136,7 @@ segment_output(struct segmentparams *p)
 
   /* Let the user know that the output is written. */
   if(!p->cp.quiet)
-    printf("  - Output written to `%s'.\n", p->cp.output);
+    printf("  - Output written to '%s'.\n", p->cp.output);
 }
 
 
@@ -1241,7 +1241,7 @@ segment(struct segmentparams *p)
 
 
   /* If the user wanted to check the segmentation and hasn't called
-     `continueaftercheck', then stop Segment. */
+     'continueaftercheck', then stop Segment. */
   if(p->segmentationname && !p->continueaftercheck)
     ui_abort_after_check(p, p->segmentationname, NULL,
                          "showing all segmentation steps");

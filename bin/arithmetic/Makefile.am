@@ -32,7 +32,7 @@ endif
 ## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astarithmetic
 
-## Reason for linking with `libgnu' described in `bin/TEMPLATE/Makefile.am'.
+## Reason for linking with 'libgnu' described in 'bin/TEMPLATE/Makefile.am'.
 astarithmetic_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la \
                       -lgnuastro $(MAYBE_NORPATH)
 

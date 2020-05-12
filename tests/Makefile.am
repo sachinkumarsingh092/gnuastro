@@ -22,7 +22,7 @@
 
 
 
-## Translate conditions that came from `./configure' into variables that can
+## Translate conditions that came from './configure' into variables that can
 ## be used here. This includes the programs and teh dependencies of the
 ## checks.
 ##
@@ -33,11 +33,11 @@
 ## the order that their dependence is satisfied. But that is prone to
 ## errors and a lot of problem. The user also not want to build all the
 ## programs. Also, Make allows us to work with multiple threads (with
-## `-jN') and in that case, it is vital to define the dependencies.
+## '-jN') and in that case, it is vital to define the dependencies.
 ##
 ## The output of all the tests that should be used (is recognized by
 ## Automake and will not mess the system) is the name of the test file
-## appended by a `.log'. It contains the output of the program on standard
+## appended by a '.log'. It contains the output of the program on standard
 ## output and error. THIS IS IMPORTANT: So even if the program fails, the
 ## .log file is created. The check if the input for a test exists or not
 ## should be checked in the test that depends on it, it can't be done here
@@ -223,14 +223,14 @@ export check_with_program=$(MAYBE_CHECK_WITH_PROGRAM);
 # The Gnuastro library is checked by compiling programs and linking them
 # with the library. As described in the last paragraph of the "Scripts
 # based test suites" section of the Automake manual, all targets specified
-# by `check_PROGRAMS' are compiled prior to actually running the targets of
-# `TESTS'. So they do not need to be specified as any dependency, they will
-# be present when the `.sh' based tests are run.
+# by 'check_PROGRAMS' are compiled prior to actually running the targets of
+# 'TESTS'. So they do not need to be specified as any dependency, they will
+# be present when the '.sh' based tests are run.
 
-# The `gnuastro/config.h' (needed by Gnuastro's library) is built by
-# `../lib/Makefile.am' and is only meant for outside users (to be tested
-# here). Thus (unlike the programs, which use `config.h') we need to add
-# the top build directory to the include search directories (`-I').
+# The 'gnuastro/config.h' (needed by Gnuastro's library) is built by
+# '../lib/Makefile.am' and is only meant for outside users (to be tested
+# here). Thus (unlike the programs, which use 'config.h') we need to add
+# the top build directory to the include search directories ('-I').
 LDADD = -lgnuastro $(CONFIG_LDADD)
 AM_LDFLAGS = -L\$(top_builddir)/lib
 AM_CPPFLAGS = -I\$(top_srcdir)/lib -I\$(top_builddir)/lib
@@ -270,7 +270,7 @@ EXTRA_DIST = $(TESTS) during-dev.sh buildprog/simpleio.c crop/cat.txt     \
 
 
 
-# Files that must be cleaned with `make clean'.
+# Files that must be cleaned with 'make clean'.
 CLEANFILES = *.log *.txt *.jpg *.fits *.pdf *.eps simpleio
 
 
@@ -278,7 +278,7 @@ CLEANFILES = *.log *.txt *.jpg *.fits *.pdf *.eps simpleio
 
 
 # CLEANFILES is only for files, not directories. Therefore we are using
-# Automake's extending rules to clean the temporary `.gnuastro' directory
-# that was built by the `prepconf.sh' scripot. See "Extending Automake
+# Automake's extending rules to clean the temporary '.gnuastro' directory
+# that was built by the 'prepconf.sh' scripot. See "Extending Automake
 # rules", and the "What Gets Cleaned" sections of the Automake manual.
 clean-local:; rm -rf .gnuastro

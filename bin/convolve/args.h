@@ -166,7 +166,7 @@ struct argp_option program_options[] =
       UI_KEY_DOMAIN,
       "STR",
       0,
-      "Convolution domain: `spatial', `frequency'.",
+      "Convolution domain: 'spatial', 'frequency'.",
       GAL_OPTIONS_GROUP_OPERATING_MODE,
       &p->domainstr,
       GAL_TYPE_STRING,

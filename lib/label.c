@@ -51,10 +51,10 @@ label_check_type(gal_data_t *in, uint8_t needed_type, char *variable,
                  const char *func)
 {
   if(in->type!=needed_type)
-    error(EXIT_FAILURE, 0, "%s: the `%s' dataset has `%s' type, but it "
-          "must have a `%s' type.\n\n"
-          "You can use `gal_data_copy_to_new_type' or "
-          "`gal_data_copy_to_new_type_free' to convert your input dataset "
+    error(EXIT_FAILURE, 0, "%s: the '%s' dataset has '%s' type, but it "
+          "must have a '%s' type.\n\n"
+          "You can use 'gal_data_copy_to_new_type' or "
+          "'gal_data_copy_to_new_type_free' to convert your input dataset "
           "to this type before calling this function", func, variable,
           gal_type_name(in->type, 1), gal_type_name(needed_type, 1));
 }
@@ -81,7 +81,7 @@ label_check_type(gal_data_t *in, uint8_t needed_type, char *variable,
 /****************************************************************
  *****************          Indexs           ********************
  ****************************************************************/
-/* Put the indexs of each labeled region into an array of `gal_data_t's
+/* Put the indexs of each labeled region into an array of 'gal_data_t's
    (where each element is a dataset containing the respective label's
    indexs). */
 gal_data_t *
@@ -174,7 +174,7 @@ gal_label_indexs(gal_data_t *labels, size_t numlabs, size_t minmapsize,
    values. If a certain pixel (at a certain level) has no neighbors, it is
    a local maximum and will be assigned a new label. If it has a labeled
    neighbor, it will take that label and if there is more than one
-   neighboring labeled region that pixel will be a `river` pixel.
+   neighboring labeled region that pixel will be a 'river' pixel.
 
    DON'T FORGET: SET THE FLAGS FOR CONV EQUAL TO INPUT IN SEGMENT.
 
@@ -197,10 +197,10 @@ gal_label_watershed(gal_data_t *values, gal_data_t *indexs,
   label_check_type(indexs, GAL_TYPE_SIZE_T,  "indexs", __func__);
   label_check_type(labels, GAL_TYPE_INT32,   "labels", __func__);
   if( gal_dimension_is_different(values, labels) )
-    error(EXIT_FAILURE, 0, "%s: the `values' and `labels' arguments must "
+    error(EXIT_FAILURE, 0, "%s: the 'values' and 'labels' arguments must "
           "have the same size", __func__);
   if(indexs->ndim!=1)
-    error(EXIT_FAILURE, 0, "%s: `indexs' has to be a 1D array, but it is "
+    error(EXIT_FAILURE, 0, "%s: 'indexs' has to be a 1D array, but it is "
           "%zuD", __func__, indexs->ndim);
 
 
@@ -239,8 +239,8 @@ gal_label_watershed(gal_data_t *values, gal_data_t *indexs,
 
 
   /* If the indexs aren't already sorted (by the value they correspond to),
-     sort them given indexs based on their flux (`gal_qsort_index_arr' is
-     defined as static in `gnuastro/qsort.h') */
+     sort them given indexs based on their flux ('gal_qsort_index_arr' is
+     defined as static in 'gnuastro/qsort.h') */
   if( !( (indexs->flag & GAL_DATA_FLAG_SORT_CH)
         && ( indexs->flag
              & (GAL_DATA_FLAG_SORTED_I
@@ -288,7 +288,7 @@ gal_label_watershed(gal_data_t *values, gal_data_t *indexs,
             /* A small sanity check. */
             if(Q!=NULL || cleanup!=NULL)
               error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so "
-                    "we can fix this problem. `Q' and `cleanup' should be "
+                    "we can fix this problem. 'Q' and 'cleanup' should be "
                     "NULL but while checking the equal flux regions they "
                     "aren't", __func__, PACKAGE_BUGREPORT);
 
@@ -332,10 +332,10 @@ gal_label_watershed(gal_data_t *values, gal_data_t *indexs,
 
                                     /* If this neighbor has a positive
                                        nlab, it belongs to another object,
-                                       so if `n1' has not been set for the
-                                       whole region (n1==0), put `nlab'
-                                       into `n1'. If `n1' has been set and
-                                       is different from `nlab' then this
+                                       so if 'n1' has not been set for the
+                                       whole region (n1==0), put 'nlab'
+                                       into 'n1'. If 'n1' has been set and
+                                       is different from 'nlab' then this
                                        whole equal flux region should be a
                                        wide river because it is connecting
                                        two connected regions.*/
@@ -361,7 +361,7 @@ gal_label_watershed(gal_data_t *values, gal_data_t *indexs,
                             are on the edge of the indexed region (the
                             neighbor is not in the initial list of pixels
                             to segment). When over-segmenting the noise and
-                            the detections, `label' is zero for the parts
+                            the detections, 'label' is zero for the parts
                             of the image that we are not interested in
                             here. */
                          else labs[*a]=GAL_LABEL_RIVER;
@@ -370,7 +370,7 @@ gal_label_watershed(gal_data_t *values, gal_data_t *indexs,
               }
 
             /* Set the label that is to be given to this equal flux
-               region. If `n1' was set to any value, then that label should
+               region. If 'n1' was set to any value, then that label should
                be used for the whole region. Otherwise, this is a new
                label, see the case for a non-flat region. */
             if(n1) rlab = n1;
@@ -397,7 +397,7 @@ gal_label_watershed(gal_data_t *values, gal_data_t *indexs,
            flux, so simply find the label for this object. */
         else
           {
-            /* `n1' is the label of the first labeled neighbor found, so
+            /* 'n1' is the label of the first labeled neighbor found, so
                we'll initialize it to zero. */
             n1=0;
 
@@ -410,7 +410,7 @@ gal_label_watershed(gal_data_t *values, gal_data_t *indexs,
                set it as a river pixel.*/
             GAL_DIMENSION_NEIGHBOR_OP(*a, ndim, dsize, ndim, dinc,
                {
-                 /* When `n1' has already been set as a river, there is no
+                 /* When 'n1' has already been set as a river, there is no
                     point in looking at the other neighbors. */
                  if(n1!=GAL_LABEL_RIVER)
                    {
@@ -446,7 +446,7 @@ gal_label_watershed(gal_data_t *values, gal_data_t *indexs,
                                     ? GAL_LABEL_RIVER
                                     : n1 ) )
 
-                            /* `nlab==0' (the neighbor lies in the other
+                            /* 'nlab==0' (the neighbor lies in the other
                                domain (sky or detections). To avoid the
                                different domains touching, this pixel
                                should be a river. */
@@ -458,7 +458,7 @@ gal_label_watershed(gal_data_t *values, gal_data_t *indexs,
                of its neighbors. If n1 equals zero, then this is a new
                peak, and a new label should be created.  But if n1!=0, it
                is either a river pixel (has more than one labeled neighbor
-               and has been set to `GAL_LABEL_RIVER' before) or all its
+               and has been set to 'GAL_LABEL_RIVER' before) or all its
                neighbors have the same label. In both such cases, rlab
                should be set to n1.*/
             if(n1) rlab = n1;
@@ -540,20 +540,20 @@ label_clump_significance_sanity(gal_data_t *values, gal_data_t *std,
 
   /* Type of values. */
   if( values->type!=GAL_TYPE_FLOAT32 )
-    error(EXIT_FAILURE, 0, "%s: the values dataset must have a `float' "
-          "type, but it has a `%s' type", func,
+    error(EXIT_FAILURE, 0, "%s: the values dataset must have a 'float' "
+          "type, but it has a '%s' type", func,
           gal_type_name(values->type, 1));
 
   /* Type of standard deviation. */
   if( std->type!=GAL_TYPE_FLOAT32 )
     error(EXIT_FAILURE, 0, "%s: the standard deviation dataset must have a "
-          "`float' (`float32') type, but it has a `%s' type", func,
+          "'float' ('float32') type, but it has a '%s' type", func,
           gal_type_name(std->type, 1));
 
   /* Type of labels image. */
   if( label->type!=GAL_TYPE_INT32 )
-    error(EXIT_FAILURE, 0, "%s: the labels dataset must have an `int32' "
-          "type, but it has a `%s' type", func,
+    error(EXIT_FAILURE, 0, "%s: the labels dataset must have an 'int32' "
+          "type, but it has a '%s' type", func,
           gal_type_name(label->type, 1));
 
   /* Dimentionality of the values dataset. */
@@ -564,8 +564,8 @@ label_clump_significance_sanity(gal_data_t *values, gal_data_t *std,
 
   /* Type of indexs image. */
   if( indexs->type!=GAL_TYPE_SIZE_T )
-    error(EXIT_FAILURE, 0, "%s: the indexs dataset must have a `size_t' "
-          "type, but it has a `%s' type", func,
+    error(EXIT_FAILURE, 0, "%s: the indexs dataset must have a 'size_t' "
+          "type, but it has a '%s' type", func,
           gal_type_name(label->type, 1));
 
   /* Dimensionality of indexs (must be 1D). */
@@ -590,11 +590,11 @@ label_clump_significance_sanity(gal_data_t *values, gal_data_t *std,
           "tessellation (when a tessellation is given)",
           func, std->size, values->size);
 
-  /* If the `array' and `dsize' elements of `sig' have already been set. */
+  /* If the 'array' and 'dsize' elements of 'sig' have already been set. */
   if(sig->array)
     error(EXIT_FAILURE, 0, "%s: the dataset that will contain the "
-          "significance values must have NULL pointers for its `array' "
-          "and `dsize' pointers (they will be allocated here)", func);
+          "significance values must have NULL pointers for its 'array' "
+          "and 'dsize' pointers (they will be allocated here)", func);
 
   /* See if the clumps are to be built starting from local maxima or local
      minima. */
@@ -610,7 +610,7 @@ label_clump_significance_sanity(gal_data_t *values, gal_data_t *std,
             if( isnan(second) )
               {
                 /* Note that the elements may have equal values, so for
-                   `second', we want the first non-blank AND different
+                   'second', we want the first non-blank AND different
                    value. */
                 if( f[*a]!=first )
                   second=f[*a];
@@ -622,7 +622,7 @@ label_clump_significance_sanity(gal_data_t *values, gal_data_t *std,
   while(++a<af);
 
   /* Note that if all the values are blank or there is only one value
-     covered by all the indexs, then both (or one) of `first' or `second'
+     covered by all the indexs, then both (or one) of 'first' or 'second'
      will be NAN. In either case, the significance measure is not going to
      be meaningful if we assume the clumps start from the maxima or
      minima. So we won't check if they are NaN or not.*/
@@ -649,7 +649,7 @@ enum infocols
     INFO_PEAK_RIVER,     /* Peak (min or max) river value around a clump. */
     INFO_PEAK_CENTER,    /* Peak (min or max) clump value.                */
 
-    INFO_NCOLS,          /* Total number of columns in the `info' table.  */
+    INFO_NCOLS,          /* Total number of columns in the 'info' table.  */
   };
 static void
 label_clump_significance_raw(gal_data_t *values_d, gal_data_t *std_d,
@@ -683,7 +683,7 @@ label_clump_significance_raw(gal_data_t *values_d, gal_data_t *std_d,
             /* Add this pixel to this clump's area. */
             ++row[ INFO_INAREA ];
 
-            /* In the loop `INFO_INAREA' is just the pixel counter of this
+            /* In the loop 'INFO_INAREA' is just the pixel counter of this
                clump. The pixels are sorted by flux (decreasing for
                positive clumps and increasing for negative). So the second
                extremum value is just the second pixel of the clump. */
@@ -697,16 +697,16 @@ label_clump_significance_raw(gal_data_t *values_d, gal_data_t *std_d,
           {
             /* We are on a river pixel. So the value of this pixel has to
                be added to any of the clumps in touches. But since it might
-               touch a labeled region more than once, we use `ngblabs' to
+               touch a labeled region more than once, we use 'ngblabs' to
                keep track of which label we have already added its value
-               to. `ii` is the number of different labels this river pixel
-               has already been considered for. `ngblabs' will keep the list
+               to. 'ii' is the number of different labels this river pixel
+               has already been considered for. 'ngblabs' will keep the list
                labels. */
             ii=0;
             memset(ngblabs, 0, nngb*sizeof *ngblabs);
 
             /* Look into the 8-connected neighbors (recall that a
-               connectivity of `ndim' means all pixels touching it (even on
+               connectivity of 'ndim' means all pixels touching it (even on
                one vertice). */
             GAL_DIMENSION_NEIGHBOR_OP(*a, ndim, dsize, ndim, dinc, {
                 /* This neighbor's label. */
@@ -784,7 +784,7 @@ gal_label_clump_significance(gal_data_t *values, gal_data_t *std,
 
   /* Allocate the arrays to keep the final significance measure (and
      possibly the indexs). */
-  sig->ndim  = 1;                        /* Depends on `cltprm->sn' */
+  sig->ndim  = 1;                        /* Depends on 'cltprm->sn' */
   sig->type  = GAL_TYPE_FLOAT32;
   if(sig->dsize==NULL)
     sig->dsize = gal_pointer_allocate(GAL_TYPE_SIZE_T, 1, 0, __func__,
@@ -823,7 +823,7 @@ gal_label_clump_significance(gal_data_t *values, gal_data_t *std,
          for this clump, then do the measurement. */
       if( row[ INFO_INAREA ]>minarea && row[ INFO_RIVAREA ])
         {
-          /* Set the index to write the values. If `keepsmall' is not
+          /* Set the index to write the values. If 'keepsmall' is not
              called, we don't care about the IDs of the clumps anymore, so
              store the signal-to-noise ratios contiguously. Note that
              counter will always be smaller and equal to i. */
@@ -908,7 +908,7 @@ gal_label_grow_indexs(gal_data_t *labels, gal_data_t *indexs, int withrivers,
   label_check_type(indexs, GAL_TYPE_SIZE_T, "indexs", __func__);
   label_check_type(labels, GAL_TYPE_INT32,  "labels", __func__);
   if(indexs->ndim!=1)
-    error(EXIT_FAILURE, 0, "%s: `indexs' has to be a 1D array, but it is "
+    error(EXIT_FAILURE, 0, "%s: 'indexs' has to be a 1D array, but it is "
           "%zuD", __func__, indexs->ndim);
 
   /* The basic idea is this: after growing, not all the blank pixels are
@@ -920,22 +920,22 @@ gal_label_grow_indexs(gal_data_t *labels, gal_data_t *indexs, int withrivers,
      pixels left to fill in this round (thisround) equals the number of
      blanks.
 
-     To start the loop, we set `thisround' to one more than the number of
+     To start the loop, we set 'thisround' to one more than the number of
      indexed pixels. Note that it will be corrected immediately after the
-     loop has started, it is just important to pass the `while'. */
+     loop has started, it is just important to pass the 'while'. */
   thisround=ninds+1;
   while( thisround > ninds )
     {
-      /* `thisround' will keep the number of pixels to be inspected in this
-         round. `ninds' will count the number of pixels left without a
-         label by the end of this round. Since `ninds' comes from the
+      /* 'thisround' will keep the number of pixels to be inspected in this
+         round. 'ninds' will count the number of pixels left without a
+         label by the end of this round. Since 'ninds' comes from the
          previous loop (or outside, for the first round) it has to be saved
-         in `thisround' to begin counting a fresh. */
+         in 'thisround' to begin counting a fresh. */
       thisround=ninds;
       ninds=0;
 
-      /* Go over all the available indexs. NOTE: while the `indexs->array'
-         pointer remains unchanged, `indexs->size' can/will change (get
+      /* Go over all the available indexs. NOTE: while the 'indexs->array'
+         pointer remains unchanged, 'indexs->size' can/will change (get
          smaller) in every loop. */
       sf = (s=indexs->array) + indexs->size;
       do
@@ -946,7 +946,7 @@ gal_label_grow_indexs(gal_data_t *labels, gal_data_t *indexs, int withrivers,
 
           /* Check the neighbors of this pixel. Note that since this
              macro has multiple loops within it, we can't use
-             break. We'll use the `searchngb' variable instead. */
+             break. We'll use the 'searchngb' variable instead. */
           searchngb=1;
           GAL_DIMENSION_NEIGHBOR_OP(*s, labels->ndim, labels->dsize,
             connectivity, dinc,
@@ -972,7 +972,7 @@ gal_label_grow_indexs(gal_data_t *labels, gal_data_t *indexs, int withrivers,
                           n1=nlab;
 
                           /* If we want to completely fill in the region
-                             (`withrivers==0'), then there is no point in
+                             ('withrivers==0'), then there is no point in
                              looking in other neighbors, the first
                              neighbor we find, is the one we'll use. */
                           if(!withrivers) searchngb=0;
@@ -991,15 +991,15 @@ gal_label_grow_indexs(gal_data_t *labels, gal_data_t *indexs, int withrivers,
              The first one means that no neighbors were found and this
              pixel should be kept for the next loop (we'll be growing the
              objects pixel-layer by pixel-layer). In the other two cases,
-             we just need to write in the value of `n1'. */
+             we just need to write in the value of 'n1'. */
           if(n1)
             {
               /* Set the label. */
               olabel[*s]=n1;
 
               /* If this pixel is a river (can only happen when
-                 `withrivers' is zero), keep it in the loop, because we
-                 want the `indexs' dataset to contain all non-positive
+                 'withrivers' is zero), keep it in the loop, because we
+                 want the 'indexs' dataset to contain all non-positive
                  (non-labeled) pixels, including rivers. */
               if(n1==GAL_LABEL_RIVER)
                 iarray[ ninds++ ] = *s;
@@ -1007,7 +1007,7 @@ gal_label_grow_indexs(gal_data_t *labels, gal_data_t *indexs, int withrivers,
           else
             iarray[ ninds++ ] = *s;
 
-          /* Correct the size of the `indexs' dataset. */
+          /* Correct the size of the 'indexs' dataset. */
           indexs->size = indexs->dsize[0] = ninds;
         }
       while(++s<sf);

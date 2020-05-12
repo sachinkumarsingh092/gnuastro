@@ -102,7 +102,7 @@ threshold_apply_on_thread(void *in_prm)
               tile->block=p->conv;
             }
 
-          /* Apply the threshold: When the `>' comparison fails, it can be
+          /* Apply the threshold: When the '>' comparison fails, it can be
              either because the pixel was actually smaller than the
              threshold, or that it was a NaN value. In the first case,
              return 0, in the second, return a blank value.
@@ -142,7 +142,7 @@ threshold_apply_on_thread(void *in_prm)
         default:
           error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s so we "
                 "can address the problem. A value of %d had for "
-                "`taprm->kind' is not valid", __func__, PACKAGE_BUGREPORT,
+                "'taprm->kind' is not valid", __func__, PACKAGE_BUGREPORT,
                 taprm->kind);
         }
     }
@@ -219,10 +219,10 @@ threshold_write_sn_table(struct noisechiselparams *p, gal_data_t *insn,
   gal_table_comments_add_intro(&comments, PROGRAM_STRING, &p->rawtime);
 
 
-  /* Write the table. Note that we'll set the `dontdelete' argument to 0
+  /* Write the table. Note that we'll set the 'dontdelete' argument to 0
      because when the output is a FITS table, we want all the tables in one
      FITS file. We have already deleted any existing file with the same
-     name in `ui_set_output_names'.*/
+     name in 'ui_set_output_names'.*/
   gal_table_write(cols, comments, p->cp.tableformat, filename, extname, 0);
 
 
@@ -264,13 +264,13 @@ threshold_interp_smooth(struct noisechiselparams *p, gal_data_t **first,
 
   /* A small sanity check. */
   if( (*first)->next )
-    error(EXIT_FAILURE, 0, "%s: `first' must not have any `next' pointer.",
+    error(EXIT_FAILURE, 0, "%s: 'first' must not have any 'next' pointer.",
           __func__);
   if( (*second)->next )
-    error(EXIT_FAILURE, 0, "%s: `second' must not have any `next' pointer.",
+    error(EXIT_FAILURE, 0, "%s: 'second' must not have any 'next' pointer.",
           __func__);
   if( third && (*third)->next )
-    error(EXIT_FAILURE, 0, "%s: `third' must not have any `next' pointer.",
+    error(EXIT_FAILURE, 0, "%s: 'third' must not have any 'next' pointer.",
           __func__);
 
   /* Do the interpolation of both arrays. */
@@ -408,7 +408,7 @@ qthresh_on_tile(void *in_prm)
   for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
     {
       /* Re-initialize the usage array's space (will be changed in
-         `gal_data_copy_to_allocated' for each tile). */
+         'gal_data_copy_to_allocated' for each tile). */
       usage->ndim=ndim;
       usage->size=p->maxtcontig;
       memcpy(usage->dsize, p->maxtsize, ndim*sizeof *p->maxtsize);
@@ -421,7 +421,7 @@ qthresh_on_tile(void *in_prm)
 
       /* Temporarily change the tile's pointers so we can do the work on
          the convolved image, then copy the desired contents into the
-         already allocated `usage' array. */
+         already allocated 'usage' array. */
       tarray=tile->array; tblock=tile->block;
       tile->array=gal_tile_block_relative_to_other(tile, meanconv);
       tile->block=meanconv;
@@ -432,7 +432,7 @@ qthresh_on_tile(void *in_prm)
 
       /* Find the mean's quantile on this tile, note that we have already
          copied the tile's dataset to a newly allocated place. So we have
-         set the `inplace' flag to `1' to avoid extra allocation. */
+         set the 'inplace' flag to '1' to avoid extra allocation. */
       mean=gal_statistics_mean(usage);
       num=gal_statistics_number(usage);
       mean=gal_data_copy_to_new_type_free(mean, usage->type);
@@ -464,7 +464,7 @@ qthresh_on_tile(void *in_prm)
             }
 
           /* Get the erosion quantile for this tile and save it. Note that
-             the type of `qvalue' is the same as the input dataset. */
+             the type of 'qvalue' is the same as the input dataset. */
           qvalue=gal_statistics_quantile(usage, p->qthresh, 1);
           memcpy(gal_pointer_increment(qprm->erode_th->array, tind, type),
                  qvalue->array, twidth);
@@ -529,9 +529,9 @@ threshold_good_error(size_t number, int before0_after1, size_t interpnumngb)
                   "(where the number may decrease even further).");
   char *in3 = ( before0_after1
                 ? "\n"
-                  "  - (slightly) Increase `--outliersclip' to reject less "
+                  "  - (slightly) Increase '--outliersclip' to reject less "
                   "as outliers.\n"
-                  "  - (slightly) Increase `--outliersigma' to reject less "
+                  "  - (slightly) Increase '--outliersigma' to reject less "
                   "as outliers.\n"
                 : "\n");
 
@@ -539,7 +539,7 @@ threshold_good_error(size_t number, int before0_after1, size_t interpnumngb)
   error(EXIT_FAILURE, 0, "%zu tiles usable %s!\n\n"
 
         "This is smaller than the requested minimum value of %zu (value to "
-        "the `--interpnumngb' option). %s\n\n"
+        "the '--interpnumngb' option). %s\n\n"
 
         "There are several ways to address the problem. The best and most "
         "highly recommended is to use a larger input if possible (when the "
@@ -548,23 +548,23 @@ threshold_good_error(size_t number, int before0_after1, size_t interpnumngb)
         "parameters mentioned below in the respective order (and therefore "
         "cause scatter/inaccuracy in the final result). Hence its best to "
         "not loosen them too much (recall that you can see all the option "
-        "values to Gnuastro's programs by appending `-P' to the end of your "
+        "values to Gnuastro's programs by appending '-P' to the end of your "
         "command).\n"
-        "  - (slightly) Decrease `--tilesize' so your tile-grid has more "
+        "  - (slightly) Decrease '--tilesize' so your tile-grid has more "
         "tiles.\n"
-        "  - (slightly) Increase `--meanmedqdiff' to accept more tiles.%s"
-        "  - (slightly) Decrease `--interpnumngb' to be less than %zu.\n\n"
+        "  - (slightly) Increase '--meanmedqdiff' to accept more tiles.%s"
+        "  - (slightly) Decrease '--interpnumngb' to be less than %zu.\n\n"
 
         "---- Tip ----\n"
-        "Append your command with `--checkqthresh' to see the "
+        "Append your command with '--checkqthresh' to see the "
         "successful tiles in relation with this dataset's contents "
         "before this crash. A visual inspection will greatly help in "
         "finding the cause/solution for this particular dataset (note "
-        "that the output of `--checkqthresh' is a multi-extension FITS "
+        "that the output of '--checkqthresh' is a multi-extension FITS "
         "file).\n\n"
         "To better understand this important step, please run the "
-        "following command (press `SPACE'/arrow-keys to navigate and "
-        "`Q' to return back to the command-line):\n\n"
+        "following command (press 'SPACE'/arrow-keys to navigate and "
+        "'Q' to return back to the command-line):\n\n"
         "    $ info gnuastro \"Quantifying signal in a tile\"\n", number,
         in1, interpnumngb, in2, in3, number);
 }
@@ -590,9 +590,9 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
 
 
   /* Add image to check image if requested. If the user has asked for
-     `oneelempertile', then the size of values is not going to be the same
+     'oneelempertile', then the size of values is not going to be the same
      as the input, making it hard to inspect visually. So we'll only put
-     the full input when `oneelempertile' isn't requested. */
+     the full input when 'oneelempertile' isn't requested. */
   if(p->qthreshname && !tl->oneelempertile)
     {
       gal_fits_img_write(p->conv ? p->conv : p->input, p->qthreshname, NULL,
@@ -626,7 +626,7 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
 
   /* Find the threshold on each tile, free the temporary processing space
      and set the blank flag on both. Since they have the same blank
-     elements, it is only necessary to check one (with the `updateflag'
+     elements, it is only necessary to check one (with the 'updateflag'
      value set to 1), then update the next. */
   qprm.p=p;
   gal_threads_spin_off(qthresh_on_tile, &qprm, tl->tottiles, cp->numthreads);
@@ -716,7 +716,7 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
 
 
   /* If the user wanted to check the threshold and hasn't called
-     `continueaftercheck', then stop NoiseChisel. */
+     'continueaftercheck', then stop NoiseChisel. */
   if(p->qthreshname && !p->continueaftercheck)
     ui_abort_after_check(p, p->qthreshname, NULL, "quantile threshold check");
 }

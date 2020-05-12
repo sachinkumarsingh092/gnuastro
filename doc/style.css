@@ -140,11 +140,11 @@ p{
 
 
 /* Select all paragraphs that must not be indented. Some of them don't need
-   any `:first-of-type' because:
+   any ':first-of-type' because:
 
-    - The `header's have only one <p> in the HTMLs.
+    - The 'header's have only one <p> in the HTMLs.
 
-    - All `<p>'s in the `.footnote's and `.bottom-links's must have no
+    - All '<p>'s in the '.footnote's and '.bottom-links's must have no
       indentation, not just the first ones. */
 .header p,
 .footnote p,

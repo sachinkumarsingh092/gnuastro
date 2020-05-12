@@ -173,18 +173,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
 {
   struct cropparams *p = state->input;
 
-  /* Pass `gal_options_common_params' into the child parser.  */
+  /* Pass 'gal_options_common_params' into the child parser.  */
   state->child_inputs[0] = &p->cp;
 
   /* In case the user incorrectly uses the equal sign (for example
-     with a short format or with space in the long format, then `arg`
+     with a short format or with space in the long format, then 'arg'
      start with (if the short version was called) or be (if the long
      version was called with a space) the equal sign. So, here we
      check if the first character of arg is the equal sign, then the
      user is warned and the program is stopped: */
   if(arg && arg[0]=='=')
-    argp_error(state, "incorrect use of the equal sign (`=`). For short "
-               "options, `=` should not be used and for long options, "
+    argp_error(state, "incorrect use of the equal sign ('='). For short "
+               "options, '=' should not be used and for long options, "
                "there should be no space between the option, equal sign "
                "and value");
 
@@ -229,14 +229,14 @@ ui_parse_coordinate_mode(struct argp_option *option, char *arg,
       if      (!strcmp(arg, "img")) *(int *)(option->value)=IMGCROP_MODE_IMG;
       else if (!strcmp(arg, "wcs")) *(int *)(option->value)=IMGCROP_MODE_WCS;
       else
-        error_at_line(EXIT_FAILURE, 0, filename, lineno, "`%s' (value to "
-                      "`--mode') not recognized as an input mode. "
-                      "Recognized values are `img' and `wcs'. This option "
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "'%s' (value to "
+                      "'--mode') not recognized as an input mode. "
+                      "Recognized values are 'img' and 'wcs'. This option "
                       "is necessary to identify the nature of your input "
                       "coordinates.\n\n"
                       "Please run the following command for more "
-                      "information (press the `SPACE' key to go down and "
-                      "`q' to return to the command-line):\n\n"
+                      "information (press the 'SPACE' key to go down and "
+                      "'q' to return to the command-line):\n\n"
                       "    $ info gnuastro \"Crop modes\"\n", arg);
       return NULL;
     }
@@ -265,7 +265,7 @@ ui_parse_coordinate_mode(struct argp_option *option, char *arg,
 /***************       Sanity Check         *******************/
 /**************************************************************/
 /* Read and check ONLY the options. When arguments are involved, do the
-   check in `ui_check_options_and_arguments'. */
+   check in 'ui_check_options_and_arguments'. */
 static void
 ui_read_check_only_options(struct cropparams *p)
 {
@@ -281,8 +281,8 @@ ui_read_check_only_options(struct cropparams *p)
     {
     case 0:
       error(EXIT_FAILURE, 0, "no crop definition. You can use any of the "
-            "following options to define the crop(s): `--center', "
-            "`--catalog', `--section', or `--polygon'. Please run this "
+            "following options to define the crop(s): '--center', "
+            "'--catalog', '--section', or '--polygon'. Please run this "
             "command for more information:\n\n"
             "    $ info gnuastro \"Crop modes\"\n");
     case 1:
@@ -293,10 +293,10 @@ ui_read_check_only_options(struct cropparams *p)
             "run, only one crop definition is acceptable on the "
             "command-line or in configuration files. You have called: "
             "%s%s%s%s\b\b.",
-            p->center!=NULL  ? "`--center', " : "",
-            p->catname!=NULL ? "`--catalog', " : "",
-            p->section!=NULL ? "`--section', " : "",
-            p->polygon!=NULL ? "`--polygon', " : "");
+            p->center!=NULL  ? "'--center', " : "",
+            p->catname!=NULL ? "'--catalog', " : "",
+            p->section!=NULL ? "'--section', " : "",
+            p->polygon!=NULL ? "'--polygon', " : "");
     }
 
 
@@ -306,7 +306,7 @@ ui_read_check_only_options(struct cropparams *p)
       darray=p->width->array;
       for(i=0;i<p->width->size;++i)
         if(darray[i]<=0.0f)
-          error(EXIT_FAILURE, 0, "%g is <=0. The values to the `--width' "
+          error(EXIT_FAILURE, 0, "%g is <=0. The values to the '--width' "
                 "option must be larger than zero. %g is input number %d to "
                 "this option", darray[i], darray[i], i+1);
     }
@@ -317,23 +317,23 @@ ui_read_check_only_options(struct cropparams *p)
     {
       /* We only want a single number. */
       if(p->incheckcenter->size>1)
-        error(EXIT_FAILURE, 0, "%zu values given to `--checkcenter'. This "
+        error(EXIT_FAILURE, 0, "%zu values given to '--checkcenter'. This "
               "option only takes one value currently",
               p->incheckcenter->size);
 
       darray=p->incheckcenter->array;
       if(*darray<0.0f)
         error(EXIT_FAILURE, 0, "negative value (%f) given to "
-              "`--checkcenter'. This option only takes positive values",
+              "'--checkcenter'. This option only takes positive values",
               *darray);
     }
 
 
   /* Section is currently only defined in Image mode. */
   if(p->section && p->mode!=IMGCROP_MODE_IMG)
-    error(EXIT_FAILURE, 0, "The `--section' option is only available in "
+    error(EXIT_FAILURE, 0, "The '--section' option is only available in "
           "image coordinate mode, currently it doesn't work with WCS mode. "
-          "Please run with `--mode=img' and if necessary, change the "
+          "Please run with '--mode=img' and if necessary, change the "
           "values accordingly");
 
 
@@ -343,15 +343,15 @@ ui_read_check_only_options(struct cropparams *p)
       /* If the searchin option has been given. */
       if(p->cp.searchin==GAL_TABLE_SEARCH_INVALID)
         error(EXIT_FAILURE, 0, "%s: no field specified to search for "
-              "columns. Please use the `--searchin' option to specify "
-              "which column meta-data you would like to search in: `name', "
-              "`unit' and `comment'. You may also select columns by their "
+              "columns. Please use the '--searchin' option to specify "
+              "which column meta-data you would like to search in: 'name', "
+              "'unit' and 'comment'. You may also select columns by their "
               "number, which won't use this option, but for complentess its "
               "best for this option to have a value", p->catname);
 
       /* If it is a FITS file, we need the HDU. */
       if( gal_fits_name_is_fits(p->catname) && p->cathdu==NULL )
-        error(EXIT_FAILURE, 0, "%s: no hdu given. Please use the `--cathdu' "
+        error(EXIT_FAILURE, 0, "%s: no hdu given. Please use the '--cathdu' "
               "option to specify which extension contains the table",
               p->catname);
 
@@ -360,7 +360,7 @@ ui_read_check_only_options(struct cropparams *p)
          given, so we only need to check one of the two in each couple. */
       if(p->coordcol==NULL)
         error(EXIT_FAILURE, 0, "no crop center columns given to read from "
-              "the input catalog (`%s'). Please use `--coordcol' several "
+              "the input catalog ('%s'). Please use '--coordcol' several "
               "times (depending on dimensionality) to specify the column "
               "keeping the center position the respective dimension.\n\n"
               "For more information on how to select columns in Gnuastro, "
@@ -383,7 +383,7 @@ ui_read_check_only_options(struct cropparams *p)
         error(EXIT_FAILURE, 0, "a polygon has to have 3 or more vertices, "
               "you have only given %zu", p->nvertices);
       if(p->polygonout && p->numin>1)
-        error(EXIT_FAILURE, 0, "currently in WCS mode, `--polygonout' can "
+        error(EXIT_FAILURE, 0, "currently in WCS mode, '--polygonout' can "
               "only be set to zero when there is one image, you have given "
               "%zu images. For multiple images the region will be very "
               "large. It is best if you first crop out the larger region "
@@ -406,7 +406,7 @@ ui_read_check_only_options(struct cropparams *p)
 
   /* If we are in WCS mode, noblanks must be off */
   if(p->mode==IMGCROP_MODE_WCS && p->noblank)
-    error(EXIT_FAILURE, 0, "`--noblanks` (`-b`) is only for image mode. "
+    error(EXIT_FAILURE, 0, "'--noblanks' ('-b') is only for image mode. "
           "You have called it with WCS mode");
 }
 
@@ -424,8 +424,8 @@ ui_check_options_and_arguments(struct cropparams *p)
   /* Make sure that a HDU is also given. */
   if(p->cp.hdu==NULL )
     error(EXIT_FAILURE, 0, "no HDU specified. When the input is a FITS "
-          "file, a HDU must also be specified, you can use the `--hdu' "
-          "(`-h') option and give it the HDU number (starting from "
+          "file, a HDU must also be specified, you can use the '--hdu' "
+          "('-h') option and give it the HDU number (starting from "
           "zero), extension name, or anything acceptable by CFITSIO");
 
   /* If in image mode, there should only be one input image. */
@@ -442,14 +442,14 @@ ui_check_options_and_arguments(struct cropparams *p)
   if(p->catname)
     {
       /* When multiple threads need to access a file, CFITSIO needs to be
-         configured with the `--enable-reentrant` option and we can only
-         know from the `fits_is_reentrant' function that came from CFITSIO
+         configured with the '--enable-reentrant' option and we can only
+         know from the 'fits_is_reentrant' function that came from CFITSIO
          version 3.30. */
 #if GAL_CONFIG_HAVE_FITS_IS_REENTRANT == 1
       if(p->cp.numthreads>1 && fits_is_reentrant()==0)
         {
           fprintf(stderr, "WARNING: CFITSIO was not configured with the "
-                  "`--enable-reentrant' option but you have asked to crop "
+                  "'--enable-reentrant' option but you have asked to crop "
                   "on %zu threads. Therefore only one thread will be used.\n\n"
                   "Please run the following command to learn more about "
                   "configuring CFITSIO:\n\n"
@@ -460,11 +460,11 @@ ui_check_options_and_arguments(struct cropparams *p)
       if(p->cp.numthreads>1)
         {
           fprintf(stderr, "WARNING: the installed CFITSIO version doesn't "
-                  "have `fits_is_reentrant' function (it is older than "
+                  "have 'fits_is_reentrant' function (it is older than "
                   "version 3.30). But you have asked to crop on %zu threads."
                   "Therefore only one thread will be used.\n\n"
                   "To avoid this warning, you can set the number of threads "
-                  "to one with `-N1' or update your installation of CFITSIO.",
+                  "to one with '-N1' or update your installation of CFITSIO.",
                   p->cp.numthreads);
           p->cp.numthreads=1;
         }
@@ -516,13 +516,13 @@ ui_set_img_sizes(struct cropparams *p)
   /* Make sure a width value is actually given. */
   if(p->width==NULL)
     error(EXIT_FAILURE, 0, "no crop width specified. When crops are "
-          "defined by their center (with `--center' or `--catalog') a "
-          "width is necessary (using the `--width' option)");
+          "defined by their center (with '--center' or '--catalog') a "
+          "width is necessary (using the '--width' option)");
 
   /* Make sure that the width array only has one element or the same number
      of elements as the input's dimensions. */
   if(p->width->size!=ndim && p->width->size!=1)
-    error(EXIT_FAILURE, 0, "%zu values give to `--width', but input is %zu "
+    error(EXIT_FAILURE, 0, "%zu values give to '--width', but input is %zu "
           "dimensions. It can only take either one value (same width in all "
           "dimensions), or the same number as the input's dimensions",
           p->width->size, ndim);
@@ -563,7 +563,7 @@ ui_set_img_sizes(struct cropparams *p)
                   "You can do the conversion to the dataset's WCS units "
                   "prior to calling Crop. Alternatively, you can specify "
                   "all the coordinates/sizes in image (not WCS) units and "
-                  "use the `--mode=img' option", warray[i], i+1, pwidth,
+                  "use the '--mode=img' option", warray[i], i+1, pwidth,
                   p->pixscale[i]);
 
           /* Write the single valued width in WCS and the image width for
@@ -610,7 +610,7 @@ ui_set_img_sizes(struct cropparams *p)
       /* Convert the floating point value to an integer. */
       p->checkcenter=GAL_DIMENSION_FLT_TO_INT(pcheckcenter);
 
-      /* If `checkcenter' isn't zero, but is even, convert it to an odd
+      /* If 'checkcenter' isn't zero, but is even, convert it to an odd
          number (so the actual center can be checked). */
       if(p->checkcenter && p->checkcenter%2==0) p->checkcenter += 1;
     }
@@ -641,9 +641,9 @@ ui_read_cols(struct cropparams *p)
          as the number of dimensions in the input dataset(s). */
       ncoordcols=gal_list_str_number(p->coordcol);
       if( ncoordcols < ndim)
-        error(EXIT_FAILURE, 0, "`--coordcol' was called %zu times, but the "
+        error(EXIT_FAILURE, 0, "'--coordcol' was called %zu times, but the "
               "input dataset%s %zu dimensions. Recall that through "
-              "`--coordcol' you are specifying the columns containing the "
+              "'--coordcol' you are specifying the columns containing the "
               "coordinates of the center of the crop in a catalog",
               ncoordcols, (p->numin==1?" has":"s have"), ndim);
 
@@ -652,7 +652,7 @@ ui_read_cols(struct cropparams *p)
       else if( ncoordcols > ndim )
         {
           /* Go over the columns find the last, but first initialize the
-             two (`lastcolstr' to avoid compiler warnings). */
+             two ('lastcolstr' to avoid compiler warnings). */
           lastcolstr=extracolstr=p->coordcol;
           for(i=0;i<ndim;++i)
             {
@@ -663,7 +663,7 @@ ui_read_cols(struct cropparams *p)
               extracolstr=extracolstr->next;
             }
 
-          /* Set the `next' element of the last node to NULL and free the
+          /* Set the 'next' element of the last node to NULL and free the
              extra ones. */
           lastcolstr->next=NULL;
           gal_list_str_free(extracolstr, 1);
@@ -673,7 +673,7 @@ ui_read_cols(struct cropparams *p)
     error(EXIT_FAILURE, 0, "no coordinate columns specified. When a catalog"
           "is given, it is necessary to identify which columns identify "
           "the coordinate values in which dimension.\n\n"
-          "You can do this by calling `--coordcol' multiple times, the "
+          "You can do this by calling '--coordcol' multiple times, the "
           "order must be in the same order as the input's dimensions. "
           "For more information on how to select columns in Gnuastro, "
           "please run the following command:\n\n"
@@ -711,7 +711,7 @@ ui_read_cols(struct cropparams *p)
     gal_tableintern_error_col_selection(p->catname, p->cathdu, "too many "
                                         "columns were selected by the given "
                                         "values to the options ending in "
-                                        "`col'.");
+                                        "'col'.");
 
 
   /* Put the information in each column in the proper place. */
@@ -747,7 +747,7 @@ ui_read_cols(struct cropparams *p)
         }
 
       /* Sanity check and clean up.  Note that it might happen that the
-         input structure is already freed. In that case, `corrtype' will be
+         input structure is already freed. In that case, 'corrtype' will be
          NULL. */
       if(corrtype)
         {
@@ -759,7 +759,7 @@ ui_read_cols(struct cropparams *p)
                   colname);
 
           /* Free the unnecessary sturcture information. The correct-type
-             (`corrtype') data structure's array is necessary for later
+             ('corrtype') data structure's array is necessary for later
              steps, so its pointer has been copied in the main program's
              structure. Hence, we should set the structure's pointer to
              NULL so the important data isn't freed.*/
@@ -784,7 +784,7 @@ ui_prepare_center(struct cropparams *p)
   errno=0;
   p->centercoords=malloc(ndim*sizeof *p->centercoords);
   if( p->centercoords==NULL )
-    error(EXIT_FAILURE, 0, "%s: %zu bytes for `p->centercoords'",
+    error(EXIT_FAILURE, 0, "%s: %zu bytes for 'p->centercoords'",
           __func__, ndim*sizeof *p->centercoords);
 
 
@@ -904,7 +904,7 @@ ui_preparations(struct cropparams *p)
           error(EXIT_FAILURE, 0, "the WCS structure of %s (hdu: %s) "
                 "image is not recognized. So WCS mode cannot be used "
                 "as input coordinates. You can try with pixel coordinates "
-                "with `--mode=img'", img->name, p->cp.hdu);
+                "with '--mode=img'", img->name, p->cp.hdu);
       fits_close_file(tmpfits, &status);
       gal_fits_io_error(status, NULL);
 
@@ -927,17 +927,17 @@ ui_preparations(struct cropparams *p)
              correspond to the dimensionality of the data. */
           if(p->center && p->center->size!=firstndim)
             error(EXIT_FAILURE, 0, "%s (hdu %s) has %zu dimensions, but "
-                  "%zu coordinates were given to `--center'", img->name,
+                  "%zu coordinates were given to '--center'", img->name,
                   p->cp.hdu, firstndim, p->center->size);
         }
       else
         {
           if(firsttype!=p->type)
-            error(EXIT_FAILURE, 0, "%s: type is `%s' while previous input(s) "
-                  "were `%s' type. All inputs must have the same pixel data "
+            error(EXIT_FAILURE, 0, "%s: type is '%s' while previous input(s) "
+                  "were '%s' type. All inputs must have the same pixel data "
                   "type.\n\nYou can use Gnuastro's Arithmetic program to "
-                  "convert `%s' to `%s', please run this command for more "
-                  "information (press `SPACE' for going down and `q' to "
+                  "convert '%s' to '%s', please run this command for more "
+                  "information (press 'SPACE' for going down and 'q' to "
                   "return to the command-line):\n\n"
                   "    $ info Arithmetic\n",
                   img->name, gal_type_name(p->type, 1),
@@ -962,12 +962,12 @@ ui_preparations(struct cropparams *p)
           p->imgs->name, p->imgs->ndim);
 
 
-  /* Unify central crop methods into `p->centercoords'. */
+  /* Unify central crop methods into 'p->centercoords'. */
   if(p->catname || p->center)
     ui_prepare_center(p);
 
 
-  /* `ui_read_cols' set the number of output crops when a catalog was
+  /* 'ui_read_cols' set the number of output crops when a catalog was
      given, in all other cases, we only have one output. */
   if(p->catname==NULL) p->numout=1;
 
@@ -1007,9 +1007,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct cropparams *p)
   struct gal_options_common_params *cp=&p->cp;
 
 
-  /* Include the parameters necessary for argp from this program (`args.h')
-     and for the common options to all Gnuastro (`commonopts.h'). We want
-     to directly put the pointers to the fields in `p' and `cp', so we are
+  /* Include the parameters necessary for argp from this program ('args.h')
+     and for the common options to all Gnuastro ('commonopts.h'). We want
+     to directly put the pointers to the fields in 'p' and 'cp', so we are
      simply including the header here to not have to use long macros in
      those headers which make them hard to read and modify. This also helps
      in having a clean environment: everything in those headers is only

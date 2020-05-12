@@ -41,7 +41,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Write the blank value of the type into an already allocate space. Note
-   that for STRINGS, pointer should actually be `char **'. */
+   that for STRINGS, pointer should actually be 'char **'. */
 void
 gal_blank_write(void *ptr, uint8_t type)
 {
@@ -134,7 +134,7 @@ gal_blank_initialize_array(void *array, size_t size, uint8_t type)
 
 
 /* Print the blank value as a string. For the integer types, we'll use the
-   PRIxNN keywords of `inttypes.h' (which is imported into Gnuastro from
+   PRIxNN keywords of 'inttypes.h' (which is imported into Gnuastro from
    Gnulib, so we don't necessarily rely on the host system having it). */
 char *
 gal_blank_as_string(uint8_t type, int width)
@@ -364,13 +364,13 @@ gal_blank_is(void *pointer, uint8_t type)
 
 /* Return 1 if the dataset has a blank value and zero if it doesn't. Before
    checking the dataset, this function will look at its flags. If the
-   `GAL_DATA_FLAG_HASBLANK' or `GAL_DATA_FLAG_DONT_CHECK_ZERO' bits of
-   `input->flag' are set to 1, this function will not do any check and will
+   'GAL_DATA_FLAG_HASBLANK' or 'GAL_DATA_FLAG_DONT_CHECK_ZERO' bits of
+   'input->flag' are set to 1, this function will not do any check and will
    just use the information in the flags.
 
    If you want to re-check a dataset which has non-zero flags, then
    explicitly set the appropriate flag to zero before calling this
-   function. When there are no other flags, you can just set `input->flags'
+   function. When there are no other flags, you can just set 'input->flags'
    to zero, otherwise you can use this expression:
 
        input->flags &= ~ (GAL_DATA_FLAG_HASBLANK | GAL_DATA_FLAG_USE_ZERO);
@@ -602,12 +602,12 @@ gal_blank_flag_apply(gal_data_t *input, gal_data_t *flag)
 
   /* Sanity check. */
   if(flag->type!=GAL_TYPE_UINT8)
-    error(EXIT_FAILURE, 0, "%s: the `flag' argument has a `%s' type, it "
+    error(EXIT_FAILURE, 0, "%s: the 'flag' argument has a '%s' type, it "
           "must have an unsigned 8-bit type", __func__,
           gal_type_name(flag->type, 1));
   if(gal_dimension_is_different(input, flag))
-    error(EXIT_FAILURE, 0, "%s: the `flag' argument doesn't have the same "
-          "size as the `input' argument", __func__);
+    error(EXIT_FAILURE, 0, "%s: the 'flag' argument doesn't have the same "
+          "size as the 'input' argument", __func__);
 
   /* Write the blank values. */
   switch(input->type)
@@ -660,9 +660,9 @@ gal_blank_flag_apply(gal_data_t *input, gal_data_t *flag)
 
 
 /* Remove blank elements from a dataset, convert it to a 1D dataset and
-   adjust the size properly. In practice this function doesn't `realloc'
+   adjust the size properly. In practice this function doesn't 'realloc'
    the input array, all it does is to shift the blank eleemnts to the end
-   and adjust the size elements of the `gal_data_t'. */
+   and adjust the size elements of the 'gal_data_t'. */
 #define BLANK_REMOVE(IT) {                                              \
     IT b, *a=input->array, *af=a+input->size, *o=input->array;          \
     gal_blank_write(&b, input->type);                                   \
@@ -718,7 +718,7 @@ gal_blank_remove(gal_data_t *input)
 
 
 
-/* Similar to `gal_blank_remove', but also reallocates/frees the extra
+/* Similar to 'gal_blank_remove', but also reallocates/frees the extra
    space. */
 void
 gal_blank_remove_realloc(gal_data_t *input)

@@ -95,8 +95,8 @@ wcsmode_check_prepare(struct cropparams *p, struct inputimgs *img)
   if( strcmp(wcs->ctype[0], "RA---TAN")
       || strcmp(wcs->ctype[1], "DEC--TAN") )
     error(EXIT_FAILURE, 0, "currently the only WCS types usable are "
-          "`RA---TAN' and `DEC--TAN' for the first and second axises "
-          "respectively. The WCS types of `%s' (hdu %s) are `%s' and `%s' "
+          "'RA---TAN' and 'DEC--TAN' for the first and second axises "
+          "respectively. The WCS types of '%s' (hdu %s) are '%s' and '%s' "
           "respectively", img->name, p->cp.hdu, wcs->ctype[0], wcs->ctype[1]);
 
 
@@ -127,7 +127,7 @@ wcsmode_check_prepare(struct cropparams *p, struct inputimgs *img)
     p->pixscale=pixscale;
 
 
-  /* Set the coordinates of the dataset's corners. Note that `dsize' is in
+  /* Set the coordinates of the dataset's corners. Note that 'dsize' is in
      C order, while pixcrd is in FITS order.*/
   switch(ndim)
     {
@@ -168,8 +168,8 @@ wcsmode_check_prepare(struct cropparams *p, struct inputimgs *img)
 
 
   /* Fill in the size of the dataset in WCS from the first pixel in the
-     image. Note that `dsize' is in C axises, while the `pixscale',
-     `corners' and `sized' are in FITS axises. */
+     image. Note that 'dsize' is in C axises, while the 'pixscale',
+     'corners' and 'sized' are in FITS axises. */
   if(ndim==2)
     {
       img->sized[0] = ( img->dsize[1] * p->pixscale[0]
@@ -187,17 +187,17 @@ wcsmode_check_prepare(struct cropparams *p, struct inputimgs *img)
 
   /* In case the image crosses the equator, we will calculate these values
      here so later on, we don't have to calculate them on every check. See
-     the explanation above `point_in_dataset'.
+     the explanation above 'point_in_dataset'.
 
      Note that in both 2D and 3D data, the declination is in the second
      coordinate (index 1). */
   if( img->corners[1] * (img->corners[1]+img->sized[1]) < 0 )
     {
-      /* re in the comments above `point_in_dataset'. */
+      /* re in the comments above 'point_in_dataset'. */
       img->equatorcorr[0]=img->corners[0]
         -0.5*img->sized[0]*(1-cos(img->corners[1]*M_PI/180));
 
-      /* sre in the comments above `point_in_dataset'. */
+      /* sre in the comments above 'point_in_dataset'. */
       img->equatorcorr[1]=img->sized[0]*cos(img->corners[1]*M_PI/180);
     }
 
@@ -385,14 +385,14 @@ wcsmode_crop_corners(struct onecropparams *crp)
 
 
   /* In case the crop crosses the equator, then we need these two
-     corrections. See the complete explanations above `point_in_dataset'. */
+     corrections. See the complete explanations above 'point_in_dataset'. */
   if(crp->corners[1]*(crp->corners[1]+crp->sized[1]) < 0 )
     {
-      /* re in the explanations above `point_in_dataset'. */
+      /* re in the explanations above 'point_in_dataset'. */
       crp->equatorcorr[0]=crp->corners[0]
         -0.5*crp->sized[0]*(1-cos(crp->corners[1]*M_PI/180));
 
-      /* sre in the explanations above `point_in_dataset'. */
+      /* sre in the explanations above 'point_in_dataset'. */
       crp->equatorcorr[1]=crp->sized[0]*cos(crp->corners[1]*M_PI/180);
     }
 
@@ -559,7 +559,7 @@ fillcrpipolygon(struct onecropparams *crp)
                                         dp>=d1     &&      dp<=d1+sd
 
    For RA, things become a little more complicated (recall that
-   r1>r3). `n` is defined as half of the extra space between the top
+   r1>r3). 'n' is defined as half of the extra space between the top
    and bottom lines of the two trapezoids.
 
    (North) n=0.5*sr*(1/cos(dp-d1)-1) ==> rp<=r1+n   &&   rp>=r1-sr-n
@@ -572,7 +572,7 @@ fillcrpipolygon(struct onecropparams *crp)
    -------------------------
 
    When d1*(d1+sd)<0, the image crosses the equator (d1 is negative
-   and d1+sd is positive). In this case, we define `re` and `sre` as
+   and d1+sd is positive). In this case, we define 're' and 'sre' as
    an equivalent of r1 and sr but on the equator:
 
        re=r1-0.5*sr*(1-cos(d1))   &&   sre=sr*cos(d1)

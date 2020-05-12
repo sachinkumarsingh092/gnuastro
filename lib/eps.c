@@ -266,7 +266,7 @@ eps_write_ascii85(gal_data_t *write, FILE *fp, size_t numbytes)
                 anint=( arr[j]*256*256*256 + arr[j+1]*256*256
                         + arr[j+2]*256     + arr[j+3]         );
 
-              /* If all four bytes are zero, then just print `z'. */
+              /* If all four bytes are zero, then just print 'z'. */
               if(anint==0) fprintf(fp, "z");
               else
                 {
@@ -387,8 +387,8 @@ gal_eps_write(gal_data_t *in, char *filename, float widthincm,
     error(EXIT_FAILURE, 0, "%s: only 1, 3, and 4 color channels are "
           "acceptable, input is a list of %zu data sets", __func__, numch);
   if(in->type!=GAL_TYPE_UINT8)
-    error(EXIT_FAILURE, 0, "%s: input has a `%s' type, but JPEG images can "
-          "only have a `uint8' type", __func__, gal_type_name(in->type, 1));
+    error(EXIT_FAILURE, 0, "%s: input has a '%s' type, but JPEG images can "
+          "only have a 'uint8' type", __func__, gal_type_name(in->type, 1));
 
 
   /* Read the time to write in the output. */

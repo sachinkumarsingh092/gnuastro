@@ -63,7 +63,7 @@ upperlimit_make_clump_tiles(struct mkcatalog_passparams *pp)
 
   /* Initialize the minimum and maximum position for each tile/clump. So,
      we'll initialize the minimum coordinates to the maximum possible
-     `size_t' value (in `GAL_BLANK_SIZE_T') and the maximums to zero. */
+     'size_t' value (in 'GAL_BLANK_SIZE_T') and the maximums to zero. */
   for(i=0;i<pp->clumpsinobj;++i)
     for(d=0;d<ndim;++d)
       {
@@ -173,7 +173,7 @@ upperlimit_random_range(struct mkcatalog_passparams *pp, gal_data_t *tile,
          just use the full possible range. */
       if( p->uprange && p->uprange[d] )
         {
-          /* Set the minimum of the random range. Since `size_t' is always
+          /* Set the minimum of the random range. Since 'size_t' is always
              positive, to make sure the difference isn't negative, we need
              to convert them to integer first. */
           if( (int)coord[d] - ((int)p->uprange[d])/2 > 0 )
@@ -200,7 +200,7 @@ upperlimit_random_range(struct mkcatalog_passparams *pp, gal_data_t *tile,
                          - (dsize[d] - tile->dsize[d]) );
             }
 
-          /* `minadd' and `maxadd' were defined to account for the removed
+          /* 'minadd' and 'maxadd' were defined to account for the removed
              smaller range when an object is on the edge. Their role is to
              add to the other side of the range as much as possible when
              one side is decreased on an edge. */
@@ -215,7 +215,7 @@ upperlimit_random_range(struct mkcatalog_passparams *pp, gal_data_t *tile,
           /* We are positioning the FIRST pixel of the tile, not the
              center. So, the minimum possible value is zero, and in order
              to not push out of the image, the maximum is the
-             `tile->dsize[d]' away from the edge. */
+             'tile->dsize[d]' away from the edge. */
           min[d]=0;
           max[d]=dsize[d]-tile->dsize[d]-1;
         }
@@ -249,7 +249,7 @@ upperlimit_random_position(struct mkcatalog_passparams *pp, gal_data_t *tile,
   size_t r;
   struct mkcatalogparams *p=pp->p;
 
-  /* `gsl_rng_get' returns an inclusive value between the minimum and
+  /* 'gsl_rng_get' returns an inclusive value between the minimum and
      maximum of the particular generator. It may happen that the labeled
      region extends the full range of a dimension. In that case, the only
      possible starting point would be 0. */
@@ -311,7 +311,7 @@ upperlimit_write_comments(struct mkcatalogparams *p,
         default:
           error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
                 "address the problem. The value %zu is not recognized for "
-                "`p->input->ndim'", __func__, PACKAGE_BUGREPORT,
+                "'p->input->ndim'", __func__, PACKAGE_BUGREPORT,
                 p->objects->ndim);
         }
       gal_list_str_add(comments, str, 0);
@@ -405,7 +405,7 @@ upperlimit_write_check(struct mkcatalogparams *p, gal_list_sizet_t *check_x,
                    "Sum of pixel values over random footprint.");
 
 
-  /* If `size_t' isn't 32-bit on this system, then convert the unsigned
+  /* If 'size_t' isn't 32-bit on this system, then convert the unsigned
      64-bit values to 32-bit because the FITS table format doesn't
      recognize 64-bit integers.*/
   if( GAL_TYPE_SIZE_T != GAL_TYPE_UINT32 )
@@ -513,7 +513,7 @@ upperlimit_measure(struct mkcatalog_passparams *pp, int32_t clumplab,
                   col = clumplab ? CCOL_UPPERLIMIT_S : OCOL_UPPERLIMIT_S;
                   o[col] = scarr[3];
 
-                  /* sigma multiplied by `upnsigma'. */
+                  /* sigma multiplied by 'upnsigma'. */
                   col = clumplab ? CCOL_UPPERLIMIT_B : OCOL_UPPERLIMIT_B;
                   o[col] = scarr[3] * p->upnsigma;
 
@@ -611,8 +611,8 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
   upperlimit_random_range(pp, tile, min, max, clumplab);
 
 
-  /* `se_inc' is just used temporarily, the important thing here is
-     `st_oo'. */
+  /* 'se_inc' is just used temporarily, the important thing here is
+     'st_oo'. */
   st_oo = ( clumplab
             ? gal_tile_start_end_ind_inclusive(tile, p->objects, se_inc)
             : pp->st_o );
@@ -632,7 +632,7 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
                                            p->objects->type);
 
       /* Starting and ending coordinates for this random position, note
-         that in `pp' we have the starting and ending coordinates of the
+         that in 'pp' we have the starting and ending coordinates of the
          actual tile. */
       increment     = 0;
       num_increment = 1;
@@ -689,7 +689,7 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
 
 
       /* Further processing is only necessary if this random tile was fully
-         parsed. If it was, we must reset `nfailed' to zero again. */
+         parsed. If it was, we must reset 'nfailed' to zero again. */
       if(continueparse)
         {
           nfailed=0;
@@ -717,7 +717,7 @@ upperlimit_one_tile(struct mkcatalog_passparams *pp, gal_data_t *tile,
 
             default:
               error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s "
-                    "to fix the problem. `ndim' value of %zu is not "
+                    "to fix the problem. 'ndim' value of %zu is not "
                     "recognized", __func__, PACKAGE_BUGREPORT, ndim);
             }
           gal_list_f32_add(&check_s, continueparse ? sum : NAN);
@@ -784,7 +784,7 @@ upperlimit_calculate(struct mkcatalog_passparams *pp)
           && p->checkuplim[1] != GAL_BLANK_INT32
           && p->checkuplim[1] > pp->clumpsinobj )
         error(EXIT_FAILURE, 0, "object %d has %zu clumps, but an upperlimit "
-              "check table (using the `--checkuplim' option) has been "
+              "check table (using the '--checkuplim' option) has been "
               "requested for clump %d", pp->object, pp->clumpsinobj,
               p->checkuplim[1]);
 

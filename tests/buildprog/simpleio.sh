@@ -53,13 +53,13 @@ if [ ! -f $source   ]; then echo "$source does not exist."; exit 77; fi
 # Actual test script
 # ==================
 #
-# We want to use the `libgnuastro.la' corresponding to this install, not
-# the one (that is possibly) installed (hence the use of `--la').
+# We want to use the 'libgnuastro.la' corresponding to this install, not
+# the one (that is possibly) installed (hence the use of '--la').
 #
-# Except for `gnuastro/config.h', all headers are installed in
-# `$topsrc/lib' and `gnuastro/config.h' is in "../lib/"
+# Except for 'gnuastro/config.h', all headers are installed in
+# '$topsrc/lib' and 'gnuastro/config.h' is in "../lib/"
 #
-# `check_with_program' can be something like `Valgrind' or an empty
+# 'check_with_program' can be something like Valgrind or an empty
 # string. Such programs will execute the command if present and help in
 # debugging when the developer doesn't have access to the user's system.
 echo "Test Environment"

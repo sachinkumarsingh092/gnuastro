@@ -31,11 +31,11 @@ endif
 ## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astTEMPLATE
 
-## We are linking with `libgnu' first eventhough `libgnu' is already linked
-## to `libgnuastro'. The reason is that some linkers (Mac OS for example),
+## We are linking with 'libgnu' first eventhough 'libgnu' is already linked
+## to 'libgnuastro'. The reason is that some linkers (Mac OS for example),
 ## don't keep external variables (needed in Argp) after the first link. So
-## the `libgnu' (that is indirectly linked through `libgnuastro') can't see
-## those variables. We thus need to explicitly link with `libgnu' first.
+## the 'libgnu' (that is indirectly linked through 'libgnuastro') can't see
+## those variables. We thus need to explicitly link with 'libgnu' first.
 astTEMPLATE_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro \
                     $(MAYBE_NORPATH)
 

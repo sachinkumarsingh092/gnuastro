@@ -128,8 +128,8 @@ arithmetic_init_wcs(struct tableparams *p, char *operator)
     {
       /* A small sanity check. */
       if(p->wcsfile==NULL || p->wcshdu==NULL)
-        error(EXIT_FAILURE, 0, "`--wcsfile' and `--wcshdu' are necessary "
-              "for the `%s' operator", operator);
+        error(EXIT_FAILURE, 0, "'--wcsfile' and '--wcshdu' are necessary "
+              "for the '%s' operator", operator);
 
       /* Read the WCS. */
       p->wcs=gal_wcs_read(p->wcsfile, p->wcshdu, 0, 0, &p->nwcs);
@@ -213,7 +213,7 @@ arithmetic_init(struct tableparams *p, struct arithmetic_token **arith,
           else
             {
               str = ( (token[0]=='$' && isdigit(token[1]))
-                      ? &token[1]   /* Column number (starting with `$'). */
+                      ? &token[1]   /* Column number (starting with '$'). */
                       : token );    /* Column name, just add it.          */
               gal_list_str_add(toread, str, 1);
               node->index=*totcalled;
@@ -227,7 +227,7 @@ arithmetic_init(struct tableparams *p, struct arithmetic_token **arith,
 
   /* A small sanity check: the last added token must be an operator. */
   if( node==NULL || node->operator==GAL_ARITHMETIC_OP_INVALID )
-    error(EXIT_FAILURE, 0, "last token in arithmetic column (`%s') is not a "
+    error(EXIT_FAILURE, 0, "last token in arithmetic column ('%s') is not a "
           "recognized operator", lasttoken);
 }
 
@@ -320,10 +320,10 @@ arithmetic_stack_pop(gal_data_t **stack, int operator)
   if(*stack)
     *stack=(*stack)->next;
   else
-    error(EXIT_FAILURE, 0, "not enough operands for `%s'",
+    error(EXIT_FAILURE, 0, "not enough operands for '%s'",
           arithmetic_operator_name(operator));
 
-  /* Remove the `next' element to break from the stack and return. */
+  /* Remove the 'next' element to break from the stack and return. */
   out->next=NULL;
   return out;
 }
@@ -440,14 +440,14 @@ arithmetic_angular_dist(struct tableparams *p, gal_data_t **stack, int operator)
   double *o, *a1, *a2, *b1, *b2;
   gal_data_t *a, *b, *tmp, *out;
 
-  /* Pop the columns for point `b'.*/
+  /* Pop the columns for point 'b'.*/
   tmp=arithmetic_stack_pop(stack, operator);
   tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT64);
   b=arithmetic_stack_pop(stack, operator);
   b=gal_data_copy_to_new_type_free(b, GAL_TYPE_FLOAT64);
   b->next=tmp;
 
-  /* Pop the columns for point `a'.*/
+  /* Pop the columns for point 'a'.*/
   tmp=arithmetic_stack_pop(stack, operator);
   tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT64);
   a=arithmetic_stack_pop(stack, operator);
@@ -458,12 +458,12 @@ arithmetic_angular_dist(struct tableparams *p, gal_data_t **stack, int operator)
      single coordinate, but we don't know which one. */
   if(a->size!=a->next->size)
     error(EXIT_FAILURE, 0, "the sizes of the third and fourth operands "
-          "of the `%s' operator (respectively containing %zu and %zu "
+          "of the '%s' operator (respectively containing %zu and %zu "
           "numbers) must be equal", arithmetic_operator_name(operator),
           a->next->size, a->size);
   if(b->size!=b->next->size)
     error(EXIT_FAILURE, 0, "the sizes of the third and fourth operands "
-          "of the `%s' operator (respectively containing %zu and %zu "
+          "of the '%s' operator (respectively containing %zu and %zu "
           "numbers) must be equal", arithmetic_operator_name(operator),
           b->next->size, b->size);
 
@@ -549,7 +549,7 @@ arithmetic_operator_run(struct tableparams *p, gal_data_t **stack,
   int flags = ( GAL_ARITHMETIC_INPLACE | GAL_ARITHMETIC_FREE
                 | GAL_ARITHMETIC_NUMOK );
 
-  /* When `num_operands!=0', the operator is in the library. */
+  /* When 'num_operands!=0', the operator is in the library. */
   if(num_operands)
     {
       /* Pop the necessary number of operators. Note that the
@@ -582,12 +582,12 @@ arithmetic_operator_run(struct tableparams *p, gal_data_t **stack,
 
         default:
           error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
-                "the problem. `%zu' is not recognized as an operand "
-                "counter (with `%s')", __func__, PACKAGE_BUGREPORT,
+                "the problem. '%zu' is not recognized as an operand "
+                "counter (with '%s')", __func__, PACKAGE_BUGREPORT,
                 num_operands, arithmetic_operator_name(operator));
         }
 
-      /* Run the arithmetic operation. Note that `gal_arithmetic' is a
+      /* Run the arithmetic operation. Note that 'gal_arithmetic' is a
          variable argument function (like printf). So the number of
          arguments it uses depend on the operator. In other words, when the
          operator doesn't need three operands, the extra arguments will be
@@ -660,13 +660,13 @@ arithmetic_reverse_polish(struct tableparams *p, struct column_pack *outpack)
     }
 
   /* Put everything that remains in the stack (reversed) into the final
-     table. Just note that `gal_list_data_add' behaves differently for
-     lists, so we'll add have to manually set the `next' element to NULL
+     table. Just note that 'gal_list_data_add' behaves differently for
+     lists, so we'll add have to manually set the 'next' element to NULL
      before adding the column to the final table. */
   gal_list_data_reverse(&stack);
   while(stack!=NULL)
     {
-      /* Keep the top element in `single' and move `stack' to the next
+      /* Keep the top element in 'single' and move 'stack' to the next
          element. */
       single=stack;
       stack=stack->next;
@@ -677,7 +677,7 @@ arithmetic_reverse_polish(struct tableparams *p, struct column_pack *outpack)
               "single value, but other columns have also been requested "
               "which have more elements/rows");
 
-      /* Set `single->next' to NULL so it isn't treated as a list and
+      /* Set 'single->next' to NULL so it isn't treated as a list and
          remove all metadata */
       single->next=NULL;
       gal_list_data_add(&p->table, single);
@@ -713,7 +713,7 @@ arithmetic_operate(struct tableparams *p)
   struct column_pack *outpack;
 
   /* From now on, we will be looking for columns from the index in
-     `colarray', so to keep things clean, we'll set all the `next' elements
+     'colarray', so to keep things clean, we'll set all the 'next' elements
      to NULL. */
   for(i=0;i<p->numcolarray;++i) p->colarray[i]->next=NULL;
 

@@ -50,15 +50,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /***************         Information about a table        ***************/
 /************************************************************************/
 /* Store the information of each column in a table (either as a text file
-   or as a FITS table) into an array of data structures with `numcols'
+   or as a FITS table) into an array of data structures with 'numcols'
    structures (one data structure for each column). The number of rows is
-   stored in `numrows'. The type of the table (e.g., ascii text file, or
-   FITS binary or ASCII table) will be put in `tableformat' (macros defined
-   in `gnuastro/table.h'.
+   stored in 'numrows'. The type of the table (e.g., ascii text file, or
+   FITS binary or ASCII table) will be put in 'tableformat' (macros defined
+   in 'gnuastro/table.h'.
 
    Note that other than the character strings (column name, units and
    comments), nothing in the data structure(s) will be allocated by this
-   function for the actual data (e.g., the `array' or `dsize' elements). */
+   function for the actual data (e.g., the 'array' or 'dsize' elements). */
 gal_data_t *
 gal_table_info(char *filename, char *hdu, gal_list_str_t *lines,
                size_t *numcols, size_t *numrows, int *tableformat)
@@ -173,7 +173,7 @@ table_regexerrorexit(int errcode, regex_t *compiled, char *input)
   (void) regerror(errcode, compiled, regexerrbuf, length);
 
   error(EXIT_FAILURE, 0, "%s: regular expression error: %s in value to "
-        "`--column' (`-c'): `%s'", __func__, regexerrbuf, input);
+        "'--column' ('-c'): '%s'", __func__, regexerrbuf, input);
 }
 
 
@@ -231,12 +231,12 @@ gal_table_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
         nummatch=0;
         len=strlen(tmp->v);
 
-        /* REGULAR EXPRESSION: the first and last characters are `/'. */
+        /* REGULAR EXPRESSION: the first and last characters are '/'. */
         if( tmp->v[0]=='/' && tmp->v[len-1]=='/' )
           {
             /* Remove the slashes, note that we don't want to change
-               `tmp->v' (because it should be freed later). So first we set
-               the last character to `\0', then define a new string from
+               'tmp->v' (because it should be freed later). So first we set
+               the last character to '\0', then define a new string from
                the first element. */
             tmp->v[len-1]='\0';
             str = tmp->v + 1;
@@ -271,7 +271,7 @@ gal_table_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
             /* With the regex structure "compile"d you can go through all
                the column names. Just note that column names are not
                mandatory in the FITS standard, so some (or all) columns
-               might not have names, if so `p->tname[i]' will be NULL. */
+               might not have names, if so 'p->tname[i]' will be NULL. */
             for(i=0;i<numcols;++i)
               {
                 strcheck=table_set_strcheck(&allcols[i], searchin);
@@ -285,7 +285,7 @@ gal_table_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
             /* Free the regex_t structure: */
             regfree(regex);
 
-            /* Put the `/' back into the input string. This is done because
+            /* Put the '/' back into the input string. This is done because
                after this function, the calling program might want to
                inform the user of their exact input string. */
             tmp->v[len-1]='/';
@@ -358,7 +358,7 @@ gal_table_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
            are done (and program is aborted) before this step. */
         if(nummatch==0)
           {
-            if( asprintf(&errorstring, "`%s' didn't match any of the "
+            if( asprintf(&errorstring, "'%s' didn't match any of the "
                          "column %ss.", tmp->v,
                          gal_tableintern_searchin_as_string(searchin))<0 )
               error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
@@ -366,7 +366,7 @@ gal_table_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
           }
 
 
-        /* Keep the value of `nummatch' if the user requested it. */
+        /* Keep the value of 'nummatch' if the user requested it. */
         if(colmatch) colmatch[colcount++]=nummatch;
       }
 
@@ -391,18 +391,18 @@ gal_table_list_of_indexs(gal_list_str_t *cols, gal_data_t *allcols,
 
 
 
-/* Read the specified columns in a table (named `filename') into a linked
-   list of data structures. If the file is FITS, then `hdu' will also be
-   used, otherwise, `hdu' is ignored. The information to search for columns
-   should be specified by the `cols' linked list as string values in each
+/* Read the specified columns in a table (named 'filename') into a linked
+   list of data structures. If the file is FITS, then 'hdu' will also be
+   used, otherwise, 'hdu' is ignored. The information to search for columns
+   should be specified by the 'cols' linked list as string values in each
    node of the list, the strings in each node can be a number, an exact
    match to a column name, or a regular expression (in GNU AWK format)
-   enclosed in `/ /'. The `searchin' value comes from the
-   `gal_table_where_to_search' enumerator and has to be one of its given
-   types. If `cols' is NULL, then this function will read the full table.
+   enclosed in '/ /'. The 'searchin' value comes from the
+   'gal_table_where_to_search' enumerator and has to be one of its given
+   types. If 'cols' is NULL, then this function will read the full table.
 
    The output is a linked list with the same order of the cols linked
-   list. Note that one column node in the `cols' list might give multiple
+   list. Note that one column node in the 'cols' list might give multiple
    columns, in this case, the order of output columns that correspond to
    that one input, are in order of the table (which column was read first).
    So the first requested column is the first popped data structure and so
@@ -431,11 +431,11 @@ gal_table_read(char *filename, char *hdu, gal_list_str_t *lines,
   /* Depending on the table format, read the columns into the output
      structure. Note that the functions here pop each index, read/store the
      desired column and pop the next, so after these functions, the output
-     linked list will have the opposite order of its input `indexll'
+     linked list will have the opposite order of its input 'indexll'
      list. So before calling any of them, we will first reverse the
-     `indexll' list, so the output data structure list will have the same
+     'indexll' list, so the output data structure list will have the same
      order as the input list of desired columns. Also note that after these
-     functions, the `indexll' will be all freed (each popped element is
+     functions, the 'indexll' will be all freed (each popped element is
      actually freed).*/
   gal_list_sizet_reverse(&indexll);
   switch(tableformat)
@@ -453,7 +453,7 @@ gal_table_read(char *filename, char *hdu, gal_list_str_t *lines,
 
     default:
       error(EXIT_FAILURE, 0, "%s: table format code %d not recognized for "
-            "`tableformat'", __func__, tableformat);
+            "'tableformat'", __func__, tableformat);
     }
 
   /* Clean up. */
@@ -489,7 +489,7 @@ gal_table_read(char *filename, char *hdu, gal_list_str_t *lines,
 /***************              Write a table               ***************/
 /************************************************************************/
 /* Write the basic information that is necessary by each program into the
-   comments field. Note that the `comments' has to be already sorted in the
+   comments field. Note that the 'comments' has to be already sorted in the
    proper order. */
 void
 gal_table_comments_add_intro(gal_list_str_t **comments, char *program_string,
@@ -503,9 +503,9 @@ gal_table_comments_add_intro(gal_list_str_t **comments, char *program_string,
   else      gitdescribe[0]='\0';
 
   /* Git version and time of program's starting, this will be the second
-     line. Note that ctime puts a `\n' at the end of its string, so we'll
-     have to remove that. Also, note that since we are allocating `msg', we
-     are setting the allocate flag of `gal_list_str_add' to 0. */
+     line. Note that ctime puts a '\n' at the end of its string, so we'll
+     have to remove that. Also, note that since we are allocating 'msg', we
+     are setting the allocate flag of 'gal_list_str_add' to 0. */
   if( asprintf(&tmp, "Created%s on %s", gitdescribe, ctime(rawtime))<0 )
     error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   tmp[ strlen(tmp)-1 ]='\0';
@@ -523,8 +523,8 @@ gal_table_comments_add_intro(gal_list_str_t **comments, char *program_string,
 
 
 /* The input is a linked list of data structures and some comments. The
-   table will then be written into `filename' with a format that is
-   specified by `tableformat'. */
+   table will then be written into 'filename' with a format that is
+   specified by 'tableformat'. */
 void
 gal_table_write(gal_data_t *cols, gal_list_str_t *comments,
                 int tableformat, char *filename, char *extname,

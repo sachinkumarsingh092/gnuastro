@@ -49,7 +49,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 /* Spectral line internal codes (SORT BY WAVELENGTH). */
 enum gal_speclines_line_codes
 {
-  /* Allowing `0' to be identied as a known-non-line. */
+  /* Allowing '0' to be identied as a known-non-line. */
   GAL_SPECLINES_INVALID=0,
 
   /* Main list of recognized lines. */

@@ -1182,11 +1182,11 @@ gal_list_dosizet_pop_smallest(gal_list_dosizet_t **largest,
     }
   else
     {
-      /* If `smallest' is NULL, `largest' should also be NULL. */
+      /* If 'smallest' is NULL, 'largest' should also be NULL. */
       if(*largest)
-        error(EXIT_FAILURE, 0, "%s: `largest' and `smallest' pointers must "
+        error(EXIT_FAILURE, 0, "%s: 'largest' and 'smallest' pointers must "
               "both be non-NULL or both be NULL. However, in this call, "
-              "`smallest' was NULL while `largest' isn't NULL", __func__);
+              "'smallest' was NULL while 'largest' isn't NULL", __func__);
       value=GAL_BLANK_SIZE_T;
       *tosort=NAN;
     }
@@ -1289,7 +1289,7 @@ gal_list_data_add(gal_data_t **list, gal_data_t *newnode)
       toadd=tmp;
     }
   else
-    /* Its not a list, so just set it to `toadd'. */
+    /* Its not a list, so just set it to 'toadd'. */
     toadd=newnode;
 
 

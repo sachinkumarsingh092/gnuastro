@@ -8,7 +8,7 @@ The following people and institutions who contributed to Gnuastro
 indirectly (not by actually submitting code) are listed here. For the list
 of Gnuastro code/documentation authors (people who have contributed actual
 code/text as commits in the version controlled history of Gnuastro), please
-see the `AUTHORS' file in the same directory.
+see the 'AUTHORS' file in the same directory.
 
 
 People
@@ -57,6 +57,7 @@ support in Gnuastro. The list is ordered alphabetically (by family name).
     Alan Lefor                           alefor@astr.tohoku.ac.jp
     Sebastián Luna Valero                sluna@iaa.es
     Guillaume Mahler                     guillaume.mahler@univ-lyon1.fr
+    Raphael Morales                      rmorales@iaa.es
     Juan Molina Tobar                    juan.a.molina.t@gmail.com
     Francesco Montanari                  francesco.montanari@openmailbox.org
     Dmitrii Oparin                       doparin2@gmail.com

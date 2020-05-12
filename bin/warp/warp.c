@@ -74,7 +74,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* Similar to `nearestint_halflower' but:
+/* Similar to 'nearestint_halflower' but:
 
    nearestint_halflower(0.5f) --> 0.0f;
  */
@@ -327,7 +327,7 @@ warp_preparations(struct warpparams *p)
   */
 
   /* Set the final size of the image. The X axis is horizontal. The reason
-     we are using the halflower variation of `nearestint' for the maximums
+     we are using the halflower variation of 'nearestint' for the maximums
      is that these points are the farthest extremes of the input image. If
      they are half a pixel value, they should point to the pixel before. */
   dsize[1]=nearestint_halflower(xmax)-nearestint_halfhigher(xmin)+1;
@@ -335,7 +335,7 @@ warp_preparations(struct warpparams *p)
   p->outfpixval[0]=nearestint_halfhigher(xmin);
   p->outfpixval[1]=nearestint_halfhigher(ymin);
 
-  /* If we have translation, the `dsize's and `outfpixval's should be
+  /* If we have translation, the 'dsize's and 'outfpixval's should be
      corrected. */
   if(matrix[2]!=0.0f || matrix[5]!=0.0f)
     {
@@ -428,7 +428,7 @@ correct_wcs_save_output(struct warpparams *p)
   gal_fits_list_key_t *headers=NULL;
   double *crpix=wcs?wcs->crpix:NULL, *w=p->inwcsmatrix;
 
-  /* `tinv' is the 2 by 2 inverse matrix. Recall that `p->inverse' is 3 by
+  /* 'tinv' is the 2 by 2 inverse matrix. Recall that 'p->inverse' is 3 by
      3 to account for homogeneous coordinates. */
   double tinv[4]={p->inverse[0]/p->inverse[8], p->inverse[1]/p->inverse[8],
                   p->inverse[3]/p->inverse[8], p->inverse[4]/p->inverse[8]};
@@ -462,7 +462,7 @@ correct_wcs_save_output(struct warpparams *p)
 
       /* Due to floating point errors extremely small values of PC matrix
          can be set to zero and extremely small differences between PC1_1
-         and PC2_2 can be ignored. The reason for all the `fabs' functions
+         and PC2_2 can be ignored. The reason for all the 'fabs' functions
          is because the signs are usually different.*/
       if( fabs(wcs->pc[1])<ABSOLUTEFLTERROR ) wcs->pc[1]=0.0f;
       if( fabs(wcs->pc[2])<ABSOLUTEFLTERROR ) wcs->pc[2]=0.0f;

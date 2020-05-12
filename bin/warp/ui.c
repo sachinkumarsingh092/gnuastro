@@ -154,18 +154,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
 {
   struct warpparams *p = state->input;
 
-  /* Pass `gal_options_common_params' into the child parser.  */
+  /* Pass 'gal_options_common_params' into the child parser.  */
   state->child_inputs[0] = &p->cp;
 
   /* In case the user incorrectly uses the equal sign (for example
-     with a short format or with space in the long format, then `arg`
+     with a short format or with space in the long format, then 'arg'
      start with (if the short version was called) or be (if the long
      version was called with a space) the equal sign. So, here we
      check if the first character of arg is the equal sign, then the
      user is warned and the program is stopped: */
   if(arg && arg[0]=='=')
-    argp_error(state, "incorrect use of the equal sign (`=`). For short "
-               "options, `=` should not be used and for long options, "
+    argp_error(state, "incorrect use of the equal sign ('='). For short "
+               "options, '=' should not be used and for long options, "
                "there should be no space between the option, equal sign "
                "and value");
 
@@ -212,7 +212,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /**********      Modular matrix linked list       *************/
 /**************************************************************/
 /* Save the codes of the user's desired modular warpings into the linked
-   list. Because the types of these options are `GAL_TYPE_INVALID', this
+   list. Because the types of these options are 'GAL_TYPE_INVALID', this
    function will not be called when printing the full list of parameters
    and their values. */
 static void *
@@ -224,27 +224,27 @@ ui_add_to_modular_warps_ll(struct argp_option *option, char *arg,
   gal_data_t *new;
   struct warpparams *p=(struct warpparams *)params;
 
-  /* When an argument is necessary (note that `--align' doesn't take an
+  /* When an argument is necessary (note that '--align' doesn't take an
      argument), make sure we actually have a string to parse. Also note
      that if an argument is necessary, but none is given Argp will
      automatically abort the program with an informative error. */
   if(arg && *arg=='\0')
-    error(EXIT_FAILURE, 0, "empty string given to `--%s'", option->name);
+    error(EXIT_FAILURE, 0, "empty string given to '--%s'", option->name);
 
   /* Parse the (possible) arguments. */
   if(option->key==UI_KEY_ALIGN)
     {
       /* For functions the standard checking isn't done, so first, we'll
          make sure that if we are in a configuration file (where
-         `arg!=NULL'), the value is either 0 or 1. */
+         'arg!=NULL'), the value is either 0 or 1. */
       if( arg && strcmp(arg, "0") && strcmp(arg, "1") )
-        error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `--align' "
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "the '--align' "
                       "option takes no arguments. In a configuration file "
-                      "it can only have the values `1' or `0', indicating "
+                      "it can only have the values '1' or '0', indicating "
                       "if it should be used or not");
 
       /* Align doesn't take any values, but if called in a configuration
-         file with a value of `0', we should ignore it. */
+         file with a value of '0', we should ignore it. */
       if(arg && *arg=='0') return NULL;
 
       /* Allocate the data structure. */
@@ -265,7 +265,7 @@ ui_add_to_modular_warps_ll(struct argp_option *option, char *arg,
                       "may be given, you can use multiple modular warpings");
       if(new->size!=4 && new->size!=9)
         error_at_line(EXIT_FAILURE, 0, filename, lineno, "only a 4 or 9 "
-                      "element `matrix' is currently acceptable. `%s' has "
+                      "element 'matrix' is currently acceptable. '%s' has "
                       "%zu elements", arg, new->size);
 
       /* Keep the matrix in the main structure. */
@@ -277,7 +277,7 @@ ui_add_to_modular_warps_ll(struct argp_option *option, char *arg,
          warpings. */
       if(new->size>2)
         error_at_line(EXIT_FAILURE, 0, filename, lineno, "%zu numbers "
-                      "given to the `%s' option. Modular warpings can "
+                      "given to the '%s' option. Modular warpings can "
                       "accept 2 numbers at the most currently (for 2D "
                       "datasets)", new->size, option->name);
 
@@ -286,9 +286,9 @@ ui_add_to_modular_warps_ll(struct argp_option *option, char *arg,
       if(option->key==UI_KEY_ROTATE)
         {
           if(new->size!=1)
-            error_at_line(EXIT_FAILURE, 0, filename, lineno, "the `rotate' "
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "the 'rotate' "
                       "option only takes one value (the angle of rotation). "
-                      "You have given: `%s'", arg);
+                      "You have given: '%s'", arg);
         }
       else if (option->key==UI_KEY_FLIP)
         {
@@ -296,9 +296,9 @@ ui_add_to_modular_warps_ll(struct argp_option *option, char *arg,
             {
               tmp=((double *)(new->array))[i];
               if(tmp!=0.0f && tmp!=1.0f)
-                error_at_line(EXIT_FAILURE, 0, filename, lineno, "`flip' "
-                              "only takes values of `1' and `0'. You have "
-                              "given `%s'", arg);
+                error_at_line(EXIT_FAILURE, 0, filename, lineno, "'flip' "
+                              "only takes values of '1' and '0'. You have "
+                              "given '%s'", arg);
             }
         }
 
@@ -340,8 +340,8 @@ ui_check_options_and_arguments(struct warpparams *p)
     {
       /* Make sure a HDU is given. */
       if( gal_fits_name_is_fits(p->inputname) && p->cp.hdu==NULL )
-        error(EXIT_FAILURE, 0, "no HDU specified, you can use the `--hdu' "
-              "(`-h') option and give it the HDU number (starting from "
+        error(EXIT_FAILURE, 0, "no HDU specified, you can use the '--hdu' "
+              "('-h') option and give it the HDU number (starting from "
               "zero), or extension name (generally, anything acceptable "
               "by CFITSIO)");
 
@@ -394,9 +394,9 @@ static void
 ui_error_no_warps()
 {
   error(EXIT_FAILURE, 0, "no warping specified, you can either use the "
-        "`--matrix' option for any low-level warp, or specify multipole "
-        "modular warpings with options like `--rotate', `--scale' and etc. "
-        "You can see the full list with the `--help' option");
+        "'--matrix' option for any low-level warp, or specify multipole "
+        "modular warpings with options like '--rotate', '--scale' and etc. "
+        "You can see the full list with the '--help' option");
 }
 
 
@@ -464,13 +464,13 @@ ui_matrix_make_align(struct warpparams *p, double *tmatrix)
   /* Make sure the input image had a WCS structure. */
   if(p->input->wcs==NULL)
     error(EXIT_FAILURE, 0, "%s (hdu: %s): no WCS information present, "
-          "hence the `--align' option cannot be used", p->inputname,
+          "hence the '--align' option cannot be used", p->inputname,
           p->cp.hdu);
 
   /* Check if there is only two WCS axises: */
   if(p->input->wcs->naxis!=2)
     error(EXIT_FAILURE, 0, "the WCS structure of %s (hdu: %s) has %d "
-          "axises. For the `--align' option to operate it must be 2",
+          "axises. For the '--align' option to operate it must be 2",
           p->inputname, p->cp.hdu, p->input->wcs->naxis);
 
 
@@ -479,15 +479,15 @@ ui_matrix_make_align(struct warpparams *p, double *tmatrix)
   w=p->inwcsmatrix;
 
 
-  /* Lets call the given WCS orientation `W', the rotation matrix we want
-     to find as `X' and the final (aligned matrix) `P' (which is the pixel
+  /* Lets call the given WCS orientation 'W', the rotation matrix we want
+     to find as 'X' and the final (aligned matrix) 'P' (which is the pixel
      scale):
 
         x0  x1       w0  w1      -P0   0
         x2  x3   *   w2  w3   =   0    P1
 
-     Let's open up the matrix multiplication, so we can find the `X'
-     elements as function of the `W' elements and `a'.
+     Let's open up the matrix multiplication, so we can find the 'X'
+     elements as function of the 'W' elements and 'a'.
 
         x0*w0 + x1*w2 = -P0                                        (1)
         x0*w1 + x1*w3 =  0                                         (2)
@@ -567,7 +567,7 @@ ui_matrix_make_align(struct warpparams *p, double *tmatrix)
 static void
 ui_matrix_inplacw_multiply(double *in, double *with)
 {
-  /* `tin' will keep the values of the input array because we want to
+  /* 'tin' will keep the values of the input array because we want to
      write the multiplication result in the input array. */
   double tin[9]={in[0],in[1],in[2],in[3],in[4],in[5],in[6],in[7],in[8]};
 
@@ -626,7 +626,7 @@ ui_matrix_from_modular(struct warpparams *p)
       v2 = pop->size>1 ? ((double *)(pop->array))[1] : v1;
 
       /* Depending on the type of the modular warp do it. Recall that the
-         code for the warp, was stored in the `status' element of the data
+         code for the warp, was stored in the 'status' element of the data
          structure.*/
       switch(pop->status)
         {
@@ -694,7 +694,7 @@ ui_matrix_from_modular(struct warpparams *p)
 
         default:
           error(EXIT_FAILURE, 0, "a bug! the code %d is not recognized as "
-                "a valid modular warp in `ui_matrix_from_modular', this is "
+                "a valid modular warp in 'ui_matrix_from_modular', this is "
                 "not your fault, something in the programming has gone "
                 "wrong. Please contact us at %s so we can correct it",
                 pop->status, PACKAGE_BUGREPORT);
@@ -727,7 +727,7 @@ ui_matrix_center_on_corner(struct warpparams *p)
   /* Translate them back into the proper FITS center. */
   ui_matrix_inplacw_multiply(before, after);
 
-  /* The final matrix is in `before', so put its values into the output
+  /* The final matrix is in 'before', so put its values into the output
      matrix. */
   b = before;
   df = (d=p->matrix->array) + p->matrix->size;
@@ -761,7 +761,7 @@ ui_matrix_finalize(struct warpparams *p)
     if(!isfinite(*d++))
       {
         ui_matrix_print(p->matrix->array);
-        error(EXIT_FAILURE, 0, "%f is not a `normal' number in the "
+        error(EXIT_FAILURE, 0, "%f is not a 'normal' number in the "
               "input matrix shown above", *(d-1));
       }
   while(d<df);
@@ -835,7 +835,7 @@ ui_set_suffix(struct warpparams *p)
   if(p->matrix==NULL && p->modularll==NULL) ui_error_no_warps();
 
   /* We only want the more meaningful suffix when the list is defined AND
-     when its only has one node (the `next' element is NULL). */
+     when its only has one node (the 'next' element is NULL). */
   if(p->matrix==NULL && p->modularll->next==NULL)
     switch(p->modularll->status)
       {
@@ -863,7 +863,7 @@ ui_set_suffix(struct warpparams *p)
       default:
         error(EXIT_FAILURE, 0, "a bug! please contact us at %s so we can "
               "fix the problem. The modular warp code %d is not recognized "
-              "in `ui_set_suffix'", PACKAGE_BUGREPORT, p->modularll->status);
+              "in 'ui_set_suffix'", PACKAGE_BUGREPORT, p->modularll->status);
         return NULL;
       }
   else
@@ -877,7 +877,7 @@ ui_set_suffix(struct warpparams *p)
 static void
 ui_preparations(struct warpparams *p)
 {
-  /* Set the output name. This needs to be done before `ui_finalize_matrix'
+  /* Set the output name. This needs to be done before 'ui_finalize_matrix'
      because that function will free the linked list of modular warpings
      which we will need to determine the suffix if no output name is
      specified. */
@@ -920,9 +920,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct warpparams *p)
   struct gal_options_common_params *cp=&p->cp;
 
 
-  /* Include the parameters necessary for argp from this program (`args.h')
-     and for the common options to all Gnuastro (`commonopts.h'). We want
-     to directly put the pointers to the fields in `p' and `cp', so we are
+  /* Include the parameters necessary for argp from this program ('args.h')
+     and for the common options to all Gnuastro ('commonopts.h'). We want
+     to directly put the pointers to the fields in 'p' and 'cp', so we are
      simply including the header here to not have to use long macros in
      those headers which make them hard to read and modify. This also helps
      in having a clean environment: everything in those headers is only

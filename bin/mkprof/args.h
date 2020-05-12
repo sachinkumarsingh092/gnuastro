@@ -169,7 +169,7 @@ struct argp_option program_options[] =
       UI_KEY_MODE,
       "STR",
       0,
-      "Mode of `--ccol': `img' or `wcs'.",
+      "Mode of '--ccol': 'img' or 'wcs'.",
       UI_GROUP_PROFILES,
       &p->mode,
       GAL_TYPE_STRING,
@@ -342,7 +342,7 @@ struct argp_option program_options[] =
 
     {
       0, 0, 0, 0,
-      "Columns, by info (see `--searchin'), or number (starting from 1):",
+      "Columns, by info (see '--searchin'), or number (starting from 1):",
       UI_GROUP_CATALOG
     },
     {
@@ -560,7 +560,7 @@ struct argp_option program_options[] =
       UI_KEY_CUNIT,
       "STR[, ... ]",
       0,
-      "Units of the WCS coordinates (e.g., `deg').",
+      "Units of the WCS coordinates (e.g., 'deg').",
       UI_GROUP_WCS,
       &p->cunit,
       GAL_TYPE_FLOAT64,

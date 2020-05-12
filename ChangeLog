@@ -87,10 +87,10 @@
 2015-09-17  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* bin/mkprof/mkprof.c (mkprof): Only print a log file if the
-	`--nolog' option is not called.
+	'--nolog' option is not called.
 
 	* bin/imgcrop/imgcrop.c (imgcrop): Only print a log file if the
-	`--nolog' option is not called.
+	'--nolog' option is not called.
 
 	* bin/mkprof/main.h (mkprofparams): Removed the p->dir0file1
 	parameter from the main structure.
@@ -113,8 +113,8 @@
 	blank. Before the blank fraction was ignored.
 
 	* bin/imgstat/imgstat.c (reportsimplestats): Now uses the value to
-	the `--mirrordist' option instead of the fixed value of 1.5.
-	(reportsimplestats): Report the `NOT ACCURATE' warning in a
+	the '--mirrordist' option instead of the fixed value of 1.5.
+	(reportsimplestats): Report the 'NOT ACCURATE' warning in a
 	separate line to make reading by AWK easier, also removed comma
 	between outputs for the same reason.
 
@@ -162,7 +162,7 @@
 2015-07-22  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* bin/noisechisel/thresh.c (snthresh): Had mistakenly used
-	`p->detquant', for both detection and segmentation! This is now
+	'p->detquant', for both detection and segmentation! This is now
 	corrected.
 
 	* bin/mkcatalog/mkcatalog.c (secondpass): Sets the river flux to
@@ -180,10 +180,10 @@
 2015-07-18  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* bin/noisechisel/segmentation.c (nextavailablelabel): Now
-	accounts for the `--grownclumps' option.
+	accounts for the '--grownclumps' option.
 
 	* bin/noisechisel/args.h (options): Corrected the type of output
-	for `--gthresh'. I had forgot to include any for it!
+	for '--gthresh'. I had forgot to include any for it!
 
 2015-07-17  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
@@ -224,9 +224,9 @@
 	flux is subtracted here, not before.
 
 	* lib/fitsarrayvv.c: The numblank variable did not actually store
-	the `number' of blank pixels, it was only a 0 or 1 value to
+	the 'number' of blank pixels, it was only a 0 or 1 value to
 	specify if there are any blank pixels or not. It is now changed to
-	`anyblank' to be more clear and not confuse the readers. All the
+	'anyblank' to be more clear and not confuse the readers. All the
 	Gnuastro programs that used this variable, were also corrected.
 
 2015-07-06  Mohammad Akhlaghi  <akhlaghi@gnu.org>
@@ -389,13 +389,13 @@
 
 2015-06-11  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* bin/noisechisel/args.h (options): `minbfrac' and `minnumfalse'
-	options moved under the `Input' category from the detections
+	* bin/noisechisel/args.h (options): 'minbfrac' and 'minnumfalse'
+	options moved under the 'Input' category from the detections
 	category. This move was because these two options are used by both
 	the detection and segmentation steps and thus keeping them under
-	detection would be confusing. Also `checkthresh' was changed to
-	`checkthreshold'. Also, the option `numerosion' was changed to
-	`erode' to be consistent with the opening and dilate options.
+	detection would be confusing. Also 'checkthresh' was changed to
+	'checkthreshold'. Also, the option 'numerosion' was changed to
+	'erode' to be consistent with the opening and dilate options.
 
 2015-06-10  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
@@ -442,12 +442,12 @@
 	generator to ui.c to make things faster and more easier to
 	understand.
 
-	* bin/mknoise/args.h (argp_option): Removed the `backgroundinmean'
+	* bin/mknoise/args.h (argp_option): Removed the 'backgroundinmean'
 	option, because I couldn't figure out what use it would have. If
 	it is needed we can add it again later!
 
-	* bin/imgstat/args.h (argp_option): Changed `binonzero' option to
-	the more general `onebinvalue' option.
+	* bin/imgstat/args.h (argp_option): Changed 'binonzero' option to
+	the more general 'onebinvalue' option.
 
 	* bin/convolve/convolve.c (removepaddingcorrectroundoff):
 	Corrected bug: would return *d in both cases! It is corrected now.
@@ -507,18 +507,18 @@
 	functions for the minimum and maximum values. NaN values will
 	automatically fail all comparisons.
 
-	* lib/timing.c (reporttiming): Removed the `in' from reporting
+	* lib/timing.c (reporttiming): Removed the 'in' from reporting
 	seconds.
 
 	* include/timing.h (VERBMSGLENGTH_V): Changed to 45 from 40.
 
 2015-05-27  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* bin/convolve/args.h (options): Remove the `noedgecorrection'
+	* bin/convolve/args.h (options): Remove the 'noedgecorrection'
 	option. Since it was useless. Also changed the old short option
-	for spatial (`s') to `p'. Because `s' is now needed for the mesh
-	size option. Also changed the old short option for khdu (`H') to
-	`U', to make it similar to all the other programs that do
+	for spatial ('s') to 'p'. Because 's' is now needed for the mesh
+	size option. Also changed the old short option for khdu ('H') to
+	'U', to make it similar to all the other programs that do
 	convolution.
 
 	* include/mesh.h (meshparams): the garrays are now only
@@ -529,13 +529,13 @@
 
 2015-05-25  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* lib/mesh.c (operateonmesh): New name for `fillmesh'. Now the
+	* lib/mesh.c (operateonmesh): New name for 'fillmesh'. Now the
 	function that will be spinned off from each thread can be
 	specified from the outside.
 
 2015-05-24  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* bin/imgcrop/crop.c (sectionparser): When only a `*' was given
+	* bin/imgcrop/crop.c (sectionparser): When only a '*' was given
 	with no positive or negative following number, a segmentation
 	fault would happen. This bug is now fixed.
 
@@ -548,8 +548,8 @@
 	the case when 2*mi is larger than size.
 
 	* bin/subtractsky/args.h: --numnearest and --kernelwidth moved to
-	the `Mesh grid' part of the help output. --checksmoothing and
-	--checkinterpolation also moved to the `Mesh grid' part.
+	the 'Mesh grid' part of the help output. --checksmoothing and
+	--checkinterpolation also moved to the 'Mesh grid' part.
 
 	* lib/mesh.c (checkgarray): Modified to show both the full, or
 	contiguous over full image, garray and the default one which is
@@ -642,7 +642,7 @@
 
 	* bin/mkprof/oneprofile.c (makepixbypix): Will only do monte carlo
 	integration when the profile is not a constant value.
-	(setprofparams): Changed the function of point to `Fixed'.
+	(setprofparams): Changed the function of point to 'Fixed'.
 
 	* bin/mkprof/mkprof.c (write): Changed to replace and read from an
 	image and add profiles on that.
@@ -666,8 +666,8 @@
 2015-04-06  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* bin/mkprof/mkprof.c: Corrected condition when a thread would
-	finish `build' profiles but the last set of its profiles wouldn't
-	pass onto `write'.
+	finish 'build' profiles but the last set of its profiles wouldn't
+	pass onto 'write'.
 
 	* bin/mknoise/: Changed background flux unit to magnitudes, not
 	flux.
@@ -676,13 +676,13 @@
 
 2015-04-03  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* lib/fitsarrayvv.c: Changed all occurences of `nul' or `NUL' to
-	`blank' or `BLANK'. The FITS standard defines a BLANK keyword for
+	* lib/fitsarrayvv.c: Changed all occurences of 'nul' or 'NUL' to
+	'blank' or 'BLANK'. The FITS standard defines a BLANK keyword for
 	integer types.
 	(copyrightandend): Will now right extra headers.
 	(arraytofitsimg): Can now accept header to write to output.
 
-	* include/fitsarrayvv.h: Changed all `NUL' macros to `BLANK'.
+	* include/fitsarrayvv.h: Changed all 'NUL' macros to 'BLANK'.
 
 2015-04-02  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
@@ -729,8 +729,8 @@
 	* bin/convolve/ui.c (preparearrays): The flip parts was missing a
 	-1.
 
-	* doc/gnuastro.texi: Changed all `gnuastro' occurrences in the
-	text to `Gnuastro'.
+	* doc/gnuastro.texi: Changed all 'gnuastro' occurrences in the
+	text to 'Gnuastro'.
 
 2015-03-14  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
@@ -845,8 +845,8 @@
 
 2015-02-13  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* bin/convertt/args.h (argp_options): `convert` changed to
-	`change`. Since the program name is also convert this could cause
+	* bin/convertt/args.h (argp_options): 'convert' changed to
+	'change'. Since the program name is also convert this could cause
 	confusions.
 
 	* doc/gnuastro.texi (Invoking astconvertt): Option explanations.
@@ -890,8 +890,8 @@
 
 2015-01-25  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* ./*: In all files, the name `AstrUtils` was changed to
-	`gnuastro` and the `astr` prefix was changed to `ast`.
+	* ./*: In all files, the name 'AstrUtils' was changed to
+	'gnuastro' and the 'astr' prefix was changed to 'ast'.
 
 2015-01-20  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
@@ -936,10 +936,10 @@
 	* bin/mkprof/mkprof.c (writelog): Added.
 	(write): Completed.
 
-	* bin/mkprof/args.h (arg_option): Added `--nomerged`.
+	* bin/mkprof/args.h (arg_option): Added '--nomerged'.
 
-	* lib/txtarrayvv.c (doformatting): Added option to use `f` in
-	printf or `g`.
+	* lib/txtarrayvv.c (doformatting): Added option to use 'f' in
+	printf or 'g'.
 
 2015-01-16  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
@@ -947,34 +947,34 @@
 	(saveindividual): Added.
 	(build): Is working until the profile is built.
 
-	* bin/mkprof/ellipse.h: Function taken to `box.h`.
+	* bin/mkprof/ellipse.h: Function taken to 'box.h'.
 
-	* bin/mkprof/ellipse.c: Function taken to `box.c`.
+	* bin/mkprof/ellipse.c: Function taken to 'box.c'.
 
-	* bin/mkprof/args.h (argp_option): added `--numrandom`, changed
-	`mginimg` to `psfinimg`.
+	* bin/mkprof/args.h (argp_option): added '--numrandom', changed
+	'mginimg' to 'psfinimg'.
 
 	* bin/imgcrop/main.h (imgcropparams): iwidth is now a 2 element
 	array.
 
-	* bin/imgcrop/crop.c: Removed `borderfromcenter` and
-	`correctflpixels` to `lib/box.c`.
+	* bin/imgcrop/crop.c: Removed 'borderfromcenter' and
+	'correctflpixels' to 'lib/box.c'.
 
-	* lib/stats.h: Changed to `statistics.h`, all non-used functions
+	* lib/stats.h: Changed to 'statistics.h', all non-used functions
 	removed.
 
 	* lib/arraymanip.c: Removed all non-used functions.
 
-	* include/stats.h: Changed to `statistics.h` and all non-used
+	* include/stats.h: Changed to 'statistics.h' and all non-used
 	functions removed.
 
 	* include/fixedstringmacros.h (ASTRUTILSBIBTEX): Added.
 
-	* include/commonargs.h (argp_option): Added `--cite` option and
-	added the `main.h` and `cite.h` header for each program to use
+	* include/commonargs.h (argp_option): Added '--cite' option and
+	added the 'main.h' and 'cite.h' header for each program to use
 	their names.
 
-	* include/checkset.h: function name `nameiswritable` is changed to
+	* include/checkset.h: function name 'nameiswritable' is changed to
 	dir0file1 which is much more descriptive.
 
 	* include/arraymanip.h: Removed all the non-used functions from
@@ -1042,7 +1042,7 @@
 	* bin/imgcrop/args.h (parse_opt): Removed the check below.
 
 	* include/commonargs.h (cparse_opt): Added check for not calling
-	`--setdirconf` and `--setusrconf` together.
+	'--setdirconf' and '--setusrconf' together.
 
 2015-01-05  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
@@ -1064,8 +1064,8 @@
 	* include/commonparams.h (commonparams): Similar to the change in
 	commonargs.h.
 
-	* include/commonargs.h (argp_option): `--dirdefaults` and
-	`--userdefaults` changed to `--setdirconf` and `--setusrconf`.
+	* include/commonargs.h (argp_option): '--dirdefaults' and
+	'--userdefaults' changed to '--setdirconf' and '--setusrconf'.
 
 	* doc/astrutils.texi: Included formath.texi to display math
 	equations, updates to the text.
@@ -1094,7 +1094,7 @@
 
 	* lib/defaults.c (addhomedir): Now returns char *.
 	(writelocaldefaultstop): Informs the user of how to make the
-	needed directory with `make -p`.
+	needed directory with 'make -p'.
 
 	* include/defaults.h (SAVE_LOCAL_DEFAULTS): changed addhomedir.
 	(CHECKSETDEFAULTS): A new macro to read defaults.
@@ -1103,11 +1103,11 @@
 	* doc/astrutils.texi: A lot of updates in the text! Listing them
 	all would be too much!
 
-	* configure.ac: `--with-numthreads` and `--enable-progname` were
+	* configure.ac: '--with-numthreads' and '--enable-progname' were
 	created along with all their necessary checks.
 
 	* Makefile.am: Set conditional subdirectories. Added
-	`basicchecks.sh` to the files to be distributed.
+	'basicchecks.sh' to the files to be distributed.
 
 2014-12-28  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 

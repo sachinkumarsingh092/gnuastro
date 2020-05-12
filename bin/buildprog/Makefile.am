@@ -37,7 +37,7 @@ endif
 ## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astbuildprog
 
-## Reason for linking with `libgnu' described in `bin/TEMPLATE/Makefile.am'.
+## Reason for linking with 'libgnu' described in 'bin/TEMPLATE/Makefile.am'.
 astbuildprog_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lgnuastro \
                      $(MAYBE_NORPATH)
 
@@ -56,11 +56,11 @@ EXTRA_DIST = main.h authors-cite.h args.h ui.h buildprog.h astbuildprog.conf.in
 # directories in these variables will be written into the final
 # BuildProgram configuration file.
 #
-# The user might give non-`-I' arguments to CPPFLAGS and non-`-L' arguments
+# The user might give non-'-I' arguments to CPPFLAGS and non-'-L' arguments
 # to LDFLAGS (see bug #54346). But here, we only want these two options,
-# and nothing else. To make the check, we'll see if `$i' (the input string)
-# is the same as `$v' or not. If the string starts with `-I' or `-L', it
-# will change between the two (the `-I' or `-L' have been removed), so it
+# and nothing else. To make the check, we'll see if '$i' (the input string)
+# is the same as '$v' or not. If the string starts with '-I' or '-L', it
+# will change between the two (the '-I' or '-L' have been removed), so it
 # shouldn't be the same.
 astbuildprog.conf: $(top_srcdir)/bin/buildprog/astbuildprog.conf.in
 	cat $< > $@
@@ -93,10 +93,10 @@ astbuildprog.conf: $(top_srcdir)/bin/buildprog/astbuildprog.conf.in
 
 
 ## The configuration file in BuildProgram must be built on the users's
-## system (see above). The built configuration file is needed during `make
+## system (see above). The built configuration file is needed during 'make
 ## check'. But the (built) configuration file should NOT be distributed in a
 ## tarball. Since all built files are distributed, the only way to avoid
-## the configuration file being distributed it so use a `nodist_' prefix.
+## the configuration file being distributed it so use a 'nodist_' prefix.
 ##
 ## NOTE: the man page is created in doc/Makefile.am
 nodist_sysconf_DATA = astbuildprog.conf

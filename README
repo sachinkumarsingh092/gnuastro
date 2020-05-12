@@ -102,7 +102,7 @@ categories/chapters.
 The programs listed above are designed to be highly modular and
 generic. For higher-level operations (combining multiple programs, or
 running a program in a special way), Gnuastro also installs Bash scripts
-(all prefixed with `astscript-'). They can be run like a program and behave
+(all prefixed with 'astscript-'). They can be run like a program and behave
 very similarly (with minor differences, as explained in the book).
 
   - astscript-sort-by-night: Given a list of FITS files, and a HDU and
@@ -150,7 +150,7 @@ The optional dependencies are:
 
 See the "Dependencies" section of the book for their detailed installation
 guides and optional dependencies to enable extra features. Prior to
-installation, you can find it in the `doc/gnuastro.texi' file (source of
+installation, you can find it in the 'doc/gnuastro.texi' file (source of
 the book), or on the web:
 
   https://www.gnu.org/software/gnuastro/manual/html_node/Dependencies.html
@@ -171,7 +171,7 @@ the standard GNU Build system as shown below. After the './configure'
 command, Gnuastro will print messages upon the successful completion of
 each step, giving further information and suggestions for the next steps.
 
-    tar xf gnuastro-latest.tar.lz        # Also works for `tar.gz' files
+    tar xf gnuastro-latest.tar.lz        # Also works for 'tar.gz' files
     cd gnuastro-X.X
     ./configure
     make
@@ -194,7 +194,7 @@ To access the appropriate section of the Gnuastro book/documentation from
 your command-line (in the middle of your work, without distracting your
 self by having to move your hand off the keyboard), please run any of the
 following two commands. Note that you can leave the Info environment by
-pressing the key `q'.
+pressing the key 'q'.
 
     info ProgramName               # For example 'info NoiseChisel'
     info astprogname               # For example 'info astnoisechisel'
@@ -223,7 +223,7 @@ Reporting bugs
 
 The most effective way to report bugs is explained in the "Report a bug"
 section of the documentation, after installation, you can read it by
-running (leave the Info environment by pressing the `q' key afterwards):
+running (leave the Info environment by pressing the 'q' key afterwards):
 
     info bug-gnuastro
 

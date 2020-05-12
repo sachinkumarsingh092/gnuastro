@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# Separate input datasets into multiple nights, run with `--help', or see
-# description under `print_help' (below) for more.
+# Separate input datasets into multiple nights, run with '--help', or see
+# description under 'print_help' (below) for more.
 #
 # Original author:
 #     Mohammad Akhlaghi <mohammad@akhlaghi.org>
@@ -45,7 +45,7 @@ scriptname=@SCRIPT_NAME@
 
 
 
-# Output of `--usage' and `--help':
+# Output of '--usage' and '--help':
 print_usage() {
     cat <<EOF
 $scriptname: run with '--help' for list of options
@@ -112,7 +112,7 @@ EOF
 
 
 
-# Output of `--version':
+# Output of '--version':
 print_version() {
     cat <<EOF
 $scriptname (GNU Astronomy Utilities) $version
@@ -157,23 +157,23 @@ check_v() {
 # OPTIONS WITH A VALUE:
 #
 #   Each option has three lines because we want to all common formats: for
-#   long option names: `--longname value' and `--longname=value'. For short
-#   option names we want `-l value', `-l=value' and `-lvalue' (where `-l'
-#   is the short version of the hypothetical `--longname' option).
+#   long option names: '--longname value' and '--longname=value'. For short
+#   option names we want '-l value', '-l=value' and '-lvalue' (where '-l'
+#   is the short version of the hypothetical '--longname' option).
 #
 #   The first case (with a space between the name and value) is two
 #   command-line arguments. So, we'll need to shift it two times. The
 #   latter two cases are a single command-line argument, so we just need to
 #   "shift" the counter by one. IMPORTANT NOTE: the ORDER OF THE LATTER TWO
-#   cases matters: `-h*' should be checked only when we are sure that its
-#   not `-h=*').
+#   cases matters: '-h*' should be checked only when we are sure that its
+#   not '-h=*').
 #
 # OPTIONS WITH NO VALUE (ON-OFF OPTIONS)
 #
-#   For these, we just want the two forms of `--longname' or `-l'. Nothing
+#   For these, we just want the two forms of '--longname' or '-l'. Nothing
 #   else. So if an equal sign is given we should definitely crash and also,
 #   if a value is appended to the short format it should crash. So in the
-#   second test for these (`-l*') will account for both the case where we
+#   second test for these ('-l*') will account for both the case where we
 #   have an equal sign and where we don't.
 while [ $# -gt 0 ]
 do
@@ -211,7 +211,7 @@ do
         # Unrecognized option:
         -*) echo "$scriptname: unknown option '$1'"; exit 1;;
 
-        # Not an option (not starting with a `-'): assumed to be input FITS
+        # Not an option (not starting with a '-'): assumed to be input FITS
         # file name.
         *) inputs="$1 $inputs"; shift;;
     esac

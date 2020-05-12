@@ -50,7 +50,7 @@ already present in your operating system's package management system.
     the bootstrap script automatically. However, if you don't already have
     them, we recommed to clone them separately as discussed below. They
     should be in the same directory (let's call it 'DEVDIR', can be any
-    directory). These packages are regularly updated, so run `git pull'
+    directory). These packages are regularly updated, so run 'git pull'
     within the cloned directories to keep them up to date before
     bootstrapping. See the "Bootstrapping dependencies" and "Bootstrapping"
     sections of the book for more information.

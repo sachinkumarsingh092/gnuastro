@@ -79,7 +79,7 @@ match_add_all_cols(char *filename, char *extname, gal_list_str_t *stdinlines,
     }
 
   /* If a new list of columns is ready, re-order tham and write
-     them in. Note that there may be multiple `_all' terms, so we
+     them in. Note that there may be multiple '_all' terms, so we
      need to do this after parsing all the requested columns. */
   gal_list_str_reverse(&finalcols);
 
@@ -111,12 +111,12 @@ match_cat_from_coord(struct matchparams *p, gal_list_str_t *cols,
   colcounter=0;
   for(col=cols;col!=NULL;col=col->next)
     {
-      /* In `ui_preparations_out_cols', we have done the necessary sanity
+      /* In 'ui_preparations_out_cols', we have done the necessary sanity
          checks, so we can safely use the values. */
       rptr=gal_type_string_to_number(col->v, &readtype);
       if(readtype!=GAL_TYPE_UINT8)
         error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
-              "the problem. The given string didn't have a `uint8' type",
+              "the problem. The given string didn't have a 'uint8' type",
               __func__, PACKAGE_BUGREPORT);
       read=*((uint8_t *)rptr);
 
@@ -172,13 +172,13 @@ match_catalog_read_write_all(struct matchparams *p, size_t *permutation,
   if(p->outcols)
     {
       /* As a special situation, the user can ask to incude all of the
-         columns from one of the inputs with the special `_all' name. So,
+         columns from one of the inputs with the special '_all' name. So,
          we'll check if that is the case and write in all the columns where
          they are requested.*/
       for(tcol=incols; tcol!=NULL; tcol=tcol->next)
         if(!strcmp(tcol->v,"_all")) { hasall=1; break; }
 
-      /* If atleast one instance of `_all' is present, then reset the list
+      /* If atleast one instance of '_all' is present, then reset the list
          of columns to include in output. */
       if(hasall)
         {
@@ -200,8 +200,8 @@ match_catalog_read_write_all(struct matchparams *p, size_t *permutation,
   else cols=incols;
 
 
-  /* Read the full table. NOTE that with `--coord', for the second input,
-     both `filename' and `p->stdinlines' will be NULL. */
+  /* Read the full table. NOTE that with '--coord', for the second input,
+     both 'filename' and 'p->stdinlines' will be NULL. */
   if(filename || p->stdinlines)
     cat=gal_table_read(filename, hdu, filename ? NULL : p->stdinlines, cols,
                        p->cp.searchin, p->cp.ignorecase, p->cp.minmapsize,
@@ -238,7 +238,7 @@ match_catalog_read_write_all(struct matchparams *p, size_t *permutation,
         else
           tmp->size=tmp->dsize[0]=nummatched;
       }
-  /* If no match was found (`permutation==NULL'), and the matched columns
+  /* If no match was found ('permutation==NULL'), and the matched columns
      are requested, empty all the columns that are to be written (only
      keeping the meta-data). */
   else
@@ -261,10 +261,10 @@ match_catalog_read_write_all(struct matchparams *p, size_t *permutation,
       /* Write the catalog to a file. */
       gal_table_write(cat, NULL, p->cp.tableformat, outname, extname, 0);
 
-      /* Correct arrays and sizes (when `notmatched' was called). The
-         `array' element has to be corrected for later freeing.
+      /* Correct arrays and sizes (when 'notmatched' was called). The
+         'array' element has to be corrected for later freeing.
 
-         IMPORTANT: `--notmatched' cannot be called with `--outcols'. So
+         IMPORTANT: '--notmatched' cannot be called with '--outcols'. So
          you don't have to worry about the checks here being done later. */
       if(p->notmatched)
         {
@@ -334,8 +334,8 @@ match_catalog_write_one(struct matchparams *p, gal_data_t *a, gal_data_t *b,
   /* A small sanity check. */
   if(a || b)
     error(EXIT_FAILURE, 0, "%s: a bug! Please contact us to fix the problem. "
-          "The two `a' and `b' arrays must be NULL by this point: "
-          "`a' %s NULL, `b' %s NULL", __func__, a?"is not":"is",
+          "The two 'a' and 'b' arrays must be NULL by this point: "
+          "'a' %s NULL, 'b' %s NULL", __func__, a?"is not":"is",
           b?"is not":"is");
 
   /* Reverse the table and write it out. */
@@ -366,7 +366,7 @@ match_catalog(struct matchparams *p)
     {
       /* Read (and possibly write) the outputs. Note that we only need to
          read the table when it is necessary for the output (the user might
-         have asked for `--outcols', only with columns of one of the two
+         have asked for '--outcols', only with columns of one of the two
          inputs). */
       if(p->outcols==NULL || p->acols)
         a=match_catalog_read_write_all(p, mcols?mcols->array:NULL,
@@ -401,7 +401,7 @@ match_catalog(struct matchparams *p)
       mcols=tmp;
 
       /* We also want everything to be incremented by one. In a C
-         program, counting starts with zero, so `gal_match_coordinates'
+         program, counting starts with zero, so 'gal_match_coordinates'
          will return indexs starting from zero. But outside a C
          program, on the command-line people expect counting to start
          from 1 (for example with AWK). */

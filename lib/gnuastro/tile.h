@@ -125,11 +125,11 @@ struct gal_tile_two_layer_params
   size_t         *numtilesinch; /* Tile no. in each dim. on one channel.  */
   char          *tilecheckname; /* Name of file to check tiles.           */
   size_t          *permutation; /* Tile pos. in memory --> pos. overall.  */
-  size_t           *firsttsize; /* See `gal_tile_full_regular_first'.     */
+  size_t           *firsttsize; /* See 'gal_tile_full_regular_first'.     */
 
   /* Actual tile and channel data structures. */
-  gal_data_t            *tiles; /* Tiles array (also linked with `next'). */
-  gal_data_t         *channels; /* Channels array (linked with `next').   */
+  gal_data_t            *tiles; /* Tiles array (also linked with 'next'). */
+  gal_data_t         *channels; /* Channels array (linked with 'next').   */
 };
 
 
@@ -179,11 +179,11 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
 /***********************************************************************/
 /* Useful when the input and other types are already known. We want this to
    be self-sufficient (and be possible to call it independent of
-   `GAL_TILE_PARSE_OPERATE'), so some variables (basic definitions) that
-   are already defined in `GAL_TILE_PARSE_OPERATE' re-defined here. */
+   'GAL_TILE_PARSE_OPERATE'), so some variables (basic definitions) that
+   are already defined in 'GAL_TILE_PARSE_OPERATE' re-defined here. */
 #define GAL_TILE_PO_OISET(IT, OT, IN, OTHER, PARSE_OTHER, CHECK_BLANK, OP) { \
     IT *i=IN->array;                                                    \
-    gal_data_t *tpo_other=OTHER; /* `OTHER' may be NULL. */             \
+    gal_data_t *tpo_other=OTHER; /* 'OTHER' may be NULL. */             \
     gal_data_t *tpo_oblock = OTHER ? gal_tile_block(OTHER) : NULL;      \
                                                                         \
     size_t tpo_s_e_i_junk[2]={0,0};                                     \
@@ -197,19 +197,19 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
     size_t tpo_s_e_i[2]={0,tpo_iblock->size-1}; /* -1: this is INCLUSIVE */ \
                                                                         \
                                                                         \
-    /* A small sanity check: if `OTHER' is given, and it is a block, */ \
-    /* then it must have the same size as `IN's block. On the other  */ \
-    /* hand, when `OTHER' is a tile, its must have `IN's size.       */ \
+    /* A small sanity check: if 'OTHER' is given, and it is a block, */ \
+    /* then it must have the same size as 'IN's block. On the other  */ \
+    /* hand, when 'OTHER' is a tile, its must have 'IN's size.       */ \
     if( tpo_parse_other )                                               \
       {                                                                 \
-        if( OTHER==tpo_oblock )    /* `OTHER' is a block. */            \
+        if( OTHER==tpo_oblock )    /* 'OTHER' is a block. */            \
           {                                                             \
             if( gal_dimension_is_different(tpo_iblock, tpo_oblock) )    \
               {                                                         \
-                /* `error' function, is a GNU extension, see above. */  \
+                /* 'error' function, is a GNU extension, see above. */  \
                 fprintf(stderr, "GAL_TILE_PO_OISET: when "              \
-                        "`PARSE_OTHER' is non-zero, the allocated "     \
-                        "block size of `IN' and `OTHER' must be "       \
+                        "'PARSE_OTHER' is non-zero, the allocated "     \
+                        "block size of 'IN' and 'OTHER' must be "       \
                         "equal, but they are not: %zu and %zu "         \
                         "elements respectively\n", tpo_iblock->size,    \
                         tpo_oblock->size);                              \
@@ -219,12 +219,12 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
         else                                                            \
           if( gal_dimension_is_different(IN, OTHER) )                   \
             {                                                           \
-              /* The `error' function, is a GNU extension and this */   \
+              /* The 'error' function, is a GNU extension and this */   \
               /* is a header, not a library which the user has to  */   \
               /* compile every time (on their own system).         */   \
               fprintf(stderr, "GAL_TILE_PO_OISET: when "                \
-                      "`PARSE_OTHER' is non-zero, the sizes of `IN' "   \
-                      "and `OTHER' must be equal (in all "              \
+                      "'PARSE_OTHER' is non-zero, the sizes of 'IN' "   \
+                      "and 'OTHER' must be equal (in all "              \
                       "dimensions), but they are not: %zu and %zu "     \
                       "elements respectively\n", IN->size,              \
                       tpo_other->size);                                 \
@@ -233,16 +233,16 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
       }                                                                 \
                                                                         \
                                                                         \
-    /* Write the blank value for the input type into `b'. */            \
+    /* Write the blank value for the input type into 'b'. */            \
     gal_blank_write(&b, tpo_iblock->type);                              \
                                                                         \
                                                                         \
     /* If this is a tile, not a full block, then we need to set the  */ \
-    /* starting pointers (`tpo_st' and `tpo_ost'). The latter needs  */ \
+    /* starting pointers ('tpo_st' and 'tpo_ost'). The latter needs  */ \
     /* special attention: if it is a block, then we will use the     */ \
-    /* the same starting element as the input tile. If `OTHER' is a  */ \
+    /* the same starting element as the input tile. If 'OTHER' is a  */ \
     /* tile, then use its own starting position (recall that we have */ \
-    /* already made sure that `IN' and `OTHER' have the same size.   */ \
+    /* already made sure that 'IN' and 'OTHER' have the same size.   */ \
     if(IN!=tpo_iblock)                                                  \
       {                                                                 \
         tpo_st = gal_tile_start_end_ind_inclusive(IN, tpo_iblock,       \
@@ -260,7 +260,7 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
     /* Go over contiguous patches of memory. */                         \
     while( tpo_s_e_i[0] + tpo_i_increment <= tpo_s_e_i[1] )             \
       {                                                                 \
-        /* If we are on a tile, reset `i' and `o'. */                   \
+        /* If we are on a tile, reset 'i' and 'o'. */                   \
         if(IN!=tpo_iblock)                                              \
           {                                                             \
             tpo_f = ( ( i = tpo_st + tpo_i_increment )                  \
@@ -270,9 +270,9 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
                                                                         \
         /* Do the operation depending the nature of the blank value. */ \
         /* Recall that for integer types, the blank value must be    */ \
-        /* checked with `=='. But for floats, the blank value can be */ \
+        /* checked with '=='. But for floats, the blank value can be */ \
         /* a NaN. Recall that a NAN will fail any comparison         */ \
-        /* including `=='. So when the blank value is not equal to   */ \
+        /* including '=='. So when the blank value is not equal to   */ \
         /* itself, then it is floating point and is a NAN. In that   */ \
         /* case, the only way to check if a data element is blank or */ \
         /* not is to see if the value of each element is equal to    */ \
@@ -288,9 +288,9 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
           do    {           {OP;} if(tpo_parse_other) ++o;} while(++i<tpo_f);\
                                                                         \
         /* Set the incrementation. On a fully allocated iblock (when */ \
-        /* `IN==tpo_iblock'), we have already gone through the whole */ \
+        /* 'IN==tpo_iblock'), we have already gone through the whole */ \
         /* array, so we'll set the incrementation to the size of the */ \
-        /* whole block. This will stop the `while' loop above. On a  */ \
+        /* whole block. This will stop the 'while' loop above. On a  */ \
         /* tile, we need to increment to the next contiguous patch   */ \
         /* of memory to continue parsing this tile. */                  \
         tpo_i_increment += ( IN==tpo_iblock                             \
@@ -301,8 +301,8 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
                                                         NULL) );        \
                                                                         \
         /* Similarly, increment the other array if necessary. Like   */ \
-        /* the above, when `OTHER' is a full block, we'll just use   */ \
-        /* the same increment as `IN'. Otherwise, when `OTHER' is a  */ \
+        /* the above, when 'OTHER' is a full block, we'll just use   */ \
+        /* the same increment as 'IN'. Otherwise, when 'OTHER' is a  */ \
         /* tile, calculate its increment based on its own block.     */ \
         if(tpo_parse_other)                                             \
           {                                                             \
@@ -315,7 +315,7 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
           }                                                             \
       }                                                                 \
                                                                         \
-    /* This is done in case the caller doesn't need `o' to avoid */     \
+    /* This is done in case the caller doesn't need 'o' to avoid */     \
     /* compiler warnings. */                                            \
     o = o ? o+0 : NULL;                                                 \
   }
@@ -355,7 +355,7 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
       GAL_TILE_PO_OISET(double,   OT,IN,OTHER,PARSE_OTHER,CHECK_BLANK,OP); \
       break;                                                            \
     default:                                                            \
-      { /* `error' function might not be available for the user. */     \
+      { /* 'error' function might not be available for the user. */     \
         fprintf(stderr, "GAL_TILE_PO_OSET: type code %d not recognized",\
                 tpo_iblock->type);                                      \
         exit(EXIT_FAILURE);                                             \
@@ -365,7 +365,7 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
 
 
 /* Parse over a region of memory (can be an n-dimensional tile or a fully
-   allocated block of memory) and do a certain operation. If `OTHER' is not
+   allocated block of memory) and do a certain operation. If 'OTHER' is not
    NULL, this macro will also parse it at the same time . Note that OTHER
    must either have only one element (for the whole input) or have exactly
    the same number of elements as the input (one value for one
@@ -412,13 +412,13 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl);
         default:                                                        \
           {                                                             \
             fprintf(stderr, "type code %d not recognized in "           \
-                    "`GAL_TILE_PARSE_OPERATE'", tpo_oblock->type);      \
+                    "'GAL_TILE_PARSE_OPERATE'", tpo_oblock->type);      \
             exit(EXIT_FAILURE);                                         \
           }                                                             \
         }                                                               \
     else                                                                \
-      /* When `OTHER==NULL', its type is irrelevant, we'll just use */  \
-      /*`int' as a place holder. */                                     \
+      /* When 'OTHER==NULL', its type is irrelevant, we'll just use */  \
+      /*'int' as a place holder. */                                     \
       GAL_TILE_PO_OSET(int,         IN,OTHER,PARSE_OTHER,CHECK_BLANK,OP); \
   }
 

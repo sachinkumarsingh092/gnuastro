@@ -411,7 +411,7 @@ struct argp_option program_options[] =
       "Identifier columns",
       UI_GROUP_COLUMNS_IDS
     },
-    {  /* `ids' is not a unique column, it is a combination of several
+    {  /* 'ids' is not a unique column, it is a combination of several
           columns. */
       "ids",
       UI_KEY_IDS,

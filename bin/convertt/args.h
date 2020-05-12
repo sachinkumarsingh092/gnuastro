@@ -191,7 +191,7 @@ struct argp_option program_options[] =
       UI_KEY_CHANGE,
       "STR",
       0,
-      "Change pixel values `from_1:to_1,from_2:to_2`.",
+      "Change pixel values 'from_1:to_1,from_2:to_2'.",
       UI_GROUP_FLUX,
       &p->changestr,
       GAL_TYPE_STRING,

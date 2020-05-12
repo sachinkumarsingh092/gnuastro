@@ -92,8 +92,8 @@ gal_tiff_suffix_is_tiff(char *name)
 
 
 /* Users may define the TIFF directory to read as a string, in that case,
-   this function can be used to convert it to a `size_t' for use in
-   `gal_tiff_read'.  */
+   this function can be used to convert it to a 'size_t' for use in
+   'gal_tiff_read'.  */
 size_t
 gal_tiff_dir_string_read(char *string)
 {
@@ -104,7 +104,7 @@ gal_tiff_dir_string_read(char *string)
   errno=0;
   dir=strtol(string, &tailptr, 0);
   if(tailptr==string)
-    error(EXIT_FAILURE, 0, "%s: `%s' couldn't be read as an integer",
+    error(EXIT_FAILURE, 0, "%s: '%s' couldn't be read as an integer",
           __func__, string);
   if(errno)
     error(EXIT_FAILURE, errno, "%s: reading %s", __func__, string);
@@ -162,7 +162,7 @@ tiff_type_read(TIFF *tif, char *filename, size_t dir)
   tiff_read_tag(tif, TIFFTAG_BITSPERSAMPLE, &bitspersample, filename, dir);
 
   /* Read the formatting of each pixel. If no such keyword exists, use the
-     value of `SAMPLEFORMAT_UINT'. */
+     value of 'SAMPLEFORMAT_UINT'. */
   if( TIFFGetField(tif, TIFFTAG_SAMPLEFORMAT, &sampleformat) != 1 )
     sampleformat=SAMPLEFORMAT_UINT;
 
@@ -239,7 +239,7 @@ tiff_img_info(TIFF *tif, uint8_t *type, size_t *ndim, size_t *dsize,
   uint16_t u16;
   uint32_t u32;
 
-  /* Based on if `IMAGEDEPTH' is defined in the TIFF header, set the
+  /* Based on if 'IMAGEDEPTH' is defined in the TIFF header, set the
      dimensions. */
   if( TIFFGetField(tif, TIFFTAG_IMAGEDEPTH, &u32) )
     dsize[ d++ ]=u32;
@@ -266,7 +266,7 @@ tiff_img_info(TIFF *tif, uint8_t *type, size_t *ndim, size_t *dsize,
 
 
 
-/* Based on the `TIFFReadContigStripData' function of `tools/tiffinfo.c' of
+/* Based on the 'TIFFReadContigStripData' function of 'tools/tiffinfo.c' of
    Libtiff's source. */
 void
 tiff_read_contig_strip_data(TIFF *tif, char *filename, size_t dir,
@@ -299,8 +299,8 @@ tiff_read_contig_strip_data(TIFF *tif, char *filename, size_t dir,
               __func__, filename, dir);
 
       /* Copy the contents of the buffer to the output array. Note that
-         `ostart' is the byte count already, so the type is
-         irrelevant. Thus, we can read `out->array' as a `char *'
+         'ostart' is the byte count already, so the type is
+         irrelevant. Thus, we can read 'out->array' as a 'char *'
          pointer.*/
       memcpy( (char *)(out->array)+ostart, buf, nrow*scanline);
       ostart+=nrow*scanline;
@@ -314,7 +314,7 @@ tiff_read_contig_strip_data(TIFF *tif, char *filename, size_t dir,
 
 
 
-/* Based on the `TIFFReadSeparateStripData' function of `tools/tiffinfo.c'
+/* Based on the 'TIFFReadSeparateStripData' function of 'tools/tiffinfo.c'
    of Libtiff's source. */
 static void
 tiff_read_separate_strip_data(TIFF* tif, char *filename, size_t dir,
@@ -404,17 +404,17 @@ tiff_separate_channels_reverse(gal_data_t *out, size_t numch,
   /* Parse over the rows and write them in the output. */
   for(i=0;i<out->dsize[0];++i)
     {
-      /* `j' is the output row. */
+      /* 'j' is the output row. */
       j=out->dsize[0]-1-i;
 
-      /* `k' is the element in each row and `l' is the color/channel. */
+      /* 'k' is the element in each row and 'l' is the color/channel. */
       for(k=0;k<ch->dsize[1];++k)
         {
           /* Initialize the color/channel counter ocpy the elements. */
           l=0;
           for(tch=ch; tch!=NULL; tch=tch->next)
             {
-              /* Elements of the `j'th row into the `i'th. */
+              /* Elements of the 'j'th row into the 'i'th. */
               memcpy( (char *)(tch->array) + i*width  + k*so,
                       (char *)(out->array) + j*lwidth + k*numch*so + so*l,
                       so);
@@ -461,14 +461,14 @@ tiff_reverse_rows(gal_data_t *out)
       /* Go over the channel. */
       while(j>i)
         {
-          /* Copy the `i'th row into a temporary array. */
+          /* Copy the 'i'th row into a temporary array. */
           memcpy(tmp, (char *)(ch->array)+i*width, width);
 
-          /* Put the `j'th row into the `i'th row. */
+          /* Put the 'j'th row into the 'i'th row. */
           memcpy( (char *)(ch->array)+i*width, (char *)(ch->array)+j*width,
                   width );
 
-          /* Put the `tmp' row into `j'. */
+          /* Put the 'tmp' row into 'j'. */
           memcpy( (char *)(ch->array)+j*width, tmp, width);
 
           /* Increment the points. */
@@ -488,8 +488,8 @@ tiff_reverse_rows(gal_data_t *out)
 
 
 
-/* Read the data following the `TIFFReadData' of Libtiff's
-   `tools/tiffinfo.c' in the libtiff source code. */
+/* Read the data following the 'TIFFReadData' of Libtiff's
+   'tools/tiffinfo.c' in the libtiff source code. */
 static gal_data_t *
 tiff_img_read(TIFF *tif, char *filename, size_t dir, size_t minmapsize,
               int quietmmap)
@@ -522,7 +522,7 @@ tiff_img_read(TIFF *tif, char *filename, size_t dir, size_t minmapsize,
 
 
   /* The reading of the dataset depends on how it is organized, so first
-     we'll look into the `planarconfig' field. */
+     we'll look into the 'planarconfig' field. */
   if( TIFFIsTiled(tif) )
     {
       if(config==PLANARCONFIG_CONTIG)
@@ -579,7 +579,7 @@ gal_tiff_read(char *filename, size_t dir, size_t minmapsize, int quietmmap)
   /* Open the TIFF file. */
   tif=TIFFOpen(filename, "r");
   if(tif==NULL)
-    error(EXIT_FAILURE, 0, "%s: `%s' couldn't be opened for reading",
+    error(EXIT_FAILURE, 0, "%s: '%s' couldn't be opened for reading",
           __func__, filename);
 
   /* If anything other than the first directory (value of zero) is
@@ -594,7 +594,7 @@ gal_tiff_read(char *filename, size_t dir, size_t minmapsize, int quietmmap)
 
           /* Close the TIFF file and return. */
           TIFFClose(tif);
-          error(EXIT_FAILURE, 0, "%s: `%s' has %zu director%s/extension%s, "
+          error(EXIT_FAILURE, 0, "%s: '%s' has %zu director%s/extension%s, "
                 "and directories are counted from 0. You have asked for "
                 "directory %zu", __func__, filename, dircount,
                 dircount==1?"y":"ies", dircount==1?"":"s", dir);

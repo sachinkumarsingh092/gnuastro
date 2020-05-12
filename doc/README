@@ -13,7 +13,7 @@ Documentation (manual):
 -----------------------
 
 The documentation of Gnuastro is written in Texinfo. The main source
-file is `gnuastro.texi'.
+file is 'gnuastro.texi'.
 
 Webpage (only for maintainer)
 -----------------------------
@@ -30,18 +30,18 @@ in a specified directory anywhere you like (specified by the TOPWEBCHECKOUT
 shell variable). You don't have to version control any of the files in that
 directory, but it is easiest to have a fixed place since CVS needs a local
 copy. Unfortunately the GNU webpage runs on CVS! Read the top comments of
-the `forwebpage' script for instructions on what to do for the first time
+the 'forwebpage' script for instructions on what to do for the first time
 and later times.
 
 Update MathJax (for the webpage, only for maintainer)
 -----------------------------------------------------
 
-There is a script in the `MathJax' directory on the Gnuastro webpage
-directory to update MathJax (`addmissing.sh'). You can get a recent
+There is a script in the 'MathJax' directory on the Gnuastro webpage
+directory to update MathJax ('addmissing.sh'). You can get a recent
 version of MathJax from its webpage and put it in the correct place
 (see the comments in the script). That script will then add all the
 new files from MathJax to the checked out files and then you can use
-`cvs -nq update' and `cvs add' to add all the new files and
+'cvs -nq update' and 'cvs add' to add all the new files and
 directories. Just note that CVS is an antique(!) and so you have to
 add all the files in separate directories separately, first add the
 directory, then CVS will find the untracked files inside it and add
@@ -50,7 +50,7 @@ them one by one!
 Image copyright
 ---------------
 
-This directory also contains the `gnuastrologo.xcf' image which is a crude
+This directory also contains the 'gnuastrologo.xcf' image which is a crude
 logo for Gnuastro in case we need it. It is released under the GNU Free
 Documentation License, Version 1.3 or later, just like this README
 (statement is at the bottom of this file)

@@ -78,7 +78,7 @@ builtqueue_addempty(struct builtqueue **bq)
   errno=0;
   tbq=malloc(sizeof *tbq);
   if(tbq==NULL)
-    error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `tbq'",
+    error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for 'tbq'",
           __func__, sizeof *tbq);
 
   /* Initialize the values (same order as in structure definition). */
@@ -134,8 +134,8 @@ saveindividual(struct mkonthread *mkp)
   char *filename, *jobname, *outdir=p->outdir;
 
 
-  /* Write the name and remove a similarly named file when the `--kernel'
-     option wasn't called. If `--kernel' is called, then we should just use
+  /* Write the name and remove a similarly named file when the '--kernel'
+     option wasn't called. If '--kernel' is called, then we should just use
      the final merged filename. */
   if(p->kernel)
     filename=p->mergedimgname;
@@ -154,7 +154,7 @@ saveindividual(struct mkonthread *mkp)
   else
     {
       /* Allocate space for the corrected crpix and fill it in. Both
-         `crpix' and `fpixel_i' are in FITS order. */
+         'crpix' and 'fpixel_i' are in FITS order. */
       crpix=gal_pointer_allocate(GAL_TYPE_FLOAT64, ndim, 0, __func__,
                                  "crpix");
       for(i=0;i<ndim;++i)
@@ -345,7 +345,7 @@ mkprof_build_single(struct mkonthread *mkp, long *fpixel_i, long *lpixel_i,
      overlapping region. */
   if(p->out)
     {
-      /* Note that `fpixel_i' and `lpixel_o' were in the un-oversampled
+      /* Note that 'fpixel_i' and 'lpixel_o' were in the un-oversampled
          image, they are also in the FITS coordinates. */
       for(i=0;i<ndim;++i)
         {
@@ -413,10 +413,10 @@ mkprof_add_built_to_write_queue(struct mkonthread *mkp,
       p->bq=ibq;
 
       /* If the list was empty when you locked the mutex, then either
-         `mkprof_write` is waiting behind a condition variable for you to
+         'mkprof_write' is waiting behind a condition variable for you to
          fill it up or not (either it hasn't got to setting the condition
          variable yet (this function locked the mutex before
-         `mkprof_write`) or it just got the list to be made and is busy
+         'mkprof_write') or it just got the list to be made and is busy
          writing the arrays in the output). In either case,
          pthread_cond_signal will work. */
       if((*fbq)->next==NULL)
@@ -457,13 +457,13 @@ mkprof_add_built_to_write_queue(struct mkonthread *mkp,
    About the Central x and y of each profile:
 
    The user has asked for the profile to be built on the coordinates
-   (real numbers) of `x` and `y` in an output image in the FITS
+   (real numbers) of 'x' and 'y' in an output image in the FITS
    format. We are building the full image for each galaxy separately
    in an array with an odd number of sides which maybe oversampled.
 
    In the FITS format, the pixel centers have an integer value. So for
    example in 1D, a pixel whose center value is 10.00 covers the area
-   of: [9.5,10.5). We want the fractional part of `x` (don't forget,
+   of: [9.5,10.5). We want the fractional part of 'x' (don't forget,
    this example is 1D) to be in the central pixel of this separate
    array (with odd sides) that we will be building.
 
@@ -489,19 +489,19 @@ mkprof_build(void *inparam)
   /* Make each profile that was specified for this thread. */
   for(i=0; mkp->indexs[i]!=GAL_BLANK_SIZE_T; ++i)
     {
-      /* Create a new builtqueue element with all the information. `fbq'
-         will be used when we want to add `ibq' to `p->bq'. It is defined
-         so we don't have to waste time traversing the `ibq'. Its
-         characteristic compared to the other elements of `ibq' is that
-         `fbq->next==NULL'. So to add ibq to p->bq, we just have to set
-         `fbq->next=p->bq' and then set `p->bq' to `ibq'.*/
+      /* Create a new builtqueue element with all the information. 'fbq'
+         will be used when we want to add 'ibq' to 'p->bq'. It is defined
+         so we don't have to waste time traversing the 'ibq'. Its
+         characteristic compared to the other elements of 'ibq' is that
+         'fbq->next==NULL'. So to add ibq to p->bq, we just have to set
+         'fbq->next=p->bq' and then set 'p->bq' to 'ibq'.*/
       builtqueue_addempty(&mkp->ibq);
       ibq=mkp->ibq;
       id=ibq->id=mkp->indexs[i];
       if(fbq==NULL) fbq=ibq;
 
 
-      /* Write the necessary parameters for this profile into `mkp'.*/
+      /* Write the necessary parameters for this profile into 'mkp'.*/
       oneprofile_set_prof_params(mkp);
 
 
@@ -528,7 +528,7 @@ mkprof_build(void *inparam)
 
           default:
             error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s to "
-                  "address the issue. %zu is not recognized for `ndim'",
+                  "address the issue. %zu is not recognized for 'ndim'",
                   __func__, PACKAGE_BUGREPORT, ndim);
           }
 
@@ -693,8 +693,8 @@ mkprof_write(struct mkprofparams *p)
       if(!p->cp.quiet) gettimeofday(&t1, NULL);
 
       /* Write the final image into a FITS file with the requested
-         type. Until now, we were using `p->wcs' for the WCS, but from now
-         on, will put it in `out' to also free it while freeing `out'. */
+         type. Until now, we were using 'p->wcs' for the WCS, but from now
+         on, will put it in 'out' to also free it while freeing 'out'. */
       out->wcs=p->wcs;
       gal_fits_img_write_to_type(out, p->mergedimgname, NULL,
                                  PROGRAM_NAME, p->cp.type);
@@ -761,7 +761,7 @@ mkprof(struct mkprofparams *p)
   errno=0;
   mkp=malloc(nt*sizeof *mkp);
   if(mkp==NULL)
-    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `mkp'",
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for 'mkp'",
           __func__, (nt-1)*sizeof *mkp);
 
 
@@ -771,7 +771,7 @@ mkprof(struct mkprofparams *p)
   gal_threads_dist_in_threads(p->num, nt, &indexs, &thrdcols);
 
 
-  /* `onaxes' are size of the merged output image without over-sampling or
+  /* 'onaxes' are size of the merged output image without over-sampling or
      shifting in FITS order. When no output merged image is needed, we can
      ignore it. */
   if(p->out)

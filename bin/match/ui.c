@@ -145,18 +145,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
 {
   struct matchparams *p = state->input;
 
-  /* Pass `gal_options_common_params' into the child parser.  */
+  /* Pass 'gal_options_common_params' into the child parser.  */
   state->child_inputs[0] = &p->cp;
 
   /* In case the user incorrectly uses the equal sign (for example
-     with a short format or with space in the long format, then `arg`
+     with a short format or with space in the long format, then 'arg'
      start with (if the short version was called) or be (if the long
      version was called with a space) the equal sign. So, here we
      check if the first character of arg is the equal sign, then the
      user is warned and the program is stopped: */
   if(arg && arg[0]=='=')
-    argp_error(state, "incorrect use of the equal sign (`=`). For short "
-               "options, `=` should not be used and for long options, "
+    argp_error(state, "incorrect use of the equal sign ('='). For short "
+               "options, '=' should not be used and for long options, "
                "there should be no space between the option, equal sign "
                "and value");
 
@@ -210,12 +210,12 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /***************       Sanity Check         *******************/
 /**************************************************************/
 /* Read and check ONLY the options. When arguments are involved, do the
-   check in `ui_check_options_and_arguments'. */
+   check in 'ui_check_options_and_arguments'. */
 static void
 ui_read_check_only_options(struct matchparams *p)
 {
   if(p->outcols && p->notmatched)
-    error(EXIT_FAILURE, 0, "`--outcols' and `--notmatched' cannot be called "
+    error(EXIT_FAILURE, 0, "'--outcols' and '--notmatched' cannot be called "
           "at the same time. The former is only for cases when the matches "
           "are required");
 }
@@ -225,38 +225,38 @@ ui_read_check_only_options(struct matchparams *p)
 
 
 /* Two necessary catalogs: First:  Standard input, or a file.
-                           Second: `--coord',      or a file.
+                           Second: '--coord',      or a file.
  */
 static void
 ui_check_options_and_arguments(struct matchparams *p)
 {
-  /* When `--coord' is given, there should be no second catalog
+  /* When '--coord' is given, there should be no second catalog
      (argument). */
   if(p->coord)
     {
       /* Make sure no second argument is given. */
       if(p->input2name)
         error(EXIT_FAILURE, 0, "only one argument can be given with the "
-              "`--coord' option");
+              "'--coord' option");
 
-      /* No need for `p->input2name' or `p->ccol2'. */
+      /* No need for 'p->input2name' or 'p->ccol2'. */
       gal_data_free(p->ccol2);
       p->ccol2=NULL;
     }
 
-  /* `--coord' is not given. */
+  /* '--coord' is not given. */
   else
     {
-      /* Without `coord' atleast one input is necessary. */
+      /* Without 'coord' atleast one input is necessary. */
       if(p->input1name==NULL)
         error(EXIT_FAILURE, 0, "no inputs!\n\n"
               "Two inputs are necessary. The first can be a file, or from "
               "the standard input (e.g., a pipe). The second can be a "
               "file, or its coordinates can be directly specified on the "
-              "command-line with `--coord'");
+              "command-line with '--coord'");
 
       /* If the first input should be read from the standard input, the
-         contents of `input1name' actually belong to `input2name'. */
+         contents of 'input1name' actually belong to 'input2name'. */
       if(p->input2name==NULL)
         {
           p->input2name=p->input1name;
@@ -271,14 +271,14 @@ ui_check_options_and_arguments(struct matchparams *p)
       && p->cp.hdu==NULL )
     error(EXIT_FAILURE, 0, "no HDU for first input. When the input is "
           "a FITS file, a HDU must also be specified, you can use the "
-          "`--hdu' (`-h') option and give it the HDU number (starting "
+          "'--hdu' ('-h') option and give it the HDU number (starting "
           "from zero), extension name, or anything acceptable by "
           "CFITSIO");
   if( p->input2name
       && gal_fits_name_is_fits(p->input2name)
       && p->hdu2==NULL )
     error(EXIT_FAILURE, 0, "no HDU for second input. Please use "
-          "the `--hdu2' (`-H') option and give it the HDU number "
+          "the '--hdu2' ('-H') option and give it the HDU number "
           "(starting from zero), extension name, or anything "
           "acceptable by CFITSIO");
 }
@@ -313,7 +313,7 @@ ui_set_mode(struct matchparams *p)
 
   /* We will base the mode on the first input, then check with the
      second. Note that when the first is from standard input (it is
-     `NULL'), then we go into catalog mode because currently we assume
+     'NULL'), then we go into catalog mode because currently we assume
      standard input is only for plain text and WCS matching is not defined
      on plain text. */
   if( p->input1name && gal_fits_name_is_fits(p->input1name) )
@@ -330,13 +330,13 @@ ui_set_mode(struct matchparams *p)
 
   /* Necessary sanity checks. */
   if(p->mode==MATCH_MODE_CATALOG && p->cp.searchin==0)
-    error(EXIT_FAILURE, 0, "no `--searchin' option specified. Please run "
+    error(EXIT_FAILURE, 0, "no '--searchin' option specified. Please run "
           "the following command for more information:\n\n"
           "    $ info gnuastro \"selecting table columns\"\n");
 
 
   /* Now that the mode is set, do some sanity checks on the second
-     catalog. Recall that when `--coord' is given, there is no second input
+     catalog. Recall that when '--coord' is given, there is no second input
      file.*/
   if(p->input2name)
     {
@@ -365,10 +365,10 @@ ui_set_mode(struct matchparams *p)
     }
   else
     {
-      /* When there is no second-input file name (`--coord' is given), we
+      /* When there is no second-input file name ('--coord' is given), we
          cannot be in WCS mode (requiring a FITS file). */
       if(p->mode==MATCH_MODE_WCS)
-        error(EXIT_FAILURE, 0, "%s is an image, while `--coord' is only "
+        error(EXIT_FAILURE, 0, "%s is an image, while '--coord' is only "
               "meaningful for catalogs",
               gal_checkset_dataset_name(p->input1name, p->cp.hdu));
     }
@@ -393,10 +393,10 @@ ui_read_columns_aperture_2d(struct matchparams *p)
   /* A general sanity check: the first two elements of aperture cannot be
      zero or negative. */
   if( oaper[0]<=0 )
-    error(EXIT_FAILURE, 0, "the first value of `--aperture' cannot be "
+    error(EXIT_FAILURE, 0, "the first value of '--aperture' cannot be "
           "zero or negative");
   if( p->aperture->size>1 && oaper[1]<=0 )
-    error(EXIT_FAILURE, 0, "the second value of `--aperture' cannot be "
+    error(EXIT_FAILURE, 0, "the second value of '--aperture' cannot be "
           "zero or negative");
 
   /* Will be needed in more than one case. */
@@ -424,13 +424,13 @@ ui_read_columns_aperture_2d(struct matchparams *p)
 
     case 3:
       if(oaper[1]>1)
-        error(EXIT_FAILURE, 0, "second value to `--aperture' is larger "
+        error(EXIT_FAILURE, 0, "second value to '--aperture' is larger "
               "than one. When three numbers are given to this option, the "
               "second is the axis ratio (which must always be less than 1).");
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "%zu values given to `--aperture'. In 2D, this "
+      error(EXIT_FAILURE, 0, "%zu values given to '--aperture'. In 2D, this "
             "option can only take 1, 2, or 3 values", p->aperture->size);
     }
 
@@ -465,10 +465,10 @@ ui_read_columns_aperture_3d(struct matchparams *p)
   /* A general sanity check: the first two elements of aperture cannot be
      zero or negative. */
   if( oaper[0]<=0 )
-    error(EXIT_FAILURE, 0, "the first value of `--aperture' cannot be "
+    error(EXIT_FAILURE, 0, "the first value of '--aperture' cannot be "
           "zero or negative");
   if( p->aperture->size>2 && (oaper[1]<=0 || oaper[2]<=0) )
-    error(EXIT_FAILURE, 0, "the second and third values of `--aperture' "
+    error(EXIT_FAILURE, 0, "the second and third values of '--aperture' "
           "cannot be zero or negative");
 
   /* Will be needed in more than one case. */
@@ -498,8 +498,8 @@ ui_read_columns_aperture_3d(struct matchparams *p)
           naper[3] = naper[4] = naper[5] = 0;
         }
 
-      /* Major axis is along the second dimension. So we want `X' to be in
-         the direction of `y'. Therefore, just the first Eurler ZXZ
+      /* Major axis is along the second dimension. So we want 'X' to be in
+         the direction of 'y'. Therefore, just the first Eurler ZXZ
          rotation is necessary by 90 degrees. Here is how the rotated
          coordinates (X,Y,Z) look like (after one rotation about Z).
 
@@ -511,7 +511,7 @@ ui_read_columns_aperture_3d(struct matchparams *p)
               x /
 
          You see how the major axis (X) now lies in the second original
-         direction (y). The length along `x' is now along `Y' and the third
+         direction (y). The length along 'x' is now along 'Y' and the third
          hasn't changed. Note that we are talking about the semi-axis
          lengths (a scalar, not a vector), so +- is irrelevant. */
       else if(oaper[1]>=oaper[0] && oaper[1]>=oaper[2])
@@ -523,8 +523,8 @@ ui_read_columns_aperture_3d(struct matchparams *p)
           naper[4] = naper[5] = 0;
         }
 
-      /* The major axis is along the third dimension. So we want `X' to
-         point in the direction of `z'. To get to that point, we need 90
+      /* The major axis is along the third dimension. So we want 'X' to
+         point in the direction of 'z'. To get to that point, we need 90
          degree rotations in all three Euler ZXZ rotations.
 
               |z (before)     z'|  /y'            |y''                  |X
@@ -552,13 +552,13 @@ ui_read_columns_aperture_3d(struct matchparams *p)
     case 6:
       if(oaper[1]>1 || oaper[2]>1)
         error(EXIT_FAILURE, 0, "atleast one of the second or third values "
-              "to `--aperture' is larger than one. When size numbers are "
+              "to '--aperture' is larger than one. When size numbers are "
               "given to this option (in 3D), the second and third are the "
               "axis ratios (which must always be less than 1).");
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "%zu values given to `--aperture'. In 3D, this "
+      error(EXIT_FAILURE, 0, "%zu values given to '--aperture'. In 3D, this "
             "option can only take 1, 3, or 6 values. See the description of "
             "this option in the book for more with this command:\n\n"
             "    $ info astmatch\n", p->aperture->size);
@@ -586,13 +586,13 @@ ui_set_columns_sanity_check_read_aperture(struct matchparams *p)
   if(p->coord)
     {
       if(p->ccol1==NULL)
-        error(EXIT_FAILURE, 0, "no value given to `--ccol1' (necessary with "
-              "`--coord')");
+        error(EXIT_FAILURE, 0, "no value given to '--ccol1' (necessary with "
+              "'--coord')");
     }
   else
     {
       if(p->ccol1==NULL || p->ccol2==NULL)
-        error(EXIT_FAILURE, 0, "both `--ccol1' and `--ccol2' must be given. "
+        error(EXIT_FAILURE, 0, "both '--ccol1' and '--ccol2' must be given. "
               "They specify the columns containing the coordinates to match");
     }
 
@@ -600,9 +600,9 @@ ui_set_columns_sanity_check_read_aperture(struct matchparams *p)
   ccol1n = p->ccol1->size;
   ccol2n = p->coord ? p->coord->size : p->ccol2->size;
   if(ccol1n!=ccol2n)
-    error(EXIT_FAILURE, 0, "number of coordinates given to `--ccol1' "
-          "(%zu) and `--%s' (%zu) must be equal.\n\n"
-          "If you didn't call these options, run with `--checkconfig' to "
+    error(EXIT_FAILURE, 0, "number of coordinates given to '--ccol1' "
+          "(%zu) and '--%s' (%zu) must be equal.\n\n"
+          "If you didn't call these options, run with '--checkconfig' to "
           "see which configuration file is responsible. You can always "
           "override the configuration file values by calling the option "
           "manually on the command-line",
@@ -614,7 +614,7 @@ ui_set_columns_sanity_check_read_aperture(struct matchparams *p)
       {
       case 1:
         if(p->aperture->size>1)
-          error(EXIT_FAILURE, 0, "%zu values given to `--aperture'. In a 1D "
+          error(EXIT_FAILURE, 0, "%zu values given to '--aperture'. In a 1D "
                 "match, this option can only take one value",
                 p->aperture->size);
         break;
@@ -625,11 +625,11 @@ ui_set_columns_sanity_check_read_aperture(struct matchparams *p)
         error(EXIT_FAILURE, 0, "%zu dimensional matches are not currently "
               "supported (maximum is 2 dimensions). The number of "
               "dimensions is deduced from the number of values given to "
-              "`--ccol1' (or `--coord') and `--ccol2'", ccol1n);
+              "'--ccol1' (or '--coord') and '--ccol2'", ccol1n);
       }
   else
     error(EXIT_FAILURE, 0, "no matching aperture specified. Please use "
-          "the `--aperture' option to define the acceptable aperture for "
+          "the '--aperture' option to define the acceptable aperture for "
           "matching the coordinates (in the same units as each "
           "dimension). Please run the following command for more "
           "information.\n\n    $ info %s\n", PROGRAM_EXEC);
@@ -642,7 +642,7 @@ ui_set_columns_sanity_check_read_aperture(struct matchparams *p)
 
 
 
-/* Save the manually given coordinates (with `--coord') in column format (a
+/* Save the manually given coordinates (with '--coord') in column format (a
    list of datasets). */
 static gal_data_t *
 ui_set_columns_from_coord(struct matchparams *p)
@@ -678,8 +678,8 @@ ui_read_columns_to_double(struct matchparams *p, char *filename, char *hdu,
   gal_data_t *tmp, *ttmp, *tout, *out=NULL;
   struct gal_options_common_params *cp=&p->cp;
   char *diff_cols_error="%s: the number of columns matched (%zu) "
-    "differs from the number of usable calls to `--ccol1' (%zu). "
-    "Please give more specific values to `--ccol1' (column "
+    "differs from the number of usable calls to '--ccol1' (%zu). "
+    "Please give more specific values to '--ccol1' (column "
     "numberes are the only identifiers guaranteed to be unique).";
 
   /* Read the columns. Note that the first input's name can be NULL (if the
@@ -705,7 +705,7 @@ ui_read_columns_to_double(struct matchparams *p, char *filename, char *hdu,
   tmp=tout;
   while(tmp!=NULL)
     {
-      /* We need ot set the `next' pointer  */
+      /* We need ot set the 'next' pointer  */
       ttmp=tmp->next;
       tmp->next=NULL;
 
@@ -717,11 +717,11 @@ ui_read_columns_to_double(struct matchparams *p, char *filename, char *hdu,
                           gal_data_copy_to_new_type_free(tmp,
                                                          GAL_TYPE_FLOAT64) );
 
-      /* Set `tmp' to the initial `next pointer. */
+      /* Set 'tmp' to the initial 'next pointer. */
       tmp=ttmp;
     }
 
-  /* The `out' above is in reverse, so correct it and return */
+  /* The 'out' above is in reverse, so correct it and return */
   gal_list_data_reverse(&out);
   return out;
 }
@@ -789,7 +789,7 @@ ui_preparations_out_cols(struct matchparams *p)
         {
         case 'a': gal_list_str_add(&p->acols, col+1, 0); break;
         case 'b':
-          /* With `--coord', only numbers that are smaller than the number
+          /* With '--coord', only numbers that are smaller than the number
              of the dimensions are acceptable. */
           if(p->coord)
             {
@@ -809,10 +809,10 @@ ui_preparations_out_cols(struct matchparams *p)
                 }
               if(goodvalue==0)
                 error(EXIT_FAILURE, 0, "bad value to second catalog "
-                      "column (%s) of `--outcols'.\n\n"
-                      "With the `--coord' option, the second catalog is "
+                      "column (%s) of '--outcols'.\n\n"
+                      "With the '--coord' option, the second catalog is "
                       "assumed to have a single row and the given number "
-                      "of columns. Therefore when using `--outcols', only "
+                      "of columns. Therefore when using '--outcols', only "
                       "integers that are less than the number of "
                       "dimensions (%zu in this case) are acceptable", col+1,
                       ndim);
@@ -820,10 +820,10 @@ ui_preparations_out_cols(struct matchparams *p)
           gal_list_str_add(&p->bcols, col+1, 0);
           break;
         default:
-          error(EXIT_FAILURE, 0, "`%s' is not a valid value for "
-                "`--outcols'.\n\n"
+          error(EXIT_FAILURE, 0, "'%s' is not a valid value for "
+                "'--outcols'.\n\n"
                 "The first character of each value to this option must be "
-                "either `a' or `b'. The former specifies a column from the "
+                "either 'a' or 'b'. The former specifies a column from the "
                 "first input and the latter a column from the second. The "
                 "characters after them can be any column identifier (number, "
                 "name, or regular expression). For more on column selection, "
@@ -886,7 +886,7 @@ ui_preparations_out_name(struct matchparams *p)
         }
       else
         {
-          /* Set `p->out1name' and `p->out2name'. */
+          /* Set 'p->out1name' and 'p->out2name'. */
           if(p->cp.output)
             {
               if( gal_fits_name_is_fits(p->cp.output) )
@@ -899,7 +899,7 @@ ui_preparations_out_name(struct matchparams *p)
                   /* Here, we are be using the output name as input to the
                      automatic output generating function (usually it is
                      the input name, not the output name). Therefore, the
-                     `keepinputdir' variable should be 1. So we will
+                     'keepinputdir' variable should be 1. So we will
                      temporarily change it here, then set it back to what
                      it was. */
                   keepinputdir_orig=p->cp.keepinputdir;
@@ -998,9 +998,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct matchparams *p)
   struct gal_options_common_params *cp=&p->cp;
 
 
-  /* Include the parameters necessary for argp from this program (`args.h')
-     and for the common options to all Gnuastro (`commonopts.h'). We want
-     to directly put the pointers to the fields in `p' and `cp', so we are
+  /* Include the parameters necessary for argp from this program ('args.h')
+     and for the common options to all Gnuastro ('commonopts.h'). We want
+     to directly put the pointers to the fields in 'p' and 'cp', so we are
      simply including the header here to not have to use long macros in
      those headers which make them hard to read and modify. This also helps
      in having a clean environment: everything in those headers is only

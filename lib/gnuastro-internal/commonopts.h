@@ -31,7 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    IMPORTANT NOTE:
 
      This header should only be included in the programs, not the
-     libraries, and in particular `options.c'. Because we want each program
+     libraries, and in particular 'options.c'. Because we want each program
      to have its own allocation of the common options structure. If it is
      included in options.c, then it will be shared between all the
      programs. */
@@ -60,7 +60,7 @@ struct argp_option gal_commonopts_options[] =
       GAL_OPTIONS_KEY_SEARCHIN,
       "STR",
       0,
-      "Select column(s): `name', `unit', `comment'.",
+      "Select column(s): 'name', 'unit', 'comment'.",
       GAL_OPTIONS_GROUP_INPUT,
       &cp->searchin,
       GAL_TYPE_STRING,
@@ -254,10 +254,10 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Type of output: e.g., int16, float32, etc...",
       GAL_OPTIONS_GROUP_OUTPUT,
-      &cp->type,                /* Internally, `cp->type' is actually an   */
-      GAL_TYPE_STRING,          /* `uint8_t', but the user gives a string. */
+      &cp->type,                /* Internally, 'cp->type' is actually an   */
+      GAL_TYPE_STRING,          /* 'uint8_t', but the user gives a string. */
       GAL_OPTIONS_RANGE_GT_0,   /* So for the sanity checks to pass, we    */
-      GAL_OPTIONS_NOT_MANDATORY,/* use `GAL_TYPE_STRING' for this option.  */
+      GAL_OPTIONS_NOT_MANDATORY,/* use 'GAL_TYPE_STRING' for this option.  */
       GAL_OPTIONS_NOT_SET,
       gal_options_read_type
     },
@@ -266,7 +266,7 @@ struct argp_option gal_commonopts_options[] =
       GAL_OPTIONS_KEY_TABLEFORMAT,
       "STR",
       0,
-      "Table fmt: `fits-ascii', `fits-binary', `txt'.",
+      "Table fmt: 'fits-ascii', 'fits-binary', 'txt'.",
       GAL_OPTIONS_GROUP_OUTPUT,
       &cp->tableformat,
       GAL_TYPE_STRING,

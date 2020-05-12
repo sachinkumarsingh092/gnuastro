@@ -265,7 +265,7 @@ detection_fill_holes_open(void *in_prm)
       tile->block=fho_prm->workbin;
 
       /* Copy the tile into the contiguous patch of memory to work on, but
-         first reset the size element so `gal_data_copy_to_allocated' knows
+         first reset the size element so 'gal_data_copy_to_allocated' knows
          there is enough space. */
       copy->flag=0;
       copy->size=p->maxltcontig;
@@ -343,8 +343,8 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
 
   /* Allocate the space necessary to work on each tile (to avoid having to
      allocate it it separately for each tile and within each
-     thread. `maxltcontig' is the maximum contiguous patch of memory needed
-     to store all tiles. Finally, since we are working on a `uint8_t' type,
+     thread. 'maxltcontig' is the maximum contiguous patch of memory needed
+     to store all tiles. Finally, since we are working on a 'uint8_t' type,
      the size of each element is only 1 byte. */
   fho_prm.copyspace=gal_pointer_allocate(GAL_TYPE_UINT8,
                                          p->cp.numthreads*p->maxltcontig, 0,
@@ -365,7 +365,7 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
       /* Do each step. */
       while(fho_prm.step<3)
         {
-          /* Put a copy of `workbin' into `bin' for every step (only
+          /* Put a copy of 'workbin' into 'bin' for every step (only
              necessary for the second step and after). For the first time
              it was already copied.*/
           if(fho_prm.step>1)
@@ -405,12 +405,12 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
           ++fho_prm.step;
         }
 
-      /* Clean up: the array in `bin' should just be replaced with that in
-         `workbin' because it is used in later steps. */
+      /* Clean up: the array in 'bin' should just be replaced with that in
+         'workbin' because it is used in later steps. */
       if(workbin->mmapname)
         {
-          /* Delete the memory mapped file and set the filename of `bin'
-             for `workbin'. */
+          /* Delete the memory mapped file and set the filename of 'bin'
+             for 'workbin'. */
           remove(workbin->mmapname);
           free(workbin->mmapname);
           workbin->mmapname=bin->mmapname;
@@ -431,7 +431,7 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
 
 
   /* Label all regions, but first, deal with the blank pixels in the
-     `workbin' dataset when working on the Sky. Recall that in this case,
+     'workbin' dataset when working on the Sky. Recall that in this case,
      the blank pixels are the detections. On the Sky image, blank should be
      set to 1 (because we want the detected objects to have the same labels
      as the pseudo-detections that cover them). This will allow us to later
@@ -458,8 +458,8 @@ detection_sn_write_to_file(struct noisechiselparams *p, gal_data_t *sn,
   gal_list_str_t *comments=NULL;
 
   /* Comment for extension on further explanation. */
-  if( asprintf(&str, "See also: `%s' HDU of output with "
-               "`--checkdetection'", ( s0d1D2<2
+  if( asprintf(&str, "See also: '%s' HDU of output with "
+               "'--checkdetection'", ( s0d1D2<2
                                        ? "PSEUDOS-FOR-SN": "DILATED" ))<0 )
     error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_list_str_add(&comments, str, 0);
@@ -523,7 +523,7 @@ detection_sn(struct noisechiselparams *p, gal_data_t *worklab, size_t num,
 
   /* Allocate all the necessary arrays, note that since we want to put each
      object's information into the same index, the number of allocated
-     spaces has to be `tablen=num+1'. */
+     spaces has to be 'tablen=num+1'. */
   area       = gal_pointer_allocate(GAL_TYPE_SIZE_T,  tablen, 1, __func__,
                                     "area");
   brightness = gal_pointer_allocate(GAL_TYPE_FLOAT64, tablen, 1, __func__,
@@ -770,10 +770,10 @@ detection_pseudo_real(struct noisechiselparams *p)
       if( sn->size < p->minnumfalse)
         error(EXIT_FAILURE, 0, "only %zu pseudo-detections could be found "
               "over the sky region to estimate an S/N. This is less than "
-              "%zu (value to `--minnumfalse' option). Please adjust "
-              "parameters like `--dthresh', `--snminarea', or make sure "
+              "%zu (value to '--minnumfalse' option). Please adjust "
+              "parameters like '--dthresh', '--snminarea', or make sure "
               "that there actually is sufficient sky area after initial "
-              "detection. You can use `--checkdetection' to see every step "
+              "detection. You can use '--checkdetection' to see every step "
               "until this point", sn->size, p->minnumfalse);
 
 
@@ -891,12 +891,12 @@ detection_remove_false_initial(struct noisechiselparams *p,
                                           "newlabels");
 
   /* Find the new labels for all the existing labels. Recall that
-     `newlabels' was initialized to zero, so any label that is not given a
+     'newlabels' was initialized to zero, so any label that is not given a
      new label here will be automatically removed. After the first pixel of
      a label overlaps with dbyt[i], we don't need to check the rest of that
      object's pixels. At this point, tokeep is only binary: 0 or 1.
 
-     Note that the zeroth element of `tokeep' can also be non zero, this is
+     Note that the zeroth element of 'tokeep' can also be non zero, this is
      because the holes of the labeled regions might be filled during
      filling the holes, but have not been filled in the original labeled
      array. They are not important so you can just ignore them. */
@@ -928,7 +928,7 @@ detection_remove_false_initial(struct noisechiselparams *p,
      asked for growth, if the edges of the objects in the image are sharp
      enough, no growth will be necessary (and thus the labeled image won't
      be re-written during growth). So it is necessary to check for growth
-     here and later do it in `detection_quantile_expand'. */
+     here and later do it in 'detection_quantile_expand'. */
   p->numexpand=0;
   b=workbin->array;
   l=p->olabel->array;
@@ -988,7 +988,7 @@ detection_remove_false_initial(struct noisechiselparams *p,
 
 /* Expand the initial detections based on the quantile threshold and then
    label the connected regions. If expansion is not possible, then return
-   the `GAL_BLANK_SIZET'.*/
+   the 'GAL_BLANK_SIZET'.*/
 static size_t
 detection_quantile_expand(struct noisechiselparams *p, gal_data_t *workbin)
 {
@@ -1214,8 +1214,8 @@ detection(struct noisechiselparams *p)
 
 
   /* p->binary was used to keep the initial pseudo-detection threshold. But
-     we don't need it any more, so we'll just free it and put the `workbin'
-     array in its place. Note that `workbin' has a map of all the detected
+     we don't need it any more, so we'll just free it and put the 'workbin'
+     array in its place. Note that 'workbin' has a map of all the detected
      objects, which is still necessary during NoiseChisel. */
   gal_data_free(p->binary);
   p->binary=workbin;
@@ -1228,7 +1228,7 @@ detection(struct noisechiselparams *p)
 
 
   /* If the user wanted to check the threshold and hasn't called
-     `continueaftercheck', then stop NoiseChisel. */
+     'continueaftercheck', then stop NoiseChisel. */
   if(p->detectionname && !p->continueaftercheck)
     ui_abort_after_check(p, p->detectionname, NULL,
                          "showing all detection steps");

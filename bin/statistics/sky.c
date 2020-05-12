@@ -85,7 +85,7 @@ sky_on_thread(void *in_prm)
                     ? gal_statistics_quantile_function(tile, mean, 1)
                     : NULL );
 
-      /* Reset the pointers of `tile'. */
+      /* Reset the pointers of 'tile'. */
       if(p->kernel) { tile->array=tarray; tile->block=tblock; }
 
       /* Check the mean quantile value. Note that if the mode is
@@ -94,7 +94,7 @@ sky_on_thread(void *in_prm)
       if( meanquant
           && fabs( *(double *)(meanquant->array)-0.5f) < p->meanmedqdiff )
         {
-          /* Get the sigma-clipped mean and standard deviation. `inplace'
+          /* Get the sigma-clipped mean and standard deviation. 'inplace'
              is irrelevant here because this is a tile and it will be
              copied anyway. */
           sigmaclip=gal_statistics_sigma_clip(tile, p->sclipparams[0],
@@ -261,15 +261,15 @@ sky(struct statisticsparams *p)
           gal_tile_full_values_write(p->std_t, tl, !p->ignoreblankintiles,
                                      p->checkskyname, NULL, PROGRAM_NAME);
           if(!cp->quiet)
-            printf("  - Check image written to `%s'.\n", p->checkskyname);
+            printf("  - Check image written to '%s'.\n", p->checkskyname);
         }
     }
 
 
   /* Save the Sky and its standard deviation. We want the output to have a
-     `_sky.fits' suffix. So we'll temporarily re-set `p->cp.keepinputdir'
+     '_sky.fits' suffix. So we'll temporarily re-set 'p->cp.keepinputdir'
      if the user asked for a specific name. Note that we copied the actual
-     value in the `keepinputdir' above (in the definition). */
+     value in the 'keepinputdir' above (in the definition). */
   p->cp.keepinputdir = p->cp.output ? 1 : keepinputdir;
   outname=gal_checkset_automatic_output(&p->cp,
                                         ( p->cp.output
@@ -287,7 +287,7 @@ sky(struct statisticsparams *p)
   gal_fits_key_write_config(&p->cp.okeys, "Statistics configuration",
                             "STATISTICS-CONFIG", outname, "0");
   if(!cp->quiet)
-    printf("  - Sky and its STD written to `%s'.\n", outname);
+    printf("  - Sky and its STD written to '%s'.\n", outname);
 
 
   /* Clean up and return. */

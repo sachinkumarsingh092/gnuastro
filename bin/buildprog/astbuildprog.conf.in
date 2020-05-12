@@ -3,7 +3,7 @@
 #
 # Use the long option name of each parameter followed by a value. The name
 # and value should be separated by atleast one white-space character (for
-# example ` '[space], or tab). Lines starting with `#' are ignored.
+# example ' '[space], or tab). Lines starting with '#' are ignored.
 #
 # For more information, please run these commands:
 #

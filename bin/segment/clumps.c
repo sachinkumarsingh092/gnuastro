@@ -57,7 +57,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**********************************************************************/
 /* Make the preparations for the intiial growing the clumps to identify
    objects: a single standard deviation for the whole object and preparing
-   the labels (because the growth is going to happen on the `olabel'
+   the labels (because the growth is going to happen on the 'olabel'
    image. */
 void
 clumps_grow_prepare_initial(struct clumps_thread_params *cltprm)
@@ -127,11 +127,11 @@ clumps_grow_prepare_initial(struct clumps_thread_params *cltprm)
      object at this stage: we are also going to re-label the pixels to
      grow. For most astronomical objects, the major part of the detection
      area is going to be diffuse flux, so we will just allocate the same
-     size as `indexs' array (the `dsize' will be corrected after getting
+     size as 'indexs' array (the 'dsize' will be corrected after getting
      the exact number.
 
-     Also note that since `indexs' is already sorted, therefore
-     `diffuseindexs' will also be already sorted. */
+     Also note that since 'indexs' is already sorted, therefore
+     'diffuseindexs' will also be already sorted. */
   cltprm->diffuseindexs=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1,
                                        cltprm->indexs->dsize, NULL, 0,
                                        p->cp.minmapsize, p->cp.quietmmap,
@@ -147,7 +147,7 @@ clumps_grow_prepare_initial(struct clumps_thread_params *cltprm)
   while(++s<sf);
 
 
-  /* Correct the sizes of the `diffuseindexs' data structure. */
+  /* Correct the sizes of the 'diffuseindexs' data structure. */
   cltprm->diffuseindexs->size = cltprm->diffuseindexs->dsize[0] = ndiffuse;
 }
 
@@ -157,12 +157,12 @@ clumps_grow_prepare_initial(struct clumps_thread_params *cltprm)
 
 /* Add all the remaining pixels in the detection (below the growth
    threshold, or those that were not touching). Note that initially
-   `diffuseindexs' was filled with the pixels that are above the growth
+   'diffuseindexs' was filled with the pixels that are above the growth
    threshold. That was necessary for identifying the objects. Now that we
    have identified the objects and labeled them, we want to add the
    remaining diffuse pixels to it too before doing the final growth.
 
-   Note that the most efficient way is just to re-fill the `diffuseindexs'
+   Note that the most efficient way is just to re-fill the 'diffuseindexs'
    array instead of adding the pixels below the threshold and sorting them
    afterwards.*/
 void
@@ -173,7 +173,7 @@ clumps_grow_prepare_final(struct clumps_thread_params *cltprm)
   int32_t *olabel=cltprm->clprm->p->olabel->array;
   size_t *s=cltprm->indexs->array, *sf=s+cltprm->indexs->size;
 
-  /* Recall that we initially allocated `diffuseindexs' to have the same
+  /* Recall that we initially allocated 'diffuseindexs' to have the same
      size as the indexs. So there is no problem if there are more pixels in
      this final round compared to the initial round. */
   do
@@ -181,7 +181,7 @@ clumps_grow_prepare_final(struct clumps_thread_params *cltprm)
       dindexs[ ndiffuse++ ] = *s;
   while(++s<sf);
 
-  /* Correct the sizes of the `diffuseindexs' data structure. */
+  /* Correct the sizes of the 'diffuseindexs' data structure. */
   cltprm->diffuseindexs->size = cltprm->diffuseindexs->dsize[0] = ndiffuse;
 }
 
@@ -222,15 +222,15 @@ clumps_correct_sky_labels_for_check(struct clumps_thread_params *cltprm,
   size_t len=cltprm->numinitclumps+1;
   struct segmentparams *p=cltprm->clprm->p;
 
-  /* If any of the clumps must be kept (`cltprm->snind->size!=0'), then
+  /* If any of the clumps must be kept ('cltprm->snind->size!=0'), then
      re-label them for the check image. Otherwise, remove all clumps. */
   if(cltprm->snind->size)
     {
       /* A small sanity check. */
       if(gal_tile_block(tile)!=p->clabel)
         error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
-              "address the problem. `tile->block' must point to the "
-              "`clabel' dataset", __func__, PACKAGE_BUGREPORT);
+              "address the problem. 'tile->block' must point to the "
+              "'clabel' dataset", __func__, PACKAGE_BUGREPORT);
 
 
       /* Allocate a dataset with the new indexs, note that it will need to
@@ -261,8 +261,8 @@ clumps_correct_sky_labels_for_check(struct clumps_thread_params *cltprm,
 
 
       /* The new indexs array has been initialized to zero. So we just need
-         to go over the labels in `cltprm->sninds' and give them a value of
-         `curlab++'. */
+         to go over the labels in 'cltprm->sninds' and give them a value of
+         'curlab++'. */
       ninds=newinds->array;
       lf = (l=cltprm->snind->array) + cltprm->snind->size;
       do { ninds[*l]=curlab++; *l=ninds[*l]; } while(++l<lf);
@@ -277,7 +277,7 @@ clumps_correct_sky_labels_for_check(struct clumps_thread_params *cltprm,
     }
   else
     /* There were no usable clumps in this tile, so just set all the pixels
-       larger than zero (a clump) to `GAL_LABEL_INIT'. */
+       larger than zero (a clump) to 'GAL_LABEL_INIT'. */
     GAL_TILE_PARSE_OPERATE( tile, NULL, 0, 1, {*i=*i>0?GAL_LABEL_INIT:*i;} );
 }
 
@@ -327,7 +327,7 @@ clumps_find_make_sn_table(void *in_prm)
 
 
       /* Get the number of usable elements in this tile (note that tiles
-         can have blank pixels), so we can't simply use `tile->size'. */
+         can have blank pixels), so we can't simply use 'tile->size'. */
       if(p->input->flag & GAL_DATA_FLAG_HASBLANK)
         {
           tmp=gal_statistics_number(tile);
@@ -340,9 +340,9 @@ clumps_find_make_sn_table(void *in_prm)
       /* Find the number of detected pixels over this tile. Since this is
          the binary image, this is just the sum of all the pixels.
 
-         Note that `numdet' can be `nan' when the whole tile is blank and
+         Note that 'numdet' can be 'nan' when the whole tile is blank and
          so there was no values to sum. Recall that in summing, when there
-         is not input, the output is `nan'. */
+         is not input, the output is 'nan'. */
       tmp=gal_statistics_sum(tile);
       numdet=*((double *)(tmp->array));
       gal_data_free(tmp);
@@ -380,10 +380,10 @@ clumps_find_make_sn_table(void *in_prm)
 
           /* Add the index of every sky element to the array of
              indexs. Note that since we know the array is always of type
-             `int32_t', we can call the `GAL_TILE_PO_OISET' macro to avoid
+             'int32_t', we can call the 'GAL_TILE_PO_OISET' macro to avoid
              having to deal with multiple possible types in
-             `GAL_TILE_PARSE_OPERATE'. Since the OUT macro-variable is
-             NULL, the `int' is just a place-holder, it will not be
+             'GAL_TILE_PARSE_OPERATE'. Since the OUT macro-variable is
+             NULL, the 'int' is just a place-holder, it will not be
              used. */
           c=0;
           indarr=cltprm.indexs->array;
@@ -401,7 +401,7 @@ clumps_find_make_sn_table(void *in_prm)
                 *(int32_t *)i=GAL_LABEL_RIVER;
 
               /* This pixel is not on the edge, check if it had a value of
-                 `0' in the binary image (is not detected) then add it to
+                 '0' in the binary image (is not detected) then add it to
                  the list of indexs (note that the binary image also
                  contains the blank pixels, so only sky regions have a
                  value of 0 in the binary image). */
@@ -465,7 +465,7 @@ clumps_find_make_sn_table(void *in_prm)
 
 
           /* If the user wanted to check the steps, remove the clumps that
-             weren't used from the `clabel' image (they have been already
+             weren't used from the 'clabel' image (they have been already
              excluded from the table). */
           if(cltprm.snind)
             clumps_correct_sky_labels_for_check(&cltprm, tile);
@@ -473,7 +473,7 @@ clumps_find_make_sn_table(void *in_prm)
 
           /* If there were no clumps, then just set the S/N table to
              NULL. This must be done after the check image creation (if
-             necessary), because we use `cltprm.snind' as a proxy for the
+             necessary), because we use 'cltprm.snind' as a proxy for the
              check image.*/
           if( cltprm.clprm->sn[ cltprm.id ].size==0 )
             cltprm.snind=cltprm.sn=NULL;
@@ -522,8 +522,8 @@ clumps_write_sn_table(struct segmentparams *p, gal_data_t *insn,
       /* A small sanity check. */
       if(ind->size==0 || sn->size==0)
         error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
-              "the problem. For some reason, all the elements in `ind' or "
-              "`sn' are blank", __func__, PACKAGE_BUGREPORT);
+              "the problem. For some reason, all the elements in 'ind' or "
+              "'sn' are blank", __func__, PACKAGE_BUGREPORT);
     }
   else
     {
@@ -593,7 +593,7 @@ clumps_true_find_sn_thresh(struct segmentparams *p)
   /* If the user wants to check the steps of get an S/N table, then we need
      a unique label for each clump. But in each region, the labels start
      from 1. So we need a central place to keep the next available
-     label. Since `p->numclumps' is not used yet, we will use it here. When
+     label. Since 'p->numclumps' is not used yet, we will use it here. When
      multiple threads are used, we will need a mutex to make sure that only
      one thread can change this central variable at every one moment. */
   if(p->checksegmentation || p->checksn)
@@ -674,7 +674,7 @@ clumps_true_find_sn_thresh(struct segmentparams *p)
   if( numsn < p->minnumfalse )
     error(EXIT_FAILURE, 0, "%zu usable clumps found in the undetected "
           "regions. This is smaller than the requested minimum number of "
-          "false/reference clumps (%zu, value to the `--minnumfalse' "
+          "false/reference clumps (%zu, value to the '--minnumfalse' "
           "option).\n\n"
           "There are several ways to address the problem. The best and most "
           "highly recommended is to use a larger input if possible (when the "
@@ -683,22 +683,22 @@ clumps_true_find_sn_thresh(struct segmentparams *p)
           "parameters (and therefore cause more scatter/bias in the final "
           "result). Thus don't loosen them too much. Recall that you can "
           "see all the option values to Gnuastro's programs by appending "
-          "`-P' to the end of your command.\n\n"
-          "  * Slightly decrease `--largetilesize' to have more tiles.\n"
-          "  * Decrease `--minskyfrac' (currently %g) to look into more "
+          "'-P' to the end of your command.\n\n"
+          "  * Slightly decrease '--largetilesize' to have more tiles.\n"
+          "  * Decrease '--minskyfrac' (currently %g) to look into more "
           "tiles.\n"
-          "  * Slightly decrease `--snminarea' (currently %zu) to "
+          "  * Slightly decrease '--snminarea' (currently %zu) to "
           "measure more clumps.\n"
           "  * If Segment already works on a dataset with similar noise "
           "properties, you can directly pass the 'true' clump "
-          "signal-to-noise ratio found there to `--clumpsnthresh' and "
+          "signal-to-noise ratio found there to '--clumpsnthresh' and "
           "avoid having to study the undetected regions any more.\n\n"
-          "Append your previous command with `--checksegmentation' to see "
+          "Append your previous command with '--checksegmentation' to see "
           "the steps and get a better feeling of the cause/solution. Note "
           "that the output is a multi-extension FITS file).\n\n"
           "To better understand the segmentation process and options, "
-          "please run the following command (press `SPACE'/arrow-keys to "
-          "navigate and `Q' to return back to the command-line):\n\n"
+          "please run the following command (press 'SPACE'/arrow-keys to "
+          "navigate and 'Q' to return back to the command-line):\n\n"
           "    $ info gnuastro \"Segmentation options\"\n",
           numsn, p->minnumfalse, p->minskyfrac, p->snminarea);
 
@@ -741,8 +741,8 @@ clumps_true_find_sn_thresh(struct segmentparams *p)
       if(p->cp.numthreads>1)
         gal_list_str_add(&comments, "NOTE: In multi-threaded mode, clump "
                          "IDs differ in each run and are not sorted.", 1);
-      gal_list_str_add(&comments, "See also: `SKY_CLUMPS_FOR_SN' HDU of "
-                       "output with `--checksegmentation'.", 1);
+      gal_list_str_add(&comments, "See also: 'SKY_CLUMPS_FOR_SN' HDU of "
+                       "output with '--checksegmentation'.", 1);
       gal_list_str_add(&comments, "S/N of clumps over undetected regions.",
                        1);
       clumps_write_sn_table(p, sn, snind, p->clumpsn_s_name, comments);

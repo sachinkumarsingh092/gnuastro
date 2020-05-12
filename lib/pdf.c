@@ -108,7 +108,7 @@ gal_pdf_write(gal_data_t *in, char *filename, float widthincm,
   /* Write the EPS file. */
   gal_eps_write(in, epsname, widthincm, borderwidth, 0, dontoptimize, 1);
 
-  /* Get the size of the image in `pt' units. */
+  /* Get the size of the image in 'pt' units. */
   gal_eps_to_pt(widthincm, in->dsize, w_h_in_pt);
 
   /* Write the ghostscript command to compile the EPS file to PDF. */
@@ -120,7 +120,7 @@ gal_pdf_write(gal_data_t *in, char *filename, float widthincm,
   /* Run Ghostscript. */
   if(system(command))
     error(EXIT_FAILURE, 0, "the command to convert a PostScript file to "
-          "PDF (`%s') was not successful! The PostScript file (%s) is "
+          "PDF ('%s') was not successful! The PostScript file (%s) is "
           "left if you want to convert or use it through any other "
           "means", command, epsname);
 

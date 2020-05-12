@@ -33,7 +33,7 @@ BUILT_SOURCES = $(srcdir)/authors.texi
 ## bootstrapped from Gnulib. Therefore it is not in this
 ## directory. However, it is needed by gnuastro.texi to build the
 ## documentation. It is the job of AM_MAKEINFOFLAGS, to pass options to the
-## documentation build programs. BOOTSTRPDOC is defined in `configure.ac'.
+## documentation build programs. BOOTSTRPDOC is defined in 'configure.ac'.
 bootstrpdoc = $(top_srcdir)/bootstrapped/doc
 AM_MAKEINFOFLAGS = -I $(bootstrpdoc) -I $(srcdir)
 
@@ -41,7 +41,7 @@ AM_MAKEINFOFLAGS = -I $(bootstrpdoc) -I $(srcdir)
 # This is just a temporary work-around since Automake does not pass the
 # AM_MAKEINFOFLAGS to texi2dvi (which builds DVI and PDF outputs). This was
 # reported in Automake's bug 23599. Note that a space is necessary between
-# the `-I' and directory for texi2dvi.
+# the '-I' and directory for texi2dvi.
 TEXI2DVI = texi2dvi -I $(bootstrpdoc) -I $(srcdir)
 
 
@@ -151,7 +151,7 @@ else
 endif
 
 
-# Build the `man' directory and then put all the man pages in
+# Build the 'man' directory and then put all the man pages in
 # it. Unfortunately as far as I know, pattern rules are not portable in all
 # implementations of Make, so we have to list all the utilities manually.
 toputildir=$(top_builddir)/bin

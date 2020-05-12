@@ -47,7 +47,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-/* The binary functions will be working on a `uint8_t' type dataset with
+/* The binary functions will be working on a 'uint8_t' type dataset with
    values of 1 or 0 (no other pixel will be touched). However, in some
    cases, it is necessary to put temporary values in each element during
    the processing of the functions. So if your input datasets have values

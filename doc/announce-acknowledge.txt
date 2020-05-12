@@ -1,6 +1,7 @@
 Alphabetically ordered list to acknowledge in the next release.
 
 Raúl Infante-Sainz
+Raphael Morales
 Alejandro Serrano Borlaff
 Zahra Sharbaf
 Joseph Putko

@@ -76,18 +76,18 @@ gal_tile_start_coord(gal_data_t *tile, size_t *start_coord)
 
 
 /* Put the starting and ending (end point is not inclusive) coordinates of
-   a tile into the `start_end' array. It is assumed that a space of
-   `2*tile->ndim' has been already allocated (static or dynamic) before
+   a tile into the 'start_end' array. It is assumed that a space of
+   '2*tile->ndim' has been already allocated (static or dynamic) before
    this function is called.
 
-   `rel_block' (or relative-to-block) is only relevant when the tile has an
+   'rel_block' (or relative-to-block) is only relevant when the tile has an
    intermediate tile between it and the allocated space (like a channel,
-   see `gal_tile_full_two_layers'). If it doesn't (`tile->block' points the
-   allocated dataset), then the value to `rel_block' is irrelevant.
+   see 'gal_tile_full_two_layers'). If it doesn't ('tile->block' points the
+   allocated dataset), then the value to 'rel_block' is irrelevant.
 
-   However, when `tile->block' is its self a larger block and `rel_block'
+   However, when 'tile->block' is its self a larger block and 'rel_block'
    is set to 0, then the starting and ending positions will be based on the
-   position within `tile->block', not the allocated space. */
+   position within 'tile->block', not the allocated space. */
 void
 gal_tile_start_end_coord(gal_data_t *tile, size_t *start_end, int rel_block)
 {
@@ -129,8 +129,8 @@ gal_tile_start_end_coord(gal_data_t *tile, size_t *start_end, int rel_block)
 
 
 /* Put the indexs of the first/start and last/end pixels (inclusive) in a
-   tile into the `start_end' array (that has two elements). It will then
-   return the pointer to the start of the tile in the `work' data
+   tile into the 'start_end' array (that has two elements). It will then
+   return the pointer to the start of the tile in the 'work' data
    structure. */
 void *
 gal_tile_start_end_ind_inclusive(gal_data_t *tile, gal_data_t *work,
@@ -144,8 +144,8 @@ gal_tile_start_end_ind_inclusive(gal_data_t *tile, gal_data_t *work,
                                              __func__, "end_coord");
 
 
-  /* The starting index can be found from the distance of the `tile->array'
-     pointer and `block->array' pointer. IMPORTANT: with the type of the
+  /* The starting index can be found from the distance of the 'tile->array'
+     pointer and 'block->array' pointer. IMPORTANT: with the type of the
      block array.  */
   start_end_inc[0]=gal_pointer_num_between(block->array, tile->array,
                                            block->type);
@@ -157,7 +157,7 @@ gal_tile_start_end_ind_inclusive(gal_data_t *tile, gal_data_t *work,
                               start_coord);
 
 
-  /* `end_coord' is one unit ahead of the last element in the tile in every
+  /* 'end_coord' is one unit ahead of the last element in the tile in every
      dimension. To have less potential for bugs, we will remove that extra
      value, so we get the coordinates of the last pixel in the tile
      (inclusive). We will finally, increment that value by one to get to
@@ -216,7 +216,7 @@ gal_tile_start_end_ind_inclusive(gal_data_t *tile, gal_data_t *work,
 /***********************************************************************/
 /* Construct a list of tile(s) given positional minimum(s) and maximum(s).
    The output is an allocated an allocated array that can later be freed
-   with `gal_data_array_free'. The minimum and maximums are assumed to be
+   with 'gal_data_array_free'. The minimum and maximums are assumed to be
    inclusive.
 
    The array keeping the minmium and maximum coordinates for each label
@@ -300,7 +300,7 @@ gal_tile_series_from_minmax(gal_data_t *block, size_t *minmax, size_t number)
 /***********************************************************************/
 /* When you are working on an array, it important to know the size of the
    allocated space in each dimension. This simple function will just follow
-   the block pointer and return the `dsize' element of lowest-level
+   the block pointer and return the 'dsize' element of lowest-level
    structure. */
 gal_data_t *
 gal_tile_block(gal_data_t *tile)
@@ -320,14 +320,14 @@ gal_tile_block(gal_data_t *tile)
    for higher dimensions can be alittle more complicated, So we will go
    over some examples. The notations below are:
 
-       `n'     number of dimensions (same in tile and block).
-       `t[]'   size of the tile in each dimension.
-       `b[]'   size of the allocated block in each dimension.
+       'n'     number of dimensions (same in tile and block).
+       't[]'   size of the tile in each dimension.
+       'b[]'   size of the allocated block in each dimension.
 
    It is just important to see the output of this function as an increment
    from the the last patch of contiguous memory associated with the
-   tile. So when the increment number is `t[n-1]' (the first 2D slice of
-   the tile has been parsed), simply incrementing by `b[n-2] * b[n-1]' will
+   tile. So when the increment number is 't[n-1]' (the first 2D slice of
+   the tile has been parsed), simply incrementing by 'b[n-2] * b[n-1]' will
    take us to the last row of
 
   num_increment      coord         increment
@@ -407,21 +407,21 @@ gal_tile_block_increment(gal_data_t *block, size_t *tsize,
    Arguments
    ---------
 
-     `tilevalues': This must be an array that has the same number of
-        elements as that in `tilesll' and in the same order that `tilesll'
+     'tilevalues': This must be an array that has the same number of
+        elements as that in 'tilesll' and in the same order that 'tilesll'
         elements are parsed (from first to last). As a result the
         dimensionality of this array is irrelevant. Note that unlike
-        `tiles', `tilevalues' must be an array.
+        'tiles', 'tilevalues' must be an array.
 
-     `tilesll': This will be parsed as a linked list (using the `next'
+     'tilesll': This will be parsed as a linked list (using the 'next'
         element). Internally, it might be stored as an array, but this
         function doesn't care! The position of the tile over its block will
-        be determined according to the `block' element and the pointer of
-        its `array' as fully described in `gnuastro/data.h'. This function
+        be determined according to the 'block' element and the pointer of
+        its 'array' as fully described in 'gnuastro/data.h'. This function
         will not pop/free the list, it will only parse it from start to
         end.
 
-     `initialize': Initialize the allocated space with blank values before
+     'initialize': Initialize the allocated space with blank values before
         writing in the constant values. This can be useful when the tiles
         don't cover the full allocated block. */
 gal_data_t *
@@ -436,8 +436,8 @@ gal_tile_block_write_const_value(gal_data_t *tilevalues, gal_data_t *tilesll,
   /* A small sanity check. */
   for(tile=tilesll; tile!=NULL; tile=tile->next) ++nt;
   if(nt!=nv)
-    error(EXIT_FAILURE, 0, "%s: the number of elements in `tilevalues' (%zu) "
-          "and `tilesll' (%zu) must be the same", __func__, nv, nt);
+    error(EXIT_FAILURE, 0, "%s: the number of elements in 'tilevalues' (%zu) "
+          "and 'tilesll' (%zu) must be the same", __func__, nv, nt);
 
   /* Allocate the output array. */
   tofill=gal_data_alloc(NULL, type, block->ndim, block->dsize, block->wcs,
@@ -445,7 +445,7 @@ gal_tile_block_write_const_value(gal_data_t *tilevalues, gal_data_t *tilesll,
                         tilevalues->name, tilevalues->unit,
                         tilevalues->comment);
 
-  /* If requested, initialize `tofill', otherwise it is assumed that the
+  /* If requested, initialize 'tofill', otherwise it is assumed that the
      full area of the output is covered by the tiles. */
   if(withblank || initialize) gal_blank_initialize(tofill);
   else
@@ -462,14 +462,14 @@ gal_tile_block_write_const_value(gal_data_t *tilevalues, gal_data_t *tilesll,
         }
     }
 
-  /* Go over the tiles and write the values in. Recall that `tofill' has
-     the same type as `tilevalues'. So we are using memcopy. */
+  /* Go over the tiles and write the values in. Recall that 'tofill' has
+     the same type as 'tilevalues'. So we are using memcopy. */
   tile_ind=0;
   for(tile=tilesll; tile!=NULL; tile=tile->next)
     {
-      /* Set the pointer to use as input. The `if(o)' statement is set
+      /* Set the pointer to use as input. The 'if(o)' statement is set
          because GCC 7.1.1 complained about the possiblity of the first
-         argument of `memcpy' being NULL. Recall that `o' is a pointer. */
+         argument of 'memcpy' being NULL. Recall that 'o' is a pointer. */
       in=gal_pointer_increment(tilevalues->array, tile_ind++, type);
       GAL_TILE_PARSE_OPERATE( tile, tofill, 1, withblank, {
           if(o) memcpy(o, in, gal_type_sizeof(type));
@@ -484,8 +484,8 @@ gal_tile_block_write_const_value(gal_data_t *tilevalues, gal_data_t *tilesll,
 
 
 /* Make a copy of the memory block and fill it with the index of each tile
-   in `tilesll' (counting from 0). The non-filled areas will have blank
-   values. The output dataset will have a type of `GAL_TYPE_INT32'. */
+   in 'tilesll' (counting from 0). The non-filled areas will have blank
+   values. The output dataset will have a type of 'GAL_TYPE_INT32'. */
 gal_data_t *
 gal_tile_block_check_tiles(gal_data_t *tilesll)
 {
@@ -530,7 +530,7 @@ gal_tile_block_relative_to_other(gal_data_t *tile, gal_data_t *other)
 
 
 
-/* To use within `gal_tile_full_blank_flag'. */
+/* To use within 'gal_tile_full_blank_flag'. */
 static void *
 tile_block_blank_flag(void *in_prm)
 {
@@ -599,7 +599,7 @@ gal_tile_block_blank_flag(gal_data_t *tile_ll, size_t numthreads)
         |           |           |           |           |       |
         ---------------------------------------------------------
 
-   The remainder of the scenario above will always be smaller than `tile
+   The remainder of the scenario above will always be smaller than 'tile
    size' (can be even 1-pixel wide). So, we will merge the first tile size
    with the remainder.  In this way, the size of the first tile will always
    be between between one and two times the size of the regular tile:
@@ -611,7 +611,7 @@ gal_tile_block_blank_flag(gal_data_t *tile_ll, size_t numthreads)
    When there is only a small remainder (for example one or two pixels),
    then this layout is fine. But when the remainder is significant compared
    to the regular tile size (like the example above), then it will make
-   more sense to cut the first tile into two halfs (`f-half' and `l-half')
+   more sense to cut the first tile into two halfs ('f-half' and 'l-half')
    and put them at the start and end of the full length:
 
 
@@ -656,7 +656,7 @@ gal_tile_full_regular_first(gal_data_t *parent, size_t *regular,
                   tsize[i]  = dsize[i]/regular[i] + 1 ;
 
                   /* If we only have one tile along the dimension, then
-                     `first[i]==dsize[i]'. In this case, the first and last
+                     'first[i]==dsize[i]'. In this case, the first and last
                      tiles are the same and must have the same size. */
                   last[i]   = ( first[i]==dsize[i]
                                 ? first[i]
@@ -689,41 +689,41 @@ gal_tile_full_regular_first(gal_data_t *parent, size_t *regular,
 
 
 /* Cover the full dataset with (mostly) identical tiles. The regular tile
-   size is determined from the `size' array. If the input data's size is
-   not an exact multiple of `size' for each dimension, then the tiles
+   size is determined from the 'size' array. If the input data's size is
+   not an exact multiple of 'size' for each dimension, then the tiles
    touching the edges in that dimension will have a different size to fully
    cover every element of the input. For a full description of tiling in
-   `gal_data_t', please see `data.h'.
+   'gal_data_t', please see 'data.h'.
 
    Inputs
    ------
 
-     `input' is the gal_data_t which you want to tile (only used for its
+     'input' is the gal_data_t which you want to tile (only used for its
         sizes).
 
-     `regular' is the size of the regular tiles along each of the input's
+     'regular' is the size of the regular tiles along each of the input's
         dimensions. So it must have the same number of elements as the
-        dimensions of `input'.
+        dimensions of 'input'.
 
-     `remainderfrac' is the significant fraction of the remainder space if
+     'remainderfrac' is the significant fraction of the remainder space if
         the width of the input isn't an exact multiple of the tile size
-        along a dimension, see `gal_tile_full_regular_first'.
+        along a dimension, see 'gal_tile_full_regular_first'.
 
-     `out' is the pointer to the array of data structures that is to keep
-        the tile parameters. If `*out==NULL', then the necessary space will
+     'out' is the pointer to the array of data structures that is to keep
+        the tile parameters. If '*out==NULL', then the necessary space will
         be allocated. If it is not NULL, then all the tile information will
-        be filled from the given element, see `multiple' for more.
+        be filled from the given element, see 'multiple' for more.
 
-     `multiple': When the `*out' array is to be allocated, allocate
-        `multiple' times the necessary space. This can be very useful when
-        you have several more identically sized `inputs', and you want all
+     'multiple': When the '*out' array is to be allocated, allocate
+        'multiple' times the necessary space. This can be very useful when
+        you have several more identically sized 'inputs', and you want all
         their tiles to be allocated (and thus indexed) together, even
-        though they have different `block' datasets (that then link to one
-        allocated space).  See the `gal_tile_full_two_layers' below.
+        though they have different 'block' datasets (that then link to one
+        allocated space).  See the 'gal_tile_full_two_layers' below.
 
-     `firsttsize': The size of the first tile along every dimension. This
-        is only different from the regular tile size when `regular' is not
-        an exact multiple of `input''s length along every dimension. This
+     'firsttsize': The size of the first tile along every dimension. This
+        is only different from the regular tile size when 'regular' is not
+        an exact multiple of 'input''s length along every dimension. This
         array is allocated internally by this function.
 
    Output
@@ -741,10 +741,10 @@ gal_tile_full_regular_first(gal_data_t *parent, size_t *regular,
      we need the following sizes. If the input array has no parent/block,
      then both these sizes are equal to it's own size:
 
-        1. block-size (or `bsize'), which is the size of the allocated
+        1. block-size (or 'bsize'), which is the size of the allocated
            block in each dimension.
 
-        2. parent-size (or `psize') which is the size of the parent in each
+        2. parent-size (or 'psize') which is the size of the parent in each
            dimension (we don't want to go out of the paren't range). */
 size_t *
 gal_tile_full(gal_data_t *input, size_t *regular,
@@ -777,7 +777,7 @@ gal_tile_full(gal_data_t *input, size_t *regular,
   else     *out = tiles = gal_data_array_calloc(numtiles*multiple);
 
 
-  /* It is possible that the `input' dataset is its-self a larger tile over
+  /* It is possible that the 'input' dataset is its-self a larger tile over
      a region of the allocated block. In that case, we need to account for
      the block's dimensions when calculating the position of this block. */
   if(input->block)
@@ -801,13 +801,13 @@ gal_tile_full(gal_data_t *input, size_t *regular,
       for(d=0;d<input->ndim;++d)
         {
           /* Convert the tile coordinates to pixel coordinates within
-             `input'. See the comments above `gal_tile_full_regular_first':
+             'input'. See the comments above 'gal_tile_full_regular_first':
              The first tile in every dimension can be different from the
              regular tile size. */
           coord[d] = tcoord[d] ? first[d] + (tcoord[d]-1)*regular[d] : 0;
 
-          /* When the `input' data structure (that is to be tiled here) was
-             itself a tile over a larger allocated array, a `start' array
+          /* When the 'input' data structure (that is to be tiled here) was
+             itself a tile over a larger allocated array, a 'start' array
              has been allocated to correct the coordinates so they refer to
              a physical position on the allocated block of memory. */
           if(start)
@@ -819,7 +819,7 @@ gal_tile_full(gal_data_t *input, size_t *regular,
       tind=gal_dimension_coord_to_index(block->ndim, block->dsize, coord);
 
       /* Now that we have the index of this tile's starting point compared
-         to the allocated block, put it in to the tile's `array'
+         to the allocated block, put it in to the tile's 'array'
          pointer. */
       tiles[i].array=gal_pointer_increment(block->array, tind, block->type);
 
@@ -832,9 +832,9 @@ gal_tile_full(gal_data_t *input, size_t *regular,
       for(d=0;d<input->ndim;++d)
         {
           /* The size of the first and last tiles can be different from the
-             majority of the `regular' tiles that have the same size. When
+             majority of the 'regular' tiles that have the same size. When
              a tile is on the edge in one of the dimensions, then its
-             `tcoord[d]' will be either 0 or the last. */
+             'tcoord[d]' will be either 0 or the last. */
           if( first[d] != regular[d]
               && ( tcoord[d]==0 || tcoord[d]==tsize[d]-1 ) )
             {
@@ -848,9 +848,9 @@ gal_tile_full(gal_data_t *input, size_t *regular,
           tiles[i].size *= tiles[i].dsize[d];
         }
 
-      /* Set the block structure for this tile to the `input', and set the
+      /* Set the block structure for this tile to the 'input', and set the
          next pointer as the next tile. Note that only when we are dealing
-         with the last tile should the `next' pointer be set to NULL.*/
+         with the last tile should the 'next' pointer be set to NULL.*/
       tiles[i].flag  = 0;
       tiles[i].block = input;
       tiles[i].next  = i==numtiles-1 ? NULL : &tiles[i+1];
@@ -869,17 +869,17 @@ gal_tile_full(gal_data_t *input, size_t *regular,
   free(tcoord);
   *firsttsize=first;
   if(start) free(start);
-  tsize[input->ndim]=-1; /* `tsize' had ndim+1 values, we will mark the  */
+  tsize[input->ndim]=-1; /* 'tsize' had ndim+1 values, we will mark the  */
   return tsize;          /* extra space with the largest possible value: */
-}                        /* -1, see `gal_tile_full_sanity_check'.        */
+}                        /* -1, see 'gal_tile_full_sanity_check'.        */
 
 
 
 
 
-/* Make sure that the input parameters (in `tl', short for two-layer) fit
+/* Make sure that the input parameters (in 'tl', short for two-layer) fit
    with the input dataset. The filename and HDU are only required for error
-   messages. Also, allocate and fill the `channelsize' array. */
+   messages. Also, allocate and fill the 'channelsize' array. */
 void
 gal_tile_full_sanity_check(char *filename, char *hdu, gal_data_t *input,
                            struct gal_tile_two_layer_params *tl)
@@ -892,7 +892,7 @@ gal_tile_full_sanity_check(char *filename, char *hdu, gal_data_t *input,
     {
       /* Not equal to zero. */
       if(tl->tilesize[i]==0)
-        error(EXIT_FAILURE, 0, "`--tilesize' must be larger than zero, "
+        error(EXIT_FAILURE, 0, "'--tilesize' must be larger than zero, "
               "the given value for dimension %zu was zero", ndim-i);
 
       /* If the tile size is larger than the dataset size in this
@@ -907,7 +907,7 @@ gal_tile_full_sanity_check(char *filename, char *hdu, gal_data_t *input,
      the dataset's dimensions). */
   if(i!=ndim)
     error(EXIT_FAILURE, 0, "%s (hdu: %s): has %zu dimensions, but only %zu "
-          "value(s) given for the tile size (`--tilesize' option).",
+          "value(s) given for the tile size ('--tilesize' option).",
           filename, hdu, ndim, i);
 
 
@@ -936,20 +936,20 @@ gal_tile_full_sanity_check(char *filename, char *hdu, gal_data_t *input,
          image. Note that the reported dimension must be in FITS format.*/
       if( input->dsize[i] < tl->numchannels[i] )
         error(EXIT_FAILURE, 0, "the number of channels in dimension %zu "
-              "(%zu) is more than the size of the `%s' (hdu: %s) in that "
+              "(%zu) is more than the size of the '%s' (hdu: %s) in that "
               "dimension", ndim-i, tl->numchannels[i], filename, hdu);
 
       /* Also check the tile size. */
       if( input->dsize[i] < tl->tilesize[i] )
         error(EXIT_FAILURE, 0, "the tile size in dimension %zu (%zu) is "
-              "more than the size of the `%s' (hdu: %su) in that dimension",
+              "more than the size of the '%s' (hdu: %su) in that dimension",
               ndim-i, tl->tilesize[i], filename, hdu);
 
       /* First check. */
       d=(double)input->dsize[i]/(double)(tl->numchannels[i]);
       if(ceil(d)!=d)
         error(EXIT_FAILURE, 0, "%zu (number of channels along dimension "
-              "%zu) is not exactly divisible by %zu (the length of `%s' "
+              "%zu) is not exactly divisible by %zu (the length of '%s' "
               "(hdu: %s) that dimension). The channels cover the input "
               "dataset, hence, they must be identical", tl->numchannels[i],
               ndim-i, input->dsize[i], filename, hdu);
@@ -966,10 +966,10 @@ gal_tile_full_sanity_check(char *filename, char *hdu, gal_data_t *input,
 /* A dataset can be tiled with two layers that are related:
 
       Channels: A tesselation of larger tile sizes that all have the same
-           size (`channel_size' must be an exact multiple of `input's size
+           size ('channel_size' must be an exact multiple of 'input's size
            along every dimension. In astronomy images, this can be seen as
            CCD amplifiers, that cover large parts of the image. If
-           `*channels!=NULL' then it is assumed to be already present and
+           '*channels!=NULL' then it is assumed to be already present and
            will not be allocated.
 
       Tiles: A combined tesselation of each channel with smaller
@@ -1006,9 +1006,9 @@ gal_tile_full_two_layers(gal_data_t *input,
   tl->tottilesinch = gal_dimension_total_size(ndim, tl->numtilesinch);
   for(i=1; i<tl->totchannels; ++i)
     {
-      /* Set the first tile in this channel. Then use it it fill the `next'
-         pointer of the previous channel's tiles. Note that `gal_tile_full'
-         set this `next' element to NULL. */
+      /* Set the first tile in this channel. Then use it it fill the 'next'
+         pointer of the previous channel's tiles. Note that 'gal_tile_full'
+         set this 'next' element to NULL. */
       t = tl->tiles + i * tl->tottilesinch;
       tl->tiles[ i * tl->tottilesinch - 1 ].next = t;
 
@@ -1039,7 +1039,7 @@ gal_tile_full_two_layers(gal_data_t *input,
 
    Make a permutation to allow the conversion of tile location in memory to
    its location in the full input dataset and put it in the input's
-   `permutation' element. If a permutation has already been defined for the
+   'permutation' element. If a permutation has already been defined for the
    tessellation, this function will not do anythin. If permutation won't be
    necessary, then this function will just return (the permutation must
    have been initialized to NULL). */
@@ -1265,7 +1265,7 @@ gal_tile_full_free_contents(struct gal_tile_two_layer_params *tl)
   if(tl->permutation)   free(tl->permutation);
   if(tl->firsttsize)    free(tl->firsttsize);
 
-  /* Free the arrays of `gal_data_t' for each tile and channel. */
+  /* Free the arrays of 'gal_data_t' for each tile and channel. */
   if(tl->tiles)    gal_data_array_free(tl->tiles,    tl->tottiles,    0);
   if(tl->channels) gal_data_array_free(tl->channels, tl->totchannels, 0);
 }

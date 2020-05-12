@@ -27,8 +27,8 @@
 # 412 (data type conversion overflow) when the number cannot be
 # printed in the provided space (with full precision). So make sure
 # that the full-integer part of the number has less characters than
-# the `width - precision - 1' (when everything is default, you can get
-# these values from `lib/gnuastro/table.h').
+# the 'width - precision - 1' (when everything is default, you can get
+# these values from 'lib/gnuastro/table.h').
 
 # Copyright (C) 2015-2020, Free Software Foundation, Inc.
 #

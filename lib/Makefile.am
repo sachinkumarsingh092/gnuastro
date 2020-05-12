@@ -28,7 +28,7 @@
 ##       the Gnulib functions will be statically linked to the Gnuastro
 ##       library so linking to Gnuastro is enough to access them also.
 ##
-##   SYSCONFIG_DIR: only necessary in `options.c' to get the system
+##   SYSCONFIG_DIR: only necessary in 'options.c' to get the system
 ##       installation directory.
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib            \
               -DSYSCONFIG_DIR=\"$(sysconfdir)\"
@@ -68,7 +68,7 @@ libgnuastro_la_SOURCES = arithmetic.c arithmetic-and.c arithmetic-bitand.c \
 
 
 
-# Installed headers, note that we are not blindly including all `.h' files
+# Installed headers, note that we are not blindly including all '.h' files
 # in the $(headersdir) directory. Some of the header files don't need to be
 # installed.
 headersdir=$(top_srcdir)/lib/gnuastro
@@ -125,7 +125,7 @@ CLEANFILES = gnuastro.pc gnuastro/config.h
 
 
 
-# Build `gnuastro/config.h' based on the information in the Makefile after
+# Build 'gnuastro/config.h' based on the information in the Makefile after
 # the Makefile has been built.
 gnuastro/config.h: Makefile $(internaldir)/config.h.in
 	rm -f $@ $@.tmp
@@ -145,7 +145,7 @@ gnuastro/config.h: Makefile $(internaldir)/config.h.in
 
 
 
-# Build Gnuastro's pkg-config file similar to `gnuastro/config.h'.
+# Build Gnuastro's pkg-config file similar to 'gnuastro/config.h'.
 gnuastro.pc: Makefile $(srcdir)/gnuastro.pc.in
 	rm -f $@ $@.tmp
 	ol=""; \

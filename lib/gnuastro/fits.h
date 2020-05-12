@@ -23,12 +23,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_FITS_H__
 #define __GAL_FITS_H__
 
-/* When we are within Gnuastro's building process, `IN_GNUASTRO_BUILD' is
+/* When we are within Gnuastro's building process, 'IN_GNUASTRO_BUILD' is
    defined. In the build process, installation information (in particular
-   `GAL_CONFIG_HAVE_WCSLIB_VERION' that we need in `fits.c') is kept in
-   `config.h'. When building a user's programs, this information is kept in
-   `gnuastro/config.h'. Note that all `.c' files must start with the
-   inclusion of `config.h' and that `gnuastro/config.h' is only created at
+   'GAL_CONFIG_HAVE_WCSLIB_VERION' that we need in 'fits.c') is kept in
+   'config.h'. When building a user's programs, this information is kept in
+   'gnuastro/config.h'. Note that all '.c' files must start with the
+   inclusion of 'config.h' and that 'gnuastro/config.h' is only created at
    installation time (not present during the building of Gnuastro).*/
 #ifndef IN_GNUASTRO_BUILD
 #include <gnuastro/config.h>

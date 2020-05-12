@@ -92,7 +92,7 @@ keywords_rename_keys(struct fitsparams *p, fitsfile **fptr, int *r)
       str=gal_list_str_pop(&p->rename);
 
       /* Take a copy of the input string for error reporting, because
-         `strtok' will write into the array. */
+         'strtok' will write into the array. */
       gal_checkset_allocate_copy(str, &copy);
 
       /* Tokenize the input. */
@@ -101,18 +101,18 @@ keywords_rename_keys(struct fitsparams *p, fitsfile **fptr, int *r)
 
       /* Make sure both elements were read. */
       if(from==NULL || to==NULL)
-        error(EXIT_FAILURE, 0, "`%s' could not be tokenized in order to "
+        error(EXIT_FAILURE, 0, "'%s' could not be tokenized in order to "
               "complete rename. There should be a space character "
               "or a comma (,) between the two keyword names. If you have "
               "used the space character, be sure to enclose the value to "
-              "the `--rename' option in double quotation marks", copy);
+              "the '--rename' option in double quotation marks", copy);
 
       /* Rename the keyword */
       fits_modify_name(*fptr, from, to, &status);
       if(status) *r=fits_has_error(p, FITS_ACTION_RENAME, from, status);
       status=0;
 
-      /* Clean up the user's input string. Note that `strtok' just changes
+      /* Clean up the user's input string. Note that 'strtok' just changes
          characters within the allocated string, no extra allocation is
          done. */
       free(str);
@@ -140,7 +140,7 @@ keywords_write_set_value(struct fitsparams *p, fitsfile **fptr,
         return 1;
       else
         {
-          /* Calculate and write the `CHECKSUM' and `DATASUM' keywords. */
+          /* Calculate and write the 'CHECKSUM' and 'DATASUM' keywords. */
           if( fits_write_chksum(*fptr, &status) )
             gal_fits_io_error(status, NULL);
 
@@ -161,7 +161,7 @@ keywords_write_set_value(struct fitsparams *p, fitsfile **fptr,
     }
   else
     error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
-          "fix the problem. The `keyname' value `%s' is not "
+          "fix the problem. The 'keyname' value '%s' is not "
           "recognized as one with no value", __func__,
           PACKAGE_BUGREPORT, keyll->keyname);
 
@@ -236,9 +236,9 @@ keywords_write_update(struct fitsparams *p, fitsfile **fptr,
                 gal_fits_io_error(status, NULL);
             }
           else
-            error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at `%s' so "
+            error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at '%s' so "
                   "we can fix this problem. The value %d is not valid for "
-                  "`u1w2'", __func__, PACKAGE_BUGREPORT, u1w2);
+                  "'u1w2'", __func__, PACKAGE_BUGREPORT, u1w2);
 
           /* Add the unit (if one was given). */
           if(keyll->unit
@@ -314,7 +314,7 @@ keywords_verify(struct fitsparams *p, fitsfile **fptr)
            "Checking integrity of %s (hdu %s)\n"
            "%s"
            "--------\n"
-           "Basic info (remove all extra info with `--quiet'):\n"
+           "Basic info (remove all extra info with '--quiet'):\n"
            "    - DATASUM: verifies only the data (not keywords).\n"
            "    - CHECKSUM: verifies data and keywords.\n"
            "They can be added-to/updated-in an extension/HDU with:\n"
@@ -345,13 +345,13 @@ keywords_copykeys(struct fitsparams *p, char *inkeys, size_t numinkeys)
   long initial;
   fitsfile *fptr;
 
-  /* Initial sanity check. Since `numinkeys' includes `END' (counting from
+  /* Initial sanity check. Since 'numinkeys' includes 'END' (counting from
      1, as we do here), the first keyword must not be larger OR EQUAL to
-     `numinkeys'. */
+     'numinkeys'. */
   if(p->copykeysrange[0]>=numinkeys)
     error(EXIT_FAILURE, 0, "%s (hdu %s): first keyword number give to "
-          "`--copykeys' (%ld) is larger than the number of keywords in this "
-          "header (%zu, including the `END' keyword)", p->filename, p->cp.hdu,
+          "'--copykeys' (%ld) is larger than the number of keywords in this "
+          "header (%zu, including the 'END' keyword)", p->filename, p->cp.hdu,
           p->copykeysrange[0], numinkeys);
 
   /* If the user wanted to count from the end (by giving a negative value),
@@ -365,7 +365,7 @@ keywords_copykeys(struct fitsparams *p, char *inkeys, size_t numinkeys)
       /* Sanity check. */
       if(p->copykeysrange[0]>=p->copykeysrange[1])
         error(EXIT_FAILURE, 0, "%s (hdu %s): the last keyword given to "
-              "`--copykeys' (%ld, or %ld after counting from the bottom) "
+              "'--copykeys' (%ld, or %ld after counting from the bottom) "
               "is earlier than the first (%ld)", p->filename, p->cp.hdu,
               initial, p->copykeysrange[1], p->copykeysrange[0]);
     }
@@ -373,8 +373,8 @@ keywords_copykeys(struct fitsparams *p, char *inkeys, size_t numinkeys)
   /* Final sanity check (on range limit). */
   if(p->copykeysrange[1]>=numinkeys)
     error(EXIT_FAILURE, 0, "%s (hdu %s): second keyword number give to "
-          "`--copykeys' (%ld) is larger than the number of keywords in this "
-          "header (%zu, including the `END' keyword)", p->filename, p->cp.hdu,
+          "'--copykeys' (%ld) is larger than the number of keywords in this "
+          "header (%zu, including the 'END' keyword)", p->filename, p->cp.hdu,
           p->copykeysrange[1], numinkeys);
 
 
@@ -417,11 +417,11 @@ keywords_date_to_seconds(struct fitsparams *p, fitsfile *fptr)
   /* Print the result (for the sub-seconds, print everything after the */
   if( !p->cp.quiet )
     {
-      printf("%s (hdu %s), key `%s': %s\n", p->filename, p->cp.hdu,
+      printf("%s (hdu %s), key '%s': %s\n", p->filename, p->cp.hdu,
              p->datetosec, fitsdate);
       printf("Seconds since 1970/01/01 (00:00:00): %zu%s\n\n", seconds,
              subsecstr?subsecstr:"");
-      printf("(To suppress verbose output, run with `-q')\n");
+      printf("(To suppress verbose output, run with '-q')\n");
     }
   else
     printf("%zu%s\n", seconds, subsecstr?subsecstr:"");
@@ -454,12 +454,12 @@ keywords_date_to_seconds(struct fitsparams *p, fitsfile *fptr)
 /***********************************************************************/
 /* NOTE ON CALLING keywords_open FOR EACH OPERATION:
 
-   `keywords_open' is being called individually for each separate operation
+   'keywords_open' is being called individually for each separate operation
    because the necessary permissions differ: when the user only wants to
    read keywords, they don't necessarily need write permissions. So if they
    haven't asked for any writing/editing operation, we shouldn't open in
    write-mode. Because the user might not have the permissions to write and
-   they might not want to write. `keywords_open' will only open the file
+   they might not want to write. 'keywords_open' will only open the file
    once (if the pointer is already allocated, it won't do anything). */
 int
 keywords(struct fitsparams *p)
