@@ -86,6 +86,7 @@ fits_print_extension_info(struct fitsparams *p)
 {
   uint16_t *ui16;
   fitsfile *fptr;
+  int hasblankname=0;
   gal_data_t *cols=NULL, *tmp;
   char **tstra, **estra, **sstra;
   size_t i, numext, *dsize, ndim;
@@ -169,6 +170,7 @@ fits_print_extension_info(struct fitsparams *p)
 
         case KEY_NO_EXIST:
           sprintf(extname, "%s", GAL_BLANK_STRING);
+          hasblankname=1;
           status=0;
           break;
 
@@ -234,6 +236,9 @@ fits_print_extension_info(struct fitsparams *p)
       printf(" Column 1: Index (counting from 0, usable with '--hdu').\n");
       printf(" Column 2: Name ('EXTNAME' in FITS standard, usable with "
              "'--hdu').\n");
+      if(hasblankname)
+        printf("           ('%s' means that no name is specified for this "
+               "HDU)\n", GAL_BLANK_STRING);
       printf(" Column 3: Image data type or 'table' format (ASCII or "
              "binary).\n");
       printf(" Column 4: Size of data in HDU.\n");

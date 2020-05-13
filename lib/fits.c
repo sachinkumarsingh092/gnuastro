@@ -706,23 +706,31 @@ gal_fits_hdu_open(char *filename, char *hdu, int iomode)
            notice. */
         case END_OF_FILE:
           if( hdu[0]=='1' && hdu[1]=='\0' )
-            error(EXIT_FAILURE, 0, "%s has only one extension/HDU but you "
-                  "have asked for the second HDU (hdu number 1 in CFITSIO)."
-                  "\n\n"
-                  "To fix the problem please add '--hdu=0' (or '-h0') to "
-                  "your command when calling Gnuastro's programs. For "
-                  "library users, please give a value of '0' to the HDU "
-                  "argument.\n\n"
+            error(EXIT_FAILURE, 0, "%s: only has one HDU.\n\n"
+                  "You should tell Gnuastro's command-line "
+                  "programs to look for data in the primary HDU with the "
+                  "'--hdu=0' option (or '-h0'). For library users, you can "
+                  "put \"0\" (a string literal) for the function's HDU "
+                  "argument. For more, see the FOOTNOTE below.\n\n"
+                  "Pro TIP: if your desired HDU has a name (value to "
+                  "'EXTNAME' keyword), it is best to just use that name "
+                  "with '--hdu' instead of relying on a counter. You can "
+                  "see the list of HDUs in a FITS file (with their data "
+                  "format, type, size and possibly HDU name) using "
+                  "Gnuastro's 'astfits' program, for example:\n\n"
+                  "    astfits %s\n\n"
                   "FOOTNOTE -- When writing a new FITS file, Gnuastro leaves "
-                  "the first HDU blank (with no data) and writes the "
-                  "outputs in the second HDU. In this way the keywords of "
-                  "the the first HDU can be used as meta data of the whole "
-                  "file (which may contain many extensions). This is the "
-                  "recommended way in the FITS standard. As a result, "
-                  "Gnuastro's default HDU to read an extension in a FITS "
-                  "file is the second. This error is commonly caused when "
-                  "the FITS file wasn't created according to this "
-                  "convention.", filename);
+                  "the pimary HDU only for metadata. The output datasets "
+                  "(tables, images or cubes) are written after the primary "
+                  "HDU. In this way the keywords of the the first HDU can be "
+                  "used as metadata of the whole file (which may contain many "
+                  "extensions, this is stipulated in the FITS standard). "
+                  "Usually the primary HDU keywords contains the option names "
+                  "and values that the program was run with. Because of this, "
+                  "Gnuastro's default HDU to read data in a FITS file is the "
+                  "second (or '--hdu=1'). This error is commonly caused when "
+                  "the FITS file wasn't created by Gnuastro or by a program "
+                  "respecting this convention.", filename, filename);
           break;
 
         /* Generic error below is fine for this case */
