@@ -9270,9 +9270,9 @@ $ asttable bintab.fits -c2,'arith $2 5 x' -otable.fits
 ## Sort the output columns by the third column, save output:
 $ asttable bintab.fits --sort=3 -ooutput.txt
 
-## Subtract the first column from the second in `cat.txt' (can also
-## be a FITS table) and keep the third and fourth columns.
-$ asttable cat.txt -c'arith $2 c1 -',3,4 -ocat.fits
+## Subtract the first column from the second in `cat.fits' (can also
+## be a text table) and keep the third and fourth columns.
+$ asttable cat.txt -c'arith $2 $1 -',3,4 -ocat.fits
 @end example
 
 Table's input dataset can be given either as a file or from Standard input (see @ref{Standard input}).
