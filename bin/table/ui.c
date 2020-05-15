@@ -547,7 +547,7 @@ ui_print_info_exit(struct tableparams *p)
 static void
 ui_columns_prepare(struct tableparams *p)
 {
-  char **strarr;
+  char *c, **strarr;
   gal_data_t *strs;
   size_t i, totcalled=0;
   struct column_pack *node, *last;
@@ -557,6 +557,14 @@ ui_columns_prepare(struct tableparams *p)
      one value separated by a comma. */
   for(tmp=p->columns;tmp!=NULL;tmp=tmp->next)
     {
+      /* Remove any possibly commented new-line where we have a backslash
+         followed by a new-line character (replace the two characters with
+         two single space characters). This can happen with the 'arith'
+         argument in a script, when it gets long (bug #58371). But to be
+         general in other cases too, we'll just correct it here. */
+      for(c=tmp->v;*c!='\0';++c)
+        if(*c=='\\' && *(c+1)=='\n') { *c=' '; *(++c)=' '; }
+
       /* Read the different comma-separated strings into an array (within a
          'gal_data_t'). */
       strs=gal_options_parse_csv_strings_raw(tmp->v, NULL, 0);
