@@ -9172,29 +9172,51 @@ $ asttable table.fits -cID,RA -cDEC \
 @item imgtowcs
 Similar to @code{wcstoimg}, except that image/dataset coordinates are converted to WCS coordinates.
 
-@item angular-distance
-Return the spherical angular distance (along a great circle, in degrees) between the given two points.
-Note that each point needs two coordinates (in degrees), so this operator needs four operands.
+@item distance-flat
+Return the distance between two points assuming they are on a flat surface.
+Note that each point needs two coordinates, so this operator needs four operands (currently it only works for 2D spaces).
 The first and second popped operands are considered to belong to one point and the third and fourth popped operands to the second point.
 
-Each of the input points can be a single coordinate or a full table column (containing many points.
+Each of the input points can be a single coordinate or a full table column (containing many points).
 In other words, the following commands are all valid:
 
 @example
 $ asttable table.fits \
-           -c'arith RA1 DEC1 RA2 DEC2 angular-distance'
+           -c'arith X1 Y1 X2 Y2 distance-flat'
 $ asttable table.fits \
-           -c'arith RA DEC 12.345 6.789 angular-distance'
+           -c'arith X Y 12.345 6.789 distance-flat'
 $ asttable table.fits \
-           -c'arith 12.345 6.789 RA DEC angular-distance'
+           -c'arith 12.345 6.789 X Y distance-flat'
+@end example
+
+In the first case we are assuming that @file{table.fits} has the following four columns @code{X1}, @code{Y1}, @code{X2}, @code{Y2}.
+The returned column by this operator will be the difference between two points in each row with coordinates like the following (@code{X1}, @code{Y1}) and (@code{X2}, @code{Y2}).
+In other words, for each row, the distance between different points is calculated.
+In the second and third cases (which are identical), it is assumed that @file{table.fits} has the two columns @code{X} and @code{Y}.
+The returned column by this operator will be the difference of each row with the fixed point at (12.345, 6.789).
+
+@item distance-on-sphere
+Return the spherical angular distance (along a great circle, in degrees) between the given two points.
+Note that each point needs two coordinates (in degrees), so this operator needs four operands.
+The first and second popped operands are considered to belong to one point and the third and fourth popped operands to the second point.
+
+Each of the input points can be a single coordinate or a full table column (containing many points).
+In other words, the following commands are all valid:
+
+@example
+$ asttable table.fits \
+           -c'arith RA1 DEC1 RA2 DEC2 distance-on-sphere'
+$ asttable table.fits \
+           -c'arith RA DEC 9.876 5.432 distance-on-sphere'
+$ asttable table.fits \
+           -c'arith 9.876 5.432 RA DEC distance-on-sphere'
 @end example
 
 In the first case we are assuming that @file{table.fits} has the following four columns @code{RA1}, @code{DEC1}, @code{RA2}, @code{DEC2}.
-The returned column by this operator would be the difference between two points in each row with coordinates like the following (@code{RA1}, @code{DEC1}) and (@code{RA2}, @code{DEC2}).
+The returned column by this operator will be the difference between two points in each row with coordinates like the following (@code{RA1}, @code{DEC1}) and (@code{RA2}, @code{DEC2}).
 In other words, for each row, the angular distance between different points is calculated.
-
 In the second and third cases (which are identical), it is assumed that @file{table.fits} has the two columns @code{RA} and @code{DEC}.
-The returned column by this operator will be the difference of each row with the fixed point of (12.345, 6.789).
+The returned column by this operator will be the difference of each row with the fixed point at (9.876, 5.432).
 
 The distance (along a great circle) on a sphere between two points is calculated with the equation below, where @mymath{r_1}, @mymath{r_2}, @mymath{d_1} and @mymath{d_2} are the right ascensions and declinations of points 1 and 2.
 

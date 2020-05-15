@@ -106,7 +106,8 @@ arithmetic_operator_name(int operator)
       {
       case ARITHMETIC_TABLE_OP_WCSTOIMG: out="wcstoimg"; break;
       case ARITHMETIC_TABLE_OP_IMGTOWCS: out="imgtowcs"; break;
-      case ARITHMETIC_TABLE_OP_ANGULARDISTANCE: out="angular-distance"; break;
+      case ARITHMETIC_TABLE_OP_DISTANCEFLAT: out="distance-flat"; break;
+      case ARITHMETIC_TABLE_OP_DISTANCEONSPHERE: out="distance-on-sphere"; break;
       default:
         error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
               "the problem. %d is not a recognized operator code", __func__,
@@ -157,8 +158,10 @@ arithmetic_set_operator(struct tableparams *p, char *string,
         { op=ARITHMETIC_TABLE_OP_WCSTOIMG; *num_operands=0; }
       else if (!strncmp(string, "imgtowcs", 8))
         { op=ARITHMETIC_TABLE_OP_IMGTOWCS; *num_operands=0; }
-      else if (!strncmp(string, "angular-distance", 8))
-        { op=ARITHMETIC_TABLE_OP_ANGULARDISTANCE; *num_operands=0; }
+      else if (!strncmp(string, "distance-flat", 13))
+        { op=ARITHMETIC_TABLE_OP_DISTANCEFLAT; *num_operands=0; }
+      else if (!strncmp(string, "distance-on-sphere", 18))
+        { op=ARITHMETIC_TABLE_OP_DISTANCEONSPHERE; *num_operands=0; }
       else
         { op=GAL_ARITHMETIC_OP_INVALID; *num_operands=GAL_BLANK_INT; }
     }
@@ -433,12 +436,25 @@ arithmetic_wcs(struct tableparams *p, gal_data_t **stack, int operator)
 
 
 
+static double
+arithmetic_distance_flat(double a1, double a2, double b1, double b2)
+{
+  double d1=a1-b1, d2=a2-b2;
+  return sqrt(d1*d1 + d2*d2);
+}
+
+
+
+
+
 static void
-arithmetic_angular_dist(struct tableparams *p, gal_data_t **stack, int operator)
+arithmetic_distance(struct tableparams *p, gal_data_t **stack, int operator)
 {
   size_t i, j;
+  char *colname, *colcomment;
   double *o, *a1, *a2, *b1, *b2;
   gal_data_t *a, *b, *tmp, *out;
+  double (*distance_func)(double, double, double, double);
 
   /* Pop the columns for point 'b'.*/
   tmp=arithmetic_stack_pop(stack, operator);
@@ -462,16 +478,35 @@ arithmetic_angular_dist(struct tableparams *p, gal_data_t **stack, int operator)
           "numbers) must be equal", arithmetic_operator_name(operator),
           a->next->size, a->size);
   if(b->size!=b->next->size)
-    error(EXIT_FAILURE, 0, "the sizes of the third and fourth operands "
+    error(EXIT_FAILURE, 0, "the sizes of the first and second operands "
           "of the '%s' operator (respectively containing %zu and %zu "
           "numbers) must be equal", arithmetic_operator_name(operator),
           b->next->size, b->size);
 
+  /* Basic settings based on the operator. */
+  switch(operator)
+    {
+    case ARITHMETIC_TABLE_OP_DISTANCEFLAT:
+      colname="dist-flat";
+      distance_func=arithmetic_distance_flat;
+      colcomment="Distance measured on a flat surface.";
+      break;
+    case ARITHMETIC_TABLE_OP_DISTANCEONSPHERE:
+      colname="dist-spherical";
+      distance_func=gal_wcs_angular_distance_deg;
+      colcomment="Distance measured on a great circle.";
+      break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
+            "fix the problem. The operator code %d isn't recognized",
+            __func__, PACKAGE_BUGREPORT, operator);
+    }
+
   /* Make the output array based on the largest size. */
   out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1,
                      (a->size>b->size ? &a->size : &b->size), NULL, 0,
-                     p->cp.minmapsize, p->cp.quietmmap, "angular-dist",
-                     NULL, "Angular distance between input points");
+                     p->cp.minmapsize, p->cp.quietmmap, colname, NULL,
+                     colcomment);
 
   /* Measure the distances.  */
   o=out->array;
@@ -480,11 +515,10 @@ arithmetic_angular_dist(struct tableparams *p, gal_data_t **stack, int operator)
   if(a->size==1 || b->size==1) /* One of them is a single point. */
     for(i=0;i<a->size;++i)
       for(j=0;j<b->size;++j)
-        o[a->size>b->size?i:j] = gal_wcs_angular_distance_deg(a1[i], a2[i],
-                                                              b1[j], b2[j]);
+        o[a->size>b->size?i:j] = distance_func(a1[i], a2[i], b1[j], b2[j]);
   else                         /* Both have the same length. */
     for(i=0;i<a->size;++i)     /* (all were originally from the same table) */
-      o[i] = gal_wcs_angular_distance_deg(a1[i], a2[i], b1[i], b2[i]);
+      o[i] = distance_func(a1[i], a2[i], b1[i], b2[i]);
 
   /* Clean up and put the output dataset onto the stack. */
   gal_list_data_free(a);
@@ -610,8 +644,9 @@ arithmetic_operator_run(struct tableparams *p, gal_data_t **stack,
           arithmetic_wcs(p, stack, operator);
           break;
 
-        case ARITHMETIC_TABLE_OP_ANGULARDISTANCE:
-          arithmetic_angular_dist(p, stack, operator);
+        case ARITHMETIC_TABLE_OP_DISTANCEFLAT:
+        case ARITHMETIC_TABLE_OP_DISTANCEONSPHERE:
+          arithmetic_distance(p, stack, operator);
           break;
 
         default:

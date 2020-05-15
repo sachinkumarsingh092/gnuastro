@@ -60,6 +60,7 @@ See the end of the file for license conditions.
      - 'dec-to-degree': Convert Declination (DD:MM:SS) to degrees.
      - 'degree-to-ra': Convert degrees to Right Ascension (HH:MM:SS).
      - 'degree-to-dec': Convert degrees to Declination (HH:MM:SS).
+     - 'distance-flat': Distance between two points, assuming flat space.
 
   Library:
    - GAL_SPECLINES_INVALID_MAX: Total number of spectral lines, plus 1.
@@ -125,6 +126,8 @@ See the end of the file for license conditions.
      the new identifying character is very similar to AWK, allowing easier
      adoption and is also more clear. It is just important to put the total
      'arith' string within single quotes, not double quotes.
+   - Operators:
+     - 'distance-on-sphere': New name for old `angular-distance' operator.
 
   Library:
    - gal_polygon_is_inside_convex: new name for 'gal_polygon_pin'.
