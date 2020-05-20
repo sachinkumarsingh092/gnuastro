@@ -35,7 +35,7 @@ all the commits needed for this release have been completed.
 
        $ git checkout master
        $ git tag -d debian/$ver-1
-       $ git reset --hard HEAD~1        # To go to the merge with upstream.
+       $ git reset --hard HEAD~1            # To go to the merge with upstream.
        $ git reset --hard HEAD~1            # To go to last Debian release.
        $ git checkout pristine-tar
        $ git reset --hard HEAD~1

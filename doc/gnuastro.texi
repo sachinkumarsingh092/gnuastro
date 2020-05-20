@@ -1424,6 +1424,7 @@ Floriane Leclercq,
 Alan Lefor,
 Sebasti@'an Luna Valero,
 Guillaume Mahler,
+Raphael Morales,
 Juan Molina Tobar,
 Francesco Montanari,
 Dmitrii Oparin,
@@ -9359,7 +9360,7 @@ Concatenate/add the columns of this option's value (a filename) with the main in
 The concatenation is done after any column selection (for example with @option{--column}) or row selection (for example with @option{--range}) is applied to the main input argument.
 
 If the file given to this option is a FITS file, its necessary to also define the corresponding HDU/extension with @option{--catcolhdu}.
-Also note that no column or row selection is applied to the table given to this topion.
+Also note that no column or row selection is applied to the table given to this option.
 This option may be called multiple times (to add columns from more than one file into the final output), the columns will be added in the same order that this option is called.
 
 @item -u STR/INT
@@ -9898,7 +9899,7 @@ In such cases, it is best to crop out the larger region you want, then mask the 
 
 @item --polygonsort
 Sort the given set of vertices to the @option{--polygon} option.
-For a concave polyton it will sort the vertices correctly, however for a convex polygon it there is no unique sorting, so be careful because the crop may not be what you expected.
+For a concave polygon it will sort the vertices correctly, however for a convex polygon it there is no unique sorting, so be careful because the crop may not be what you expected.
 
 @cindex Convex polygons
 @cindex Concave polygons
@@ -9906,7 +9907,7 @@ For a concave polyton it will sort the vertices correctly, however for a convex 
 @cindex Polygons, Concave
 Polygons come in two classes: convex and concave (or generally, non-convex!), see below for a demonstration.
 Convex polygons are those where all inner angles are less than 180 degrees.
-By contrast, a convex polygon is one where an inner angle may be more than 180 degress.
+By contrast, a convex polygon is one where an inner angle may be more than 180 degrees.
 
 @example
             Concave Polygon        Convex Polygon
@@ -15581,7 +15582,7 @@ $ awk '!/^#/' out_c.txt | sort -g -k1,1 -k2,2
 @end example
 
 @item --sfmagnsigma=FLT
-Value to multiply with the median standard deviation (from a @command{MEDSTD} keyword in the Sky standard deviation image) for estimating the surface brightenss limit.
+Value to multiply with the median standard deviation (from a @command{MEDSTD} keyword in the Sky standard deviation image) for estimating the surface brightness limit.
 Note that the surface brightness limit is only reported when a standard deviation image is read, in other words a column using it is requested (for example @option{--sn}) or @option{--forcereadstd} is called.
 
 This value is a per-pixel value, not per object/clump and is not found over an area or aperture, like the common @mymath{5\sigma} values that are commonly reported as a measure of depth or the upper-limit measurements (see @ref{Quantifying measurement limits}).
@@ -21342,7 +21343,7 @@ Parse @code{fitsdate} as a FITS date format string (most generally: @code{YYYY-M
 Therefore it needs to be freed afterwards (if it isn't @code{NULL})
 When there is no sub-second portion, this pointer will be @code{NULL}.
 
-This is a relatively low-level function, an easier function to use is @code{gal_fits_key_date_to_seconds} which will return the subseconds as double precision floating point.
+This is a relatively low-level function, an easier function to use is @code{gal_fits_key_date_to_seconds} which will return the sub-seconds as double precision floating point.
 
 Note that the FITS date format mentioned above is the most complete representation.
 The following two formats are also acceptable: @code{YYYY-MM-DDThh:mm:ss} and @code{YYYY-MM-DD}.
@@ -21719,7 +21720,7 @@ under the same name in @ref{Generic data container}.
 Each column will have @code{numrows} rows and @code{colinfo} contains any
 further information about the columns (returned by
 @code{gal_fits_tab_info}, described above). Note that this is a low-level
-function, so the output data linked list is the inverse of the input indexs
+function, so the output data linked list is the inverse of the input indexes
 linked list. It is recommended to use @code{gal_table_read} for generic
 reading of tables, see @ref{Table input output}.
 @end deftypefun
@@ -21832,7 +21833,7 @@ It is recommended to use @code{gal_table_read} for generic reading of tables in 
 
 @deftypefun {gal_data_t *} gal_txt_image_read (char @code{*filename}, gal_list_str_t @code{*lines}, size_t @code{minmapsize}, int @code{quietmmap})
 Read the 2D plain text dataset in file (@code{filename}) or list of strings (@code{lines}) into a dataset and return the dataset.
-If the necessaryspace for the image is larger than @code{minmapsize}, don't keep it in the RAM, but in a file on the HDD/SSD.
+If the necessary space for the image is larger than @code{minmapsize}, don't keep it in the RAM, but in a file on the HDD/SSD.
 For more on @code{minmapsize} and @code{quietmmap}, see the description under the same name in @ref{Generic data container}.
 
 @code{lines} is a list of strings with each node representing one line (including the new-line character), see @ref{List of strings}.
