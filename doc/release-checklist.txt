@@ -169,7 +169,7 @@ all the commits needed for this release have been completed.
               --package-name=gnuastro --previous-version=0.1               \
               --current-version=0.2 --gpg-key-id=$mykeyid                  \
               --url-directory=https://YYYY.gnu.org/gnu/gnuastro            \
-              --archive-suffix=tar.lz > ~/announcement.txt
+              > ~/announcement.txt
 
 
  - Based on previous announcements, add an intro, the NEWS file and the
