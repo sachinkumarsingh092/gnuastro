@@ -658,10 +658,10 @@ struct point
 
 /* This function allows us to find the rightmost point in the given
    array based on its x-coordinates. */
-static struct point
-polygon_leftmost_point(double *in, size_t n)
+static void
+polygon_leftmost_point(double *in, size_t n, struct point *p)
 {
-  size_t i, min_index;
+  size_t i, min_index=-1;
   double tmp_min = DBL_MAX;
 
   /* Loop through the entire array and find the rightmost corner and
@@ -672,13 +672,12 @@ polygon_leftmost_point(double *in, size_t n)
         min_index = i;
         tmp_min = in[i*2];
       }
+  p->x=in[min_index*2];
+  p->y=in[min_index*2+1];
 
-  struct point p={in[min_index*2], in[min_index*2+1]};
   /* For a check:
   printf("leftmost point: %.3f \n", in[min_index*2]);
   */
-
-  return p;
 }
 
 
@@ -687,10 +686,10 @@ polygon_leftmost_point(double *in, size_t n)
 
 /* This function allows us to find the leftmost point int the given
    array based on x coordinates. */
-static struct point
-polygon_rightmost_point(double *in, size_t n)
+static void
+polygon_rightmost_point(double *in, size_t n, struct point *p)
 {
-  size_t i, max_index;
+  size_t i, max_index=-1;
   double tmp_max = DBL_MIN;
 
   /* Loop through the entire array and find the leftmost corner and
@@ -701,13 +700,12 @@ polygon_rightmost_point(double *in, size_t n)
         max_index = i;
         tmp_max = in[i*2];
       }
+  p->x=in[max_index*2];
+  p->y=in[max_index*2+1];
 
-  struct point p={in[max_index*2], in[max_index*2+1]};
   /* For a check:
   printf("rightmost point: %.3f \n", in[max_index*2]);
   */
-
-  return p;
 }
 
 
@@ -725,16 +723,16 @@ polygon_rightmost_point(double *in, size_t n)
 static int
 polygon_leftof_vector(double *in, size_t n, double x, double y)
 {
-  struct point rightmost = polygon_rightmost_point(in, n);
-  struct point leftmost = polygon_leftmost_point(in, n);
+  double test;
+  struct point l, r;
 
   /* Perform the cross-product test. */
-  double test = (rightmost.y-y)*(rightmost.x-leftmost.x) -   \
-                (rightmost.y-leftmost.y)*(rightmost.x-x);
+  polygon_leftmost_point(in, n, &l);
+  polygon_rightmost_point(in, n, &r);
+  test = (r.y-y)*(r.x-l.x) - (r.y-l.y)*(r.x-x);
 
   /* Due to the choice of return value, we multiply 'test' by -1 */
   test = -1*test;
-
   return test?(test>0?1:-1):0;
 }
 
