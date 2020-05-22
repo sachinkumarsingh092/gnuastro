@@ -349,10 +349,11 @@ Steps necessary to Package Gnuastro for Debian.
 
 
  - Check the current Debian policy version and update it in
-   'debian/control'. The policy can be found here:
+   'debian/control'. NOTE that you only need to put the top three digits
+   and ignore the fourth digit. The policy can be found here:
    https://www.debian.org/doc/debian-policy/
 
-     $ emacs debian/control
+     $ emacs debian/control   # Only three digits "X.Y.Z"
 
 
  - If the soname of the shared libraries has changed:
@@ -390,7 +391,10 @@ Steps necessary to Package Gnuastro for Debian.
      $ sudo pdebuild
 
 
- - Run Lintian to check the build.
+ - Run Lintian to check the build. You can ignore the warning about the
+   non-existant email address (hosted on 'alioth.debian.org'). As Ole
+   Streicher (olebole@debian.org) mentioned privately: "this links all
+   Debian Astro packages together".
 
      $ lintian -E -I --pedantic                                         \
                /var/cache/pbuilder/result/gnuastro_$ver-1_amd64.changes
