@@ -1071,14 +1071,39 @@ parse_order_based(struct mkcatalog_passparams *pp)
   float *sigcliparr;
   gal_data_t *result;
   int32_t *O, *OO, *C=NULL;
-  gal_data_t **clumpsvals=NULL;
   size_t i, increment=0, num_increment=1;
+  gal_data_t *objvals=NULL, **clumpsvals=NULL;
   size_t *tsize=pp->tile->dsize, ndim=p->objects->ndim;
   size_t counter=0, *ccounter=NULL, tmpsize=pp->oi[OCOL_NUM];
-  gal_data_t *objvals=gal_data_alloc(NULL, p->values->type, 1, &tmpsize, NULL,
-                                     0, p->cp.minmapsize, p->cp.quietmmap,
-                                     NULL, NULL, NULL);
 
+  /* It may happen that there are no usable pixels for this object (and
+     thus its possible clumps). In this case `tmpsize' will be zero and we
+     can just write NaN values for the necessary columns. */
+  if(tmpsize==0)
+    {
+      if(p->oiflag[ OCOL_MEDIAN        ]) pp->oi[ OCOL_MEDIAN       ] = NAN;
+      if(p->oiflag[ OCOL_SIGCLIPNUM    ]) pp->oi[ OCOL_SIGCLIPNUM   ] = 0;
+      if(p->oiflag[ OCOL_SIGCLIPSTD    ]) pp->oi[ OCOL_SIGCLIPSTD   ] = 0;
+      if(p->oiflag[ OCOL_SIGCLIPMEAN   ]) pp->oi[ OCOL_SIGCLIPMEAN  ] = NAN;
+      if(p->oiflag[ OCOL_SIGCLIPMEDIAN ]) pp->oi[ OCOL_SIGCLIPMEDIAN] = NAN;
+      if(p->clumps)
+        for(i=0;i<pp->clumpsinobj;++i)
+          {
+            ci=&pp->ci[ i * CCOL_NUMCOLS ];
+            if(p->ciflag[ CCOL_MEDIAN        ]) ci[ CCOL_MEDIAN      ] = NAN;
+            if(p->ciflag[ CCOL_SIGCLIPNUM    ]) ci[ CCOL_SIGCLIPNUM  ] = 0;
+            if(p->ciflag[ CCOL_SIGCLIPSTD    ]) ci[ CCOL_SIGCLIPSTD  ] = 0;
+            if(p->ciflag[ CCOL_SIGCLIPMEAN   ]) ci[ CCOL_SIGCLIPMEAN ] = NAN;
+            if(p->ciflag[ CCOL_SIGCLIPMEDIAN ]) ci[CCOL_SIGCLIPMEDIAN] = NAN;
+          }
+      return;
+    }
+
+  /* We know we have pixels to use, so allocate space for the values within
+     the object. */
+  objvals=gal_data_alloc(NULL, p->values->type, 1, &tmpsize, NULL, 0,
+                         p->cp.minmapsize, p->cp.quietmmap, NULL, NULL,
+                         NULL);
 
   /* Allocate space for the clump values. */
   if(p->clumps)
@@ -1209,16 +1234,16 @@ parse_order_based(struct mkcatalog_passparams *pp)
                                                p->sigmaclip[1], 1, 1);
               sigcliparr=result->array;
               if(p->ciflag[ CCOL_SIGCLIPNUM ])
-                pp->ci[CCOL_SIGCLIPNUM]=sigcliparr[0];
+                ci[CCOL_SIGCLIPNUM]=sigcliparr[0];
               if(p->ciflag[ CCOL_SIGCLIPSTD ])
-                pp->ci[CCOL_SIGCLIPSTD]=( sigcliparr[3]
-                                          - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]));
+                ci[CCOL_SIGCLIPSTD]=( sigcliparr[3]
+                                      - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]));
               if(p->ciflag[ CCOL_SIGCLIPMEAN ])
-                pp->ci[CCOL_SIGCLIPMEAN]=( sigcliparr[2]
-                                           - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]));
+                ci[CCOL_SIGCLIPMEAN]=( sigcliparr[2]
+                                       - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]));
               if(p->ciflag[ CCOL_SIGCLIPMEDIAN ])
-                pp->ci[CCOL_SIGCLIPMEDIAN]=( sigcliparr[1]
-                                             - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]));
+                ci[CCOL_SIGCLIPMEDIAN]=( sigcliparr[1]
+                                         - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]));
 
               /* Clean up the sigma-clipped values. */
               gal_data_free(result);

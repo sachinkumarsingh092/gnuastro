@@ -1,5 +1,7 @@
 Alphabetically ordered list to acknowledge in the next release.
 
+Raúl Infante Sainz
+Zahra Sharbaf
 Ole Streicher
 
 

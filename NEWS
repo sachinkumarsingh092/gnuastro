@@ -3,6 +3,21 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 Copyright (C) 2015-2020 Free Software Foundation, Inc.
 See the end of the file for license conditions.
 
+* Noteworthy changes in release X.XX (library XX.X.X) (XXXX-XX-XX) [stable]
+
+** New features
+
+** Removed features
+
+** Changed features
+
+** Bugs fixed
+  bug #58434: MakeCatalog crash when ordering is required and no usable pixels
+
+
+
+
+
 * Noteworthy changes in release 0.12 (library 10.0.0) (2020-05-20) [stable]
 
 ** New features
