@@ -1,5 +1,6 @@
 Alphabetically ordered list to acknowledge in the next release.
 
+Carlos Allende Prieto
 Raúl Infante Sainz
 Zahra Sharbaf
 Ole Streicher

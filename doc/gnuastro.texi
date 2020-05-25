@@ -10150,9 +10150,7 @@ Note that the modulo operator only works on integer types.
 Absolute value of first operand, so ``@command{4 abs}'' is equivalent to @mymath{|4|}.
 
 @item pow
-First operand to the power of the second, so ``@command{4.3 5f pow}'' is equivalent to @mymath{4.3^{5}}.
-Currently @code{pow} will only work on single or double precision floating point numbers or images.
-To be sure that a number is read as a floating point (even if it doesn't have any non-zero decimals) put an @code{f} after it.
+First operand to the power of the second, so ``@command{4.3 5 pow}'' is equivalent to @mymath{4.3^{5}}.
 
 @item sqrt
 The square root of the first operand, so ``@command{5 sqrt}'' is equivalent to @mymath{\sqrt{5}}.
@@ -10743,7 +10741,8 @@ $ astarithmetic image.fits image.fits - --out=skysub.fits           \
                 --hdu=1 --hdu=4
 
 ## Add two images, then divide them by 2 (2 is read as floating point):
-$ astarithmetic image1.fits image2.fits + 2f / --out=average.fits
+## Note that without the '.0', the '2' will be read/used as an integer.
+$ astarithmetic image1.fits image2.fits + 2.0 / --out=average.fits
 
 ## Use Arithmetic's average operator:
 $ astarithmetic image1.fits image2.fits average --out=average.fits
@@ -10841,7 +10840,8 @@ But when Arithmetic is called with @option{--dontdelete}, it will appended the d
 Arithmetic accepts two kinds of input: images and numbers.
 Images are considered to be any of the inputs that is a file name of a recognized type (see @ref{Arguments}) and has more than one element/pixel.
 Numbers on the command-line will be read into the smallest type (see @ref{Numeric data types}) that can store them, so @command{-2} will be read as a @code{char} type (which is signed on most systems and can thus keep negative values), @command{2500} will be read as an @code{unsigned short} (all positive numbers will be read as unsigned), while @code{3.1415926535897} will be read as a @code{double} and @code{3.14} will be read as a @code{float}.
-To force a number to be read as float, add a @code{f} after it, so @command{5f} will be added to the stack as @code{float} (see @ref{Reverse polish notation}).
+To force a number to be read as float, put a @code{.} after it (possibly followed by a zero for easier readability), or add an @code{f} after it.
+Hence while @command{5} will be read as an integer, @command{5.}, @command{5.0} or @command{5f} will be added to the stack as @code{float} (see @ref{Reverse polish notation}).
 
 Unless otherwise stated (in @ref{Arithmetic operators}), the operators can deal with numeric multiple data types (see @ref{Numeric data types}).
 For example in ``@command{a.fits b.fits +}'', the image types can be @code{long} and @code{float}.
@@ -18979,15 +18979,16 @@ if( gal_type_from_string(&out, string, GAL_TYPE_FLOAT32) )
 @end deftypefun
 
 @deftypefun {void *} gal_type_string_to_number (char @code{*string}, uint8_t @code{*type})
-Read @code{string} into smallest type that can host the number, the
-allocated space for the number will be returned and the type of the number
-will be put into the memory that @code{type} points to. If @code{string}
-couldn't be read as a number, this function will return @code{NULL}.
+Read @code{string} into smallest type that can host the number, the allocated space for the number will be returned and the type of the number will be put into the memory that @code{type} points to.
+If @code{string} couldn't be read as a number, this function will return @code{NULL}.
 
-For the ranges acceptable by each type see @ref{Numeric data types}. For
-integers it is clear, for floating point types, this function will count
-the number of significant digits and determine if the given string is
-single or double precision as described in that section.
+This function calls the C library's @code{strtod} function to read @code{string} as a double-precision floating point number.
+When successful, it will check the value to put it in the smallest numerical data type that can handle it.
+However, if @code{string} is successfully parsed as a number @emph{and} there is @code{.} in @code{string}, it will force the number into floating point types.
+For example @code{"5"} is read as an integer, while @code{"5."} or @code{"5.0"}, or @code{"5.00"} will be read as a floating point (single-precision).
+
+For the ranges acceptable by each type see @ref{Numeric data types}.
+For integers, the range is clear, but for floating point types, this function will count the number of significant digits and determine if the given string is single or double precision as described in that section.
 @end deftypefun
 
 @node Pointers, Library blank values, Library data types, Gnuastro library
@@ -22467,10 +22468,7 @@ The output type is a single integer.
 @end deffn
 
 @deffn Macro GAL_ARITHMETIC_OP_POW
-Binary operator to-power operator. When @code{gal_arithmetic} is called
-with any of these operators, it will expect two operands: raising the first
-by the second. This operator only accepts floating point inputs and the
-output is also floating point.
+Binary operator to-power operator. When @code{gal_arithmetic} is called with any of these operators, it will expect two operands: raising the first by the second (returning a floating point, inputs can be integers).
 @end deffn
 
 @deffn  Macro GAL_ARITHMETIC_OP_BITAND

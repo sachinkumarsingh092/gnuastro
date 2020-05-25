@@ -79,7 +79,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Some functions are only for a floating point operand, so if the input
    isn't floating point, inform the user to change the type explicitly,
    doing it implicitly/internally puts too much responsability on the
-   program. */
+   program.
 static void
 arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
 {
@@ -101,7 +101,7 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
             numstr, gal_type_name(in->type, 1));
     }
 }
-
+*/
 
 
 
@@ -1682,24 +1682,26 @@ arithmetic_binary(int operator, int flags, gal_data_t *l, gal_data_t *r)
 
 
 static gal_data_t *
-arithmetic_binary_function_flt(int operator, int flags, gal_data_t *l,
-                               gal_data_t *r)
+arithmetic_binary_function_flt(int operator, int flags, gal_data_t *il,
+                               gal_data_t *ir)
 {
   int final_otype;
-  gal_data_t *o=NULL;
   size_t out_size, minmapsize;
-  int quietmmap=l->quietmmap && r->quietmmap;
-
+  gal_data_t *l, *r, *o=NULL;
+  int quietmmap=il->quietmmap && ir->quietmmap;
 
   /* Simple sanity check on the input sizes */
-  if( !( (flags & GAL_ARITHMETIC_NUMOK) && (l->size==1 || r->size==1))
-      && gal_dimension_is_different(l, r) )
+  if( !( (flags & GAL_ARITHMETIC_NUMOK) && (il->size==1 || ir->size==1))
+      && gal_dimension_is_different(il, ir) )
     error(EXIT_FAILURE, 0, "%s: the input datasets don't have the same "
           "dimension/size", __func__);
 
-  /* Check for the types of the left and right operands. */
-  arithmetic_check_float_input(l, operator, "first");
-  arithmetic_check_float_input(r, operator, "second");
+  /* Convert the values to double precision floating point if they are
+     integer. */
+  l = ( (il->type==GAL_TYPE_FLOAT32 || il->type==GAL_TYPE_FLOAT64)
+         ? il : gal_data_copy_to_new_type(il, GAL_TYPE_FLOAT64) );
+  r = ( (ir->type==GAL_TYPE_FLOAT32 || ir->type==GAL_TYPE_FLOAT64)
+         ? ir : gal_data_copy_to_new_type(ir, GAL_TYPE_FLOAT64) );
 
   /* Set the output type. */
   final_otype = gal_type_out(l->type, r->type);
@@ -1736,7 +1738,7 @@ arithmetic_binary_function_flt(int operator, int flags, gal_data_t *l,
   /* Start setting the operator and operands. */
   switch(operator)
     {
-    case GAL_ARITHMETIC_OP_POW:  BINFUNC_F_OPERATOR_SET( pow  ); break;
+    case GAL_ARITHMETIC_OP_POW:  BINFUNC_F_OPERATOR_SET( pow ); break;
     default:
       error(EXIT_FAILURE, 0, "%s: operator code %d not recognized",
             __func__, operator);
@@ -1753,9 +1755,24 @@ arithmetic_binary_function_flt(int operator, int flags, gal_data_t *l,
      were allocated. */
   if(flags & GAL_ARITHMETIC_FREE)
     {
+      /* Clean the main used (temporarily allocated) datasets. */
       if     (o==l)       gal_data_free(r);
       else if(o==r)       gal_data_free(l);
       else              { gal_data_free(l); gal_data_free(r); }
+
+      /* Clean the raw inputs, if they weren't equal to the datasets. */
+      if     (o==il) { if(ir!=r) gal_data_free(ir); }
+      else if(o==ir) { if(il!=l) gal_data_free(il); }
+      else           { if(il!=l) gal_data_free(il);
+                       if(ir!=r) gal_data_free(ir); }
+    }
+  else
+    {
+      /* Input datasets should be kept, but we don't want the temporary
+         datasets, so if they were allocated (they don't equal the input
+         pointers, free them). */
+      if (l!=il) gal_data_free(l);
+      if (r!=ir) gal_data_free(r);
     }
 
   /* Return */

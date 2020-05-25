@@ -7,9 +7,25 @@ See the end of the file for license conditions.
 
 ** New features
 
+  Arithmetic:
+   - To force integers to floats, you can also put a '.' or '.0' after
+     them. Until now, it was only possibly by putting an 'f' after
+     them. Hence while '5' will be read as an integer, '5.', '5.0' or '5f'
+     will be read as floating point. This also applies to column arithmetic
+     in Table.
+
 ** Removed features
 
 ** Changed features
+
+  Arithmetic:
+   - The 'pow' operator can also accept integer inputs. This also applies
+     to column arithmetic in Table.
+
+  Library:
+   - gal_type_string_to_number: Numbers ending in '.' or '.0' will be
+     parsed as floating point. Until now, it would only parse numbers as
+     floating point if they had non-zero decimals.
 
 ** Bugs fixed
   bug #58434: MakeCatalog crash when ordering is required and no usable pixels

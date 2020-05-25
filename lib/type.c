@@ -562,8 +562,8 @@ gal_type_string_to_number(char *string, uint8_t *type)
 {
   void *ptr, *out;
   int fnz=-1, lnz=0;     /* 'F'irst (or 'L'ast) 'N'on-'Z'ero. */
-  char *tailptr, *cp;
   uint8_t forcedfloat=0;
+  char *c, *tailptr, *cp;
 
   /* Define initial spaces to keep the value. */
   uint8_t   u8;   int8_t   i8;      uint16_t u16;   int16_t i16;
@@ -574,6 +574,12 @@ gal_type_string_to_number(char *string, uint8_t *type)
   d=strtod(string, &tailptr);
   if(*tailptr=='f') { if(tailptr[1]=='\0') forcedfloat=1; else return NULL; }
   else if (*tailptr!='\0')  return NULL;
+
+  /* The number has been parsed successfully as a number. But if it
+     contains a '.', then it must a "forced" float also. This won't be a
+     problem in scenarios like '.2', but people may use '2.' or '2.0' to
+     force a float and this loop is necessary in such cases. */
+  for(c=string; *c!='\0'; ++c) if(*c=='.') { forcedfloat=1; break; }
 
   /* See if the number is actually an integer: */
   if( forcedfloat==0 && ceil(d) == d )
