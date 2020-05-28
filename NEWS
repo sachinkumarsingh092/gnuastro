@@ -28,7 +28,8 @@ See the end of the file for license conditions.
      floating point if they had non-zero decimals.
 
 ** Bugs fixed
-  bug #58434: MakeCatalog crash when ordering is required and no usable pixels
+  bug #58434: MakeCatalog crash when ordering is required and no usable pixels.
+  bug #58455: Timezone is not portable and uses flag instead of seconds.
 
 
 

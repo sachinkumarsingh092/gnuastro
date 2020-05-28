@@ -21356,6 +21356,7 @@ In this case (following the GNU C Library), this option will make the following 
 @cindex Unix epoch time
 @cindex Epoch time, Unix
 Return the Unix epoch time (number of seconds that have passed since 00:00:00 Thursday, January 1st, 1970) corresponding to the FITS date format string @code{fitsdate} (see description of @code{gal_fits_key_date_to_struct_tm} above).
+This function will return @code{GAL_BLANK_SIZE_T} if the broken-down time couldn't be converted to seconds.
 
 The Unix epoch time is in units of seconds, but the FITS date format allows sub-second accuracy.
 The last two arguments are for the (optional) sub-second portion.

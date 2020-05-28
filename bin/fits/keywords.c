@@ -413,6 +413,8 @@ keywords_date_to_seconds(struct fitsparams *p, fitsfile *fptr)
   /* Return the number of seconds (and subseconds) that it corresponds
      to. */
   seconds=gal_fits_key_date_to_seconds(fitsdate, &subsecstr, &subsec);
+  if(seconds==GAL_BLANK_SIZE_T)
+    error(EXIT_FAILURE, 0, "the time string couldn't be interpretted");
 
   /* Print the result (for the sub-seconds, print everything after the */
   if( !p->cp.quiet )
