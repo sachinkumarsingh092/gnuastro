@@ -14,6 +14,11 @@ See the end of the file for license conditions.
      will be read as floating point. This also applies to column arithmetic
      in Table.
 
+  Library:
+   - GAL_WCS_FLTERROR: Limit to identify a floating point error for WCS.
+   - gal_wcs_clean_errors: clean major WCS components from errors specified
+       by the FITS keyword 'CRDER', or floating point errors.
+
 ** Removed features
 
 ** Changed features

@@ -22105,6 +22105,10 @@ section are mainly just wrappers over CFITSIO, WCSLIB and GSL library
 functions to help in common applications.
 
 
+@deffn Macro GAL_WCS_FLTERROR
+Limit of rounding for floating point errors.
+@end deffn
+
 @deftypefun {struct wcsprm *} gal_wcs_read_fitsptr (fitsfile @code{*fptr}, size_t @code{hstartwcs}, size_t @code{hendwcs}, int @code{*nwcs})
 [@strong{Not thread-safe}] Return the WCSLIB @code{wcsprm} structure that
 is read from the CFITSIO @code{fptr} pointer to an opened FITS file. Also
@@ -22169,6 +22173,13 @@ precision floating points. This will be the final matrix, irrespective of
 the type of storage in the WCS structure. Recall that the FITS standard has
 several methods to store the matrix. The output is an allocated square
 matrix with each side equal to the number of dimensions.
+@end deftypefun
+
+@deftypefun void gal_wcs_clean_small_errors (struct wcsprm @code{*wcs})
+Errors can make small differences between the pixel-scale elements (@code{CDELT}) and can also lead to extremely small values in the @code{PC} matrix.
+With this function, such errors will be ``cleaned'' as follows: 1) if the maximum difference between the @code{CDELT} elements is smaller than the reference error, it will be set to the mean value.
+When the FITS keyword @code{CRDER} (optional) is defined it will be used as a reference, if not the default value is @code{GAL_WCS_FLTERROR}.
+2) If any of the PC elements differ from 0, 1 or -1 by less than @code{GAL_WCS_FLTERROR}, they will be rounded to the respective value.
 @end deftypefun
 
 @deftypefun void gal_wcs_decompose_pc_cdelt (struct wcsprm @code{*wcs})

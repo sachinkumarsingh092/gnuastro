@@ -2180,6 +2180,9 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
       /* Decompose the 'PCi_j' matrix and 'CDELTi' vector. */
       gal_wcs_decompose_pc_cdelt(towrite->wcs);
 
+      /* Clean up small errors in the PC matrix and CDELT values. */
+      gal_wcs_clean_errors(towrite->wcs);
+
       /* Convert the WCS information to text. */
       status=wcshdo(WCSHDO_safe, towrite->wcs, &nkeyrec, &wcsstr);
       if(status)

@@ -32,6 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <assert.h>
 
 #include <gsl/gsl_linalg.h>
+#include <wcslib/wcsmath.h>
 
 #include <gnuastro/wcs.h>
 #include <gnuastro/tile.h>
@@ -594,6 +595,46 @@ gal_wcs_warp_matrix(struct wcsprm *wcs)
 
 
 
+/* Clean up small/negligible errros that are clearly caused by measurement
+   errors in the PC and CDELT elements. */
+void
+gal_wcs_clean_errors(struct wcsprm *wcs)
+{
+  double crdcheck=NAN;
+  size_t i, crdnum=0, ndim=wcs->naxis;
+  double mean, crdsum=0, sum=0, min=FLT_MAX, max=0;
+  double *pc=wcs->pc, *cdelt=wcs->cdelt, *crder=wcs->crder;
+
+  /* First clean up CDELT: if the CRDER keyword is set, then we'll use that
+     as a reference, if not, we'll use the absolute floating point error
+     defined in 'GAL_WCS_FLTERR'. */
+  for(i=0; i<ndim; ++i)
+    {
+      sum+=cdelt[i];
+      if(cdelt[i]>max) max=cdelt[i];
+      if(cdelt[i]<min) min=cdelt[i];
+      if(crder[i]!=UNDEFINED) {++crdnum; crdsum=crder[i];}
+    }
+  mean=sum/ndim;
+  crdcheck = crdnum ? crdsum/crdnum : GAL_WCS_FLTERROR;
+  if( (max-min)/mean < crdcheck )
+    for(i=0; i<ndim; ++i)
+      cdelt[i]=mean;
+
+  /* Now clean up the PC elements. If the diagonal elements are too close
+     to 0, 1, or -1, set them to 0 or 1 or -1. */
+  if(pc)
+    for(i=0;i<ndim*ndim;++i)
+      {
+        if(      fabs(pc[i] -  0 ) < GAL_WCS_FLTERROR ) pc[i]=0;
+        else if( fabs(pc[i] -  1 ) < GAL_WCS_FLTERROR ) pc[i]=1;
+        else if( fabs(pc[i] - -1 ) < GAL_WCS_FLTERROR ) pc[i]=-1;
+      }
+}
+
+
+
+
 
 /* According to the FITS standard, in the 'PCi_j' WCS formalism, the matrix
    elements m_{ij} are encoded in the 'PCi_j' keywords and the scale
@@ -747,7 +788,10 @@ gal_wcs_pixel_scale(struct wcsprm *wcs)
           }
 
       /* Do the check, print warning and make correction. */
-      if(maxrow!=minrow && maxrow/minrow>1e5 && warning_printed==0)
+      if(maxrow!=minrow
+         && maxrow/minrow>1e5    /* The difference between elements is large */
+         && maxrow/minrow<GAL_WCS_FLTERROR
+         && warning_printed==0)
         {
           fprintf(stderr, "\nWARNING: The input WCS matrix (possibly taken "
                   "from the FITS header keywords starting with 'CD' or 'PC') "

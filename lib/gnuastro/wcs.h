@@ -30,6 +30,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/data.h>
 
+/* Assumed floating point error in the WCS-related functionality. */
+#define GAL_WCS_FLTERROR 1e-12
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
@@ -81,6 +83,9 @@ gal_wcs_on_tile(gal_data_t *tile);
 
 double *
 gal_wcs_warp_matrix(struct wcsprm *wcs);
+
+void
+gal_wcs_clean_errors(struct wcsprm *wcs);
 
 void
 gal_wcs_decompose_pc_cdelt(struct wcsprm *wcs);
