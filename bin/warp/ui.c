@@ -483,6 +483,8 @@ ui_matrix_make_align(struct warpparams *p, double *tmatrix)
      to find as 'X' and the final (aligned matrix) 'P' (which is the pixel
      scale):
 
+          X            W             P
+        ------       ------      -------
         x0  x1       w0  w1      -P0   0
         x2  x3   *   w2  w3   =   0    P1
 
@@ -541,6 +543,21 @@ ui_matrix_make_align(struct warpparams *p, double *tmatrix)
       x[3] = P[1] / w[1] / A;
       x[0] = -1 * x[1] * w[3] / w[1];
       x[2] = -1 * x[3] * w[2] / w[0];
+
+      /* When the input matrix is flipped, the diagonal elements of the
+         necessary rotation will have a different sign. */
+      if(x[0]*x[3]<0)
+        if(!p->cp.quiet)
+          error(0, 0, "%s (hdu %s): WARNING (bug #55217)! The alignment may "
+                "not be correct! This is a recognized bug, we just haven't "
+                "had enough time to fix it yet, any help or support is "
+                "most welcome.\n\n"
+                "This may be due to the East and North not being left-hand "
+                "oriented. If this is the case, you can fix it by flipping "
+                "the image along the problematic axis (with '--flip=1,0' or "
+                "'--flip=0,1') and re-running Warp with '--align'. Note "
+                "that you can't yet call '--flip' in the same command as "
+                "'--align'",  p->inputname, p->cp.hdu);
     }
 
   /* For a check:

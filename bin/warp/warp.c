@@ -581,6 +581,8 @@ warp(struct warpparams *p)
 
   /* Save the output. */
   correct_wcs_save_output(p);
+  if(!p->cp.quiet)
+    printf(" Output: %s\n", p->cp.output);
 
 
   /* Free the allocated spaces: */
