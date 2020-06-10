@@ -74,6 +74,7 @@ enum option_keys_enum
   UI_KEY_OUTHDU,
   UI_KEY_COPYKEYS,
   UI_KEY_PRIMARYIMGHDU,
+  UI_KEY_WCSDISTORTION,
 };
 
 

@@ -62,7 +62,7 @@ libgnuastro_la_SOURCES = arithmetic.c arithmetic-and.c arithmetic-bitand.c \
   interpolate.c jpeg.c label.c list.c match.c options.c pdf.c              \
   permutation.c pointer.c polygon.c qsort.c dimension.c speclines.c        \
   statistics.c table.c tableintern.c threads.c tiff.c tile.c               \
-  tile-internal.c timing.c txt.c type.c units.c wcs.c
+  tile-internal.c timing.c txt.c type.c units.c wcs.c wcsdistortion.c
 
 
 
@@ -109,7 +109,8 @@ EXTRA_DIST = gnuastro.pc.in $(headersdir)/README $(internaldir)/README  \
   $(internaldir)/checkset.h $(internaldir)/commonopts.h                 \
   $(internaldir)/config.h.in $(internaldir)/fixedstringmacros.h         \
   $(internaldir)/options.h $(internaldir)/tableintern.h                 \
-  $(internaldir)/tile-internal.h $(internaldir)/timing.h
+  $(internaldir)/tile-internal.h $(internaldir)/timing.h                \
+  $(internaldir)/wcsdistortion.h
 
 
 

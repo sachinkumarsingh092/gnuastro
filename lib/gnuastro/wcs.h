@@ -55,6 +55,25 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 /*************************************************************
+ **************           Constants            ***************
+ *************************************************************/
+/* Macros to identify the type of distortion for conversions. */
+enum gal_wcs_distortions
+{
+  GAL_WCS_DISTORTION_INVALID,         /* Invalid (=0 by C standard).    */
+
+  GAL_WCS_DISTORTION_TPD,             /* The TPD polynomial distortion. */
+  GAL_WCS_DISTORTION_SIP,             /* The SIP polynomial distortion. */
+  GAL_WCS_DISTORTION_TPV,             /* The TPV polynomial distortion. */
+  GAL_WCS_DISTORTION_DSS,             /* The DSS polynomial distortion. */
+  GAL_WCS_DISTORTION_WAT,             /* The WAT polynomial distortion. */
+};
+
+
+
+
+
+/*************************************************************
  ***********               Read WCS                ***********
  *************************************************************/
 struct wcsprm *
@@ -64,6 +83,26 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
 struct wcsprm *
 gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
              size_t hendwcs, int *nwcs);
+
+
+
+
+
+/*************************************************************
+ ***********              Distortions              ***********
+ *************************************************************/
+int
+gal_wcs_distortion_from_string(char *distortion);
+
+char *
+gal_wcs_distortion_to_string(int distortion);
+
+int
+gal_wcs_distortion_identify(struct wcsprm *wcs);
+
+struct wcsprm *
+gal_wcs_distortion_convert(struct wcsprm *inwcs,
+                           int out_distortion, size_t *fitsize);
 
 
 

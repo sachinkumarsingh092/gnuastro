@@ -8352,6 +8352,27 @@ In this case (following the GNU C Library), this option will make the following 
 
 This is a very useful option for operations on the FITS date values, for example sorting FITS files by their dates, or finding the time difference between two FITS files.
 The advantage of working with the Unix epoch time is that you don't have to worry about calendar details (for example the number of days in different months, or leap years, etc).
+
+@item --wcsdistortion STR
+@cindex WCS distortion
+@cindex Distortion, WCS
+@cindex SIP WCS distortion
+@cindex TPV WCS distortion
+If the argument has a WCS distortion, the output (file given with the @option{--output} option) will have the distortion given to this option (for example @code{SIP}, @code{TPV}).
+With this option, the FITS program will read the minimal set of keywords from the input HDU and the HDU data, it will then write them into the file given to the @option{--output} option but with a newly created set of WCS-related keywords corresponding to the desired distortion standard.
+
+If no @option{--output} file is specified, an automatically generated output name will be used which is composed of the input's name but with the @file{-DDD.fits} suffix, see @ref{Automatic output}.
+Where @file{DDD} is the value given to this option (desired output distortion).
+
+Note that all possible conversions between all standards are not yet supported.
+If the requested conversion is not supported, an informative error message will be printed.
+If this happens, please let us know and we'll try our best to add the respective conversions.
+
+For example with the command below, you can be sure that if @file{in.fits} has a distortion in its WCS, the distortion of @file{out.fits} will be in the SIP standard.
+
+@example
+$ astfits in.fits --wcsdistortion=SIP --output=out.fits
+@end example
 @end table
 
 
@@ -22097,13 +22118,30 @@ and white.
 @node World Coordinate System, Arithmetic on datasets, File input output, Gnuastro library
 @subsection World Coordinate System (@file{wcs.h})
 
-The FITS standard defines the world coordinate system (WCS) as a mechanism
-to associate physical values to positions within a dataset. For example, it
-can be used to convert pixel coordinates in an image to celestial
-coordinates like the right ascension and declination. The functions in this
-section are mainly just wrappers over CFITSIO, WCSLIB and GSL library
-functions to help in common applications.
+The FITS standard defines the world coordinate system (WCS) as a mechanism to associate physical values to positions within a dataset.
+For example, it can be used to convert pixel coordinates in an image to celestial coordinates like the right ascension and declination.
+The functions in this section are mainly just wrappers over CFITSIO, WCSLIB and GSL library functions to help in common applications.
 
+@deffn  Macro GAL_WCS_DISTORTION_TPD
+@deffnx Macro GAL_WCS_DISTORTION_SIP
+@deffnx Macro GAL_WCS_DISTORTION_TPV
+@deffnx Macro GAL_WCS_DISTORTION_DSS
+@deffnx Macro GAL_WCS_DISTORTION_WAT
+@deffnx Macro GAL_WCS_DISTORTION_INVALID
+@cindex WCS distortion
+@cindex Distortion, WCS
+@cindex TPD WCS distortion
+@cindex SIP WCS distortion
+@cindex TPV WCS distortion
+@cindex DSS WCS distortion
+@cindex WAT WCS distortion
+@cindex Prior WCS distortion
+@cindex sequent WCS distortion
+Gnuastro identifiers of the various WCS distortion conventions, for more, see Calabretta et al. (2004, preprint)@footnote{@url{https://www.atnf.csiro.au/people/mcalabre/WCS/dcs_20040422.pdf}}.
+Among these, SIP is a prior distortion, the rest other are sequent distortions.
+TPD is a superset of all these, hence it has both prior and sequeal distortion coefficients.
+More information is given in the documentation of @code{dis.h}, from the WCSLIB manual@footnote{@url{https://www.atnf.csiro.au/people/mcalabre/WCS/wcslib/dis_8h.html}}.
+@end deffn
 
 @deffn Macro GAL_WCS_FLTERROR
 Limit of rounding for floating point errors.
@@ -22198,6 +22236,54 @@ are set to @code{1} (one). This function is designed to correct such
 issues: after it is finished, the @code{CDELTi} values in @code{wcs} will
 correspond to the pixel scale, and the @code{PCi_j} will correction show
 the rotation.
+@end deftypefun
+
+@deftypefun int gal_wcs_distortion_from_string (char @code{*distortion})
+Convert the given string (assumed to be a FITS-standard, string-based distortion identifier) to a Gnuastro's integer-based distortion identifier (one of the @code{GAL_WCS_DISTORTION_*} macros defined above).
+The sting-based distortion identifiers have three characters and are all in captial letters.
+@end deftypefun
+
+@deftypefun int gal_wcs_distortion_to_string (int @code{distortion})
+Convert the given Gnuastro integer-based distortion identifier (one of the @code{GAL_WCS_DISTORTION_*} macros defined above) to the string-based distortion identifier) of the FITS standard.
+The sting-based distortion identifiers have three characters and are all in captial letters.
+@end deftypefun
+
+@cindex WCS distortion
+@cindex Distortion, WCS
+@deftypefun {int} gal_wcs_distortion_identify (struct wcsprm @code{*wcs})
+Returns the Gnuastro identifier for the distortion of the input WCS structure.
+The returned value is one of the @code{GAL_WCS_DISTORTION_*} macros defined above.
+When the input pointer to a structure is @code{NULL}, or it doesn't contain a distortion, the returned value will be @code{GAL_WCS_DISTORTION_INVALID}.
+@end deftypefun
+
+@cindex SIP WCS distortion
+@cindex TPV WCS distortion
+@deftypefun {struct wcsprm *} gal_wcs_distortion_convert(struct wcsprm @code{*inwcs}, int @code{outdisptype}, size_t @code{*fitsize})
+Return a newly allocated WCS structure, where the distortion is implemented in a different standard, identified by the identifier @code{outdisptype}.
+The Gnuastro WCS distortion identifiers are defined in the @code{GAL_WCS_DISTORTION_*} macros mentioned above.
+
+The available conversions in this function will grow.
+Currently it only supports converting TPV to SIP and vice versa, following the recipe of Shupe et al. (2012)@footnote{Proc. of SPIE Vol. 8451  84511M-1. @url{https://doi.org/10.1117/12.925460}, also available at @url{http://web.ipac.caltech.edu/staff/shupe/reprints/SIP_to_PV_SPIE2012.pdf}.}.
+Please get in touch with us if you need other types of conversions.
+
+For some conversions, direct analytical conversions don't exist.
+It is thus necessary to model and fit the two types.
+In such cases, it is also necessary to specify the @code{fitsize} array that is the size of the array along each C-ordered dimension, so you can simply pass the @code{dsize} element of your @code{gal_data_t} dataset, see @ref{Generic data container}.
+Currently this is only necessary when converting TPV to SIP.
+For other conversions you may simply pass a @code{NULL} pointer.
+
+For example, if you want to convert the TPV coefficients of your input @file{image.fits} to SIP coefficients, you can use the following functions (which are also available as a command-line operation in @ref{Fits}).
+
+@example
+int nwcs;
+gal_data_t *data=gal_fits_img_read("image.fits", "1", -1, 1);
+inwcs=gal_wcs_read("image.fits", "1", 0, &nwcs);
+data->wcs=gal_wcs_distortion_convert(inwcs, GAL_WCS_DISTORTION_TPV,
+                                     NULL);
+wcsfree(inwcs);
+gal_fits_img_write(data, "tpv.fits", NULL, NULL);
+@end example
+
 @end deftypefun
 
 @deftypefun double gal_wcs_angular_distance_deg (double @code{r1}, double @code{d1}, double @code{r2}, double @code{d2})

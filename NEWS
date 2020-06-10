@@ -14,10 +14,21 @@ See the end of the file for license conditions.
      will be read as floating point. This also applies to column arithmetic
      in Table.
 
+  FITS:
+   - New '--wcsdistortion' option allows conversion between the various WCS
+     distortions. For example if you have a FITS image with the TPV-based
+     WCS distortion, and you would like to convert it to a SIP-based
+     distortion, you can simply run 'astfits --wcsdistortion=SIP' on the
+     file. The inverse conversion is also supported (from SIP to TPV).
+
   Library:
    - GAL_WCS_FLTERROR: Limit to identify a floating point error for WCS.
    - gal_wcs_clean_errors: clean major WCS components from errors specified
        by the FITS keyword 'CRDER', or floating point errors.
+   - gal_wcs_distortion_from_string: Return distortion string/name from ID.
+   - gal_wcs_distortion_to_string: Return distortion ID from string/name.
+   - gal_wcs_distortion_identify: Identify the distortion of given WCS.
+   - gal_wcs_distortion_convert: Convert between various WCS distortions.
 
 ** Removed features
 

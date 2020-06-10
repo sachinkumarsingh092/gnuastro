@@ -75,10 +75,12 @@ struct fitsparams
   uint8_t         *verify;     /* Verify the CHECKSUM and DATASUM keys. */
   char          *copykeys;     /* Range of keywords to copy in output.  */
   char         *datetosec;     /* Convert FITS date to seconds.         */
+  char     *wcsdistortion;     /* WCS distortion to write in output.    */
   uint8_t     quitonerror;     /* Quit if an error occurs.              */
 
   /* Internal: */
   int                         mode;  /* Operating on HDUs or keywords.  */
+  int                 distortionid;  /* ID of desired distortion.       */
   long            copykeysrange[2];  /* Start and end of copy.          */
   gal_fits_list_key_t  *write_keys;  /* Keys to write in the header.    */
   gal_fits_list_key_t *update_keys;  /* Keys to update in the header.   */

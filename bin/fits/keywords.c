@@ -28,6 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro-internal/timing.h>
 
@@ -436,6 +437,41 @@ keywords_date_to_seconds(struct fitsparams *p, fitsfile *fptr)
 
 
 
+static void
+keywords_distortion_wcs(struct fitsparams *p)
+{
+  int nwcs;
+  struct wcsprm *inwcs;
+  char *suffix, *output;
+  gal_data_t *data=gal_fits_img_read(p->filename, p->cp.hdu,
+                                     p->cp.minmapsize, p->cp.quietmmap);
+
+  /* Read the input WCS structure and convert it to the desired output
+     distortion. */
+  inwcs=gal_wcs_read(p->filename, p->cp.hdu, 0, 0, &nwcs);
+  data->wcs=gal_wcs_distortion_convert(inwcs, p->distortionid, data->dsize);
+
+  /* Set the output filename. */
+  if(p->cp.output)
+    output=p->cp.output;
+  else
+    {
+      if( asprintf(&suffix, "-%s.fits", p->wcsdistortion)<0 )
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+      output=gal_checkset_automatic_output(&p->cp, p->filename, suffix);
+    }
+
+  /* Write the output file. */
+  gal_fits_img_write(data, output, NULL, PROGRAM_NAME);
+
+  /* Clean up. */
+  wcsfree(inwcs);
+  if(output!=p->cp.output) free(output);
+}
+
+
+
+
 
 
 
@@ -471,7 +507,6 @@ keywords(struct fitsparams *p)
   fitsfile *fptr=NULL;
   gal_list_str_t *tstll;
   int status=0, numinkeys;
-
 
   /* Delete the requested keywords. */
   if(p->delete)
@@ -602,7 +637,7 @@ keywords(struct fitsparams *p)
 
 
   /* Close the FITS file */
-  if(fits_close_file(fptr, &status))
+  if(fptr && fits_close_file(fptr, &status))
     gal_fits_io_error(status, NULL);
 
 
@@ -612,6 +647,10 @@ keywords(struct fitsparams *p)
       keywords_copykeys(p, inkeys, numinkeys);
       free(inkeys);
     }
+
+  /* Convert the input's distortion to the desired output distortion. */
+  if(p->wcsdistortion)
+    keywords_distortion_wcs(p);
 
   /* Return. */
   return r;

@@ -31,6 +31,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 #include <assert.h>
 
+#include <wcslib/dis.h>
+
 #include <gsl/gsl_linalg.h>
 #include <wcslib/wcsmath.h>
 
@@ -40,6 +42,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/pointer.h>
 #include <gnuastro/dimension.h>
 #include <gnuastro/permutation.h>
+
+#include <gnuastro-internal/wcsdistortion.h>
 
 
 
@@ -249,6 +253,242 @@ gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
   gal_fits_io_error(status, NULL);
   return wcs;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*************************************************************
+ ***********              Distortions              ***********
+ *************************************************************/
+int
+gal_wcs_distortion_from_string(char *distortion)
+{
+  if(      !strcmp(distortion,"TPD") ) return GAL_WCS_DISTORTION_TPD;
+  else if( !strcmp(distortion,"SIP") ) return GAL_WCS_DISTORTION_SIP;
+  else if( !strcmp(distortion,"TPV") ) return GAL_WCS_DISTORTION_TPV;
+  else if( !strcmp(distortion,"DSS") ) return GAL_WCS_DISTORTION_DSS;
+  else if( !strcmp(distortion,"WAT") ) return GAL_WCS_DISTORTION_WAT;
+  else
+    error(EXIT_FAILURE, 0, "WCS distortion name '%s' not recognized, "
+          "currently recognized names are 'TPD', 'SIP', 'TPV', 'DSS' and "
+          "'WAT'", distortion);
+
+  /* Control should not reach here. */
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+        "problem. Control should not reach the end of this function",
+        __func__, PACKAGE_BUGREPORT);
+  return GAL_WCS_DISTORTION_INVALID;
+}
+
+
+
+
+
+char *
+gal_wcs_distortion_to_string(int distortion)
+{
+  /* Return the proper literal string. */
+  switch(distortion)
+    {
+    case GAL_WCS_DISTORTION_TPD: return "TPD";
+    case GAL_WCS_DISTORTION_SIP: return "SIP";
+    case GAL_WCS_DISTORTION_TPV: return "TPV";
+    case GAL_WCS_DISTORTION_DSS: return "DSS";
+    case GAL_WCS_DISTORTION_WAT: return "WAT";
+    default:
+      error(EXIT_FAILURE, 0, "WCS distortion id '%d' isn't recognized",
+            distortion);
+    }
+
+  /* Control should not reach here. */
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+        "problem. Control should not reach the end of this function",
+        __func__, PACKAGE_BUGREPORT);
+  return GAL_WCS_DISTORTION_INVALID;
+}
+
+
+
+
+
+/* Check the type of distortion present and return the appropriate
+   integer based on `enum gal_wcs_distortion`.
+
+   Parameters:
+    struct wcsprm *wcs - The wcs parameters of the fits file.
+
+   Return:
+    int out_distortion - The type of distortion present. */
+int
+gal_wcs_distortion_identify(struct wcsprm *wcs)
+{
+  struct disprm *dispre=NULL;
+  struct disprm *disseq=NULL;
+
+  /* Small sanity check. */
+  if(wcs==NULL) return GAL_WCS_DISTORTION_INVALID;
+
+  /* To help in reading. */
+  disseq=wcs->lin.disseq;
+  dispre=wcs->lin.dispre;
+
+  /* Check if distortion present. */
+  if( disseq==NULL && dispre==NULL ) return GAL_WCS_DISTORTION_INVALID;
+
+  /* Check the type of distortion.
+
+     As mentioned in the WCS paper IV section 2.4.2 available at
+     https://www.atnf.csiro.au/people/mcalabre/WCS/dcs_20040422.pdf, the
+     DPja and DQia keywords are used to record the parameters required by
+     the prior and sequent distortion functions respectively.
+
+     Now, as mentioned in dis.h file reference section in WCSLIB manual
+     given here
+     https://www.atnf.csiro.au/people/mcalabre/WCS/wcslib/dis_8h.html, TPV,
+     DSS, and WAT are sequent polynomial distortions, while SIP is prior
+     polynomial distortion. TPD is a superset of all these distortions and
+     hence can be used both as a prior and sequent distortion polynomial.
+
+     References and citations:
+     "Representations of distortions in FITS world coordinate systems",
+     Calabretta, M.R. et al. (WCS Paper IV, draft dated 2004/04/22)
+      */
+
+  if( dispre != NULL )
+    {
+      if(      !strcmp(*dispre->dtype, "SIP") ) return GAL_WCS_DISTORTION_SIP;
+      else if( !strcmp(*dispre->dtype, "TPD") ) return GAL_WCS_DISTORTION_TPD;
+      else
+        error(EXIT_FAILURE, 0, "%s: distortion '%s' isn't recognized in "
+              "the 'dispre' structure of the given 'wcsprm'", __func__,
+              *dispre->dtype);
+    }
+  else if( disseq != NULL )
+    {
+      if(      !strcmp(*disseq->dtype, "TPV") ) return GAL_WCS_DISTORTION_TPV;
+      else if( !strcmp(*disseq->dtype, "TPD") ) return GAL_WCS_DISTORTION_TPD;
+      else if( !strcmp(*disseq->dtype, "DSS") ) return GAL_WCS_DISTORTION_DSS;
+      else if( !strcmp(*disseq->dtype, "WAT") ) return GAL_WCS_DISTORTION_WAT;
+      else
+        error(EXIT_FAILURE, 0, "%s: distortion '%s' isn't recognized in "
+              "the 'disseq' structure of the given 'wcsprm'", __func__,
+              *dispre->dtype);
+    }
+
+  /* Control should not reach here. */
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at '%s' to fix "
+        "the problem. Control should not reach the end of this function",
+        __func__, PACKAGE_BUGREPORT);
+  return GAL_WCS_DISTORTION_INVALID;
+}
+
+
+
+
+
+
+
+
+
+
+/* Convert a given distrotion type to other.
+
+  Parameters:
+    struct wcsprm *wcs - The wcs parameters of the fits file.
+    int out_distortion - The desired output distortion.
+    size_t* fitsize    - The size of the array along each dimension.
+
+  Return:
+    struct wcsprm *outwcs - The transformed wcs parameters in the
+                            required distortion type. */
+struct wcsprm *
+gal_wcs_distortion_convert(struct wcsprm *inwcs, int outdisptype,
+                           size_t *fitsize)
+{
+  struct wcsprm *outwcs=NULL;
+  int indisptype=gal_wcs_distortion_identify(inwcs);
+
+  /* Make sure we have a PC+CDELT structure in the input WCS. */
+  gal_wcs_decompose_pc_cdelt(inwcs);
+
+  /* If the input and output types are the same, just copy the input,
+     otherwise, do the conversion. */
+  if(indisptype==outdisptype) outwcs=gal_wcs_copy(inwcs);
+  else
+    switch(indisptype)
+      {
+      /* If there is no distortion in the input, just return a
+         newly-allocated copy. */
+      case GAL_WCS_DISTORTION_INVALID: outwcs=gal_wcs_copy(inwcs); break;
+
+      /* Input's distortion is SIP. */
+      case GAL_WCS_DISTORTION_SIP:
+        switch(outdisptype)
+          {
+          case GAL_WCS_DISTORTION_TPV:
+            outwcs=gal_wcsdistortion_sip_to_tpv(inwcs);
+            break;
+          default:
+            error(EXIT_FAILURE, 0, "%s: conversion from %s to %s is not yet "
+                  "supported. Please contact us at '%s'", __func__,
+                  gal_wcs_distortion_to_string(indisptype),
+                  gal_wcs_distortion_to_string(outdisptype),
+                  PACKAGE_BUGREPORT);
+              }
+        break;
+
+      /* Input's distortion is TPV. */
+      case GAL_WCS_DISTORTION_TPV:
+        switch(outdisptype)
+          {
+          case GAL_WCS_DISTORTION_SIP:
+            outwcs=gal_wcsdistortion_tpv_to_sip(inwcs, fitsize);
+            break;
+          default:
+            error(EXIT_FAILURE, 0, "%s: conversion from %s to %s is not yet "
+                  "supported. Please contact us at '%s'", __func__,
+                  gal_wcs_distortion_to_string(indisptype),
+                  gal_wcs_distortion_to_string(outdisptype),
+                  PACKAGE_BUGREPORT);
+          }
+        break;
+
+      /* Input's distortion is not yet supported.. */
+      case GAL_WCS_DISTORTION_TPD:
+      case GAL_WCS_DISTORTION_DSS:
+      case GAL_WCS_DISTORTION_WAT:
+        error(EXIT_FAILURE, 0, "%s: input %s distortion is not yet "
+              "supported. Please contact us at '%s'", __func__,
+              gal_wcs_distortion_to_string(indisptype),
+              PACKAGE_BUGREPORT);
+
+      /* A bug! This distortion is not yet recognized. */
+      default:
+        error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+              "the problem. The identifier '%d' is not recognized as a "
+              "distortion", __func__, PACKAGE_BUGREPORT, indisptype);
+      }
+
+  /* Return the converted WCS. */
+  return outwcs;
+}
+
 
 
 

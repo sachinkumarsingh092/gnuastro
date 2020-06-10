@@ -281,6 +281,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "wcsdistortion",
+      UI_KEY_WCSDISTORTION,
+      "STR",
+      0,
+      "Convert WCS distortion to another type.",
+      UI_GROUP_KEYWORD,
+      &p->wcsdistortion,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 

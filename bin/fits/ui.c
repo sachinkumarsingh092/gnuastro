@@ -327,7 +327,7 @@ ui_read_check_only_options(struct fitsparams *p)
      mode flag to keyword-mode. */
   if( p->date || p->comment || p->history || p->asis || p->delete
       || p->rename || p->update || p->write || p->verify || p->printallkeys
-      || p->copykeys || p->datetosec )
+      || p->copykeys || p->datetosec || p->wcsdistortion )
     {
       /* Check if a HDU is given. */
       if(p->cp.hdu==NULL)
@@ -340,12 +340,21 @@ ui_read_check_only_options(struct fitsparams *p)
         ui_check_copykeys(p);
 
       /* Currently 'datetosec' must be called alone. */
-      if( p->datetosec
-          && (p->date || p->comment || p->history || p->asis || p->delete
-              || p->rename || p->update || p->write || p->verify
-              || p->printallkeys || p->copykeys) )
-        error(EXIT_FAILURE, 0, "'--datetosec' cannot currently be called "
-              "with any other option");
+      if( (p->datetosec || p->wcsdistortion)
+          && ( (p->datetosec && p->wcsdistortion)
+               || p->date || p->comment || p->history || p->asis || p->delete
+               || p->rename || p->update || p->write || p->verify
+               || p->printallkeys || p->copykeys
+               )
+          )
+        error(EXIT_FAILURE, 0, "'--datetosec' and '--wcsdistortion' cannot "
+              "currently be called with any other option");
+
+      /* Identify the requested distortion. Note that this also acts as a
+         sanity check because it will crash with an error if the given
+         string isn't recognized. */
+      if(p->wcsdistortion)
+        p->distortionid=gal_wcs_distortion_from_string(p->wcsdistortion);
 
       /* Set the operating mode. */
       p->mode=FITS_MODE_KEY;
