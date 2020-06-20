@@ -441,15 +441,31 @@ static void
 keywords_distortion_wcs(struct fitsparams *p)
 {
   int nwcs;
-  struct wcsprm *inwcs;
+  size_t ndim, *insize;
+  gal_data_t *data=NULL;
   char *suffix, *output;
-  gal_data_t *data=gal_fits_img_read(p->filename, p->cp.hdu,
-                                     p->cp.minmapsize, p->cp.quietmmap);
+  struct wcsprm *inwcs, *outwcs;
+
+  /* If the extension has any data, read it, otherwise just make an empty
+     array. */
+  if(gal_fits_hdu_format(p->filename, p->cp.hdu)==IMAGE_HDU)
+    {
+      /* Read the size of the dataset (we don't need the actual size!). */
+      insize=gal_fits_img_info_dim(p->filename, p->cp.hdu, &ndim);
+      free(insize);
+
+      /* If the number of dimensions is two, then read the dataset,
+         otherwise, ignore it. */
+      if(ndim==2)
+        data=gal_fits_img_read(p->filename, p->cp.hdu, p->cp.minmapsize,
+                               p->cp.quietmmap);
+    }
 
   /* Read the input WCS structure and convert it to the desired output
      distortion. */
   inwcs=gal_wcs_read(p->filename, p->cp.hdu, 0, 0, &nwcs);
-  data->wcs=gal_wcs_distortion_convert(inwcs, p->distortionid, data->dsize);
+  outwcs=gal_wcs_distortion_convert(inwcs, p->distortionid,
+                                    data?data->dsize:NULL);
 
   /* Set the output filename. */
   if(p->cp.output)
@@ -460,12 +476,26 @@ keywords_distortion_wcs(struct fitsparams *p)
         error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
       output=gal_checkset_automatic_output(&p->cp, p->filename, suffix);
     }
+  gal_checkset_writable_remove(output, 0, p->cp.dontdelete);
 
   /* Write the output file. */
-  gal_fits_img_write(data, output, NULL, PROGRAM_NAME);
+  if(data)
+    {
+      /* Add the output WCS to the dataset and write it. */
+      data->wcs=outwcs;
+      gal_fits_img_write(data, output, NULL, PROGRAM_NAME);
+
+      /* Clean up, but remove the pointer first (so it doesn't free it
+         here). */
+      data->wcs=NULL;
+      gal_data_free(data);
+    }
+  else
+    gal_wcs_write(outwcs, output, NULL, PROGRAM_NAME);
 
   /* Clean up. */
   wcsfree(inwcs);
+  wcsfree(outwcs);
   if(output!=p->cp.output) free(output);
 }
 

@@ -81,8 +81,8 @@ wcsdistortion_get_tpvparams(struct wcsprm *wcs, double cd[2][2],
   if(wcs==NULL)
     error(EXIT_FAILURE, 0, "%s: input WCS structure is NULL", __func__);
 
-  for(i=0,k=0; i<2; i++)
-    for(j=0; j<2; j++)
+  for(i=0,k=0; i<2; ++i)
+    for(j=0; j<2; ++j)
       {
         /* If a value is present store it, else store 0.*/
         if((wcs->cd)[i] != 0)   cd[i][j]=(wcs->cd)[k++];
@@ -93,52 +93,52 @@ wcsdistortion_get_tpvparams(struct wcsprm *wcs, double cd[2][2],
         */
       }
 
-  for(j=0; j < wcs->npvmax; j++)
-  {
-    if(wcs->pv[j].i == 1)
-      {
-        /*pv_m is used to check the index in the header.*/
-        pv_m=wcs->pv[j].m;
+  for(j=0; j < wcs->npvmax; ++j)
+    {
+      if(wcs->pv[j].i == 1)
+        {
+          /*pv_m is used to check the index in the header.*/
+          pv_m=wcs->pv[j].m;
 
-        /* `index` is the index of the pv* array.*/
-        index = pv_m;
+          /* `index` is the index of the pv* array.*/
+          index = pv_m;
 
-        if( wcs->pv[pv_m].value != 0 && index == pv_m )
-          pv1[index]=wcs->pv[j].value;
-        else
-          pv1[index]=0;
+          if( wcs->pv[pv_m].value != 0 && index == pv_m )
+            pv1[index]=wcs->pv[j].value;
+          else
+            pv1[index]=0;
 
-        /* For a check
-        printf("PV1_%d\t%.10f\n", pv_m, pv1[k]);
-        */
-      }
-    else if(wcs->pv[j].i == 2)
-      {
-        /*pv_m is used to check the index in the header.*/
-        pv_m=wcs->pv[j].m;
+          /* For a check
+          printf("PV1_%d\t%.10f\n", pv_m, pv1[k]);
+          */
+        }
+      else if(wcs->pv[j].i == 2)
+        {
+          /*pv_m is used to check the index in the header.*/
+          pv_m=wcs->pv[j].m;
 
-        /* `index` is the index of the pv* array.*/
-        index = pv_m;
+          /* `index` is the index of the pv* array.*/
+          index = pv_m;
 
-        if( wcs->pv[pv_m].value != 0 && index == pv_m )
-          pv2[index]=wcs->pv[j].value;
-        else
-          pv2[index]=0;
+          if( wcs->pv[pv_m].value != 0 && index == pv_m )
+            pv2[index]=wcs->pv[j].value;
+          else
+            pv2[index]=0;
 
-        /* For a check
-        printf("PV2_%d\t%.10f\n", pv_m, pv2[k]);
-        */
-      }
-    else
-      {
-        error(EXIT_FAILURE, 0, "%s: No such axis present!", __func__);
-        break;
-      }
-  }
+          /* For a check
+          printf("PV2_%d\t%.10f\n", pv_m, pv2[k]);
+          */
+        }
+      else
+        {
+          error(EXIT_FAILURE, 0, "%s: No such axis present!", __func__);
+          break;
+        }
+    }
 
   /* To check a full array:
-  for(i = 0; i < 40; i++)
-    printf("PV2_%ld\t%.10f\n", i, pv2[i]);
+     for(i = 0; i < 40; ++i)
+     printf("PV2_%ld\t%.10f\n", i, pv2[i]);
   */
 
 }
@@ -154,7 +154,6 @@ wcsdistortion_get_sipparams(struct wcsprm *wcs, double cd[2][2],
                             double a_coeff[5][5], double b_coeff[5][5])
 {
   const char *cp;
-  double keyval=0;
   double *temp_cd=NULL;
   struct dpkey  *keyp=NULL;
   struct disprm *dispre=NULL;
@@ -176,8 +175,8 @@ wcsdistortion_get_sipparams(struct wcsprm *wcs, double cd[2][2],
      CD matix is extracted using the `gal_wcs_wrap_matrix` as a single
      allocated array (temp_cd[]), that is then used to fill cd[][]. */
   temp_cd=gal_wcs_warp_matrix(wcs);
-  for(i=0,k=0; i<2; i++)
-    for(j=0; j<2; j++)
+  for(i=0,k=0; i<2; ++i)
+    for(j=0; j<2; ++j)
       {
         /* If a value is present store it, else store 0.*/
         if(temp_cd[k] != 0)   cd[i][j]=temp_cd[k++];
@@ -190,13 +189,13 @@ wcsdistortion_get_sipparams(struct wcsprm *wcs, double cd[2][2],
 
   /* Extract the SIP values from the strings and numbers inside the
      wcsprm. */
-  for(i=0; i<dispre->ndp; i++, keyp++)
+  for(i=0; i<dispre->ndp; ++i, ++keyp)
     {
       /* For axis1. */
       if (keyp->j == 1)
         {
           /* Ignore any missing keyvalues. */
-          if ((keyval = dpkeyd(keyp)) == 0.0) continue;
+          if ( keyp->field == NULL ) continue;
 
           cp = strchr(keyp->field, '.') + 1;
           if (strncmp(cp, "SIP.FWD.", 8) != 0) continue;
@@ -214,10 +213,10 @@ wcsdistortion_get_sipparams(struct wcsprm *wcs, double cd[2][2],
       else if (keyp->j == 2)
         {
           /* Ignore any missing keyvalues. */
-          if ((keyval = dpkeyd(keyp)) == 0.0) continue;
+          if ( keyp->field == NULL ) continue;
 
           cp = strchr(keyp->field, '.') + 1;
-          if (strncmp(cp, "SIP.FWD.", 8) != 0) continue;
+          if (strncmp(cp, "SIP.REV.", 8) != 0) continue;
           cp += 8;
 
           sscanf(cp, "%ld_%ld", &m, &n);
@@ -247,15 +246,18 @@ wcsdistortion_get_sipcoeff(struct wcsprm *wcs, size_t *a_order,
   size_t m, n;
   double val=0;
   size_t i, j, k;
-  double cd[2][2]={0};
-  double tpvu[8][8]={0}, tpvv[8][8]={0};
+  double cd[2][2];
+  double tpvu[8][8], tpvv[8][8];
 
+  /* Initialise the 2d matrices. */
+  for(i=0; i<2; ++i) for(j=0; j<2; ++j) cd[i][j]=0;
+  for(i=0; i<8; ++i) for(j=0; j<8; ++j) { tpvu[i][j]=0; tpvv[i][j]=0; }
 
+  /* Calculate the TPV elements. */
   wcsdistortion_calc_tpveq(wcs, cd, tpvu, tpvv);
 
-
-  for(i=0,k=0; i<2; i++)
-    for(j=0; j<2; j++)
+  for(i=0,k=0; i<2; ++i)
+    for(j=0; j<2; ++j)
       {
         /* If a value is present store it, else store 0.*/
         if((wcs->cd)[i] != 0)   cd[i][j]=(wcs->cd)[k++];
@@ -266,8 +268,8 @@ wcsdistortion_get_sipcoeff(struct wcsprm *wcs, size_t *a_order,
         */
       }
 
-  for(m=0; m<=4; m++)
-    for(n=0; n<=4; n++)
+  for(m=0; m<=4; ++m)
+    for(n=0; n<=4; ++n)
       {
         /*For axis = 1*/
         val=wcsdistortion_calcsip(1, m, n, tpvu, tpvv);
@@ -291,10 +293,10 @@ wcsdistortion_get_sipcoeff(struct wcsprm *wcs, size_t *a_order,
       }
 
   /*For a check.
-  for(m=0;m<=4;m++)
-    for(n=0;n<=4;n++)
-      printf("A_%ld_%ld = %.10E \t B_%ld_%ld = %.10E\n",
-              m, n, a_coeff[m][n], m, n, b_coeff[m][n]);
+  for(m=0;m<=4;++m)
+  for(n=0;n<=4;++n)
+  printf("A_%ld_%ld = %.10E \t B_%ld_%ld = %.10E\n",
+         m, n, a_coeff[m][n], m, n, b_coeff[m][n]);
   */
 }
 
@@ -512,8 +514,8 @@ wcsdistortion_intermidate_tpveq(double cd[2][2], double *pv1, double *pv2,
   /* For a check:
   {
     size i, j;
-    for(i=0; i<=4; i++)
-      for(j=0;j<=4;j++)
+    for(i=0; i<=4; ++i)
+      for(j=0;j<=4;++j)
 	{
 	  printf("k%ld_%ld \t %.10E\n",   i, j, k[i][j]);
 	  printf("l%ld_%ld \t %.10E\n\n", i, j, l[i][j]);
@@ -554,7 +556,7 @@ wcsdistortion_intermidate_sipeq(double cd[2][2], double cd_inv[2][2],
     Grillmair, Carl; Levitan, David; Sesar, Branimir, 2012, in Software and
     Cyberinfrastructure for Astronomy II.
     Proceedings of the SPIE, Volume 8451, article id. 84511M.
-    */
+  */
 
   /* pvi_0 */
   pv1[0]=a_coeff[0][0]*cd[0][0] + b_coeff[0][0]*cd[0][1];
@@ -906,7 +908,7 @@ wcsdistortion_intermidate_sipeq(double cd[2][2], double cd_inv[2][2],
   /* For a check:
   {
     size_t j;
-    for(j=0; j<=16 ;j++)
+    for(j=0; j<=16 ;++j)
       {
         if (j == 3 || j == 11) continue;
         printf("pv1_%ld \t %.12E\n", j, pv1[j]);
@@ -944,17 +946,19 @@ wcsdistortion_calc_tpveq(struct wcsprm *wcs, double cd[2][2],
                          double tpvu[8][8], double tpvv[8][8])
 {
   /* tpvu and tpvv are u-v distortion equations in TPV convention. */
-  size_t i,j;
+  size_t i=0,j=0;
+  double cd_inv[2][2];
   double determinant=0;
-  double cd_inv[2][2]={0};
+  double k[5][5], l[5][5];
   double pv1[17]={0}, pv2[17]={0};
-  double k[5][5]={0}, l[5][5]={0};
 
+  /* Initialise the 2d matrices. */
+  for(i=0; i<2; ++i) for(j=0; j<2; ++j) cd_inv[i][j]=0;
+  for(i=0; i<5; ++i) for(j=0; j<5; ++j) { k[i][j]=0; l[i][j]=0; }
 
+  /* Estimate the parameters. */
   wcsdistortion_get_tpvparams(wcs, cd, pv1, pv2);
-
   wcsdistortion_intermidate_tpveq(cd, pv1, pv2, k, l);
-
 
   /* We will find matrix tpvu and tpvv by finding inverse of
      CD matrix and multiplying with tpv* matrix.
@@ -964,8 +968,6 @@ wcsdistortion_calc_tpveq(struct wcsprm *wcs, double cd[2][2],
       where |A| is the determinant of the matrix which is calculated by:
                           |A| = a*d-b*c.
     */
-
-
   determinant = cd[0][0]*cd[1][1] - cd[0][1]*cd[1][0];
 
   /* Inverse matrix */
@@ -989,8 +991,8 @@ wcsdistortion_calc_tpveq(struct wcsprm *wcs, double cd[2][2],
     to multiplycation with cd_inv.
   */
 
-  for(i=0; i<=4; i++)
-    for(j=0; j<=4; j++)
+  for(i=0; i<=4; ++i)
+    for(j=0; j<=4; ++j)
       {
         tpvu[i][j]=cd_inv[0][0]*k[i][j]+cd_inv[0][1]*l[i][j];
         tpvv[i][j]=cd_inv[1][0]*k[i][j]+cd_inv[1][1]*l[i][j];
@@ -999,7 +1001,6 @@ wcsdistortion_calc_tpveq(struct wcsprm *wcs, double cd[2][2],
         printf("%.10E, %.10E\n", tpvu[i][j], tpvv[i][j]);
         */
       }
-
 }
 
 
@@ -1013,10 +1014,14 @@ wcsdistortion_calc_sipeq(struct wcsprm *wcs, double cd[2][2],
                          double *pv1, double *pv2)
 {
   /* tpvu and tpvv are u-v distortion equations in TPV convention. */
+  size_t i=0, j=0;
+  double cd_inv[2][2];
   double determinant=0;
-  double cd_inv[2][2]={0};
-  double a_coeff[5][5]={0}, b_coeff[5][5]={0};
+  double a_coeff[5][5], b_coeff[5][5];
 
+  /* Initialise the 2d matrices. */
+  for(i=0;i<2;++i) for(j=0;j<2;++j) cd_inv[i][j]=0;
+  for(i=0;i<5;++i) for(j=0;j<5;++j) {a_coeff[i][j]=0; b_coeff[i][j]=0;}
 
   /* We will find matrix tpvu and tpvv by finding inverse of
      CD matrix and multiplying with tpv* matrix.
@@ -1026,9 +1031,7 @@ wcsdistortion_calc_sipeq(struct wcsprm *wcs, double cd[2][2],
       where |A| is the determinant of the matrix which is calculated by:
                           |A| = a*d-b*c.
     */
-
   wcsdistortion_get_sipparams(wcs, cd, a_coeff, b_coeff);
-
   determinant = cd[0][0]*cd[1][1] - cd[0][1]*cd[1][0];
 
   /* Inverse matrix */
@@ -1037,9 +1040,8 @@ wcsdistortion_calc_sipeq(struct wcsprm *wcs, double cd[2][2],
   cd_inv[1][0]=(-1*cd[1][0])/determinant; /* c */
   cd_inv[1][1]=cd[0][0]/determinant;      /* d */
 
-
+  /* Find the parameters. */
   wcsdistortion_intermidate_sipeq( cd, cd_inv, a_coeff, b_coeff, pv1, pv2);
-
 
   /*For a check.
   printf("%.10lf\t%.10lf\t%.10lf\t%.10lf\n", cd_inv[0][0], cd_inv[0][1], \
@@ -1059,16 +1061,13 @@ wcsdistortion_calcsip(size_t axis, size_t m, size_t n, double tpvu[8][8],
                       double tpvv[8][8])
 {
   double sip_coeff;
-  if(axis == 1)        sip_coeff=tpvu[m][n];
-  else if(axis == 2)   sip_coeff=tpvv[m][n];
-  else
-    error(EXIT_FAILURE, 0, "%s: axis does not exists! ",
-          __func__);
+  if(     axis == 1) sip_coeff=tpvu[m][n];
+  else if(axis == 2) sip_coeff=tpvv[m][n];
+  else error(EXIT_FAILURE, 0, "%s: axis does not exists! ", __func__);
 
-  if( (axis == 1) && (m == 1) && (n == 0) )
-        sip_coeff = sip_coeff - 1.0;
-  else if( (axis == 2) && (m == 0) && (n == 1) )
-        sip_coeff = sip_coeff - 1.0;
+  if(      (axis == 1) && (m == 1) && (n == 0) ) sip_coeff = sip_coeff - 1.0;
+  else if( (axis == 2) && (m == 0) && (n == 1) ) sip_coeff = sip_coeff - 1.0;
+  else error(EXIT_FAILURE, 0, "%s: axis does not exists! ", __func__);
 
   return sip_coeff;
 
@@ -1136,7 +1135,7 @@ wcsdistortion_fitreverse(double *u, double *v, size_t a_order, size_t b_order,
   /* Allocate updict and vpdict and initialize them. */
   updict=malloc((ap_order+1)*sizeof(*updict));
   vpdict=malloc((bp_order+1)*sizeof(*vpdict));
-  for(i=0; i<=wcsdistortion_max(ap_order, bp_order); i++)
+  for(i=0; i<=wcsdistortion_max(ap_order, bp_order); ++i)
     {
       updict[i]=malloc(tsize*sizeof(updict));
       vpdict[i]=malloc(tsize*sizeof(vpdict));
@@ -1145,7 +1144,7 @@ wcsdistortion_fitreverse(double *u, double *v, size_t a_order, size_t b_order,
   /* Allocate and initialize uprime and vprime. */
   uprime=malloc(tsize*sizeof(*uprime));
   vprime=malloc(tsize*sizeof(*vprime));
-  for(i=0; i<tsize; i++)
+  for(i=0; i<tsize; ++i)
     {
       uprime[i]=u[i];
       vprime[i]=v[i];
@@ -1154,12 +1153,12 @@ wcsdistortion_fitreverse(double *u, double *v, size_t a_order, size_t b_order,
   /* Allocate and initialize udict and vdict.*/
   udict=malloc((a_order+1)*sizeof(*udict));
   vdict=malloc((b_order+1)*sizeof(*vdict));
-  for(i=0; i<=wcsdistortion_max(a_order, b_order); i++)
+  for(i=0; i<=wcsdistortion_max(a_order, b_order); ++i)
     {
       udict[i]=malloc(tsize*sizeof(udict));
       vdict[i]=malloc(tsize*sizeof(vdict));
     }
-  for(i=0; i<tsize; i++)
+  for(i=0; i<tsize; ++i)
     {
       udict[0][i]=1;
       vdict[0][i]=1;
@@ -1168,72 +1167,64 @@ wcsdistortion_fitreverse(double *u, double *v, size_t a_order, size_t b_order,
 
   /* Fill the values from the in the dicts. The rows of the
       dicts act as a key to achieve a key-value functionality. */
-  for(i=1; i<=a_order; i++)
-    for(j=0; j<tsize; j++)
+  for(i=1; i<=a_order; ++i)
+    for(j=0; j<tsize; ++j)
       udict[i][j]=udict[i-1][j]*u[j];
 
-  for(i=1; i<=b_order; i++)
-    for(j=0; j<tsize; j++)
+  for(i=1; i<=b_order; ++i)
+    for(j=0; j<tsize; ++j)
       vdict[i][j]=vdict[i-1][j]*v[j];
 
 
   /* Populating forward coefficients on a grid. */
-  for(i=0; i<=a_order; i++)
-    for(j=0; j<=a_order-i; j++)
+  for(i=0; i<=a_order; ++i)
+    for(j=0; j<=a_order-i; ++j)
       {
-        for(k=0; k<tsize; k++)
+        for(k=0; k<tsize; ++k)
           uprime[k]+=a_coeff[i][j]*udict[i][k]*vdict[j][k];
 
         /* The number of parameters for AP_* coefficients. */
-        p_ap++;
+        ++p_ap;
+      }
+  for(i=0; i<=b_order; ++i)
+    for(j=0; j<=b_order-i; ++j)
+      {
+        for(k=0; k<tsize; ++k)
+          vprime[k]+=b_coeff[i][j]*udict[i][k]*vdict[j][k];
+
+        /* The number of parameters for BP_* coefficients. */
+        ++p_bp;
       }
 
-
-  for(i=0; i<=b_order; i++)
-    for(j=0; j<=b_order-i; j++)
-        {
-          for(k=0; k<tsize; k++)
-            vprime[k]+=b_coeff[i][j]*udict[i][k]*vdict[j][k];
-
-          /* The number of parameters for BP_* coefficients. */
-          p_bp++;
-        }
-
-
   /*For a check.
-  for(i=0; i<=a_order; i++)
-    for(j=0; j<tsize; j++)
+  for(i=0; i<=a_order; ++i)
+    for(j=0; j<tsize; ++j)
     {
       printf("udict[%ld][%ld] = %.8lf\n", i, j, uprime[j]);
       printf("u%ld = %.10E\n", i, u[i]);
     }
   */
 
-
   /* Now we have a grid populated with forward coeffiecients.  Now we fit a
      reverse polynomial through points using multiparameter linear least
      square fittings.*/
 
-
   /* Initialize dicts. */
-  for(i=0; i<tsize; i++)
+  for(i=0; i<tsize; ++i)
     {
       updict[0][i]=1;
       vpdict[0][i]=1;
     }
 
-
   /* Fill the values from the in the dicts. The rows of the
       dicts act as a key to achieve a key-value functionality. */
-  for(i=1; i<=ap_order; i++)
-    for(j=0; j<tsize; j++)
+  for(i=1; i<=ap_order; ++i)
+    for(j=0; j<tsize; ++j)
       updict[i][j]=updict[i-1][j]*uprime[j];
 
-  for(i=1; i<=bp_order; i++)
-    for(j=0; j<tsize; j++)
+  for(i=1; i<=bp_order; ++i)
+    for(j=0; j<tsize; ++j)
       vpdict[i][j]=vpdict[i-1][j]*vprime[j];
-
-
 
   /* Allocate memory for Multi-parameter Linear Regressions. */
   X_ap = gsl_matrix_alloc (tsize, p_ap);
@@ -1248,11 +1239,10 @@ wcsdistortion_fitreverse(double *u, double *v, size_t a_order, size_t b_order,
   cov_ap = gsl_matrix_alloc (p_ap, p_ap);
   cov_bp = gsl_matrix_alloc (p_bp, p_bp);
 
-
   /* Allocate and initialize udiff and vdiff. */
   udiff=malloc(tsize*sizeof(*udiff));
   vdiff=malloc(tsize*sizeof(*vdiff));
-  for(i=0; i<tsize; i++)
+  for(i=0; i<tsize; ++i)
     {
       udiff[i]=u[i]-uprime[i];
       vdiff[i]=v[i]-vprime[i];
@@ -1261,12 +1251,11 @@ wcsdistortion_fitreverse(double *u, double *v, size_t a_order, size_t b_order,
       gsl_vector_set (y_bp, i, vdiff[i]);
     }
 
-
   /* Filling up he X_ap matrix in column-wise order. */
-  for(i=0; i<=ap_order; i++)
-    for(j=0; j<=ap_order-i; j++)
+  for(i=0; i<=ap_order; ++i)
+    for(j=0; j<=ap_order-i; ++j)
       {
-        for(k=0; k<tsize; k++)
+        for(k=0; k<tsize; ++k)
           {
             gsl_matrix_set(X_ap, k, ij, updict[i][k]*vpdict[j][k]);
 
@@ -1274,16 +1263,15 @@ wcsdistortion_fitreverse(double *u, double *v, size_t a_order, size_t b_order,
             printf("x_ap[%ld] = %.8lf\n", ij, updict[i][k]*vpdict[j][k]);
             */
           }
-        ij++;
+        ++ij;
       }
-
 
   ij=0;
   /* Filling up he X_bp matrix in column-wise order. */
-  for(i=0; i<=bp_order; i++)
-    for(j=0; j<=bp_order-i; j++)
+  for(i=0; i<=bp_order; ++i)
+    for(j=0; j<=bp_order-i; ++j)
       {
-        for(k=0; k<tsize; k++)
+        for(k=0; k<tsize; ++k)
           {
             gsl_matrix_set(X_bp, k, ij, updict[i][k]*vpdict[j][k]);
 
@@ -1291,7 +1279,7 @@ wcsdistortion_fitreverse(double *u, double *v, size_t a_order, size_t b_order,
             printf("x_bp[%ld] = %.8lf\n", ij, updict[i][k]*vpdict[j][k]);
             */
           }
-        ij++;
+        ++ij;
       }
 
   /* Initialize and do the linear least square fitting. */
@@ -1302,8 +1290,8 @@ wcsdistortion_fitreverse(double *u, double *v, size_t a_order, size_t b_order,
 
   /* Extract the reverse coefficients. */
   p_ap=0;
-  for(i=0; i<=ap_order; i++)
-    for(j=0; j<=ap_order-i; j++)
+  for(i=0; i<=ap_order; ++i)
+    for(j=0; j<=ap_order-i; ++j)
     {
         ap_coeff[i][j]=gsl_vector_get(c_ap, p_ap);
 
@@ -1311,11 +1299,11 @@ wcsdistortion_fitreverse(double *u, double *v, size_t a_order, size_t b_order,
         printf("AP_%ld_%ld = %.8E\n", i, j, ap_coeff[i][j]);
         */
 
-        p_ap++;
+        ++p_ap;
     }
   p_bp=0;
-  for(i=0; i<=bp_order; i++)
-    for(j=0; j<=bp_order-i; j++)
+  for(i=0; i<=bp_order; ++i)
+    for(j=0; j<=bp_order-i; ++j)
     {
         bp_coeff[i][j]=gsl_vector_get(c_bp, p_bp);
 
@@ -1323,12 +1311,12 @@ wcsdistortion_fitreverse(double *u, double *v, size_t a_order, size_t b_order,
         printf("BP_%ld_%ld = %.8E\n", i, j, bp_coeff[i][j]);
         */
 
-        p_bp++;
+        ++p_bp;
     }
 
   /*For a check.
-  for(i=0; i<p_ap; i++)
-    for(j=0; j<tsize; j++)
+  for(i=0; i<p_ap; ++i)
+    for(j=0; j<tsize; ++j)
       printf("X[%ld][%ld] = %.8lf\n", i, j, gsl_matrix_get(X_ap, j, i));
   */
 
@@ -1348,8 +1336,8 @@ wcsdistortion_fitreverse(double *u, double *v, size_t a_order, size_t b_order,
   free(vprime);
   free(uprime);
 
-  for(i=0; i<ap_order; i++) { free(vpdict[i]); free(updict[i]); }
-  for(i=0; i<a_order; i++) { free(vdict[i]); free(udict[i]); }
+  for(i=0; i<ap_order; ++i) { free(vpdict[i]); free(updict[i]); }
+  for(i=0; i<a_order; ++i) { free(vdict[i]); free(udict[i]); }
   free(vpdict);
   free(updict);
   free(vdict);
@@ -1366,48 +1354,35 @@ static void
 wcsdistortion_get_revkeyvalues(struct wcsprm *wcs, size_t *fitsize,
                                double ap_coeff[5][5], double bp_coeff[5][5])
 {
-  size_t tsize=0;
-  size_t i=0, j=0, k=0;
-  size_t naxis1, naxis2;
-  double crpix1, crpix2;
+  size_t tsize;
+  size_t i, j, k;
   double *u=NULL, *v=NULL;
   size_t a_order=0, b_order=0;
-  double a_coeff[5][5]={0}, b_coeff[5][5]={0};
+  double a_coeff[5][5], b_coeff[5][5];
+  size_t naxis1=fitsize[1], naxis2=fitsize[0];
+  double crpix1=wcs->crpix[0], crpix2=wcs->crpix[1];
 
-  naxis2=fitsize[0];
-  naxis1=fitsize[1];
-
-  crpix1=wcs->crpix[0];
-  crpix2=wcs->crpix[1];
-
+  /* Initialise the 2d matrices. */
   tsize=(naxis1/4)*(naxis2/4);
-
+  for(i=0;i<5;++i) for(j=0;j<5;++j) {a_coeff[i][j]=0; b_coeff[i][j]=0;}
 
   /* Allocate the size of u,v arrays. */
   u=malloc(tsize*sizeof(*u));
   v=malloc(tsize*sizeof(*v));
 
   if(u==NULL)
-        error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `u'",
-              __func__, tsize*sizeof(*u));
+    error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `u'",
+          __func__, tsize*sizeof(*u));
   if(v==NULL)
-        error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `v'",
-              __func__, tsize*sizeof(*v));
+    error(EXIT_FAILURE, 0, "%s: allocating %zu bytes for `v'",
+          __func__, tsize*sizeof(*v));
 
 
   /* Make the grid and bring it's origin to the world's origin*/
-  for(i=0; i<naxis2; i+=4)
-    for(j=0; j<naxis1; j+=4)
-      u[k++]=j-crpix1;
-
-  k=0;
-  for(i=0; i<naxis2; i+=4)
-    for(j=0; j<naxis1; j+=4)
-      v[k++]=i-crpix2;
-
-
+  k=0; for(i=0; i<naxis2; i+=4) for(j=0; j<naxis1; j+=4) u[k++]=j-crpix1;
+  k=0; for(i=0; i<naxis2; i+=4) for(j=0; j<naxis1; j+=4) v[k++]=i-crpix2;
   /*For a check.
-  for(i=0; i<tsize; i++)
+    for(i=0; i<tsize; ++i)
     printf("u%ld = %.10E\n", i, u[i]);
   */
 
@@ -1419,7 +1394,6 @@ wcsdistortion_get_revkeyvalues(struct wcsprm *wcs, size_t *fitsize,
   /* Free the memory allocations. */
   free(v);
   free(u);
-
 }
 
 
@@ -1459,51 +1433,49 @@ wcsdistortion_add_sipkeywords(struct wcsprm *wcs, size_t *fitsize,
   size_t a_order=0, b_order=0;
   size_t ap_order=0, bp_order=0;
   size_t m, n, num=0, numkey=100;
-  double ap_coeff[5][5]={0}, bp_coeff[5][5]={0};
+  double ap_coeff[5][5], bp_coeff[5][5];
   char *fullheader, fmt[50], sipkey[8], keyaxis[9], pcaxis[10];
 
+  /* Initialise the 2d matrices. */
   *nkeys = 0;
+  for(i=0;i<5;++i) for(j=0;j<5;++j) {ap_coeff[i][j]=0; bp_coeff[i][j]=0;}
 
   /* The format for each card. */
   sprintf(fmt, "%%-8s= %%20.12E%%50s");
 
-  // wcsdistortion_calc_tpveq(wcs, cd, tpvu, tpvv);
-
-
   /* Allcate memory for cards. */
   fullheader = malloc(numkey*80);
   if(fullheader==NULL)
-        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `fullheader'",
-              __func__, sizeof *fullheader);
-
+    error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `fullheader'",
+          __func__, sizeof *fullheader);
 
   /* Add other necessary cards. */
   sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20d%50s", "WCSAXES",
           wcs->naxis, "");
 
-  for(i=1; i<=size; i++)
+  for(i=1; i<=size; ++i)
     {
       sprintf(keyaxis, "CRPIX%d", i);
       sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20.8lf%50s", keyaxis,
               wcs->crpix[i-1], "");
     }
 
-  for(i=1; i<=size; i++)
-    for(j=1; j<=size; j++)
+  for(i=1; i<=size; ++i)
+    for(j=1; j<=size; ++j)
       {
         sprintf(pcaxis, "PC%d_%d", i, j);
         sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20.17lf%50s", pcaxis,
                 wcs->pc[k++], "");
       }
 
-  for(i=1; i<=size; i++)
+  for(i=1; i<=size; ++i)
     {
       sprintf(keyaxis, "CDELT%d", i);
       sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20.17lf%50s", keyaxis,
               wcs->cdelt[i-1], "");
     }
 
-  for(i=1; i<=size; i++)
+  for(i=1; i<=size; ++i)
     {
       sprintf(keyaxis, "CUNIT%d", i);
       sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %-70s", keyaxis,
@@ -1515,7 +1487,7 @@ wcsdistortion_add_sipkeywords(struct wcsprm *wcs, size_t *fitsize,
   sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %-70s", "CTYPE2",
           "'DEC--TAN-SIP'");
 
-  for(i=1; i<=size; i++)
+  for(i=1; i<=size; ++i)
     {
       sprintf(keyaxis, "CRVAL%d", i);
       sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20.10lf%50s", keyaxis,
@@ -1527,9 +1499,11 @@ wcsdistortion_add_sipkeywords(struct wcsprm *wcs, size_t *fitsize,
   sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20.17lf%50s", "LATPOLE",
           wcs->latpole, "");
 
-  for(i=1; i<=size; i++)
+#if GAL_CONFIG_HAVE_WCSLIB_MJDREF == 1
+  for(i=1; i<=size; ++i)
     sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20.1lf%50s", "MJDREFI",
             wcs->mjdref[i-1], "");
+#endif
 
   sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %-70s", "RADESYS",
           wcs->radesys);
@@ -1538,8 +1512,8 @@ wcsdistortion_add_sipkeywords(struct wcsprm *wcs, size_t *fitsize,
           wcs->equinox, "");
 
 
-  for(m=0; m<=4; m++)
-    for(n=0; n<=4; n++)
+  for(m=0; m<=4; ++m)
+    for(n=0; n<=4; ++n)
       {
         /*For axis = 1*/
         val=wcsdistortion_calcsip(1, m, n, tpvu, tpvv);
@@ -1576,8 +1550,8 @@ wcsdistortion_add_sipkeywords(struct wcsprm *wcs, size_t *fitsize,
 
       wcsdistortion_get_revkeyvalues(wcs, fitsize, ap_coeff, bp_coeff);
 
-      for(m=0; m<=ap_order; m++)
-        for(n=0; n<=ap_order-m; n++)
+      for(m=0; m<=ap_order; ++m)
+        for(n=0; n<=ap_order-m; ++n)
           {
             /*For axis = 1*/
             val=ap_coeff[m][n];
@@ -1600,22 +1574,18 @@ wcsdistortion_add_sipkeywords(struct wcsprm *wcs, size_t *fitsize,
               }
           }
 
-    sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20ld%50s", "AP_ORDER",
-            ap_order, "");
-    sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20ld%50s", "BP_ORDER",
-            bp_order, "");
+      sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20ld%50s", "AP_ORDER",
+              ap_order, "");
+      sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20ld%50s", "BP_ORDER",
+              bp_order, "");
 
     }
 
-
-  *nkeys = num;
-
   /*For a check.
-  printf("%s\n", fullheader);
+    printf("%s\n", fullheader);
   */
-
+  *nkeys = num;
   return fullheader;
-
 }
 
 
@@ -1638,11 +1608,11 @@ wcsdistortion_add_pvkeywords(struct wcsprm *wcs, double *pv1,
   size_t m, n, num=0, numkey=100;
   char *fullheader, fmt[50], pvkey[8], keyaxis[9], pcaxis[10];
 
+  /* Initialize values. */
   *nkeys = 0;
 
   /* The format for each card. */
   sprintf(fmt, "%%-8s= %%20.12E%%50s");
-
 
   /* Allcate memory for cards. */
   fullheader = malloc(numkey*80);
@@ -1650,34 +1620,33 @@ wcsdistortion_add_pvkeywords(struct wcsprm *wcs, double *pv1,
         error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for `fullheader'",
               __func__, sizeof *fullheader);
 
-
   /* Add other necessary cards. */
   sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20d%50s", "WCSAXES",
           wcs->naxis, "");
 
-  for(i=1; i<=size; i++)
+  for(i=1; i<=size; ++i)
     {
       sprintf(keyaxis, "CRPIX%d", i);
       sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20.8lf%50s", keyaxis,
               wcs->crpix[i-1], "");
     }
 
-  for(i=1; i<=size; i++)
-    for(j=1; j<=size; j++)
+  for(i=1; i<=size; ++i)
+    for(j=1; j<=size; ++j)
       {
         sprintf(pcaxis, "PC%d_%d", i, j);
         sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20.17lf%50s", pcaxis,
                 wcs->pc[k++], "");
       }
 
-  for(i=1; i<=size; i++)
+  for(i=1; i<=size; ++i)
     {
       sprintf(keyaxis, "CDELT%d", i);
       sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20.17lf%50s", keyaxis,
               wcs->cdelt[i-1], "");
     }
 
-  for(i=1; i<=size; i++)
+  for(i=1; i<=size; ++i)
     {
       sprintf(keyaxis, "CUNIT%d", i);
       sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %-70s", keyaxis,
@@ -1689,7 +1658,7 @@ wcsdistortion_add_pvkeywords(struct wcsprm *wcs, double *pv1,
   sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %-70s", "CTYPE2",
           "'DEC--TPV'");
 
-  for(i=1; i<=size; i++)
+  for(i=1; i<=size; ++i)
     {
       sprintf(keyaxis, "CRVAL%d", i);
       sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20.10lf%50s", keyaxis,
@@ -1701,9 +1670,11 @@ wcsdistortion_add_pvkeywords(struct wcsprm *wcs, double *pv1,
   sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20.17lf%50s", "LATPOLE",
           wcs->latpole, "");
 
-  for(i=1; i<=size; i++)
+#if GAL_CONFIG_HAVE_WCSLIB_MJDREF == 1
+  for(i=1; i<=size; ++i)
     sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20.1lf%50s", "MJDREFI",
             wcs->mjdref[i-1], "");
+#endif
 
   sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %-70s", "RADESYS",
           wcs->radesys);
@@ -1711,8 +1682,8 @@ wcsdistortion_add_pvkeywords(struct wcsprm *wcs, double *pv1,
   sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20.1lf%50s", "EQUINOX",
           wcs->equinox, "");
 
-  for(m=1; m<=2; m++)
-    for(n=0; n<=16; n++)
+  for(m=1; m<=2; ++m)
+    for(n=0; n<=16; ++n)
       {
         /*For axis = 1*/
         if(m == 1)
@@ -1742,13 +1713,10 @@ wcsdistortion_add_pvkeywords(struct wcsprm *wcs, double *pv1,
 
       }
 
-
-  *nkeys = num;
-
   /*For a check.
   printf("%s\n", fullheader);
   */
-
+  *nkeys = num;
   return fullheader;
 
 }
@@ -1911,14 +1879,19 @@ gal_wcsdistortion_tpv_to_sip(struct wcsprm *inwcs,
 {
   int ctrl=0;                /* Don't report why a keyword wasn't used. */
   int nreject=0;             /* Number of keywords rejected for syntax. */
+  double cd[2][2];
+  size_t i=0, j=0;
   size_t fulllen=0;
   char *fullheader;
-  double cd[2][2]={0};
+  int relax=WCSHDR_all;      /* Macro: use all informal WCS extensions. */
   int nwcs, sumcheck=0;
   int nkeys=0, status=0;
-  int relax=WCSHDR_all;      /* Macro: use all informal WCS extensions. */
   struct wcsprm *outwcs=NULL;
-  double tpvu[8][8] ={0}, tpvv[8][8]={0};
+  double tpvu[8][8], tpvv[8][8];
+
+  /* Initialise the 2d matrices. */
+  for(i=0; i<2; ++i) for(j=0; j<2; ++j) cd[i][j]=0;
+  for(i=0; i<8; ++i) for(j=0; j<8; ++j) { tpvu[i][j]=0; tpvv[i][j]=0; }
 
   /* Calculate the pv equations and extract sip coefficients from it. */
   wcsdistortion_calc_tpveq(inwcs, cd, tpvu, tpvv);
@@ -1934,6 +1907,7 @@ gal_wcsdistortion_tpv_to_sip(struct wcsprm *inwcs,
   wcsdistortion_set_internalstruct(outwcs, fullheader, fulllen, status,
                                    nwcs, sumcheck);
 
+  /* Return the output WCS. */
   return outwcs;
 
 }
@@ -1957,14 +1931,18 @@ gal_wcsdistortion_sip_to_tpv(struct wcsprm *inwcs)
 {
   int ctrl=0;                /* Don't report why a keyword wasn't used. */
   int nreject=0;             /* Number of keywords rejected for syntax. */
+  double cd[2][2];
+  size_t i=0, j=0;
   size_t fulllen=0;
   char *fullheader;
-  double cd[2][2]={0};
   int nwcs, sumcheck=0;
   int nkeys=0, status=0;
   int relax=WCSHDR_all;      /* Macro: use all informal WCS extensions. */
   struct wcsprm *outwcs=NULL;
   double pv1[17]={0}, pv2[17]={0};
+
+  /* Initialise the 2d matrices. */
+  for(i=0; i<2; ++i) for(j=0; j<2; ++j) cd[i][j]=0;
 
   /* Calculate the sip equations and extract pv coefficients from it. */
   wcsdistortion_calc_sipeq(inwcs, cd, pv1, pv2);

@@ -31,8 +31,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 #include <assert.h>
 
-#include <wcslib/dis.h>
-
 #include <gsl/gsl_linalg.h>
 #include <wcslib/wcsmath.h>
 
@@ -43,10 +41,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/dimension.h>
 #include <gnuastro/permutation.h>
 
+#if GAL_CONFIG_HAVE_WCSLIB_DIS_H
+#include <wcslib/dis.h>
 #include <gnuastro-internal/wcsdistortion.h>
-
-
-
+#endif
 
 
 
@@ -274,6 +272,83 @@ gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
 
 
 /*************************************************************
+ ***********               Write WCS               ***********
+ *************************************************************/
+void
+gal_wcs_write(struct wcsprm *wcs, char *filename,
+              gal_fits_list_key_t *headers, char *program_string)
+{
+  char *wcsstr;
+  size_t ndim=0;
+  fitsfile *fptr;
+  long *naxes=NULL;
+  int status=0, nkeyrec;
+
+  /* Small sanity checks */
+  if(wcs==NULL)
+    error(EXIT_FAILURE, 0, "%s: input WCS is NULL", __func__);
+  if( gal_fits_name_is_fits(filename)==0 )
+    error(EXIT_FAILURE, 0, "%s: not a FITS suffix", filename);
+
+  /* Open the file for writing */
+  fptr=gal_fits_open_to_write(filename);
+
+  /* Create the FITS file. */
+  fits_create_img(fptr, gal_fits_type_to_bitpix(GAL_TYPE_UINT8),
+                  ndim, naxes, &status);
+  gal_fits_io_error(status, NULL);
+
+  /* Remove the two comment lines put by CFITSIO. Note that in some cases,
+     it might not exist. When this happens, the status value will be
+     non-zero. We don't care about this error, so to be safe, we will just
+     reset the status variable after these calls. */
+  fits_delete_key(fptr, "COMMENT", &status);
+  fits_delete_key(fptr, "COMMENT", &status);
+  status=0;
+
+  /* Decompose the 'PCi_j' matrix and 'CDELTi' vector. */
+  gal_wcs_decompose_pc_cdelt(wcs);
+
+  /* Clean up small errors in the PC matrix and CDELT values. */
+  gal_wcs_clean_errors(wcs);
+
+  /* Convert the WCS information to text. */
+  status=wcshdo(WCSHDO_safe, wcs, &nkeyrec, &wcsstr);
+  if(status)
+    error(0, 0, "%s: WARNING: WCSLIB error, no WCS in output.\n"
+          "wcshdu ERROR %d: %s", __func__, status,
+          wcs_errmsg[status]);
+  else
+    gal_fits_key_write_wcsstr(fptr, wcsstr, nkeyrec);
+  status=0;
+
+  /* Write all the headers and the version information. */
+  gal_fits_key_write_version_in_ptr(&headers, program_string, fptr);
+
+  /* Close the FITS file. */
+  fits_close_file(fptr, &status);
+  gal_fits_io_error(status, NULL);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*************************************************************
  ***********              Distortions              ***********
  *************************************************************/
 int
@@ -320,7 +395,7 @@ gal_wcs_distortion_to_string(int distortion)
   error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
         "problem. Control should not reach the end of this function",
         __func__, PACKAGE_BUGREPORT);
-  return GAL_WCS_DISTORTION_INVALID;
+  return NULL;
 }
 
 
@@ -338,6 +413,7 @@ gal_wcs_distortion_to_string(int distortion)
 int
 gal_wcs_distortion_identify(struct wcsprm *wcs)
 {
+#if GAL_CONFIG_HAVE_WCSLIB_DIS_H
   struct disprm *dispre=NULL;
   struct disprm *disseq=NULL;
 
@@ -395,6 +471,14 @@ gal_wcs_distortion_identify(struct wcsprm *wcs)
   error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at '%s' to fix "
         "the problem. Control should not reach the end of this function",
         __func__, PACKAGE_BUGREPORT);
+#else
+  /* The 'wcslib/dis.h' isn't present. */
+  error(EXIT_FAILURE, 0, "%s: the installed version of WCSLIB on this "
+        "system doesn't have the 'dis.h' header! Thus Gnuastro can't do "
+        "distortion-related operations on the world coordinate system "
+        "(WCS). To use these features, please upgrade your version "
+        "of WCSLIB and re-build Gnuastro", __func__);
+#endif
   return GAL_WCS_DISTORTION_INVALID;
 }
 
@@ -421,6 +505,7 @@ struct wcsprm *
 gal_wcs_distortion_convert(struct wcsprm *inwcs, int outdisptype,
                            size_t *fitsize)
 {
+#if GAL_CONFIG_HAVE_WCSLIB_DIS_H
   struct wcsprm *outwcs=NULL;
   int indisptype=gal_wcs_distortion_identify(inwcs);
 
@@ -458,6 +543,9 @@ gal_wcs_distortion_convert(struct wcsprm *inwcs, int outdisptype,
         switch(outdisptype)
           {
           case GAL_WCS_DISTORTION_SIP:
+            if(fitsize==NULL)
+              error(EXIT_FAILURE, 0, "%s: the size array is necessary "
+                    "for this conversion", __func__);
             outwcs=gal_wcsdistortion_tpv_to_sip(inwcs, fitsize);
             break;
           default:
@@ -487,6 +575,15 @@ gal_wcs_distortion_convert(struct wcsprm *inwcs, int outdisptype,
 
   /* Return the converted WCS. */
   return outwcs;
+#else
+  /* The 'wcslib/dis.h' isn't present. */
+  error(EXIT_FAILURE, 0, "%s: the installed version of WCSLIB on this "
+        "system doesn't have the 'dis.h' header! Thus Gnuastro can't do "
+        "distortion-related operations on the world coordinate system "
+        "(WCS). To use these features, please upgrade your version "
+        "of WCSLIB and re-build Gnuastro", __func__);
+  return NULL;
+#endif
 }
 
 

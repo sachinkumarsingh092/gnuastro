@@ -50,19 +50,27 @@ libgnuastro_la_LIBADD = $(top_builddir)/bootstrapped/lib/libgnu.la
 
 
 
+# Conditional compilation
+if COND_HASWCSDIS_H
+  MAYBE_WCSDISTORTION = wcsdistortion.c
+endif
+
+
+
+
 
 # Specify the library .c files
-libgnuastro_la_SOURCES = arithmetic.c arithmetic-and.c arithmetic-bitand.c \
-  arithmetic-bitlsh.c arithmetic-bitor.c arithmetic-bitrsh.c               \
-  arithmetic-bitxor.c arithmetic-divide.c arithmetic-eq.c arithmetic-ge.c  \
-  arithmetic-gt.c arithmetic-le.c arithmetic-lt.c arithmetic-minus.c       \
-  arithmetic-modulo.c arithmetic-multiply.c arithmetic-ne.c                \
-  arithmetic-or.c arithmetic-plus.c array.c binary.c blank.c box.c         \
-  checkset.c convolve.c cosmology.c data.c eps.c fits.c git.c              \
-  interpolate.c jpeg.c label.c list.c match.c options.c pdf.c              \
-  permutation.c pointer.c polygon.c qsort.c dimension.c speclines.c        \
-  statistics.c table.c tableintern.c threads.c tiff.c tile.c               \
-  tile-internal.c timing.c txt.c type.c units.c wcs.c wcsdistortion.c
+libgnuastro_la_SOURCES = $(MAYBE_WCSDISTORTION) arithmetic.c \
+  arithmetic-and.c arithmetic-bitand.c arithmetic-bitlsh.c \
+  arithmetic-bitor.c arithmetic-bitrsh.c arithmetic-bitxor.c \
+  arithmetic-divide.c arithmetic-eq.c arithmetic-ge.c arithmetic-gt.c \
+  arithmetic-le.c arithmetic-lt.c arithmetic-minus.c arithmetic-modulo.c \
+  arithmetic-multiply.c arithmetic-ne.c arithmetic-or.c arithmetic-plus.c \
+  array.c binary.c blank.c box.c checkset.c convolve.c cosmology.c data.c \
+  eps.c fits.c git.c interpolate.c jpeg.c label.c list.c match.c options.c \
+  pdf.c permutation.c pointer.c polygon.c qsort.c dimension.c speclines.c \
+  statistics.c table.c tableintern.c threads.c tiff.c tile.c \
+  tile-internal.c timing.c txt.c type.c units.c wcs.c
 
 
 
@@ -72,17 +80,17 @@ libgnuastro_la_SOURCES = arithmetic.c arithmetic-and.c arithmetic-bitand.c \
 # in the $(headersdir) directory. Some of the header files don't need to be
 # installed.
 headersdir=$(top_srcdir)/lib/gnuastro
-pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h          \
-  $(headersdir)/array.h $(headersdir)/binary.h $(headersdir)/blank.h       \
-  $(headersdir)/box.h $(headersdir)/convolve.h $(headersdir)/cosmology.h   \
-  $(headersdir)/data.h $(headersdir)/dimension.h $(headersdir)/eps.h       \
-  $(headersdir)/fits.h $(headersdir)/git.h $(headersdir)/interpolate.h     \
-  $(headersdir)/jpeg.h $(headersdir)/label.h $(headersdir)/list.h          \
-  $(headersdir)/match.h $(headersdir)/pdf.h $(headersdir)/permutation.h    \
-  $(headersdir)/pointer.h $(headersdir)/polygon.h $(headersdir)/qsort.h    \
-  $(headersdir)/speclines.h $(headersdir)/statistics.h                     \
-  $(headersdir)/table.h $(headersdir)/threads.h $(headersdir)/tiff.h       \
-  $(headersdir)/tile.h $(headersdir)/txt.h $(headersdir)/type.h            \
+pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h \
+  $(headersdir)/array.h $(headersdir)/binary.h $(headersdir)/blank.h \
+  $(headersdir)/box.h $(headersdir)/convolve.h $(headersdir)/cosmology.h \
+  $(headersdir)/data.h $(headersdir)/dimension.h $(headersdir)/eps.h \
+  $(headersdir)/fits.h $(headersdir)/git.h $(headersdir)/interpolate.h \
+  $(headersdir)/jpeg.h $(headersdir)/label.h $(headersdir)/list.h \
+  $(headersdir)/match.h $(headersdir)/pdf.h $(headersdir)/permutation.h \
+  $(headersdir)/pointer.h $(headersdir)/polygon.h $(headersdir)/qsort.h \
+  $(headersdir)/speclines.h $(headersdir)/statistics.h \
+  $(headersdir)/table.h $(headersdir)/threads.h $(headersdir)/tiff.h \
+  $(headersdir)/tile.h $(headersdir)/txt.h $(headersdir)/type.h \
   $(headersdir)/units.h $(headersdir)/wcs.h
 
 
@@ -95,21 +103,21 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h          \
 # will not distributed, so we need to explicitly tell Automake to
 # distribute them here.
 internaldir=$(top_srcdir)/lib/gnuastro-internal
-EXTRA_DIST = gnuastro.pc.in $(headersdir)/README $(internaldir)/README  \
-  $(internaldir)/arithmetic-and.h $(internaldir)/arithmetic-binary.h    \
+EXTRA_DIST = gnuastro.pc.in $(headersdir)/README $(internaldir)/README \
+  $(internaldir)/arithmetic-and.h $(internaldir)/arithmetic-binary.h \
   $(internaldir)/arithmetic-bitand.h $(internaldir)/arithmetic-bitlsh.h \
-  $(internaldir)/arithmetic-bitor.h $(internaldir)/arithmetic-bitrsh.h  \
+  $(internaldir)/arithmetic-bitor.h $(internaldir)/arithmetic-bitrsh.h \
   $(internaldir)/arithmetic-bitxor.h $(internaldir)/arithmetic-divide.h \
-  $(internaldir)/arithmetic-eq.h $(internaldir)/arithmetic-ge.h         \
-  $(internaldir)/arithmetic-gt.h $(internaldir)/arithmetic-internal.h   \
-  $(internaldir)/arithmetic-le.h $(internaldir)/arithmetic-lt.h         \
-  $(internaldir)/arithmetic-minus.h $(internaldir)/arithmetic-modulo.h  \
-  $(internaldir)/arithmetic-multiply.h $(internaldir)/arithmetic-ne.h   \
-  $(internaldir)/arithmetic-or.h $(internaldir)/arithmetic-plus.h       \
-  $(internaldir)/checkset.h $(internaldir)/commonopts.h                 \
-  $(internaldir)/config.h.in $(internaldir)/fixedstringmacros.h         \
-  $(internaldir)/options.h $(internaldir)/tableintern.h                 \
-  $(internaldir)/tile-internal.h $(internaldir)/timing.h                \
+  $(internaldir)/arithmetic-eq.h $(internaldir)/arithmetic-ge.h \
+  $(internaldir)/arithmetic-gt.h $(internaldir)/arithmetic-internal.h \
+  $(internaldir)/arithmetic-le.h $(internaldir)/arithmetic-lt.h \
+  $(internaldir)/arithmetic-minus.h $(internaldir)/arithmetic-modulo.h \
+  $(internaldir)/arithmetic-multiply.h $(internaldir)/arithmetic-ne.h \
+  $(internaldir)/arithmetic-or.h $(internaldir)/arithmetic-plus.h \
+  $(internaldir)/checkset.h $(internaldir)/commonopts.h \
+  $(internaldir)/config.h.in $(internaldir)/fixedstringmacros.h \
+  $(internaldir)/options.h $(internaldir)/tableintern.h \
+  $(internaldir)/tile-internal.h $(internaldir)/timing.h \
   $(internaldir)/wcsdistortion.h
 
 
@@ -131,13 +139,15 @@ CLEANFILES = gnuastro.pc gnuastro/config.h
 gnuastro/config.h: Makefile $(internaldir)/config.h.in
 	rm -f $@ $@.tmp
 	$(MKDIR_P) gnuastro
-	$(SED) -e 's|@VERSION[@]|$(VERSION)|g'                            \
-	       -e 's|@HAVE_LIBGIT2[@]|$(HAVE_LIBGIT2)|g'                  \
-	       -e 's|@HAVE_WCSLIB_VERSION[@]|$(HAVE_WCSLIB_VERSION)|g'    \
-	       -e 's|@HAVE_PTHREAD_BARRIER[@]|$(HAVE_PTHREAD_BARRIER)|g'  \
-	       -e 's|@SIZEOF_LONG[@]|$(SIZEOF_LONG)|g'                    \
-	       -e 's|@SIZEOF_SIZE_T[@]|$(SIZEOF_SIZE_T)|g'                \
-	       -e 's|@RESTRICT_REPLACEMENT[@]|$(RESTRICT_REPLACEMENT)|g'  \
+	$(SED) -e 's|@VERSION[@]|$(VERSION)|g' \
+	       -e 's|@HAVE_LIBGIT2[@]|$(HAVE_LIBGIT2)|g' \
+	       -e 's|@HAVE_WCSLIB_VERSION[@]|$(HAVE_WCSLIB_VERSION)|g' \
+	       -e 's|@HAVE_WCSLIB_DIS_H[@]|$(HAVE_WCSLIB_DIS_H)|g' \
+	       -e 's|@HAVE_WCSLIB_MJDREF[@]|$(HAVE_WCSLIB_MJDREF)|g' \
+	       -e 's|@HAVE_PTHREAD_BARRIER[@]|$(HAVE_PTHREAD_BARRIER)|g' \
+	       -e 's|@SIZEOF_LONG[@]|$(SIZEOF_LONG)|g' \
+	       -e 's|@SIZEOF_SIZE_T[@]|$(SIZEOF_SIZE_T)|g' \
+	       -e 's|@RESTRICT_REPLACEMENT[@]|$(RESTRICT_REPLACEMENT)|g' \
                $(internaldir)/config.h.in >> $@.tmp
 	chmod a-w $@.tmp
 	mv $@.tmp $@

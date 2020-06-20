@@ -18475,6 +18475,14 @@ However, only more recent versions of WCSLIB also provide its version number.
 If the WCSLIB that is installed on the system provides its version (through the possibly existing @code{wcslib_version} function), this macro will have a value of one, otherwise it will have a value of zero.
 @end deffn
 
+@deffn Macro GAL_CONFIG_HAVE_WCSLIB_DIS_H
+This macro has a value of 1 if the host's WCSLIB has the @file{wcslib/dis.h} header for distortion-related operations.
+@end deffn
+
+@deffn Macro GAL_CONFIG_HAVE_WCSLIB_MJDREF
+This macro has a value of 1 if the host's WCSLIB reads and stores the @file{MJDREF} FITS header keyword as part of its core @code{wcsprm} structure.
+@end deffn
+
 @deffn Macro GAL_CONFIG_HAVE_PTHREAD_BARRIER
 The POSIX threads standard define barriers as an optional requirement.
 Therefore, some operating systems choose to not include it.
@@ -22182,6 +22190,11 @@ simultaneously (over multiple threads).
 the HDU/extension @code{hdu} of the file @code{filename}. Also put the
 number of coordinate representations found into the space that @code{nwcs}
 points to. Please see @code{gal_wcs_read_fitsptr} for more.
+@end deftypefun
+
+@deftypefun gal_wcs_write (struct wcsprm @code{*wcs}, char @code{*filename}, gal_fits_list_key_t @code{*headers}, char @code{*program_string})
+Write the given WCS structure into the second extension of an empty FITS header.
+The first/primary extension will be empty like the default format of all Gnuastro outputs.
 @end deftypefun
 
 @deftypefun {struct wcsprm *} gal_wcs_copy (struct wcsprm @code{*wcs})

@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <wcslib/wcs.h>
 
 #include <gnuastro/data.h>
+#include <gnuastro/fits.h>
 
 /* Assumed floating point error in the WCS-related functionality. */
 #define GAL_WCS_FLTERROR 1e-12
@@ -84,6 +85,15 @@ struct wcsprm *
 gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
              size_t hendwcs, int *nwcs);
 
+
+
+
+/*************************************************************
+ ***********               Write WCS               ***********
+ *************************************************************/
+void
+gal_wcs_write(struct wcsprm *wcs, char *filename,
+              gal_fits_list_key_t *headers, char *program_string);
 
 
 

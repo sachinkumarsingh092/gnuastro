@@ -444,6 +444,23 @@ AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_WCSLIB_VERSION], [$has_wcslib_version],
 AC_SUBST(HAVE_WCSLIB_VERSION, [$has_wcslib_version])
 
 
+# If the WCS library supports distortion
+AC_CHECK_HEADER([wcslib/dis.h], [has_wcslib_dis_h=1],
+                [has_wcslib_dis_h=0; anywarnings=yes])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_WCSLIB_DIS_H], [$has_wcslib_dis_h],
+                   [WCSLIB has distortion header in dis.h])
+AC_SUBST(HAVE_WCSLIB_DIS_H, [$has_wcslib_dis_h])
+AM_CONDITIONAL([COND_HASWCSDIS_H], [test "x$has_wcslib_dis_h" = "x1"])
+
+
+# If the WCS library has the 'mjdref' element.
+AC_CHECK_MEMBER([struct wcsprm.mjdref], [has_wcslib_mjdref=1],
+                [has_wcslib_mjdref=0], [[#include <wcslib/wcs.h>]])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_WCSLIB_MJDREF], [$has_wcslib_mjdref],
+                   [WCSLIB comes with wcsprm.mjdref])
+AC_SUBST(HAVE_WCSLIB_MJDREF, [$has_wcslib_mjdref])
+
+
 # If the pthreads library has 'pthread_barrier_wait'.
 AC_CHECK_LIB([pthread], [pthread_barrier_wait], [has_pthread_barrier=1],
              [has_pthread_barrier=0])
@@ -976,6 +993,15 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO(["    have less functionality afterwards. We thus recommend building"])
                AS_ECHO(["    and installing a more recent version of GSL (version >= 2.0,"])
                AS_ECHO(["    released in October 2015)."])
+               AS_ECHO([]) ])
+
+        AS_IF([test "x$has_wcslib_dis_h" = "x0"],
+              [dependency_notice=yes
+               AS_ECHO(["  - WCSLIB (https://www.atnf.csiro.au/people/mcalabre/WCS) version"])
+               AS_ECHO(["    on this system doesn't support distortions (i.e., it doesn't"])
+               AS_ECHO(["    have 'dis.h'. This build won't crash but Gnuastro will not be able"])
+               AS_ECHO(["    to do distortion-related operations. If you don't need such"])
+               AS_ECHO(["    operations you can ignore this warning."])
                AS_ECHO([]) ])
 
         AS_IF([test "x$has_libjpeg" = "xno"],
