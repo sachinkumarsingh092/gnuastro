@@ -216,7 +216,7 @@ wcsdistortion_get_sipparams(struct wcsprm *wcs, double cd[2][2],
           if ( keyp->field == NULL ) continue;
 
           cp = strchr(keyp->field, '.') + 1;
-          if (strncmp(cp, "SIP.REV.", 8) != 0) continue;
+          if (strncmp(cp, "SIP.FWD.", 8) != 0) continue;
           cp += 8;
 
           sscanf(cp, "%ld_%ld", &m, &n);
