@@ -276,7 +276,8 @@ gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
  *************************************************************/
 void
 gal_wcs_write(struct wcsprm *wcs, char *filename,
-              gal_fits_list_key_t *headers, char *program_string)
+              char *extname, gal_fits_list_key_t *headers,
+              char *program_string)
 {
   char *wcsstr;
   size_t ndim=0;
@@ -305,6 +306,9 @@ gal_wcs_write(struct wcsprm *wcs, char *filename,
   fits_delete_key(fptr, "COMMENT", &status);
   fits_delete_key(fptr, "COMMENT", &status);
   status=0;
+
+  if(extname)
+    fits_write_key(fptr, TSTRING, "EXTNAME", extname, "", &status);
 
   /* Decompose the 'PCi_j' matrix and 'CDELTi' vector. */
   gal_wcs_decompose_pc_cdelt(wcs);

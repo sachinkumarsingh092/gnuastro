@@ -93,7 +93,8 @@ gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
  *************************************************************/
 void
 gal_wcs_write(struct wcsprm *wcs, char *filename,
-              gal_fits_list_key_t *headers, char *program_string);
+              char *extname, gal_fits_list_key_t *headers,
+              char *program_string);
 
 
 

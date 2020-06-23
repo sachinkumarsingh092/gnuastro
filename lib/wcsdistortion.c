@@ -74,59 +74,72 @@ static void
 wcsdistortion_get_tpvparams(struct wcsprm *wcs, double cd[2][2],
                             double *pv1, double *pv2)
 {
-  size_t pv_m=0;
-  size_t i, j, k,index=0;
+  const char *cp;
+  double *temp_cd=NULL;
+  struct dpkey  *keyp=NULL;
+  size_t i, j, k=0, index=0;
+  struct disprm *disseq=NULL;
 
   /* Make sure a WCS structure is actually given. */
   if(wcs==NULL)
     error(EXIT_FAILURE, 0, "%s: input WCS structure is NULL", __func__);
 
-  for(i=0,k=0; i<2; ++i)
+  /* For easy reading. */
+  disseq=wcs->lin.disseq;
+  keyp=disseq->dp;
+
+
+  /* Fill the 2-times allocated CD array (cd[][]). Note that the required
+    CD matix is extracted using the `gal_wcs_wrap_matrix` as a single
+    allocated array (temp_cd[]), that is then used to fill cd[][]. */
+  temp_cd=gal_wcs_warp_matrix(wcs);
+  for(i=0; i<2; ++i)
     for(j=0; j<2; ++j)
       {
         /* If a value is present store it, else store 0.*/
-        if((wcs->cd)[i] != 0)   cd[i][j]=(wcs->cd)[k++];
-        else                    cd[i][j]=0;
+        if(temp_cd[k] != 0)   cd[i][j]=temp_cd[k++];
+        else                  cd[i][j]=0;
 
         /* For a check:
-        printf("CD%ld_%ld\t%.10lf\n", i+1, j+1, cd[i][j]);
+        printf("CD%ld_%ld\t%.10E\n", i+1, j+1, cd[i][j]);
         */
       }
 
-  for(j=0; j < wcs->npvmax; ++j)
+  for(i=0; i<disseq->ndp; ++i, ++keyp)
     {
-      if(wcs->pv[j].i == 1)
+      /* For axis1. */
+      if (keyp->j == 1)
         {
-          /*pv_m is used to check the index in the header.*/
-          pv_m=wcs->pv[j].m;
+          /* Ignore any missing keyvalues. */
+          if ( keyp->field == NULL ) continue;
+          cp = strchr(keyp->field, '.') + 1;
+          if (strncmp(cp, "TPV.", 4) != 0) continue;
+          cp += 4;
 
-          /* `index` is the index of the pv* array.*/
-          index = pv_m;
-
-          if( wcs->pv[pv_m].value != 0 && index == pv_m )
-            pv1[index]=wcs->pv[j].value;
-          else
-            pv1[index]=0;
+          sscanf(cp, "%ld", &index);
+          pv1[index]=disseq->dp[i].value.f;
 
           /* For a check
-          printf("PV1_%d\t%.10f\n", pv_m, pv1[k]);
+          printf("PV1_%ld\t%.10f\n", index, pv1[index]);
           */
         }
-      else if(wcs->pv[j].i == 2)
+
+      /* For axis2. */
+      else if (keyp->j == 2)
         {
-          /*pv_m is used to check the index in the header.*/
-          pv_m=wcs->pv[j].m;
+          /* Ignore any missing keyvalues. */
+          if ( keyp->field == NULL ) continue;
 
-          /* `index` is the index of the pv* array.*/
-          index = pv_m;
+          cp = strchr(keyp->field, '.') + 1;
+          if (strncmp(cp, "TPV.", 4) != 0) continue;
+          cp += 4;
 
-          if( wcs->pv[pv_m].value != 0 && index == pv_m )
-            pv2[index]=wcs->pv[j].value;
-          else
-            pv2[index]=0;
+          sscanf(cp, "%ld", &index);
+
+          pv2[index]=disseq->dp[i].value.f;
 
           /* For a check
-          printf("PV2_%d\t%.10f\n", pv_m, pv2[k]);
+          printf("PV2_%ld\t%.10f\n", index, pv2[index]);
           */
         }
       else
@@ -513,7 +526,7 @@ wcsdistortion_intermidate_tpveq(double cd[2][2], double *pv1, double *pv2,
 
   /* For a check:
   {
-    size i, j;
+    size_t i, j;
     for(i=0; i<=4; ++i)
       for(j=0;j<=4;++j)
 	{
@@ -1063,14 +1076,13 @@ wcsdistortion_calcsip(size_t axis, size_t m, size_t n, double tpvu[8][8],
   double sip_coeff;
   if(     axis == 1) sip_coeff=tpvu[m][n];
   else if(axis == 2) sip_coeff=tpvv[m][n];
-  else error(EXIT_FAILURE, 0, "%s: axis does not exists! ", __func__);
+  else error(EXIT_FAILURE, 0, "%s: axis %zu does not exists! ",
+             __func__, axis);
 
   if(      (axis == 1) && (m == 1) && (n == 0) ) sip_coeff = sip_coeff - 1.0;
   else if( (axis == 2) && (m == 0) && (n == 1) ) sip_coeff = sip_coeff - 1.0;
-  else error(EXIT_FAILURE, 0, "%s: axis does not exists! ", __func__);
 
   return sip_coeff;
-
 }
 
 
@@ -1432,7 +1444,7 @@ wcsdistortion_add_sipkeywords(struct wcsprm *wcs, size_t *fitsize,
   int size = wcs->naxis;
   size_t a_order=0, b_order=0;
   size_t ap_order=0, bp_order=0;
-  size_t m, n, num=0, numkey=100;
+  size_t m, n, num=0, numkey=200;
   double ap_coeff[5][5], bp_coeff[5][5];
   char *fullheader, fmt[50], sipkey[8], keyaxis[9], pcaxis[10];
 

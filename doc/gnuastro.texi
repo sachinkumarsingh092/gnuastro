@@ -22192,9 +22192,11 @@ number of coordinate representations found into the space that @code{nwcs}
 points to. Please see @code{gal_wcs_read_fitsptr} for more.
 @end deftypefun
 
-@deftypefun gal_wcs_write (struct wcsprm @code{*wcs}, char @code{*filename}, gal_fits_list_key_t @code{*headers}, char @code{*program_string})
+@deftypefun gal_wcs_write (struct wcsprm @code{*wcs}, char @code{*filename}, char @code{*extname}, gal_fits_list_key_t @code{*headers}, char @code{*program_string})
 Write the given WCS structure into the second extension of an empty FITS header.
 The first/primary extension will be empty like the default format of all Gnuastro outputs.
+When @code{extname!=NULL} it will be used as the FITS extension name.
+Any set of extra headers can also be written through the @code{headers} list and if @code{program_string!=NULL} it will be used in a commented keyword title just above the written version information.
 @end deftypefun
 
 @deftypefun {struct wcsprm *} gal_wcs_copy (struct wcsprm @code{*wcs})

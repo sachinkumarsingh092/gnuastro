@@ -442,9 +442,10 @@ keywords_distortion_wcs(struct fitsparams *p)
 {
   int nwcs;
   size_t ndim, *insize;
-  gal_data_t *data=NULL;
   char *suffix, *output;
+  gal_data_t *data=NULL;
   struct wcsprm *inwcs, *outwcs;
+  size_t *dsize, defaultsize[2]={2000,2000};
 
   /* If the extension has any data, read it, otherwise just make an empty
      array. */
@@ -461,11 +462,36 @@ keywords_distortion_wcs(struct fitsparams *p)
                                p->cp.quietmmap);
     }
 
-  /* Read the input WCS structure and convert it to the desired output
-     distortion. */
+  /* Read the input's WCS and make sure one exists. */
   inwcs=gal_wcs_read(p->filename, p->cp.hdu, 0, 0, &nwcs);
-  outwcs=gal_wcs_distortion_convert(inwcs, p->distortionid,
-                                    data?data->dsize:NULL);
+  if(inwcs==NULL)
+    error(EXIT_FAILURE, 0, "%s (hdu %s): doesn't have any WCS structure "
+          "for converting its distortion",
+          p->filename, p->cp.hdu);
+
+  /* In case there is no dataset and the conversion is between TPV to SIP,
+     we need to set a default size and use that for the conversion, but we
+     also need to warn the user. */
+  if(data==NULL)
+    {
+      if( !p->cp.quiet
+          && gal_wcs_distortion_identify(inwcs)==GAL_WCS_DISTORTION_TPV
+          && p->distortionid==GAL_WCS_DISTORTION_SIP )
+        error(0, 0, "no data associated with WCS for distortion "
+              "converstion.\n\n"
+              "The requested conversion can't be done analytically, so a "
+              "solution has to be found by fitting the parameters over a "
+              "grid of pixels. We will use a default grid of %zux%zu pixels "
+              "and will proceed with the conversion. But it would be more "
+              "accurate if it is the size of the image that this WCS is "
+              "associated with",
+              defaultsize[1], defaultsize[0]);
+      dsize=defaultsize;
+    }
+  else dsize=data->dsize;
+
+  /* Do the conversion. */
+  outwcs=gal_wcs_distortion_convert(inwcs, p->distortionid, dsize);
 
   /* Set the output filename. */
   if(p->cp.output)
@@ -491,7 +517,7 @@ keywords_distortion_wcs(struct fitsparams *p)
       gal_data_free(data);
     }
   else
-    gal_wcs_write(outwcs, output, NULL, PROGRAM_NAME);
+    gal_wcs_write(outwcs, output, p->wcsdistortion, NULL, PROGRAM_NAME);
 
   /* Clean up. */
   wcsfree(inwcs);
