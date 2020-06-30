@@ -862,8 +862,11 @@ gal_polygon_vertices_sort(double *vertices, size_t n, size_t *ordinds)
   /* Now, we put the contents of A and B in the temporary array. Firstly,
      we put the contents of A and then save the last index of A (stored in
      i) and continue from that index while copying from B(using j). */
-  for(i=0; i<A_size; i++) tordinds[i]=A[i];
-  for(j=0; j<B_size; j++) tordinds[i++]=B[j];
+  for(i=0; i<A_size+B_size; i++)
+    {
+      tordinds[i].x=vertices[i*2];
+      tordinds[i].y=vertices[i*2+1];
+    }
 
   /* Now sort the arrays A and B w.r.t their x axis, sorting A in ascending
      order and B in descending order. */
@@ -874,6 +877,11 @@ gal_polygon_vertices_sort(double *vertices, size_t n, size_t *ordinds)
   for(i=0; i<A_size; i++) sorted[i]=A[i];
   for(j=0; j<B_size; j++) sorted[i++]=B[j];
 
+  /* For a check.
+  for(i=0; i<A_size+B_size; i++)
+    printf("sorted array := %lf %lf\n", sorted[i], sorted[i*2+1]);
+  */
+
   /* The temporary array is now used to find the location of points stored
      in sorted array and assign index in ordinds accordingly.*/
   for(i=0; i<n; i++)
@@ -883,4 +891,8 @@ gal_polygon_vertices_sort(double *vertices, size_t n, size_t *ordinds)
           ordinds[j]=i;
           break;
         }
+
+  /* For a check.
+  for(i=0;i<n;i++) printf("%ld\n", ordinds[i]);
+  */
 }
