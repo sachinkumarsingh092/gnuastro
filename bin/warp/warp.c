@@ -336,8 +336,9 @@ warp_preparations(struct warpparams *p)
   p->outfpixval[1]=nearestint_halfhigher(ymin);
 
   /* If we have translation, the 'dsize's and 'outfpixval's should be
-     corrected. */
-  if(matrix[2]!=0.0f || matrix[5]!=0.0f)
+     corrected. Note that centeroncorner is also a translation operation,
+     but in that scenario, we don't want this feature! */
+  if( p->centeroncorner==0 && (matrix[2]!=0.0f || matrix[5]!=0.0f) )
     {
       dsize[1] += abs(matrix[2])+1;
       dsize[0] += abs(matrix[5])+1;

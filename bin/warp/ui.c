@@ -698,6 +698,16 @@ ui_matrix_from_modular(struct warpparams *p)
           break;
 
         case UI_KEY_TRANSLATE:
+          /* Translate cannot be called with '--centeroncorner'. */
+          if(p->centeroncorner)
+            error(EXIT_FAILURE, 0, "'--translate' and '--centeroncorner' "
+                  "(which is a type of translation) cannot be called "
+                  "together. To acheive the effect of --centeroncorner, "
+                  "start the warp steps with a translation of 0.5 to move "
+                  "the coordinate center to the corner of a pixel in each "
+                  "dimension");
+
+          /* Build the translation matrix. */
           module[0]=1.0f;       module[1]=0.0f;     module[2]=v1;
           module[3]=0.0f;       module[4]=1.0f;     module[5]=v2;
           module[6]=0.0f;       module[7]=0.0f;     module[8]=1.0f;
