@@ -573,7 +573,8 @@ CosmicCalculator
 Invoking CosmicCalculator
 
 * CosmicCalculator input options::  Options to specify input conditions.
-* CosmicCalculator specific calculations::  Requesting specific outputs.
+* CosmicCalculator basic cosmology calculations::  Like distance modulus, distances and etc.
+* CosmicCalculator spectral line calculations::  How they get affected by redshift.
 
 Library
 
@@ -17425,6 +17426,10 @@ $ astcosmiccal -z0.4 -LAg
 ## Assume Lambda and matter density of 0.7 and 0.3 and print
 ## basic cosmological parameters for redshift 2.1:
 $ astcosmiccal -l0.7 -m0.3 -z2.1
+
+## Print wavelength of all pre-defined spectral lines when
+## Lyman-alpha is observed at 4000 Angstroms.
+$ astcosmiccal --obsline=lyalpha,4000 --listlinesatz
 @end example
 
 The input parameters (for example current matter density, etc) can be given as command-line options or in the configuration files, see @ref{Configuration files}.
@@ -17432,18 +17437,22 @@ For a definition of the different parameters, please see the sections prior to t
 If no redshift is given, CosmicCalculator will just print its input parameters and abort.
 For a full list of the input options, please see @ref{CosmicCalculator input options}.
 
-When only a redshift is given, CosmicCalculator will print all calculations (one per line) with some explanations before each.
+Without any particular output requested (and only a given redshift), CosmicCalculator will print all basic cosmological calculations (one per line) with some explanations before each.
 This can be good when you want a general feeling of the conditions at a specific redshift.
-Alternatively, if any specific calculations are requested, only the requested values will be calculated and printed with one character space between them.
-In this case, no description will be printed.
-See @ref{CosmicCalculator specific calculations} for the full list of these options along with some explanations how when/how they can be useful.
+Alternatively, if any specific calculation(s) are requested (its possible to call more than one), only the requested value(s) will be calculated and printed with one character space between them.
+In this case, no description or units will be printed.
+See @ref{CosmicCalculator basic cosmology calculations} for the full list of these options along with some explanations how when/how they can be useful.
+
+Another common operation in observational cosmology is dealing with spectral lines at different redshifts.
+CosmicCalculator also has features to help in such sitatuions, please see @ref{CosmicCalculator spectral line calculations}.
 
 @menu
 * CosmicCalculator input options::  Options to specify input conditions.
-* CosmicCalculator specific calculations::  Requesting specific outputs.
+* CosmicCalculator basic cosmology calculations::  Like distance modulus, distances and etc.
+* CosmicCalculator spectral line calculations::  How they get affected by redshift.
 @end menu
 
-@node CosmicCalculator input options, CosmicCalculator specific calculations, Invoking astcosmiccal, Invoking astcosmiccal
+@node CosmicCalculator input options, CosmicCalculator basic cosmology calculations, Invoking astcosmiccal, Invoking astcosmiccal
 @subsubsection CosmicCalculator input options
 
 The inputs to CosmicCalculator can be specified with the following options:
@@ -17451,7 +17460,9 @@ The inputs to CosmicCalculator can be specified with the following options:
 
 @item -z FLT
 @itemx --redshift=FLT
-The redshift of interest. This cannot be called with @option{--obsline}.
+The redshift of interest.
+You can also specify the target redshift from spectral lines and their observed wavelengths, for that see @option{--obsline}.
+Note that this option cannot be called with @option{--obsline}.
 
 @item -H FLT
 @itemx --H0=FLT
@@ -17469,30 +17480,12 @@ Matter (including massive neutrinos) density divided by the critical density in 
 @itemx --oradiation=FLT
 Radiation density divided by the critical density in the current Universe (@mymath{\Omega_{r,0}}).
 
-@item --listlines
-List the pre-defined spectral line wavelengths and names on standard output, then abort CosmicCalculator.
-When this option is given, other operations on the command-line will be ignored.
-This is convenient when you forget the specific name of the spectral line used within Gnuastro.
-
-These names can be used with the options that deal with spectral lines, for example @option{--obsline} (below) and @option{--lineatz} (@ref{CosmicCalculator specific calculations}).
-
-The format of the output list is a two-column table, with Gnuastro's text table format (see @ref{Gnuastro text table format}).
-Therefore, if you are only looking for lines in a specific range, you can pipe the output into Gnuastro's table program and use its @option{--range} option on the @code{wavelength} (first) column.
-For example, if you only want to see the lines between 4000 and 6000 Angstroms, you can run this command:
-
-@example
-$ astcosmiccal --listlines \
-               | asttable --range=wavelength,4000,6000
-@end example
-
-@noindent
-And if you want to use the list later and have it as a table in a file, you can easily add the @option{--output} (or @option{-o}) option to the @command{asttable} command, and specify the filename, for example @option{--output=lines.fits} or @option{--output=lines.txt}.
-
 @item -O STR/FLT,FLT
 @itemx --obsline=STR/FLT,FLT
 @cindex Rest-frame wavelength
 @cindex Wavelength, rest-frame
 Find the redshift to use in next steps based on the rest-frame and observed wavelengths of a line.
+This option can be used instead of @option{--redshift}.
 Wavelengths are assumed to be in Angstroms.
 The first argument identifies the line.
 It can be one of the standard names below, or any rest-frame wavelength in Angstroms.
@@ -17616,8 +17609,8 @@ You can get this list on the command-line with the @option{--listlines}.
 
 
 
-@node CosmicCalculator specific calculations,  , CosmicCalculator input options, Invoking astcosmiccal
-@subsubsection CosmicCalculator specific calculations
+@node CosmicCalculator basic cosmology calculations, CosmicCalculator spectral line calculations, CosmicCalculator input options, Invoking astcosmiccal
+@subsubsection CosmicCalculator basic cosmology calculations
 By default, when no specific calculations are requested, CosmicCalculator will print a complete set of all its calculators (one line for each calculation, see @ref{Invoking astcosmiccal}).
 The full list of calculations can be useful when you don't want any specific value, but just a general view.
 In other contexts (for example in a batch script or during a discussion), you know exactly what you want and don't want to be distracted by all the extra information.
@@ -17658,7 +17651,7 @@ The other calculations will also be done, but they are so fast that you will not
 $ astcosmiccal --redshift=0.832 | grep volume
 @end example
 
-The full list of CosmicCalculator's specific calculations is present below.
+The full list of CosmicCalculator's specific calculations is present below in two groups: basic cosmology calculations and those related to spectral lines.
 In case you have forgot the units, you can use the @option{--help} option which has the units along with a short description.
 
 @table @option
@@ -17722,6 +17715,55 @@ The critical density at given redshift in grams per centimeter-cube (@mymath{g/c
 @itemx --onlyvolume
 The comoving volume in Megaparsecs cube (Mpc@mymath{^3}) until the desired redshift based on the input parameters.
 
+@end table
+
+
+
+
+@node CosmicCalculator spectral line calculations,  , CosmicCalculator basic cosmology calculations, Invoking astcosmiccal
+@subsubsection CosmicCalculator spectral line calculations
+
+@cindex Rest frame wavelength
+At different redhifts, observed spectral lines are shifted compared to their rest frame wavelengths with this simple relation: @mymath{\lambda_{obs}=\lambda_{rest}(1+z)}.
+Although this relation is very simple and can be done for one line in the head (or a simple calculator!), it slowly becomes tiring when dealing with a lot of lines or redshifts, or some precision is necessary.
+The options in this section are thus provided to greatly simplify usage of this simple equation, and also helping by storing a list of pre-defined spectral line wavelengths.
+
+For example if you want to know the wavelength of the @mymath{H\alpha} line (at 6562.8 Angstroms in rest frame), when @mymath{Ly\alpha} is at 8000 Angstroms, you can call CosmicCalculator like the first example below.
+And if you want the wavelength of all pre-defined spectral lines at this redshift, you can use the second command.
+
+@example
+$ astcosmiccal --obsline=lyalpha,8000 --lineatz=halpha
+$ astcosmiccal --obsline=lyalpha,8000 --listlinesatz
+@end example
+
+Bellow you can see the printed/output calculations of CosmicCalculator that are related to spectral lines.
+Note that @option{--obsline} is an input parameter, so its discussed (with the full list of known lines) in @ref{CosmicCalculator input options}.
+
+@table @option
+
+@item --listlines
+List the pre-defined rest frame spectral line wavelengths and their names on standard output, then abort CosmicCalculator.
+When this option is given, other operations on the command-line will be ignored.
+This is convenient when you forget the specific name of the spectral line used within Gnuastro, or when you forget the exact wavelength of a certain line.
+
+These names can be used with the options that deal with spectral lines, for example @option{--obsline} and @option{--lineatz} (@ref{CosmicCalculator basic cosmology calculations}).
+
+The format of the output list is a two-column table, with Gnuastro's text table format (see @ref{Gnuastro text table format}).
+Therefore, if you are only looking for lines in a specific range, you can pipe the output into Gnuastro's table program and use its @option{--range} option on the @code{wavelength} (first) column.
+For example, if you only want to see the lines between 4000 and 6000 Angstroms, you can run this command:
+
+@example
+$ astcosmiccal --listlines \
+               | asttable --range=wavelength,4000,6000
+@end example
+
+@noindent
+And if you want to use the list later and have it as a table in a file, you can easily add the @option{--output} (or @option{-o}) option to the @command{asttable} command, and specify the filename, for example @option{--output=lines.fits} or @option{--output=lines.txt}.
+
+@item --listlinesatz
+Similar to @option{--listlines} (above), but the printed wavelength is not in the rest frame, but redshifted to the given redshift.
+Recall that the redshift can be specified by @option{--redshift} directly or by @option{--obsline}, see @ref{CosmicCalculator input options}.
+
 @item -i STR/FLT
 @itemx --lineatz=STR/FLT
 The wavelength of the specified line at the redshift given to CosmicCalculator.
@@ -17731,15 +17773,6 @@ In the former case (when a name is given), the returned number is in units of An
 In the latter (when a number is given), the returned value is the same units of the input number (assuming its a wavelength).
 
 @end table
-
-
-
-
-
-
-
-
-
 
 
 

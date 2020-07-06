@@ -388,6 +388,19 @@ ui_read_check_only_options(struct cosmiccalparams *p)
           "and radiation ('oradiation') densities are given as %.8f, %.8f, "
           "%.8f", sum, p->olambda, p->omatter, p->oradiation);
 
+  /* Make sure that '--listlines' and '--listlinesatz' aren't called
+     together. */
+  if(p->listlines && p->listlinesatz)
+    error(EXIT_FAILURE, 0, "'--listlines' and '--listlinesatz' can't be "
+          "called together");
+
+  /* Make sure that atleast one of '--redshift' or '--obsline' are given
+     for the running redshift. Except when '--listlines' is used (that
+     doesn't need any redshift). */
+  if(isnan(p->redshift) && p->obsline==NULL && p->listlines==0)
+    error(EXIT_FAILURE, 0, "no redshift specified! Please use '--redshift' "
+          "or '--obsline' to specify a redshift");
+
   /* Make sure that '--redshift' and '--obsline' aren't called together. */
   if(!isnan(p->redshift) && p->obsline)
     error(EXIT_FAILURE, 0, "'--redshift' and '--obsline' cannot be called "
@@ -421,13 +434,25 @@ ui_list_lines(struct cosmiccalparams *p)
 {
   size_t i;
 
-  /* First print the metadata */
-  printf("# Column 1: Wavelength [Angstrom,f32] Pre-defined line wavelength.\n");
-  printf("# Column 2: Name       [name,  str10] Pre-defined line name.\n");
+  /* Print basic information. Note that '--listlinesatz' is requested, also
+     print the redshift used. */
+  printf("# %s\n", PROGRAM_STRING);
+  if(p->listlinesatz)
+    printf("# Assumed redshift: %g\n", p->redshift);
+
+  /* Print column metadata. */
+  printf("# Column 1: Wavelength [Angstrom,f32] %s.\n",
+         ( p->listlinesatz
+           ? "Line wavelength at assumed redshift"
+           : "Rest frame wavelength of the line"));
+  printf("# Column 2: Name       [name,  str10] Line name in Gnuastro.\n");
 
   /* Print the line information. */
   for(i=1;i<GAL_SPECLINES_INVALID_MAX;++i)
-    printf("%-15g%s\n", gal_speclines_line_angstrom(i),
+    printf("%-15g%s\n",
+           ( p->listlinesatz
+             ? ( gal_speclines_line_angstrom(i) * (1+p->redshift) )
+             : gal_speclines_line_angstrom(i) ),
            gal_speclines_line_name(i));
 
   /* Abort the program. */
@@ -443,8 +468,10 @@ ui_preparations(struct cosmiccalparams *p)
 {
   double *obsline = p->obsline ? p->obsline->array : NULL;
 
-  /* If '--listlines' is given, print them and abort, don't continue with
-     the preparations. */
+  /* If '--listlines' is given, print them and abort the program
+     successfully, don't continue with the preparations. Note that
+     '--listlines' is the rest-frame lines. So we don't need any
+     redshift. */
   if(p->listlines)
     ui_list_lines(p);
 
@@ -460,6 +487,11 @@ ui_preparations(struct cosmiccalparams *p)
      extremely small value. NOTE: This has to be after the 'obsline'
      check.*/
   if(p->redshift==0.0f) p->redshift=MAIN_REDSHIFT_ZERO;
+
+  /* Now that we have the redshift, we can print the 'listlinesatz'
+     option. */
+  if(p->listlinesatz)
+    ui_list_lines(p);
 
   /* The list is filled out in a first-in-last-out order. By the time
      control reaches here, the list is finalized. So we should just reverse

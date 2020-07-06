@@ -33,7 +33,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Option groups particular to this program. */
 enum program_args_groups
 {
-  UI_GROUP_SPECIFIC = GAL_OPTIONS_GROUP_AFTER_COMMON,
+  UI_GROUP_BASIC = GAL_OPTIONS_GROUP_AFTER_COMMON,
+  UI_GROUP_SPECTRAL_LINES,
 };
 
 
@@ -73,6 +74,7 @@ enum option_keys_enum
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
   UI_KEY_LISTLINES           = 1000,
+  UI_KEY_LISTLINESATZ,
 };
 
 

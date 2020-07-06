@@ -115,29 +115,11 @@ struct argp_option program_options[] =
 
 
 
-    /* Output options */
-    {
-      "listlines",
-      UI_KEY_LISTLINES,
-      0,
-      0,
-      "List known spectral lines.",
-      GAL_OPTIONS_GROUP_OUTPUT,
-      &p->listlines,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-
-
-
-
-
+    /* Basic cosmology */
     {
       0, 0, 0, 0,
-      "Specific calculations",
-      UI_GROUP_SPECIFIC
+      "Basic cosmology calculations",
+      UI_GROUP_BASIC
     },
     {
       "usedredshift",
@@ -145,7 +127,7 @@ struct argp_option program_options[] =
       0,
       0,
       "Used redshift in this run.",
-      UI_GROUP_SPECIFIC,
+      UI_GROUP_BASIC,
       &p->specific,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
@@ -159,7 +141,7 @@ struct argp_option program_options[] =
       0,
       0,
       "Age of universe now (Ga: Giga Annum).",
-      UI_GROUP_SPECIFIC,
+      UI_GROUP_BASIC,
       &p->specific,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
@@ -173,7 +155,7 @@ struct argp_option program_options[] =
       0,
       0,
       "Critical density now (g/cm^3).",
-      UI_GROUP_SPECIFIC,
+      UI_GROUP_BASIC,
       &p->specific,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
@@ -187,7 +169,7 @@ struct argp_option program_options[] =
       0,
       0,
       "Proper distance to z (Mpc).",
-      UI_GROUP_SPECIFIC,
+      UI_GROUP_BASIC,
       &p->specific,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
@@ -201,7 +183,7 @@ struct argp_option program_options[] =
       0,
       0,
       "Angular diameter distance (Mpc).",
-      UI_GROUP_SPECIFIC,
+      UI_GROUP_BASIC,
       &p->specific,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
@@ -215,7 +197,7 @@ struct argp_option program_options[] =
       0,
       0,
       "Tangential dist. covered by 1arcsec at z (kpc).",
-      UI_GROUP_SPECIFIC,
+      UI_GROUP_BASIC,
       &p->specific,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
@@ -229,7 +211,7 @@ struct argp_option program_options[] =
       0,
       0,
       "Luminosity distance to z (Mpc).",
-      UI_GROUP_SPECIFIC,
+      UI_GROUP_BASIC,
       &p->specific,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
@@ -243,7 +225,7 @@ struct argp_option program_options[] =
       0,
       0,
       "Distance modulus at z (no units).",
-      UI_GROUP_SPECIFIC,
+      UI_GROUP_BASIC,
       &p->specific,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
@@ -257,7 +239,7 @@ struct argp_option program_options[] =
       0,
       0,
       "Conversion to absolute magnitude (no unit).",
-      UI_GROUP_SPECIFIC,
+      UI_GROUP_BASIC,
       &p->specific,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
@@ -271,7 +253,7 @@ struct argp_option program_options[] =
       0,
       0,
       "Age of universe at z (Ga: Giga Annum).",
-      UI_GROUP_SPECIFIC,
+      UI_GROUP_BASIC,
       &p->specific,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
@@ -285,7 +267,7 @@ struct argp_option program_options[] =
       0,
       0,
       "Look back time to z (Ga: Giga Annum).",
-      UI_GROUP_SPECIFIC,
+      UI_GROUP_BASIC,
       &p->specific,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
@@ -299,7 +281,7 @@ struct argp_option program_options[] =
       0,
       0,
       "Critical density at z (g/cm^3).",
-      UI_GROUP_SPECIFIC,
+      UI_GROUP_BASIC,
       &p->specific,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
@@ -313,7 +295,7 @@ struct argp_option program_options[] =
       0,
       0,
       "Comoving volume (4pi str) to z (Mpc^3).",
-      UI_GROUP_SPECIFIC,
+      UI_GROUP_BASIC,
       &p->specific,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
@@ -321,13 +303,50 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET,
       ui_add_to_single_value,
     },
+
+
+
+
+
+    /* Spectral line options. */
+    {
+      0, 0, 0, 0,
+      "Spectral lines",
+      UI_GROUP_SPECTRAL_LINES
+    },
+    {
+      "listlines",
+      UI_KEY_LISTLINES,
+      0,
+      0,
+      "List known lines and rest frame wavelength.",
+      UI_GROUP_SPECTRAL_LINES,
+      &p->listlines,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "listlinesatz",
+      UI_KEY_LISTLINESATZ,
+      0,
+      0,
+      "List known spectral lines at given redshift.",
+      UI_GROUP_SPECTRAL_LINES,
+      &p->listlinesatz,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
     {
       "lineatz",
       UI_KEY_LINEATZ,
       "STR/FLT",
       0,
-      "Wavelength of given line at chosen redshift",
-      UI_GROUP_SPECIFIC,
+      "Wavelength of line (name or wavelength) at z.",
+      UI_GROUP_SPECTRAL_LINES,
       &p->specific,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,

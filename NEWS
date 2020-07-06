@@ -14,6 +14,14 @@ See the end of the file for license conditions.
      will be read as floating point. This also applies to column arithmetic
      in Table.
 
+  CosmicCalculator:
+   --listlinesatz: Print the wavelength of all pre-defined spectral lines
+     at given redshift as a simple table with the line names. This is very
+     convenient and can be used in conjunction with '--obsline' for example
+     to print the observed wavelength of all lines when Lyman-alpha is at
+     4000 Angstroms with this simple command:
+        astcosmiccal --obsline=lyalpha,4000 --listlinesatz
+
   FITS:
    - New '--wcsdistortion' option allows conversion between the various WCS
      distortions. For example if you have a FITS image with the TPV-based
