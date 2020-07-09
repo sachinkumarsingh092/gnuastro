@@ -30,6 +30,7 @@ See the end of the file for license conditions.
      file. The inverse conversion is also supported (from SIP to TPV).
 
   Library:
+   - Spectral lines library: SiIII, OIII, CIV, NV and rest of Lyman series.
    - GAL_CONFIG_HAVE_WCSLIB_DIS_H: if the host's WCSLIB supports distortions.
    - GAL_CONFIG_HAVE_WCSLIB_MJDREF: if the host's WCSLIB reads MJDREF keyword.
    - GAL_WCS_FLTERROR: Limit to identify a floating point error for WCS.

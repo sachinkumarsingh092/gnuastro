@@ -17522,23 +17522,23 @@ You can get this list on the command-line with the @option{--listlines}.
 @item niiblue
 [6548@AA{}] NII doublet's bluer line.
 
-@item oiiired
-[5007@AA{}] OIII doublet's redder line.
+@item oiiired-vis
+[5007@AA{}] OIII doublet's redder line in the visible.
 
-@item oiii
-@cindex Doublet: OIII
-@cindex OIII doublet
-[4983@AA{}] OIII doublet's mean center.
+@item oiii-vis
+@cindex Doublet: OIII (visible)
+@cindex OIII doublet in visible
+[4983@AA{}] OIII doublet's mean center in the visible.
 
-@item oiiiblue
-[4959@AA{}] OIII doublet's bluer line.
+@item oiiiblue-vis
+[4959@AA{}] OIII doublet's bluer line in the visible.
 
 @item hbeta
 @cindex H-beta
 [4861.36@AA{}] H-@mymath{\beta} line.
 
-@item heiired
-[4686@AA{}] HeII doublet's redder line.
+@item heii-vis
+[4686@AA{}] HeII doublet's redder line in the visible.
 
 @item hgamma
 @cindex H-gamma
@@ -17592,12 +17592,64 @@ You can get this list on the command-line with the @option{--listlines}.
 @item ciiiblue
 [1907@AA{}] CIII doublet's bluer line.
 
-@item heiiblue
-[1640@AA{}] HeII doublet's bluer line.
+@item si_iiired
+[1892@AA{}] SiIII doublet's redder line.
+
+@item si_iii
+@cindex Doublet: SiIII
+@cindex SiIII doublet
+[1887.5@AA{}] SiIII doublet's mean center.
+
+@item si_iiiblue
+[1883@AA{}] SiIII doublet's bluer line.
+
+@item oiiired-uv
+[1666@AA{}] OIII doublet's redder line in the ultra-violet.
+
+@item oiii-uv
+@cindex Doublet: OIII (in UV)
+@cindex OIII doublet in UV
+[1663.5@AA{}] OIII doublet's mean center in the ultra-violet.
+
+@item oiiiblue-uv
+[1661@AA{}] OIII doublet's bluer line in the ultra-violet.
+
+@item heii-uv
+[1640@AA{}] HeII doublet's bluer line in the ultra-violet.
+
+@item civred
+[1551@AA{}] CIV doublet's redder line.
+
+@item civ
+@cindex Doublet: CIV
+@cindex CIV doublet
+[1549@AA{}] CIV doublet's mean center.
+
+@item civblue
+[1548@AA{}] CIV doublet's bluer line.
+
+@item nv
+[1240@AA{}] NV (four times ionized Sodium).
 
 @item lyalpha
 @cindex Lyman-alpha
 [1215.67@AA{}] Lyman-@mymath{\alpha} line.
+
+@item lybeta
+@cindex Lyman-beta
+[1025.7@AA{}] Lyman-@mymath{\beta} line.
+
+@item lygamma
+@cindex Lyman-gamma
+[972.54@AA{}] Lyman-@mymath{\gamma} line.
+
+@item lydelta
+@cindex Lyman-delta
+[949.74@AA{}] Lyman-@mymath{\delta} line.
+
+@item lyepsilon
+@cindex Lyman-epsilon
+[937.80@AA{}] Lyman-@mymath{\epsilon} line.
 
 @item lylimit
 @cindex Lyman limit
