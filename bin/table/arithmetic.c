@@ -315,7 +315,7 @@ arithmetic_indexs_final(struct tableparams *p, size_t *colmatch)
 /********************       Low-level tools      *********************/
 /*********************************************************************/
 static gal_data_t *
-arithmetic_stack_pop(gal_data_t **stack, int operator)
+arithmetic_stack_pop(gal_data_t **stack, int operator, char *errormsg)
 {
   gal_data_t *out=*stack;
 
@@ -323,8 +323,8 @@ arithmetic_stack_pop(gal_data_t **stack, int operator)
   if(*stack)
     *stack=(*stack)->next;
   else
-    error(EXIT_FAILURE, 0, "not enough operands for '%s'",
-          arithmetic_operator_name(operator));
+    error(EXIT_FAILURE, 0, "not enough operands for '%s'%s",
+          arithmetic_operator_name(operator), errormsg?errormsg:"");
 
   /* Remove the 'next' element to break from the stack and return. */
   out->next=NULL;
@@ -377,16 +377,21 @@ static void
 arithmetic_wcs(struct tableparams *p, gal_data_t **stack, int operator)
 {
   gal_data_t *tmp;
+  char errormsg[100];
   struct wcsprm *wcs=p->wcs;
   size_t i, ndim=p->wcs->naxis;
   gal_data_t *coord[3]={NULL, NULL, NULL};
+
+  /* Prepare the (possibly necessaary!) error message for the number of
+     popped operand. */
+  sprintf(errormsg, " (input WCS has %zu dimensions)", ndim);
 
   /* Pop all the necessary datasets and make sure they are
      double-precision. NOTE: the top dataset on the stack is the
      highest-dimensional dataset. */
   for(i=0;i<ndim;++i)
     {
-      tmp=arithmetic_stack_pop(stack, operator);
+      tmp=arithmetic_stack_pop(stack, operator, errormsg);
       tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT64);
       coord[ndim-i-1]=tmp;
     }
@@ -457,16 +462,16 @@ arithmetic_distance(struct tableparams *p, gal_data_t **stack, int operator)
   double (*distance_func)(double, double, double, double);
 
   /* Pop the columns for point 'b'.*/
-  tmp=arithmetic_stack_pop(stack, operator);
+  tmp=arithmetic_stack_pop(stack, operator, NULL);
   tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT64);
-  b=arithmetic_stack_pop(stack, operator);
+  b=arithmetic_stack_pop(stack, operator, NULL);
   b=gal_data_copy_to_new_type_free(b, GAL_TYPE_FLOAT64);
   b->next=tmp;
 
   /* Pop the columns for point 'a'.*/
-  tmp=arithmetic_stack_pop(stack, operator);
+  tmp=arithmetic_stack_pop(stack, operator, NULL);
   tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_FLOAT64);
-  a=arithmetic_stack_pop(stack, operator);
+  a=arithmetic_stack_pop(stack, operator, NULL);
   a=gal_data_copy_to_new_type_free(a, GAL_TYPE_FLOAT64);
   a->next=tmp;
 
@@ -594,18 +599,18 @@ arithmetic_operator_run(struct tableparams *p, gal_data_t **stack,
       switch(num_operands)
         {
         case 1:
-          d1=arithmetic_stack_pop(stack, operator);
+          d1=arithmetic_stack_pop(stack, operator, NULL);
           break;
 
         case 2:
-          d2=arithmetic_stack_pop(stack, operator);
-          d1=arithmetic_stack_pop(stack, operator);
+          d2=arithmetic_stack_pop(stack, operator, NULL);
+          d1=arithmetic_stack_pop(stack, operator, NULL);
           break;
 
         case 3:
-          d3=arithmetic_stack_pop(stack, operator);
-          d2=arithmetic_stack_pop(stack, operator);
-          d1=arithmetic_stack_pop(stack, operator);
+          d3=arithmetic_stack_pop(stack, operator, NULL);
+          d2=arithmetic_stack_pop(stack, operator, NULL);
+          d1=arithmetic_stack_pop(stack, operator, NULL);
           break;
 
         case -1:
