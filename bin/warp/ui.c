@@ -350,11 +350,24 @@ ui_check_options_and_arguments(struct warpparams *p)
                                              NULL, GAL_TYPE_FLOAT64,
                                              p->cp.minmapsize,
                                              p->cp.quietmmap);
+
+      /* Read the WCS and remove one-element wide dimension(s). */
       p->input->wcs=gal_wcs_read(p->inputname, p->cp.hdu, p->hstartwcs,
                                  p->hendwcs, &p->input->nwcs);
       p->input->ndim=gal_dimension_remove_extra(p->input->ndim,
                                                 p->input->dsize,
                                                 p->input->wcs);
+
+      /* Currently Warp only works on 2D images. */
+      if(p->input->ndim!=2)
+        error(EXIT_FAILURE, 0, "input has %zu dimensions but Warp currently "
+              "only works on 2D datasets (images).\n\n"
+              "We do plan to add 3D functionality (see "
+              "https://savannah.gnu.org/task/?15729), so please get in "
+              "touch if you need it (any further interest, support or help "
+              "would be useful)", p->input->ndim);
+
+      /* Get basic WCS information. */
       if(p->input->wcs)
         {
           p->pixelscale=gal_wcs_pixel_scale(p->input->wcs);

@@ -2,6 +2,7 @@ Alphabetically ordered list to acknowledge in the next release.
 
 Marjan Akbari
 Carlos Allende Prieto
+Leindert Boogaard
 Alexey Dokuchaev
 Raúl Infante Sainz
 Zahra Sharbaf
