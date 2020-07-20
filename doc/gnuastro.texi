@@ -16358,7 +16358,7 @@ $ astmkprof catalog.txt
 $ astmkprof --background=image.fits catalog.txt
 
 ## Make a Moffat PSF with FWHM 3pix, beta=2.8, truncation=5
-$ astmkprof --kernel=moffat,2.8,5 --oversample=1
+$ astmkprof --kernel=moffat,3,2.8,5 --oversample=1
 
 ## Make profiles in catalog, using RA and Dec in the given column:
 $ astmkprof --ccol=RA_CENTER --ccol=DEC_CENTER --mode=wcs catalog.txt
