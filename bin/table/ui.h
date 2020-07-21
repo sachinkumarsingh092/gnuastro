@@ -42,7 +42,7 @@ enum program_args_groups
 /* Available letters for short options:
 
    a b d f g j k l m p t v x y z
-   A B E G H J L O Q R X Y
+   A B E G H J O Q R X Y
 */
 enum option_keys_enum
 {
@@ -59,14 +59,16 @@ enum option_keys_enum
   UI_KEY_DESCENDING      = 'd',
   UI_KEY_HEAD            = 'H',
   UI_KEY_TAIL            = 't',
-  UI_KEY_CATCOLUMN       = 'C',
-  UI_KEY_CATCOLHDU       = 'u',
+  UI_KEY_CATCOLUMNS      = 'C',
+  UI_KEY_CATCOLUMNHDU    = 'u',
+  UI_KEY_CATCOLUMNFILE   = 'L',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
   UI_KEY_POLYGON         = 1000,
   UI_KEY_INPOLYGON,
   UI_KEY_OUTPOLYGON,
+  UI_KEY_CATCOLUMNRAWNAME,
 };
 
 

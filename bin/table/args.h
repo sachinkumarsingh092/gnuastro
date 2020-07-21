@@ -71,26 +71,39 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "catcolumn",
-      UI_KEY_CATCOLUMN,
+      "catcolumnfile",
+      UI_KEY_CATCOLUMNFILE,
       "STR",
       0,
-      "Name of files to be concat column",
+      "File(s) to be concatenated by column.",
       GAL_OPTIONS_GROUP_INPUT,
-      &p->catcolumn,
+      &p->catcolumnfile,
       GAL_TYPE_STRLL,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
     {
-      "catcolhdu",
-      UI_KEY_CATCOLHDU,
+      "catcolumnhdu",
+      UI_KEY_CATCOLUMNHDU,
       "STR/INT",
       0,
-      "HDU/Extension(s) for the calcolmn files.",
+      "HDU/Extension(s) in catcolumnfile.",
       GAL_OPTIONS_GROUP_INPUT,
-      &p->catcolhdu,
+      &p->catcolumnhdu,
+      GAL_TYPE_STRLL,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "catcolumns",
+      UI_KEY_CATCOLUMNS,
+      "STR",
+      0,
+      "Columns to use in catcolumnfile.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->catcolumns,
       GAL_TYPE_STRLL,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
@@ -128,7 +141,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
-
+    {
+      "catcolumnrawname",
+      UI_KEY_CATCOLUMNRAWNAME,
+      0,
+      0,
+      "Don't touch column names of --catcolumnfile.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->catcolumnrawname,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 

@@ -612,28 +612,30 @@ table_head_tail(struct tableparams *p)
 static void
 table_catcolumn(struct tableparams *p)
 {
-  char *hdu=NULL;
-  gal_data_t *tocat, *final;
+  size_t counter=1;
   gal_list_str_t *filell, *hdull;
+  gal_data_t *tocat, *final, *newcol;
+  char *tmpname, *hdu=NULL, cstr[100];
   struct gal_options_common_params *cp=&p->cp;
 
   /* Go over all the given files. */
-  hdull=p->catcolhdu;
-  for(filell=p->catcolumn; filell!=NULL; filell=filell->next)
+  hdull=p->catcolumnhdu;
+  for(filell=p->catcolumnfile; filell!=NULL; filell=filell->next)
     {
       /* Set the HDU (not necessary for non-FITS tables). */
       if(gal_fits_name_is_fits(filell->v))
         {
           if(hdull) { hdu=hdull->v; hdull=hdull->next; }
           else
-            error(EXIT_FAILURE, 0, "not enough '--catcolhdu's. For every "
-                  "FITS table given to '--catcolumn', a call to "
-                  "'--catcolhdu' is necessary to identify its HDU/extension");
+            error(EXIT_FAILURE, 0, "not enough '--catcolumnhdu's (or '-u'). "
+                  "For every FITS table given to '--catcolumnfile'. A call to "
+                  "'--catcolumnhdu' is necessary to identify its "
+                  "HDU/extension");
         }
       else hdu=NULL;
 
       /* Read the catcolumn table. */
-      tocat=gal_table_read(filell->v, hdu, NULL, NULL, cp->searchin,
+      tocat=gal_table_read(filell->v, hdu, NULL, p->catcolumns, cp->searchin,
                            cp->ignorecase, cp->minmapsize, p->cp.quietmmap,
                            NULL);
 
@@ -646,9 +648,27 @@ table_catcolumn(struct tableparams *p)
               gal_fits_name_save_as_string(filell->v, hdu), tocat->dsize[0],
               p->table->dsize[0]);
 
+      /* Append a counter to the column names because this option is most
+         often used with columns that have a similar name and it would help
+         the user if the output doesn't have multiple columns with same
+         name. */
+      if(p->catcolumnrawname==0)
+        for(newcol=tocat; newcol!=NULL; newcol=newcol->next)
+          if(newcol->name)
+            {
+              /* Add the counter suffix to the column name. */
+              sprintf(cstr, "-%zu", counter);
+              tmpname=gal_checkset_malloc_cat(newcol->name, cstr);
+
+              /* Free the old name and put in the new one. */
+              free(newcol->name);
+              newcol->name=tmpname;
+            }
+
       /* Find the final column of the main table and add this table.*/
       final=gal_list_data_last(p->table);
       final->next=tocat;
+      ++counter;
     }
 }
 
@@ -691,8 +711,8 @@ table(struct tableparams *p)
   if(p->outcols)
     arithmetic_operate(p);
 
-  /* Concatenate the columns of tables(if required)*/
-  if(p->catcolumn) table_catcolumn(p);
+  /* Concatenate the columns of tables (if required)*/
+  if(p->catcolumnfile) table_catcolumn(p);
 
   /* Write the output. */
   gal_table_write(p->table, NULL, p->cp.tableformat, p->cp.output,

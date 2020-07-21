@@ -100,8 +100,10 @@ struct tableparams
   uint8_t          descending;  /* Sort columns in descending order.    */
   size_t                 head;  /* Output only the no. of top rows.     */
   size_t                 tail;  /* Output only the no. of bottom rows.  */
-  gal_list_str_t   *catcolumn;  /* Filename to concat column wise.      */
-  gal_list_str_t   *catcolhdu;  /* HDU/extension for the catcolumn.     */
+  gal_list_str_t *catcolumnfile; /* Filename to concat column wise.     */
+  gal_list_str_t *catcolumnhdu;  /* HDU/extension for the catcolumn.    */
+  gal_list_str_t  *catcolumns;  /* List of columns to concatenate.      */
+  uint8_t    catcolumnrawname;  /* Don't modify name of appended col.   */
 
   /* Internal. */
   struct column_pack *outcols;  /* Output column packages.              */

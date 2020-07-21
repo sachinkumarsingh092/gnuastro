@@ -29,6 +29,17 @@ See the end of the file for license conditions.
      distortion, you can simply run 'astfits --wcsdistortion=SIP' on the
      file. The inverse conversion is also supported (from SIP to TPV).
 
+  Table:
+   - New '--catcolumns' to specify which columns to concatenate (or append)
+     to the output. You can specify the file name containing the columns to
+     append with the '--catcolumnfile' option and '--catcolumnhdu' (see
+     changed features because until now they had different names).
+   - New '--catcolumnsrawname' will leave the name of concatenated
+     (appended) columns unchanged. By default the names of the appended
+     columns will be appended with a '-N' (where 'N' is a counter for the
+     file that is used to append columns). The default behavior is to avoid
+     multiple columns having the same name.
+
   Library:
    - Spectral lines library: SiIII, OIII, CIV, NV and rest of Lyman series.
    - GAL_CONFIG_HAVE_WCSLIB_DIS_H: if the host's WCSLIB supports distortions.
@@ -49,6 +60,11 @@ See the end of the file for license conditions.
   Arithmetic:
    - The 'pow' operator can also accept integer inputs. This also applies
      to column arithmetic in Table.
+
+  Table:
+   --catcolumnfile ('-L') is new name for '--catcolumn' ('-C').
+   --catcolumnhdu is new name for '--catcolhdu' (short option name hasn't
+     changed).
 
   Library:
    - gal_type_string_to_number: Numbers ending in '.' or '.0' will be
