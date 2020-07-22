@@ -1133,11 +1133,10 @@ gal_options_read_sigma_clip(struct argp_option *option, char *arg,
 
 
 
-/* Parse name and (float64) values:  name,value1,value2,value3,...
+/* Parse name and (string/float64) values:  name,value1,value2,value3,...
 
    The output is a 'gal_data_t', where the 'name' is the given name and the
-   values are in its array (of 'float64' type).
- */
+   values are in its array (of 'char *' or 'float64' type). */
 static void *
 gal_options_parse_name_and_values(struct argp_option *option, char *arg,
                                   char *filename, size_t lineno, void *junk,
@@ -1223,10 +1222,10 @@ gal_options_parse_name_and_values(struct argp_option *option, char *arg,
           */
         }
       else
-        error(EXIT_FAILURE, 0, "'--%s' requires a string of numbers "
+        error(EXIT_FAILURE, 0, "'--%s' requires a series of %s "
               "(separated by ',' or ':') following its first argument, "
               "please run with '--help' for more information",
-              option->name);
+              option->name, str0_f641?"numbers":"strings");
 
       /* Our job is done, return NULL. */
       return NULL;

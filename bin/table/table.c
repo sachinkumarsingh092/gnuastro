@@ -676,6 +676,76 @@ table_catcolumn(struct tableparams *p)
 
 
 
+void
+table_metaupdate(struct tableparams *p)
+{
+  char **strarr;
+  gal_data_t *meta, *col;
+  size_t counter, *colnum;
+
+  /* Loop through all the given updates and implement them. */
+  for(meta=p->metaupdate;meta!=NULL;meta=meta->next)
+    {
+      /* If the given column specifier is a name (not parse-able as a
+         number), then this condition will fail. */
+      colnum=NULL;
+      if( gal_type_from_string((void **)(&colnum), meta->name,
+                               GAL_TYPE_SIZE_T) )
+        {
+          /* We have been given a string, so find the first column that has
+             the same name. */
+          for(col=p->table; col!=NULL; col=col->next)
+            if(!strcmp(col->name, meta->name)) break;
+        }
+      /* The column specifier is a number. */
+      else
+        {
+          /* Go over the columns and find the one with this counter. */
+          counter=1;
+          for(col=p->table; col!=NULL; col=col->next)
+            if(counter++==colnum[0]) break;
+
+          /* Clean up the space that was allocated for 'colnum' (its not
+             allocated when the given value was a string). */
+          free(colnum);
+        }
+
+      /* If a match was found, then 'col' should not be NULL. */
+      if(col==NULL)
+        error(EXIT_FAILURE, 0, "no column found for '%s' (given to "
+              "'--metaupdate'). Columns can either be specified by "
+              "their position in the output table (integer counter, "
+              "starting from 1), or their name (the first column "
+              "found with the given name will be used)", meta->name);
+
+      /* The matching column is found and we know that atleast one value is
+         already given (otherwise 'gal_options_parse_name_and_values' would
+         abort the program). The first given string is the new name. */
+      strarr=meta->array;
+      if(col->name) free(col->name);
+      gal_checkset_allocate_copy(strarr[0], &col->name);
+
+      /* If more than one string is given, the second one is the new
+         unit. */
+      if(meta->size>1)
+        {
+          /* Replace the unit. */
+          if(col->unit) free(col->unit);
+          gal_checkset_allocate_copy(strarr[1], &col->unit);
+
+          /* The next element is the comment of the column. */
+          if(meta->size>2)
+            {
+              if(col->comment) free(col->comment);
+              gal_checkset_allocate_copy(strarr[2], &col->comment);
+            }
+        }
+    }
+}
+
+
+
+
 
 
 
@@ -713,6 +783,9 @@ table(struct tableparams *p)
 
   /* Concatenate the columns of tables (if required)*/
   if(p->catcolumnfile) table_catcolumn(p);
+
+  /* If column metadata should be updated, do it just before writing. */
+  if(p->metaupdate) table_metaupdate(p);
 
   /* Write the output. */
   gal_table_write(p->table, NULL, p->cp.tableformat, p->cp.output,

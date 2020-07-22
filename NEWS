@@ -39,6 +39,11 @@ See the end of the file for license conditions.
      columns will be appended with a '-N' (where 'N' is a counter for the
      file that is used to append columns). The default behavior is to avoid
      multiple columns having the same name.
+   - New '--metaupdate' option to add/update the column metadata (name,
+     units or comments) just before writing the output. This is a very
+     useful feature in combination with column arithmetic or column
+     concatenation because it will allow you to update the new column
+     metadata in the same command. See the manual for more.
 
   Library:
    - Spectral lines library: SiIII, OIII, CIV, NV and rest of Lyman series.

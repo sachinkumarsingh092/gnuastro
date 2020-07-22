@@ -9161,6 +9161,12 @@ Comparison of the two commands above clearly shows why it is recommended to use 
 When the columns have descriptive names, the command/script actually becomes much more readable, describing the intent of the operation.
 It is also independent of the low-level table structure: for the second command, the position of the @code{AWAV} and @code{SPECTRUM} columns in @file{table.fits} is irrelevant.
 
+By nature, column arithmetic changes the values of the data within the column.
+So the old column meta data can't be used any more.
+By default the new column created for the arithmetic operation will be given generic metadata (for example its name will be @code{ARITH_1}, which is hardly useful!).
+But meta data are critically important and it is good practice to always have short, but descriptive, names for each columns, units and also some comments for more explanation.
+To add metadata to a column, you can use the @option{--metaupdate} option that is described in @ref{Invoking asttable}.
+
 Finally, since the arithmetic expressions are a value to @option{--column}, it doesn't necessarily have to be a separate option, so the commands above are also identical to the command below (note that this only has one @option{-c} option).
 Just be very careful with the quoting!
 
@@ -9172,6 +9178,8 @@ Almost all the arithmetic operators of @ref{Arithmetic operators} are also suppo
 In particular, the few that are not present in the Gnuastro library aren't yet supported.
 For a list of the Gnuastro library arithmetic operators, please see the macros starting with @code{GAL_ARITHMETIC_OP} and ending with the operator name in @ref{Arithmetic on datasets}.
 Besides the operators in @ref{Arithmetic operators}, several operators are only available in Table to use on table columns.
+
+
 
 @cindex WCS: World Coordinate System
 @cindex World Coordinate System (WCS)
@@ -9393,6 +9401,18 @@ Also note that no operation (for example row selection, arithmetic or etc) is ap
 If the appended columns have a name, the column names of each file will be appended with a @code{-N}, where @code{N} is a counter starting from 1 for each appended file.
 This is done because when concatenating columns from multiple tables (more than two) into one, they may have the same name, and its not good practice to have multiple columns with the same name.
 You can disable this feature with @option{--catcolumnrawname}.
+To have full control over the concatenated column names, you can use the @option{--metaupdate} option described below.
+
+For example, let's assume you have two catalogs of the same objects (same number of rows) in different filters.
+Such that @file{f160w-cat.fits} has a @code{MAGNITUDE} column that has the magnitude of each object in the @code{F160W} filter and similarly @file{f105w-cat.fits}, also has a @code{MAGNITUDE} column, but for the @code{F105W} filter.
+You can use column concatenation like below to import the @code{MAGNITUDE} column from the @code{F105W} catalog into the @code{F160W} catalog, while giving each magnitude column a different name:
+
+@example
+asttable f160w-cat.fits --output=both.fits \
+  --catcolumnfile=f105w-cat.fits --catcolumns=MAGNITUDE \
+  --metaupdate=MAGNITUDE,MAG-F160W,log,"Magnitude in F160W" \
+  --metaupdate=MAGNITUDE-1,MAG-F105W,log,"Magnitude in F105W"
+@end example
 
 @item -u STR/INT
 @itemx --catcolumnhdu=STR/INT
@@ -9518,6 +9538,37 @@ This behavior is taken from the @command{head} program in GNU Coreutils.
 Only print the given number of rows from the @emph{bottom} of the final table.
 See @option{--head} for more.
 
+@item -m STR/INT,STR[,STR[,STR]]
+@itemx --metaupdate=STR/INT,STR[,STR[,STR]]
+Update a column's metadata just before writing the final table (after all other operations are done, for example column arithmetic, or column concatenation).
+The first value (before the first comma) given to this option can either be a counter (positive integer, counting from 1), or a name (the column's name in the output if this option wasn't called).
+This option can be very useful in conjunction with column arithmetic (see @ref{Column arithmetic}), or column concatenation (appending multiple columns from different tables, for more see @option{--catcolumnfile}).
+
+After the to-be-updated column is identified, at least one other strings should be given, with a maximum of three strings.
+The first string after the original name will the the selected column's new name.
+The next (optional) string will be the selected column's unit and the third (optional) will be its comments.
+If the two optional strings aren't given original column's units or comments will remain unchanged.
+Here are three examples
+
+@table @option
+
+@item --metaupdate=MAGNITUDE,MAG_F160W
+This will convert name of the original @code{MAGNITUDE} column to @code{MAG_F160W}, leaving the unit and comments unchanged.
+
+@item --metaupdate=3,MAG_F160W,mag
+This will convert name of the third column of the final output to @code{MAG_F160W} and the units to @code{mag}, while leaving the comments untouched.
+
+@item --metaupdate=MAGNITUDE,MAG_F160W,mag,"Magnitude in F160W filter"
+This will convert name of the original @code{MAGNITUDE} column to @code{MAG_F160W}, and the units to @code{mag} and the comments to @code{Magnitude in F160W filter}.
+Note the double quotations around the comment string, they are necessary to preserve the white-space characters within the column comment from the command-line, into the program (otherwise, upon reaching a white-space character, the shell will consider this option to be finished and cause un-expected behavior).
+@end table
+
+The recommended way to use this option is to first do all your operations on your table's data and write it into a temporary file (maybe called @file{temp.fits}).
+Look into that file's metadata (with @command{asttable temp.fits -i}) to see the exact column positions and possible names, then add the necessary calls to this option to your previous call to @command{asttable}, so it writes proper metadata in the same run (for example in a script or Makefile).
+Recall that when a name is given, this option will update the metadata of the first column that matches, so if you have multiple columns with the same name, you can call this options multiple times with the same first argument to change them all.
+
+Finally, if you already have a FITS table by other means (for example by downloading) and you merely want to update the column metadata and leave the data intact, it is much more efficient to directly modify the respective FITS header keywords with @code{astfits}, using the keyword manipulation features described in @ref{Keyword manipulation}.
+@option{--metaupdate} is mainly intended for scenarios where you want to edit the data so it will always load the full/partial dataset into memory, then write out the resulting datasets with updated/correced metadata.
 @end table
 
 

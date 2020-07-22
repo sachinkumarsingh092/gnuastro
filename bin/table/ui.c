@@ -276,6 +276,15 @@ ui_read_check_only_options(struct tableparams *p)
   if(p->head!=GAL_BLANK_SIZE_T && p->tail!=GAL_BLANK_SIZE_T)
     error(EXIT_FAILURE, 0, "'--head' and '--tail' options cannot be "
           "called together");
+
+  /* If '--metaupdate' is given, make sure none of the given options have
+     more than three values. */
+  if(p->metaupdate)
+    for(tmp=p->metaupdate;tmp!=NULL;tmp=tmp->next)
+      if(tmp->size>3)
+        error(EXIT_FAILURE, 0, "at most three values can be given to each "
+              "call of '--metaupdate' ('-m') after the original columns "
+              "name or number. But %zu strings have been given", tmp->size);
 }
 
 
