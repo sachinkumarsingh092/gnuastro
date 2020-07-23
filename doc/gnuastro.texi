@@ -24288,52 +24288,38 @@ above.
 @end deftypefun
 
 
-@deftypefun {gal_data_t *} gal_statistics_outlier_positive (gal_data_t @code{*input}, size_t @code{window_size}, float @code{sigma}, float @code{sigclip_multip}, float @code{sigclip_param}, int @code{inplace}, int @code{quiet})
-Find the first positive outlier in the @code{input} distribution. The
-returned dataset contains a single element: the first positive outlier. It
-is one of the dataset's elements, in the same type as the input. If the
-process fails for any reason (for example no outlier was found), a
-@code{NULL} pointer will be returned.
+@deftypefun {gal_data_t *} gal_statistics_outlier_bydistance (int @code{pos1_neg0}, gal_data_t @code{*input}, size_t @code{window_size}, float @code{sigma}, float @code{sigclip_multip}, float @code{sigclip_param}, int @code{inplace}, int @code{quiet})
 
-All (possibly existing) blank elements are first removed from the input
-dataset, then it is sorted. A sliding window of @code{window_size} elements
-is parsed over the dataset. Starting from the @code{window_size}-th element
-of the dataset, in the direction of increasing values. This window is used
-as a reference. The first element where the distance to the previous
-(sorted) element is @code{sigma} units away from the distribution of
-distances in its window is considered an outlier and returned by this
-function.
+Find the first positive outlier (if @code{pos1_neg0!=0}) in the @code{input} distribution.
+When @code{pos1_neg0==0}, the same algorithm goes to the start of the dataset.
+The returned dataset contains a single element: the first positive outlier.
+It is one of the dataset's elements, in the same type as the input.
+If the process fails for any reason (for example no outlier was found), a @code{NULL} pointer will be returned.
 
-Formally, if we assume there are @mymath{N} non-blank elements. They are
-first sorted. Searching for the outlier starts on element @mymath{W}. Let's
-take @mymath{v_i} to be the @mymath{i}-th element of the sorted input (with
-no blank values) and @mymath{m} and @mymath{\sigma} as the
-@mymath{\sigma}-clipped median and standard deviation from the distances of
-the previous @mymath{W} elements (not including @mymath{v_i}). If the value
-given to @code{sigma} is displayed with @mymath{s}, the @mymath{i}-th
-element is considered as an outlier when the condition below is true.
+All (possibly existing) blank elements are first removed from the input dataset, then it is sorted.
+A sliding window of @code{window_size} elements is parsed over the dataset.
+Starting from the @code{window_size}-th element of the dataset, in the direction of increasing values.
+This window is used as a reference.
+The first element where the distance to the previous (sorted) element is @code{sigma} units away from the distribution of distances in its window is considered an outlier and returned by this function.
+
+Formally, if we assume there are @mymath{N} non-blank elements.
+They are first sorted.
+Searching for the outlier starts on element @mymath{W}.
+Let's take @mymath{v_i} to be the @mymath{i}-th element of the sorted input (with no blank values) and @mymath{m} and @mymath{\sigma} as the @mymath{\sigma}-clipped median and standard deviation from the distances of the previous @mymath{W} elements (not including @mymath{v_i}).
+If the value given to @code{sigma} is displayed with @mymath{s}, the @mymath{i}-th element is considered as an outlier when the condition below is true.
 
 @dispmath{{(v_i-v_{i-1})-m\over \sigma}>s}
 
-The @code{sigclip_multip} and @code{sigclip_param} arguments specify the
-properties of the @mymath{\sigma}-clipping (see @ref{Sigma clipping} for
-more). You see that by this definition, the outlier cannot be any of the
-lower half elements. The advantage of this algorithm compared to
-@mymath{\sigma}-clippign is that it only looks backwards (in the sorted
-array) and parses it in one direction.
+The @code{sigclip_multip} and @code{sigclip_param} arguments specify the properties of the @mymath{\sigma}-clipping (see @ref{Sigma clipping} for more).
+You see that by this definition, the outlier cannot be any of the lower half elements.
+The advantage of this algorithm compared to @mymath{\sigma}-clippign is that it only looks backwards (in the sorted array) and parses it in one direction.
 
-If @code{inplace!=0}, the removing of blank elements and sorting will be
-done within the input dataset's allocated space. Otherwise, this function
-will internally allocate (and later free) the necessary space to keep the
-intermediate space that this process requires.
+If @code{inplace!=0}, the removing of blank elements and sorting will be done within the input dataset's allocated space.
+Otherwise, this function will internally allocate (and later free) the necessary space to keep the intermediate space that this process requires.
 
-If @code{quiet!=0}, this function will report the parameters every time it
-moves the window as a separate line with several columns. The first column
-is the value, the second (in square brackets) is the sorted index, the
-third is the distance of this element from the previous one. The Fourth and
-fifth (in parenthesis) are the median and standard deviation of the
-@mymath{\sigma}-clipped distribution within the window and the last column
-is the difference between the third and fourth, divided by the fifth.
+If @code{quiet!=0}, this function will report the parameters every time it moves the window as a separate line with several columns.
+The first column is the value, the second (in square brackets) is the sorted index, the third is the distance of this element from the previous one.
+The Fourth and fifth (in parenthesis) are the median and standard deviation of the @mymath{\sigma}-clipped distribution within the window and the last column is the difference between the third and fourth, divided by the fifth.
 
 @end deftypefun
 

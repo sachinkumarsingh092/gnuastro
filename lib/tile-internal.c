@@ -44,11 +44,11 @@ tileinternal_no_outlier_work(gal_data_t *first, gal_data_t *second,
                              size_t tottilesinch, double *outliersclip,
                              float outliersigma)
 {
-  gal_data_t *outlier, *nbs;
   size_t i, osize=first->size;
   size_t start=tottilesinch*channelid;
   float *oa1=NULL, *oa2=NULL, *oa3=NULL;
-  float o, *arr1=NULL, *arr2=NULL, *arr3=NULL;
+  gal_data_t *nbs, *outlier_p, *outlier_n;
+  float o_p, o_n, *arr1=NULL, *arr2=NULL, *arr3=NULL;
 
   /* A small sanity check. */
   if(first->type!=GAL_TYPE_FLOAT32)
@@ -83,56 +83,133 @@ tileinternal_no_outlier_work(gal_data_t *first, gal_data_t *second,
      first array. */
   arr1=first->array;
   nbs=gal_statistics_no_blank_sorted(first, 0);
-  outlier=gal_statistics_outlier_positive(nbs, nbs->size/2, outliersigma,
-                                          outliersclip[0], outliersclip[1],
-                                          0, 1);
+  outlier_p=gal_statistics_outlier_bydistance(1, nbs, nbs->size/2, outliersigma,
+                                              outliersclip[0], outliersclip[1],
+                                              1, 1);
+  outlier_n=gal_statistics_outlier_bydistance(0, nbs, nbs->size/2, outliersigma,
+                                              outliersclip[0], outliersclip[1],
+                                              1, 1);
+  /* For a check.
+  {
+    float *med;
+    gal_data_t *median=gal_statistics_median(nbs, 1);
+    float *out_n=outlier_n->array, *out_p=outlier_p->array;
+    med=median->array;
+    printf("vals: %f (out_n), %f (med), %f (out_p)\n",
+           out_n[0], med[0], out_p[0]);
+    exit(0);
+  }
+  */
+
+  /* Clean up the temporary 'nbs' array. */
   gal_data_free(nbs);
-  if(outlier)
+
+  /* If outliers exist, then implement them. */
+  if(outlier_p)
     {
-      o = *((float *)(outlier->array));
-      for(i=0;i<first->size;++i)
-        /* Just note that we have blank (NaN) values, so to avoid doing a
-           NaN check with 'isnan', we will check if the value is below the
-           quantile, if it succeeds (isn't NaN and is below the quantile),
-           then we'll put it's actual value, otherwise, a NaN. */
-        arr1[i] = arr1[i]<=o ? arr1[i] : NAN;
-      gal_data_free(outlier);
+      o_p = *((float *)(outlier_p->array));
+      gal_data_free(outlier_p);
+      if(outlier_n)
+        {
+          /* For easy reading, put the negative outlier into 'o_n'. */
+          o_n = *((float *)(outlier_n->array));
+          gal_data_free(outlier_n);
+
+          /* See description below, it just includes a negative outlier. */
+          for(i=0;i<first->size;++i)
+            arr1[i] = arr1[i]<o_p ? (arr1[i]>o_n ? arr1[i] : NAN) : NAN;
+        }
+      else
+          /* Just note that we have blank (NaN) values, so to avoid doing a
+             NaN check with 'isnan', we will check if the value is below
+             the quantile, if it succeeds (isn't NaN and is below the
+             quantile), then we'll put it's actual value, otherwise, a
+             NaN. */
+        for(i=0;i<first->size;++i)
+          arr1[i] = arr1[i]<o_p ? arr1[i] : NAN;
     }
+  else
+    if(outlier_n)
+      {
+        o_n = *((float *)(outlier_n->array));
+        for(i=0;i<first->size;++i)
+          arr1[i] = arr1[i]>o_n ? arr1[i] : NAN;
+        gal_data_free(outlier_n);
+      }
 
   /* Second quantile threshold. We are finding the outliers independently
      on each dataset to later remove any tile that is blank in atleast one
      of them. */
   arr2=second->array;
   nbs=gal_statistics_no_blank_sorted(second, 0);
-  outlier=gal_statistics_outlier_positive(nbs, nbs->size, outliersigma,
-                                          outliersclip[0], outliersclip[1],
-                                          0, 1);
+  outlier_p=gal_statistics_outlier_bydistance(1, nbs, nbs->size, outliersigma,
+                                              outliersclip[0], outliersclip[1],
+                                              1, 1);
+  outlier_n=gal_statistics_outlier_bydistance(0, nbs, nbs->size, outliersigma,
+                                              outliersclip[0], outliersclip[1],
+                                              1, 1);
   gal_data_free(nbs);
-  if(outlier)
+  if(outlier_p)
     {
-      o = *((float *)(outlier->array));
-      for(i=0;i<second->size;++i)
-        arr2[i] = arr2[i]<=o ? arr2[i] : NAN;
-      gal_data_free(outlier);
+      o_p = *((float *)(outlier_p->array));
+      gal_data_free(outlier_p);
+      if(outlier_n)
+        {
+          o_n = *((float *)(outlier_n->array));
+          for(i=0;i<first->size;++i)
+            arr2[i] = arr2[i]<o_p ? (arr2[i]>o_n ? arr2[i] : NAN) : NAN;
+          gal_data_free(outlier_n);
+        }
+      else
+        for(i=0;i<first->size;++i)
+          arr2[i] = arr2[i]<o_p ? arr2[i] : NAN;
     }
+  else
+    if(outlier_n)
+      {
+        o_n = *((float *)(outlier_n->array));
+        for(i=0;i<first->size;++i)
+          arr2[i] = arr2[i]>o_n ? arr2[i] : NAN;
+        gal_data_free(outlier_n);
+      }
 
   /* The third (if it exists). */
   if(third)
     {
       arr3=third->array;
       nbs=gal_statistics_no_blank_sorted(third, 0);
-      outlier=gal_statistics_outlier_positive(nbs, nbs->size/2,
-                                              outliersigma,
-                                              outliersclip[0],
-                                              outliersclip[1], 0, 1);
+      outlier_p=gal_statistics_outlier_bydistance(1, nbs, nbs->size/2,
+                                                  outliersigma,
+                                                  outliersclip[0],
+                                                  outliersclip[1], 1, 1);
+      outlier_n=gal_statistics_outlier_bydistance(0, nbs, nbs->size/2,
+                                                  outliersigma,
+                                                  outliersclip[0],
+                                                  outliersclip[1], 1, 1);
       gal_data_free(nbs);
-      if(outlier)
+      if(outlier_p)
         {
-          o = *((float *)(outlier->array));
-          for(i=0;i<third->size;++i)
-            arr3[i] = arr3[i]<=o ? arr3[i] : NAN;
-          gal_data_free(outlier);
+          o_p = *((float *)(outlier_p->array));
+          gal_data_free(outlier_p);
+          if(outlier_n)
+            {
+              o_n = *((float *)(outlier_n->array));
+              for(i=0;i<first->size;++i)
+                arr3[i] = arr3[i]<o_p ? (arr3[i]>o_n ? arr3[i] : NAN) : NAN;
+              gal_data_free(outlier_n);
+            }
+          else
+            for(i=0;i<first->size;++i)
+              arr3[i] = arr3[i]<o_p ? arr3[i] : NAN;
         }
+      else
+        if(outlier_n)
+          {
+            o_n = *((float *)(outlier_n->array));
+            for(i=0;i<first->size;++i)
+              arr3[i] = arr3[i]>o_n ? arr3[i] : NAN;
+            gal_data_free(outlier_n);
+          }
     }
 
   /* Make sure all three have the same NaN pixels. */

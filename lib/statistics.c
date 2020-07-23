@@ -2235,11 +2235,15 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
 /* Find the first outlier in a distribution. */
 #define OUTLIER_BYTYPE(IT) {                                            \
     IT *arr=nbs->array;                                                 \
-    for(i=window_size;i<nbs->size;++i)                                  \
+    for(i=window_size; i<nbs->size && i!=0; pos1_neg0 ? ++i : --i)      \
       {                                                                 \
         /* Fill in the distance array. */                               \
-        for(j=0; j<wtakeone; ++j)                                       \
-          darr[j] = arr[i-window_size+j+1] - arr[i-window_size+j];      \
+        if(pos1_neg0)                                                   \
+          for(j=0; j<wtakeone; ++j)                                     \
+            darr[j] = arr[i-window_size+j+1] - arr[i-window_size+j];    \
+        else                                                            \
+          for(j=0; j<wtakeone; ++j)                                     \
+            darr[j] = arr[i+window_size-j+1] - arr[i+window_size-j];    \
                                                                         \
         /* Get the sigma-clipped information. */                        \
         sclip=gal_statistics_sigma_clip(dist, sigclip_multip,           \
@@ -2271,9 +2275,10 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
       }                                                                 \
   }
 gal_data_t *
-gal_statistics_outlier_positive(gal_data_t *input, size_t window_size,
-                                float sigma, float sigclip_multip,
-                                float sigclip_param, int inplace, int quiet)
+gal_statistics_outlier_bydistance(int pos1_neg0, gal_data_t *input,
+                                  size_t window_size, float sigma,
+                                  float sigclip_multip, float sigclip_param,
+                                  int inplace, int quiet)
 {
   float *sarr;
   double *darr;
@@ -2299,7 +2304,6 @@ gal_statistics_outlier_positive(gal_data_t *input, size_t window_size,
           exit(0);
         }
       */
-
 
       /* Allocate space to keep the distances. */
       wtakeone=window_size-1;

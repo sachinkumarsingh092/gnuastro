@@ -75,12 +75,17 @@ See the end of the file for license conditions.
    - gal_type_string_to_number: Numbers ending in '.' or '.0' will be
      parsed as floating point. Until now, it would only parse numbers as
      floating point if they had non-zero decimals.
+   - gal_statistics_outlier_bydistance: new name for the old
+     'gal_statistics_outlier_positive'. It can now use the same algorithm
+     for negative outliers with a new argument.
 
 ** Bugs fixed
   bug #58434: MakeCatalog crash when ordering is required and no usable pixels.
   bug #58455: Timezone is not portable and uses flag instead of seconds.
   bug #58696: Warp with --centeroncorner --scale making wrong size.
   bug #58774: Warp' s output on a cube is a 2D image or wrong size.
+  bug #58809: NoiseChisel not removing negative outlier tiles.
+
 
 
 
