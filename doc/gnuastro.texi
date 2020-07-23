@@ -1628,6 +1628,7 @@ He wants the output to be 499 pixels by 499 pixels, so he can put the center of 
 Looking at his drawings of it, he decides a reasonable effective radius for it would be 40 pixels on this image pixel scale, he sets the axis ratio and position angle to approximately correct values too and finally he sets the total magnitude of the profile to 3.44 which he had accurately measured.
 Sufi also decides to truncate both the mock profile and PSF at 5 times the respective radius parameters.
 In the end he decides to put four stars on the four corners of the image at very low magnitudes as a visual scale.
+While he was preparing the catalog, one of his students approached him and was also following the steps.
 
 Using all the information above, he creates the catalog of mock profiles he wants in a file named @file{cat.txt} (short for catalog) using his favorite text editor and stores it in a directory named @file{simulationtest} in his home directory.
 [The @command{cat} command prints the contents of a file, short for ``concatenation''.
@@ -1679,21 +1680,28 @@ $ls
 
 @cindex Oversample
 @noindent
-The file @file{0_cat.fits} is the PSF Sufi had asked for and @file{cat.fits} is the image containing the other 5 objects.
-The PSF is now available to him as a separate file for the convolution step.
-While he was preparing the catalog, one of his students approached him and was also following the steps.
-When he opened the image, the student was surprised to see that all the stars are only one pixel and not in the shape of the PSF as we see when we image the sky at night.
-So Sufi explained to him that the stars will take the shape of the PSF after convolution and this is how they would look if we didn't have an atmosphere or an aperture when we took the image.
-The size of the image was also surprising for the student, instead of 499 by 499, it was 2615 by 2615 pixels (from the command below):
+The file @file{0_cat.fits} is the PSF Sufi had asked for, and @file{cat.fits} is the image containing the main objects in the catalog.
+The size of @file{cat.fits} was surprising for the student, instead of 499 by 499 (as we had requested), it was 2615 by 2615 pixels (from the command below):
 
 @example
 $ astfits cat.fits -h1 | grep NAXIS
 @end example
 
 @noindent
-So Sufi explained why oversampling is important for parts of the image where the flux change is significant over a pixel.
-Sufi then explained to him that after convolving we will re-sample the image to get our originally desired size/resolution.
-To convolve the image, Sufi ran the following command:
+So Sufi explained why oversampling is important in modeling, especially for parts of the image where the flux change is significant over a pixel.
+Recall that when you oversample the model (for example by 5 times), for every desired pixel, you get 25 pixels (@mymath{5\times5}).
+Sufi then explained that after convolving (next step below) we will down-sample the image to get our originally desired size/resolution.
+
+Sufi then opened @code{cat.fits} [you can use any FITS viewer, for example, @command{ds9}].
+After seeing the image, the student complained that only the large elliptical model for the Andromeda nebula can be seen in the center.
+He couldn't see the four stars that we had also requested in the catalog.
+So Sufi had to explain that the stars are there in the image, but the reason that they aren't visible when looking at the whole image at once, is that they only cover a single pixel!
+To prove it, he centered the image around the coordinates 2308 and 2308, where one of the stars is located in the over-sampled image [you can do this in @command{ds9} by selecting ``Pan'' in the ``Edit'' menu, then clicking around that position].
+Sufi then zoomed in to that region and soon, the star's non-zero pixel could be clearly seen.
+
+Sufi explained that the stars will take the shape of the PSF (cover an area of more than one pixel) after convolution.
+If we didn't have an atmosphere and we didn't need an aperture, then stars would only cover a single pixel with normal CCD resolutions.
+So Sufi convolved the image with this command:
 
 @example
 $ astconvolve --kernel=0_cat.fits cat.fits
@@ -1714,7 +1722,9 @@ $ls
 @end example
 
 @noindent
-When convolution finished, Sufi opened the @file{cat_convolved.fits} file and showed the effect of convolution to his student and explained to him how a PSF with a larger FWHM would make the points even wider.
+When convolution finished, Sufi opened @file{cat_convolved.fits} and the four stars could be easily seen now.
+It was interesting for the student that all the flux in that single pixel is now distributed over so many pixels (the sum of all the pixels in each convolved star is actually equal to the value of the single pixel before convolution).
+Sufi explained how a PSF with a larger FWHM would make the points even wider than this (distributing their flux in a larger area).
 With the convolved image ready, they were prepared to re-sample it to the original pixel scale Sufi had planned [from the @command{$ astmkprof -P} command above, recall that MakeProfiles had over-sampled the image by 5 times].
 Sufi explained the basic concepts of warping the image to his student and ran Warp with the following command:
 
