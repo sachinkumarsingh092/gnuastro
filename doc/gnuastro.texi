@@ -257,6 +257,7 @@ General program usage tutorial
 * Segmentation and making a catalog::  Finding true peaks and creating a catalog.
 * Working with catalogs estimating colors::  Estimating colors using the catalogs.
 * Aperture photometry::         Doing photometry on a fixed aperture.
+* Matching catalogs::           Easily find corresponding rows from two catalogs.
 * Finding reddest clumps and visual inspection::  Selecting some targets and inspecting them.
 * Citing and acknowledging Gnuastro::  How to cite and acknowledge Gnuastro in your papers.
 * Writing scripts to automate the steps::  Scripts will greatly help in re-doing things fast.
@@ -1944,6 +1945,7 @@ This will help simulate future situations when you are processing your own datas
 * Segmentation and making a catalog::  Finding true peaks and creating a catalog.
 * Working with catalogs estimating colors::  Estimating colors using the catalogs.
 * Aperture photometry::         Doing photometry on a fixed aperture.
+* Matching catalogs::           Easily find corresponding rows from two catalogs.
 * Finding reddest clumps and visual inspection::  Selecting some targets and inspecting them.
 * Citing and acknowledging Gnuastro::  How to cite and acknowledge Gnuastro in your papers.
 * Writing scripts to automate the steps::  Scripts will greatly help in re-doing things fast.
@@ -2925,6 +2927,7 @@ To find the galaxies over the detections, we'll use Gnuastro's @ref{Segment} pro
 @example
 $ mkdir seg
 $ astsegment nc/xdf-f160w.fits -oseg/xdf-f160w.fits
+$ astsegment nc/xdf-f105w.fits -oseg/xdf-f105w.fits
 @end example
 
 Segment's operation is very much like NoiseChisel (in fact, prior to version 0.6, it was part of NoiseChisel).
@@ -2939,10 +2942,13 @@ Like NoiseChisel, the first extension is the input.
 The @code{CLUMPS} extension shows the true ``clumps'' with values that are @mymath{\ge1}, and the diffuse regions labeled as @mymath{-1}.
 In the @code{OBJECTS} extension, we see that the large detections of NoiseChisel (that may have contained many galaxies) are now broken up into separate labels.
 See @ref{Segment} for more.
+The clumps are not affected by the hard-to-deblend and low signal-to-noise diffuse regions, they are more robust for calculating the colors (compared to objects).
+Therefore from this step onward, we'll continue with clumps.
 
 Having localized the regions of interest in the dataset, we are ready to do measurements on them with @ref{MakeCatalog}.
 Besides the IDs, we want to measure (in this order) the Right Ascension (with @option{--ra}), Declination (@option{--dec}), magnitude (@option{--magnitude}), and signal-to-noise ratio (@option{--sn}) of the objects and clumps.
-The following command will make these measurements on Segment's F160W output:
+Furthermore, as mentioned above, we also want measurements on clumps, so we also need to call @option{--clumpscat}.
+The following command will make these measurements on Segment's F160W output and write them in a catalog for each object and clump in a FITS table.
 
 @c Keep the `--zeropoint' on a single line, because later, we'll add
 @c `--valuesfile' in that line also, and it would be more clear if both
@@ -2956,30 +2962,48 @@ $ astmkcatalog seg/xdf-f160w.fits --ids --ra --dec --magnitude --sn \
 
 @noindent
 From the printed statements on the command-line, you see that MakeCatalog read all the extensions in Segment's output for the various measurements it needed.
-
 To calculate colors, we also need magnitude measurements on the F105W filter.
+So let's repeat the command above on the F105W filter, just changing the file names and zeropoint.
+
+@example
+$ mkdir cat
+$ astmkcatalog seg/xdf-f105w.fits --ids --ra --dec --magnitude --sn \
+               --zeropoint=26.27                                    \
+               --clumpscat --output=cat/xdf-f105w.fits
+@end example
+
 However, the galaxy properties might differ between the filters (which is the whole purpose behind measuring colors).
 Also, the noise properties and depth of the datasets differ.
-Therefore, if we simply follow the same Segment and MakeCatalog calls above for the F105W filter, we are going to get a different number of objects and clumps.
+You can see the effect of these factors in the resulting clump catalogs, with Gnuastro's Table program (the @option{-i} option will print information about the columns and number of rows, to see the column values, just don't use the @option{-i}, we'll go deep into working with tables in the next section).
+In the output of each command below, look at the ``Number of rows:''
+
+@example
+asttable cat/xdf-f105w.fits -hCLUMPS -i
+asttable cat/xdf-f160w.fits -hCLUMPS -i
+@end example
+
 Matching the two catalogs is possible (for example with @ref{Match}), but the fact that the measurements will be done on different pixels, can bias the result.
 Since the Point spread function (PSF) of both images is very similar, an accurate color calculation can only be done when magnitudes are measured from the same pixels on both images.
+Fortunately you can do this with MakeCatalog and is one of the reasons that NoiseChisel or Segment don't generate a catalog at all (to give you the freedom of selecting the pixels to do catalog measurements on).
 
 The F160W image is deeper, thus providing better detection/segmentation, and redder, thus observing smaller/older stars and representing more of the mass in the galaxies.
-To generate the F105W catalog, we will thus use the pixel labels generated on the F160W filter, but do the measurements on the F105W filter (using MakeCatalog's @option{--valuesfile} option).
-Notice how the only difference between this call to MakeCatalog and the previous one is @option{--valuesfile}, the value given to @code{--zeropoint} and the output name.
+We will thus use the F160W filter as a reference and use the pixel labels generated on the F160W filter, but do the measurements on the sky-subtracted F105W image (using MakeCatalog's @option{--valuesfile} option).
+Notice how the major difference between this call to MakeCatalog and the call to generate the F160W catalog (excluding the zeropoint and the output name) is the @option{--valuesfile}.
 
 @example
 $ astmkcatalog seg/xdf-f160w.fits --ids --ra --dec --magnitude --sn \
                --valuesfile=nc/xdf-f105w.fits --zeropoint=26.27     \
-               --clumpscat --output=cat/xdf-f105w.fits
+               --clumpscat --output=cat/xdf-f105w-on-f160w-lab.fits
 @end example
 
 Look into what MakeCatalog printed on the command-line.
 You can see that (as requested) the object and clump labels were taken from the respective extensions in @file{seg/xdf-f160w.fits}, while the values and Sky standard deviation were done on @file{nc/xdf-f105w.fits}.
+Since we used the same labeled image on both filters, the number of rows in both catalogs are now the same:
 
-Since we used the same labeled image on both filters, the number of rows in both catalogs are the same.
-The clumps are not affected by the hard-to-deblend and low signal-to-noise diffuse regions, they are more robust for calculating the colors (compared to objects).
-Therefore from this step onward, we'll continue with clumps.
+@example
+asttable cat/xdf-f105w-on-f160w-lab.fits -hCLUMPS -i
+asttable cat/xdf-f160w.fits -hCLUMPS -i
+@end example
 
 Finally, the comments in MakeCatalog's output (@code{COMMENT} keywords in the FITS headers, or lines starting with @code{#} in plain text) contain some important information about the input datasets and other useful info (for example pixel area or per-pixel surface brightness limit).
 You can see them with this command:
@@ -3029,142 +3053,154 @@ Using column names instead of numbers has many advantages:
 2) It acts as a documentation in the script.
 Column meta-data (including a name) aren't just limited to FITS tables and can also be used in plain text tables, see @ref{Gnuastro text table format}.
 
-We can finally calculate the colors of the objects from these two datasets.
-If you inspect the contents of the two catalogs, you'll notice that because they were both derived from the same segmentation maps, the rows are ordered identically (they correspond to the same object/clump in both filters).
-But to be generic (usable even when the rows aren't ordered similarly) and display another useful program in Gnuastro, we'll use @ref{Match}.
-
-As the name suggests, Gnuastro's Match program will match rows based on distance (or aperture in 2D) in one (or two) columns.
-In the command below, the options relating to each catalog are placed under it for easy understanding.
-You give Match two catalogs (from the two different filters we derived above) as argument, and the HDUs containing them (if they are FITS files) with the @option{--hdu} and @option{--hdu2} options.
-The @option{--ccol1} and @option{--ccol2} options specify the coordinate-columns which should be matched with which in the two catalogs.
-With @option{--aperture} you specify the acceptable error (radius in 2D), in the same units as the columns (see below for why we have requested an aperture of 0.35 arcseconds, or less than 6 HST pixels).
-
-The @option{--outcols} of Match is a very convenient feature in Match: you can use it to specify which columns from the two catalogs you want in the output (merge two input catalogs into one).
-If the first character is an `@key{a}', the respective matched column (number or name, similar to Table above) in the first catalog will be written in the output table.
-When the first character is a `@key{b}', the respective column from the second catalog will be written in the output.
-Also, if the first character is followed by @code{_all}, then all the columns from the respective catalog will be put in the output.
+Since @file{cat/xdf-f160w.fits} and @file{cat/xdf-f105w-on-f160w-lab.fits} have exactly the same number of rows, we can use Table to merge the columns of these two tables, to have one table with magnitudes in both filters.
+We do this with the @option{--catcolumnfile} option like.
+You give this option a file name (which is assumed to be a table of the same number of rows as main argument), and all the table's columns will be concatenated/appended to the main table.
+So please try it out with the commands below.
+We'll first look at the metadata of the first table (only the @code{CLUMPS} extension), with the second command, we'll concatenate the two tables and write them in, @file{both-mags.fits} and finally, we'll check the output's metadata.
 
 @example
-$ astmatch cat/xdf-f160w.fits           cat/xdf-f105w.fits         \
-           --hdu=CLUMPS                 --hdu2=CLUMPS              \
-           --ccol1=RA,DEC               --ccol2=RA,DEC             \
-           --aperture=0.35/3600 --log                              \
-           --outcols=a_all,bMAGNITUDE,bSN                          \
-           --output=cat/xdf-f160w-f105w.fits
+$ asttable cat/xdf-f160w.fits -i -hCLUMPS
+$ asttable cat/xdf-f160w.fits -hCLUMPS --output=both-mags.fits \
+           --catcolumnfile=cat/xdf-f105w-on-f160w-lab.fits \
+           --catcolumnhdu=CLUMPS
+$ asttable both-mags.fits -i
 @end example
 
-Let's have a look at the columns in the matched catalog:
+Looking at the two metadata outputs (called with @option{-i}), note how both tables have the same number of rows.
+But what might attract your attention more, is that @file{both-mags.fits} has double the number of columns (as expected).
+However, Table has intentionally appended a @code{-1} to the column names of the appended table (so for example we have the original @code{RA} column, and another one called @code{RA-1}).
+You can concatenate any number of tables in one command (by calling @option{--catcolumnfile} multiple times, once for each table you want to append).
+The second table's columns will be appended by @code{-2} and so on.
+
+However, this example clearly shows a problem with this full concatenation: some columns are identical (for example @code{HOST_OBJ_ID} and @code{HOST_OBJ_ID-1}), or not needed (for example @code{RA-1} and @code{DEC-1} which are not necessary here).
+In such cases, you can use @option{--catcolumns} to only concatenate certain columns, not the whole table, for example this command:
 
 @example
-$ asttable cat/xdf-f160w-f105w.fits -i
+$ asttable cat/xdf-f160w.fits -hCLUMPS --output=both-mags.fits \
+           --catcolumnfile=cat/xdf-f105w-on-f160w-lab.fits \
+           --catcolumnhdu=CLUMPS --catcolumns=MAGNITUDE
+$ asttable both-mags.fits -i
 @end example
 
-Indeed, its exactly the columns we wanted: there are two @code{MAGNITUDE} and @code{SN} columns.
-The first is from the F160W filter, the second is from the F105W.
+You see that we have now only appended the @code{MAGNITUDE} column of @file{cat/xdf-f105w-on-f160w-lab.fits}.
+This is what we needed to be able to later subtract the magnitudes.
+But there are still problems in the metadata: its not clear which one of @code{MAGNITUDE} or @code{MAGNITUDE-1} belong to which filter.
 Right now, you know this.
 But in one hour, you'll start doubting your self: going through your command history, trying to answer this question: ``which magnitude corresponds to which filter?''.
 You should never torture your future-self (or colleagues) like this! So, let's rename these confusing columns in the matched catalog.
-The FITS standard for tables stores the column names in the @code{TTYPE} header keywords, so let's have a look:
+
+Fortunately, with the @option{--metaupdate}, you can correct the column metadata of final table (just before it is written).
+For example by adding two calls to the previous command, we write the filter name in the magnitude column name and description.
 
 @example
-$ astfits cat/xdf-f160w-f105w.fits -h1 | grep TTYPE
+$ asttable cat/xdf-f160w.fits -hCLUMPS --output=both-mags.fits \
+           --catcolumnfile=cat/xdf-f105w-on-f160w-lab.fits \
+           --catcolumnhdu=CLUMPS --catcolumns=MAGNITUDE \
+           --metaupdate=MAGNITUDE,MAG-F160w,log,"Magnitude in F160W." \
+           --metaupdate=MAGNITUDE-1,MAG-F105w,log,"Magnitude in F105W."
+$ asttable both-mags.fits -i
 @end example
 
-Changing/updating the column names is as easy as updating the values to
-these options with the first command below, and with the second, confirm
-this change:
+We now have both magnitudes in one table and can start doing arithmetic on them (to estimate colors, which are just a subtraction of magnitudes).
+To use column arithmetic, simply call the column selection option (@option{--column} or @option{-c}), put the value in single quotations and start the value with @code{arith} (followed by a space) like the example below.
+Column arithmetic uses the same notation as the Arithmetic program (see @ref{Reverse polish notation}), with almost all the same operators (see @ref{Arithmetic operators}), and some column-specific opertors (that aren't available for images).
+In column-arithmetic, you can identify columns by number (prefixed with a @code{$}) or name, see @ref{Column arithmetic}.
+For example with the @file{both-mags.fits} created above, all the commands below will produce the same output (column arithmetic can be mixed with other ways to choose output columns):
 
 @example
-$ astfits cat/xdf-f160w-f105w.fits -h1                          \
-          --update=TTYPE5,MAG_F160W   --update=TTYPE6,SN_F160W  \
-          --update=TTYPE7,MAG_F105W   --update=TTYPE8,SN_F105W
-$ asttable cat/xdf-f160w-f105w.fits -i
+$ asttable both-mags.fits -ocolor-cat.fits \
+           -c1,2,RA,DEC,'arith $5 $7 -'
+$ asttable both-mags.fits -ocolor-cat.fits \
+           -c1,2,RA,DEC,'arith MAG-F105W MAG-F160W -'
+$ asttable both-mags.fits -ocolor-cat.fits -c1,2 \
+           -cRA,DEC --column='arith MAG-F105W MAG-F160W -'
 @end example
 
-If you noticed, when running Match, we also asked for a log file (@option{--log}).
-Many Gnuastro programs have this option to provide some detailed information on their operation in case you are curious or want to debug something.
-Here, we are using it to justify the value we gave to @option{--aperture}.
-Even though you asked for the output to be written in the @file{cat} directory, a listing of the contents of your current directory will show you an extra @file{astmatch.fits} file.
-Let's have a look at what columns it contains.
+This example again highlights the important point on column metadata: notice how clearly understandable the the last two commands are, and how cryptic the first one is.
+When you have column names, please use them and if they don't have a name, give them one when you create them.
+For example have a look at the column metadata of the table produced above:
 
 @example
-$ ls
-$ asttable astmatch.fits -i
+$ asttable color-cat.fits -i
 @end example
 
-@cindex Flux-weighted
-@cindex SED, Spectral Energy Distribution
-@cindex Spectral Energy Distribution, SED
-The @file{MATCH_DIST} column contains the distance of the matched rows, let's have a look at the distribution of values in this column.
-You might be asking yourself ``why should the positions of the two filters differ when I gave MakeCatalog the same segmentation map?'' The reason is that the central positions are @emph{flux-weighted}.
-Therefore the @option{--valuesfile} dataset you give to MakeCatalog will also affect the center measurements@footnote{To only measure the center based on the labeled pixels (and ignore the pixel values), you can ask for the columns that contain @option{geo} (for geometric) in them.
-For example @option{--geow1} or @option{--geow2} for the RA and Declination (first and second world-coordinates).}.
-Recall that the Spectral Energy Distribution (SED) of galaxies is not flat and they have substructure, therefore, they can have different shapes/morphologies in different filters.
-
-Gnuastro has a simple program for basic statistical analysis.
-The command below will print some basic information about the distribution (minimum, maximum, median, etc), along with a cute little ASCII histogram to visually help you understand the distribution on the command-line without the need for a graphic user interface.
-This ASCII histogram can be useful when you just want some coarse and general information on the input dataset.
-It is also useful when working on a server (where you may not have graphic user interface), and finally, its fast.
+The name of the column produced by arithmetic column is @command{ARITH_1}!
+This is natural: Arithmetic has no idea what the modified column is!
+So you can use @option{--metaupdate} to give a proper metadata like the example below.
+Since this is the final table (we want to store it in @file{cat/}), we'll also give it a clear name and use the @option{--range} option to only print columns with a signal-to-noise ratio (@code{SN} column) above 5.
 
 @example
-$ aststatistics astmatch.fits -cMATCH_DIST
-$ rm astmatch.fits
+$ asttable both-mags.fits --range=SN,5,inf -c1,2,RA,DEC \
+           -cMAG-F160W,MAG-F105W -c'arith MAG-F105W MAG-F160W -' \
+           --metaupdate=ARITH_1,F105W-F160W,log,"Magnitude difference" \
+           --output=cat/mags-with-color.fits
+$ asttable cat/mags-with-color.fits -i
 @end example
 
-The units of this column are the same as the columns you gave to Match: in degrees.
-You see that while almost all the objects matched very nicely, the maximum distance is roughly 0.31 arcseconds.
-This is why we asked for an aperture of 0.35 arcseconds when doing the match.
-
-Gnuastro's Table program can also be used to measure the colors using the command below.
-As before, the @option{-c1,2} option will tell Table to print the first two columns.
-With the @option{--range=SN_F160W,7,inf} we only keep the rows that have a F160W signal-to-noise ratio larger than 7@footnote{The value of 7 is taken from the clump S/N threshold in F160W (where the clumps were defined).}.
-
-Finally, for estimating the colors, we use Table's column arithmetic feature.
-It uses the same notation as the Arithmetic program (see @ref{Reverse polish notation}), with almost all the same operators (see @ref{Arithmetic operators}).
-You can use column arithmetic in any output column, just put the value in double quotations and start the value with @code{arith} (followed by a space) like below.
-In column-arithmetic, you can identify columns by number or name, see @ref{Column arithmetic}.
+The table now has all the columns we need and it has the proper metadata to let us safely use it later (without frustrating over column orders!) or passing it to colleages.
+You can now inspect the distribution of colors with the Statistics program.
 
 @example
-$ asttable cat/xdf-f160w-f105w.fits -ocat/f105w-f160w.fits \
-           -c1,2,RA,DEC,'arith MAG_F105W MAG_F160W -'      \
-           --range=SN_F160W,7,inf
+$ aststatistics cat/mags-with-color.fits -cF105W-F160W
 @end example
 
-@noindent
-You can inspect the distribution of colors with the Statistics program.
-But first, let's give the color column a proper name.
-
-@example
-$ astfits cat/f105w-f160w.fits --update=TTYPE5,COLOR_F105W_F160W
-$ aststatistics cat/f105w-f160w.fits -cCOLOR_F105W_F160W
-@end example
-
+This tiny and cute ASCII histogram gives you a crude (but very useful and fast) feeling on the color distribution of these galaxies.
 You can later use Gnuastro's Statistics program with the @option{--histogram} option to build a much more fine-grained histogram as a table to feed into your favorite plotting program for a much more accurate/appealing plot (for example with PGFPlots in @LaTeX{}).
 If you just want a specific measure, for example the mean, median and standard deviation, you can ask for them specifically with this command:
 
 @example
-$ aststatistics cat/f105w-f160w.fits -cCOLOR_F105W_F160W \
+$ aststatistics cat/mags-with-color.fits -cF105W-F160W \
                 --mean --median --std
 @end example
 
+We won't go much deeper into the Statistics program here, but there is so much more you can do with it, please see @ref{Statistics} later.
 
-@node Aperture photometry, Finding reddest clumps and visual inspection, Working with catalogs estimating colors, General program usage tutorial
+Let's finish this section of the tutorial with a useful tip on modifying column metadata.
+Above, updating/changing column metadata was done with the @option{--metaupdate} in the same command that produced the newly created Table file.
+But in many sitations, the table is already made and you just want to update the metadata of one column.
+In such cases using @option{--metaupdate} is over-kill (wasting CPU/RAM energy or time if the table is large) because it will load the full table data and metadata into memory, just change the metadata and write it back into a file.
+
+In scenarios when the table's data doesn't need to be changed, it is much more efficient to use basic FITS keyword editing to modify column metadata.
+The FITS standard for tables stores the column names in the @code{TTYPE} header keywords, so let's have a look:
+
+@example
+$ asttable cat/xdf-f160w.fits -i
+$ astfits cat/xdf-f160w.fits -h1 | grep TTYPE
+@end example
+
+Changing/updating the column names is as easy as updating the values to these keywords.
+Below we'll just copy the table into the top/temporary directory, then change the column name and confirm the change:
+
+@example
+$ cp cat/xdf-f160w.fits test.fits
+$ asttable test.fits -i
+$ astfits test.fits -h1 --update=TTYPE2,RA-F160W --update=TTYPE3,DEC-F160W
+$ asttable test.fits -i
+@end example
+
+
+
+
+@node Aperture photometry, Matching catalogs, Working with catalogs estimating colors, General program usage tutorial
 @subsection Aperture photometry
-Some researchers prefer to have colors in a fixed aperture for all the objects.
 The colors we calculated in @ref{Working with catalogs estimating colors} used a different segmentation map for each object.
-This might not satisfy some science cases.
-To make a catalog from fixed apertures, we should make a labeled image which has a fixed label for each aperture.
-That labeled image can be given to MakeCatalog instead of Segment's labeled detection image.
+This might not satisfy some science cases that need the flux within a fixed area/aperture.
+Fortunately the modularity of Gnuastro's modular programs make it very easy to alo do this type of measurement/photometry.
+To do this, we can ignore the labeled images of NoiseChisel of Segment, we can just built our own labeled image!
+That labeled image can then be given to MakeCatalog
 
 @cindex GNU AWK
 To generate the apertures catalog we'll use Gnuastro's MakeProfiles (see @ref{MakeProfiles}).
-We'll first read the clump positions from the F160W catalog, then use AWK to set the other parameters of each profile to be a fixed circle of radius 5 pixels (recall that we want all apertures to be identical in this scenario).
+But first we need a list of positions (aperture photometry needs a-priori knowledge of your target positions).
+So we'll first read the clump positions from the F160W catalog, then use AWK to set the other parameters of each profile to be a fixed circle of radius 5 pixels (recall that we want all apertures to have an identical size/area in this scenario).
 
 @example
 $ rm *.fits *.txt
 $ asttable cat/xdf-f160w.fits -hCLUMPS -cRA,DEC                    \
            | awk '!/^#/@{print NR, $1, $2, 5, 5, 0, 0, 1, NR, 1@}' \
            > apertures.txt
+$ cat apertures.txt
 @end example
 
 We can now feed this catalog into MakeProfiles using the command below to build the apertures over the image.
@@ -3180,32 +3216,94 @@ $ astmkprof apertures.txt --background=flat-ir/xdf-f160w.fits     \
 
 The first thing you might notice in the printed information is that the profiles are not built in order.
 This is because MakeProfiles works in parallel, and parallel CPU operations are asynchronous.
-You can try running MakeProfiles with one thread (using @option{--numthreads=1}) to see how order is respected in that case.
+You can try running MakeProfiles with one thread (using @option{--numthreads=1}) to see how order is respected in that case, but slower (note that the mult-threaded run will be much more faster when more mathematically-complicated profiles are built, like S@'eric profiles).
 
-Open the output @file{apertures.fits} file and see the result.
+Open @file{apertures.fits} with a FITS viewer and look around at the circles placed over the targets.
+Also open the input image and Segment's clumps image and compare them with the positions of these circles.
 Where the apertures overlap, you will notice that one label has replaced the other (because of the @option{--replace} option).
 In the future, MakeCatalog will be able to work with overlapping labels, but currently it doesn't.
 If you are interested, please join us in completing Gnuastro with added improvements like this (see task 14750 @footnote{@url{https://savannah.gnu.org/task/index.php?14750}}).
 
 We can now feed the @file{apertures.fits} labeled image into MakeCatalog instead of Segment's output as shown below.
-In comparison with the previous MakeCatalog call, you will notice that there is no more @option{--clumpscat} option, since each aperture is treated as a separate ``object'' here.
+In comparison with the previous MakeCatalog call, you will notice that there is no more @option{--clumpscat} option, since there is no more separarate ``clump'' imge now, each aperture is treated as a separate ``object''.
 
 @example
-$ astmkcatalog apertures.fits -h1 --zeropoint=26.27        \
-               --valuesfile=nc/xdf-f105w.fits              \
-               --ids --ra --dec --magnitude --sn           \
+$ astmkcatalog apertures.fits -h1 --zeropoint=26.27 \
+               --valuesfile=nc/xdf-f105w.fits \
+               --ids --ra --dec --magnitude --sn \
                --output=cat/xdf-f105w-aper.fits
 @end example
 
 This catalog has the same number of rows as the catalog produced from clumps in @ref{Working with catalogs estimating colors}.
 Therefore similar to how we found colors, you can compare the aperture and clump magnitudes for example.
 
-You can also change the filter name and zeropoint magnitudes and run this
-command again to have the fixed aperture magnitude in the F160W filter and
-measure colors on apertures.
+You can also change the filter name and zeropoint magnitudes and run this command again to have the fixed aperture magnitude in the F160W filter and measure colors on apertures.
 
 
-@node Finding reddest clumps and visual inspection, Citing and acknowledging Gnuastro, Aperture photometry, General program usage tutorial
+
+@node Matching catalogs, Finding reddest clumps and visual inspection, Aperture photometry, General program usage tutorial
+@subsection Matching catalogs
+
+In the example above, we had the luxury to generate the catalogs ourselves, and where thus able to generate them in a way that the rows match.
+But this isn't generally the case.
+In many situations, you need to use catalogs from many different telescopes, or catalogs with high-level calculations that you can't simply regenrate with the same pixels without spending a lot of time or using heavy computation.
+In such cases, when each catalog has the coordinates of its own objects, you can use the coordinates to match the rows with Gnuastro's Match program (see @ref{Match}).
+
+As the name suggests, Gnuastro's Match program will match rows based on distance (or aperture in 2D) in one, two, or three columns.
+For this tutorial, let's try matching the two catalogs that weren't created from the same labeled images, recall how each has a different number of rows:
+
+@example
+$ asttable cat/xdf-f105w.fits -hCLUMPS -i
+$ asttable cat/xdf-f160w.fits -hCLUMPS -i
+@end example
+
+You give Match two catalogs (from the two different filters we derived above) as argument, and the HDUs containing them (if they are FITS files) with the @option{--hdu} and @option{--hdu2} options.
+The @option{--ccol1} and @option{--ccol2} options specify the coordinate-columns which should be matched with which in the two catalogs.
+With @option{--aperture} you specify the acceptable error (radius in 2D), in the same units as the columns.
+
+@example
+$ astmatch cat/xdf-f160w.fits           cat/xdf-f105w.fits         \
+           --hdu=CLUMPS                 --hdu2=CLUMPS              \
+           --ccol1=RA,DEC               --ccol2=RA,DEC             \
+           --aperture=0.5/3600 --log                               \
+           --output=matched.fits
+$ astfits matched.fits
+@end example
+
+From the second command, you see that the output has two extensions and that both have the same number of rows.
+The rows in each extenion correspond with the rows in the other.
+You can also see which objects didn't match with the @option{--notmatched}, like below.
+Note how each extension now has a different number of rows.
+
+@example
+$ astmatch cat/xdf-f160w.fits           cat/xdf-f105w.fits         \
+           --hdu=CLUMPS                 --hdu2=CLUMPS              \
+           --ccol1=RA,DEC               --ccol2=RA,DEC             \
+           --aperture=0.5/3600 --log                               \
+           --output=matched.fits        --notmatched
+$ astfits matched.fits
+@end example
+
+The @option{--outcols} of Match is a very convenient feature: you can use it to specify which columns from the two catalogs you want in the output (merge two input catalogs into one).
+If the first character is an `@key{a}', the respective matched column (number or name, similar to Table above) in the first catalog will be written in the output table.
+When the first character is a `@key{b}', the respective column from the second catalog will be written in the output.
+Also, if the first character is followed by @code{_all}, then all the columns from the respective catalog will be put in the output.
+
+@example
+$ astmatch cat/xdf-f160w.fits           cat/xdf-f105w.fits         \
+           --hdu=CLUMPS                 --hdu2=CLUMPS              \
+           --ccol1=RA,DEC               --ccol2=RA,DEC             \
+           --aperture=0.35/3600 --log                              \
+           --outcols=a_all,bMAGNITUDE,bSN                          \
+           --output=matched.fits
+$ astfits matched.fits
+@end example
+
+
+
+
+
+@node Finding reddest clumps and visual inspection, Citing and acknowledging Gnuastro, Matching catalogs, General program usage tutorial
 @subsection Finding reddest clumps and visual inspection
 @cindex GNU AWK
 As a final step, let's go back to the original clumps-based color measurement we generated in @ref{Working with catalogs estimating colors}.
@@ -3213,12 +3311,19 @@ We'll find the objects with the strongest color and make a cutout to inspect the
 With the command below, we'll select the reddest objects (those with a color larger than 1.5):
 
 @example
-$ asttable cat/f105w-f160w.fits --range=COLOR_F105W_F160W,1.5,inf
+$ asttable cat/mags-with-color.fits --range=F105W-F160W,1.5,inf
 @end example
 
-We want to crop the F160W image around each of these objects, but we need a unique identifier for them first.
+@noindent
+You can see how many they are by piping it to @code{wc -l}:
+
+@example
+$ asttable cat/mags-with-color.fits --range=F105W-F160W,1.5,inf | wc -l
+@end example
+
+Let's crop the F160W image around each of these objects, but we first need a unique identifier for them.
 We'll define this identifier using the object and clump labels (with an underscore between them) and feed the output of the command above to AWK to generate a catalog.
-Note that since we are making a plain text table, we'll define the column metadata manually (see @ref{Gnuastro text table format}).
+Note that since we are making a plain text table, we'll define the necessary (for the string-type first column) metadata manually (see @ref{Gnuastro text table format}).
 
 @example
 $ echo "# Column 1: ID [name, str10] Object ID" > reddest.txt
@@ -3229,8 +3334,8 @@ $ asttable cat/f105w-f160w.fits --range=COLOR_F105W_F160W,1.5,inf \
 
 We can now feed @file{reddest.txt} into Gnuastro's Crop program to see what these objects look like.
 To keep things clean, we'll make a directory called @file{crop-red} and ask Crop to save the crops in this directory.
-We'll also add a @file{-f160w.fits} suffix to the crops (to remind us which image they came from).
-The width of the crops will be 15 arcseconds.
+We'll also add a @file{-f160w.fits} suffix to the crops (to remind us which filter they came from).
+The width of the crops will be 15 arcseconds (or 15/3600 degrees, which is the units of the WCS).
 
 @example
 $ mkdir crop-red
@@ -3252,6 +3357,7 @@ $ for f in *.fits; do                                                  \
     astconvertt $f --fluxlow=-0.001 --fluxhigh=0.005 --invert -ojpg;   \
   done
 $ cd ..
+$ ls crop-red/
 @end example
 
 You can now use your general graphic user interface image viewer to flip through the images more easily, or import them into your papers/reports.
@@ -3269,6 +3375,12 @@ $ parallel astconvertt --fluxlow=-0.001 --fluxhigh=0.005 --invert   \
            -ojpg ::: *.fits
 $ cd ..
 @end example
+
+@noindent
+Did you notice how much faster this one was? When possible, its always very helpful to do your analysis in parallel.
+But the problem is that many operations are not as simple as this.
+For such cases, you can use @url{https://en.wikipedia.org/wiki/Make_(software), Make} which will greatly help designing workflows.
+But that is beyond the topic here.
 
 @cindex DS9
 @cindex SAO DS9
