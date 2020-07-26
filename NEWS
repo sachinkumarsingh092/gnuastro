@@ -85,6 +85,7 @@ See the end of the file for license conditions.
   bug #58696: Warp with --centeroncorner --scale making wrong size.
   bug #58774: Warp' s output on a cube is a 2D image or wrong size.
   bug #58809: NoiseChisel not removing negative outlier tiles.
+  bug #58833: Segment crashes when detetion map has blank pixels
 
 
 

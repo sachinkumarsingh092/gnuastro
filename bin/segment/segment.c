@@ -141,7 +141,7 @@ segment_initialize(struct segmentparams *p)
           *b = *o > 0;
 
           /* A small sanity check. */
-          if(*o<0)
+          if(*o<0 && *o!=GAL_BLANK_INT32)
             error(EXIT_FAILURE, 0, "%s (hdu: %s) has negative value(s). "
                   "Each non-zero pixel in this image must be positive (a "
                   "counter, counting from 1).", p->useddetectionname,
