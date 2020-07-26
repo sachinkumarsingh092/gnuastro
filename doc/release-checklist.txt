@@ -218,6 +218,43 @@ Steps necessary to Package Gnuastro for Debian.
       $ ./bootstrap --copy --gnulib-srcdir=/path/to/gnulib
       $ ./developer-build -p upload-server:folder
 
+ - Some tips on basic Debian operating system to do the packaging:
+
+   After installing Debian from DVD, you need to tell apt to use an
+   internet connection and not the DVD for installing the packages. To do
+   that, comment the line(s) with a `cdrom' in this file:
+
+      nano /etc/apt/sources.list
+
+   Install the following programs. The first group of packages are general
+   for package building, and the second are only for Gnuastro.
+
+     $ sudo apt-get install ssh devscripts pbuilder pristine-tar git quilt \
+                            lintian lzip emacs dh-make
+     $ sudo apt-get install ghostscript libcfitsio-dev libtool-bin wcslib-dev \
+                            libgsl-dev libjpeg-dev libtiff-dev libgit2-dev \
+     $ sudo pbuilder create
+     $ su
+     # usermod -aG sudo YOURUSERID   # Add your user to the 'sudo' group.
+
+   Add these two lines to '~/.devscripts':
+
+     DEBFULLNAME="Your name"
+     DEBEMAIL=your@email.address
+
+   Add these lines to '~/.quiltrc':
+
+     QUILT_PATCHES=debian/patches
+     QUILT_NO_DIFF_INDEX=1
+     QUILT_NO_DIFF_TIMESTAMPS=1
+     QUILT_REFRESH_ARGS="-p ab"
+
+   Add this line to `~/.pbuilderrc':
+
+    DEBMAIL="Your Name <your@email.address>"
+
+   A restart should help in making sure everything that has been updated is
+   being used.
 
  - It would help to use the most recent versions of packages in Debian. To
    do that, you can update the '/etc/apt/sources.list' file. You can get
@@ -228,34 +265,6 @@ Steps necessary to Package Gnuastro for Debian.
 
      $ sudo apt-get update
      $ sudo apt-get upgrade
-
-
- - If this is the first time you are packaging on this system, you will
-   need to install the following programs. The first group of packages are
-   general for package building, and the second are only for Gnuastro.
-
-     $ sudo apt-get install ssh devscripts pbuilder pristine-tar git quilt \
-                            lintian lzip emacs
-     $ sudo apt-get install ghostscript libcfitsio-dev libtool-bin wcslib-dev \
-                            libgsl-dev libjpeg-dev libtiff-dev libgit2-dev \
-     $ sudo pbuilder create
-     $ emacs ~/.devscripts
-
-   Add these two lines to the opened file:
-
-     DEBFULLNAME="Your name"
-     DEBEMAIL=your@email.address
-
-   Then add these lines to '~/.quiltrc':
-
-     QUILT_PATCHES=debian/patches
-     QUILT_NO_DIFF_INDEX=1
-     QUILT_NO_DIFF_TIMESTAMPS=1
-     QUILT_REFRESH_ARGS="-p ab"
-
-   A restart should help in making sure everything that has been updated is
-   being used.
-
 
  - If you don't already have the Git repository, clone it with the
    following command. A 'gnuastro' directory will be built, but to setup
