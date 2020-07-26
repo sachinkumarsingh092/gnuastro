@@ -36,7 +36,7 @@ set -e
 
 
 # Default values for variables.
-jobs=8
+jobs=0
 dist=0
 debug=0
 clean=0
@@ -306,19 +306,27 @@ done
 
 
 
-# Check if top_build_dir exists
-if [ ! -d $top_build_dir ]; then
-    echo "$top_build_dir doesn't exist. Aborted."
-    exit 1
+# Keep the address of this source directory (where this script is being run
+# from) which we will need later.
+srcdir=$(pwd)
+
+
+
+
+
+# Set the number of jobs.
+if [ $jobs = 0 ]; then
+    jobs=$(nproc)
 fi
 
 
 
 
-
-# Keep the address of this source directory (where this script is being run
-# from) which we will need later.
-srcdir=$(pwd)
+# Check if top_build_dir exists
+if [ ! -d $top_build_dir ]; then
+    echo "$top_build_dir doesn't exist. Aborted."
+    exit 1
+fi
 
 
 
@@ -420,7 +428,7 @@ fi
 
 
 # Build Gnuastro in that directory with the specified number of threads
-make -kj$jobs
+make -k -j$jobs
 
 
 
@@ -428,7 +436,7 @@ make -kj$jobs
 
 # If requested, also run 'make check'.
 if [ x$check = x1 ]; then
-    make check -kj$jobs
+    make check -k -j$jobs
 fi
 
 
