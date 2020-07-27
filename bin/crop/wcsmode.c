@@ -116,7 +116,7 @@ wcsmode_check_prepare(struct cropparams *p, struct inputimgs *img)
   if(p->pixscale)
     {
       for(i=0;i<ndim;++i)
-        if(p->pixscale[i] != pixscale[i])
+        if(fabs(p->pixscale[i]-pixscale[i])>1e-10) /* Floating point errors. */
           error(EXIT_FAILURE, 0, "%s (hdu %s): has resolution of %g along "
                 "dimension %d. However, previously checked input(s) had "
                 "a resolution of %g in this dimension", img->name, p->cp.hdu,
