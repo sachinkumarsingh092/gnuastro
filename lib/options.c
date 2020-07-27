@@ -521,10 +521,10 @@ gal_options_read_interpmetric(struct argp_option *option, char *arg,
     {
       switch(*(uint8_t *)(option->value))
         {
-        case GAL_INTERPOLATE_CLOSE_METRIC_RADIAL:
+        case GAL_INTERPOLATE_NEIGHBORS_METRIC_RADIAL:
           gal_checkset_allocate_copy("radial", &str);
           break;
-        case GAL_INTERPOLATE_CLOSE_METRIC_MANHATTAN:
+        case GAL_INTERPOLATE_NEIGHBORS_METRIC_MANHATTAN:
           gal_checkset_allocate_copy("manhattan", &str);
           break;
         default:
@@ -542,9 +542,9 @@ gal_options_read_interpmetric(struct argp_option *option, char *arg,
 
       /* Set the value. */
       if(       !strcmp(arg, "radial") )
-        *(uint8_t *)(option->value) = GAL_INTERPOLATE_CLOSE_METRIC_RADIAL;
+        *(uint8_t *)(option->value) = GAL_INTERPOLATE_NEIGHBORS_METRIC_RADIAL;
       else if ( !strcmp(arg, "manhattan") )
-        *(uint8_t *)(option->value) = GAL_INTERPOLATE_CLOSE_METRIC_MANHATTAN;
+        *(uint8_t *)(option->value) = GAL_INTERPOLATE_NEIGHBORS_METRIC_MANHATTAN;
       else
         error_at_line(EXIT_FAILURE, 0, filename, lineno, "'%s' (value to "
                       "'%s' option) isn't valid. Currently only 'radial' "

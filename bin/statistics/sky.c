@@ -220,9 +220,10 @@ sky(struct statisticsparams *p)
   /* Interpolate the Sky and its standard deviation. */
   if(!cp->quiet) gettimeofday(&t1, NULL);
   p->sky_t->next=p->std_t;
-  tmp=gal_interpolate_close_neighbors(p->sky_t, tl, cp->interpmetric,
-                                      cp->interpnumngb, cp->numthreads,
-                                      cp->interponlyblank, 1);
+  tmp=gal_interpolate_neighbors(p->sky_t, tl, cp->interpmetric,
+                                cp->interpnumngb, cp->numthreads,
+                                cp->interponlyblank, 1,
+                                GAL_INTERPOLATE_NEIGHBORS_FUNC_MEDIAN);
   gal_data_free(p->sky_t);
   gal_data_free(p->std_t);
   p->sky_t=tmp;

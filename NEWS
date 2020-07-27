@@ -8,6 +8,11 @@ See the end of the file for license conditions.
 ** New features
 
   Arithmetic:
+   - New operators:
+     - interpolate-minngb: Fill blanks with minimum of nearest neighbors.
+     - interpolate-maxngb: Fill blanks with maximum of nearest neighbors.
+          This can be useful to fill the blank values of saturated stars
+          for example.
    - To force integers to floats, you can also put a '.' or '.0' after
      them. Until now, it was only possibly by putting an 'f' after
      them. Hence while '5' will be read as an integer, '5.', '5.0' or '5f'
@@ -47,6 +52,13 @@ See the end of the file for license conditions.
 
   Library:
    - Spectral lines library: SiIII, OIII, CIV, NV and rest of Lyman series.
+   - GAL_INTERPOLATE_NEIGHBORS_METRIC_RADIAL: Radial metric for interpolation.
+   - GAL_INTERPOLATE_NEIGHBORS_METRIC_MANHATTAN: Mahattan distance.
+   - GAL_INTERPOLATE_NEIGHBORS_METRIC_INVALID: For error-handling/completeness.
+   - GAL_INTERPOLATE_NEIGHBORS_FUNC_MIN: Use minimum for interpolation.
+   - GAL_INTERPOLATE_NEIGHBORS_FUNC_MAX: Use maximum for interpolation.
+   - GAL_INTERPOLATE_NEIGHBORS_FUNC_MEDIAN: Use median for interpolation.
+   - GAL_INTERPOLATE_NEIGHBORS_FUNC_INVALID: for error-handling/completeness.
    - GAL_CONFIG_HAVE_WCSLIB_DIS_H: if the host's WCSLIB supports distortions.
    - GAL_CONFIG_HAVE_WCSLIB_MJDREF: if the host's WCSLIB reads MJDREF keyword.
    - GAL_WCS_FLTERROR: Limit to identify a floating point error for WCS.
@@ -72,12 +84,13 @@ See the end of the file for license conditions.
      changed).
 
   Library:
-   - gal_type_string_to_number: Numbers ending in '.' or '.0' will be
-     parsed as floating point. Until now, it would only parse numbers as
-     floating point if they had non-zero decimals.
+   - gal_interpolate_neighbors: new name for gal_interpolate_close_neighbors.
    - gal_statistics_outlier_bydistance: new name for the old
      'gal_statistics_outlier_positive'. It can now use the same algorithm
      for negative outliers with a new argument.
+   - gal_type_string_to_number: Numbers ending in '.' or '.0' will be
+     parsed as floating point. Until now, it would only parse numbers as
+     floating point if they had non-zero decimals.
 
 ** Bugs fixed
   bug #58434: MakeCatalog crash when ordering is required and no usable pixels.

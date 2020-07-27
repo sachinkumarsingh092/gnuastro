@@ -57,8 +57,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Parameters for interpolation on threads. */
-struct interpolate_params
+struct interpolate_ngb_params
 {
+  int                         function;
   gal_data_t                    *input;
   size_t                           num;
   gal_data_t                      *out;
@@ -78,11 +79,14 @@ struct interpolate_params
 
 /* Run the interpolation on many threads. */
 static void *
-interpolate_close_neighbors_on_thread(void *in_prm)
+interpolate_neighbors_on_thread(void *in_prm)
 {
-  /* Variables that others depend on. */
+  /* Low-level variables that others depend on. */
   struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
-  struct interpolate_params *prm=(struct interpolate_params *)(tprm->params);
+  struct interpolate_ngb_params *prm=
+    (struct interpolate_ngb_params *)(tprm->params);
+
+  /* Higher-level variables. */
   struct gal_tile_two_layer_params *tl=prm->tl;
   int correct_index=(tl && tl->totchannels>1 && !tl->workoverch);
   gal_data_t *input=prm->input;
@@ -95,7 +99,7 @@ interpolate_close_neighbors_on_thread(void *in_prm)
   gal_list_dosizet_t *lQ, *sQ;
   size_t ngb_counter, pind, *dinc;
   size_t i, index, fullind, chstart=0, ndim=input->ndim;
-  gal_data_t *median, *tin, *tout, *tnear, *nearest=NULL;
+  gal_data_t *value, *tin, *tout, *tnear, *nearest=NULL;
   size_t size = (correct_index ? tl->tottilesinch : input->size);
   size_t *dsize = (correct_index ? tl->numtilesinch : input->dsize);
   size_t *icoord=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
@@ -255,19 +259,34 @@ interpolate_close_neighbors_on_thread(void *in_prm)
                   "interpolation", __func__, ngb_counter, prm->numneighbors);
         }
 
-      /* Calculate the median of the values and write it in the output. */
+      /* Calculate the desired statistic, and write it in the output. */
       tout=prm->out;
       for(tnear=nearest; tnear!=NULL; tnear=tnear->next)
         {
-          /* Find the median and copy it, but first, reset the flags (which
-             remain from the last time). */
+          /* Find the desired statistic and copy it, but first, reset the
+             flags (which remain from the last time). */
           tnear->flag &= ~(GAL_DATA_FLAG_SORT_CH | GAL_DATA_FLAG_BLANK_CH);
-          median=gal_statistics_median(tnear, 1);
+          switch(prm->function)
+            {
+            case GAL_INTERPOLATE_NEIGHBORS_FUNC_MIN:
+              value=gal_statistics_minimum(tnear); break;
+              break;
+            case GAL_INTERPOLATE_NEIGHBORS_FUNC_MAX:
+              value=gal_statistics_maximum(tnear); break;
+              break;
+            case GAL_INTERPOLATE_NEIGHBORS_FUNC_MEDIAN:
+              value=gal_statistics_median(tnear, 1); break;
+            default:
+              error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s "
+                    "to fix the problem. The value %d is not a recognized "
+                    "interpolation function identifier", __func__,
+                    PACKAGE_BUGREPORT, prm->function);
+            }
           memcpy(gal_pointer_increment(tout->array, fullind, tout->type),
-                 median->array, gal_type_sizeof(tout->type));
+                 value->array, gal_type_sizeof(tout->type));
 
           /* Clean up and go to next array. */
-          gal_data_free(median);
+          gal_data_free(value);
           tout=tout->next;
         }
     }
@@ -328,14 +347,14 @@ interpolate_copy_input(gal_data_t *input, int aslinkedlist)
    assumed that the tile values correspond to given tessellation. Such that
    'input[i]' corresponds to 'tiles[i]' in the tessellation. */
 gal_data_t *
-gal_interpolate_close_neighbors(gal_data_t *input,
-                                struct gal_tile_two_layer_params *tl,
-                                uint8_t metric, size_t numneighbors,
-                                size_t numthreads, int onlyblank,
-                                int aslinkedlist)
+gal_interpolate_neighbors(gal_data_t *input,
+                             struct gal_tile_two_layer_params *tl,
+                             uint8_t metric, size_t numneighbors,
+                             size_t numthreads, int onlyblank,
+                             int aslinkedlist, int function)
 {
   gal_data_t *tin, *tout;
-  struct interpolate_params prm;
+  struct interpolate_ngb_params prm;
   size_t ngbvnum=numthreads*numneighbors;
   int permute=(tl && tl->totchannels>1 && tl->workoverch);
 
@@ -352,6 +371,7 @@ gal_interpolate_close_neighbors(gal_data_t *input,
   prm.tl           = tl;
   prm.ngb_vals     = NULL;
   prm.input        = input;
+  prm.function     = function;
   prm.onlyblank    = onlyblank;
   prm.numneighbors = numneighbors;
   prm.num          = aslinkedlist ? gal_list_data_number(input) : 1;
@@ -360,10 +380,10 @@ gal_interpolate_close_neighbors(gal_data_t *input,
   /* Set the metric. */
   switch(metric)
     {
-    case GAL_INTERPOLATE_CLOSE_METRIC_RADIAL:
+    case GAL_INTERPOLATE_NEIGHBORS_METRIC_RADIAL:
       prm.metric=gal_dimension_dist_radial;
       break;
-    case GAL_INTERPOLATE_CLOSE_METRIC_MANHATTAN:
+    case GAL_INTERPOLATE_NEIGHBORS_METRIC_MANHATTAN:
       prm.metric=gal_dimension_dist_manhattan;
       break;
     default:
@@ -438,7 +458,7 @@ gal_interpolate_close_neighbors(gal_data_t *input,
 
 
   /* Spin off the threads. */
-  gal_threads_spin_off(interpolate_close_neighbors_on_thread, &prm,
+  gal_threads_spin_off(interpolate_neighbors_on_thread, &prm,
                        input->size, numthreads);
 
 

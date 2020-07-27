@@ -48,12 +48,24 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 /* Metrics to use for nearest-neighbor  */
-enum gal_interpolate_close_metric
+enum gal_interpolate_neighbors_metric
 {
- GAL_INTERPOLATE_CLOSE_METRIC_INVALID,
+ GAL_INTERPOLATE_NEIGHBORS_METRIC_INVALID,
 
- GAL_INTERPOLATE_CLOSE_METRIC_RADIAL,
- GAL_INTERPOLATE_CLOSE_METRIC_MANHATTAN,
+ GAL_INTERPOLATE_NEIGHBORS_METRIC_RADIAL,
+ GAL_INTERPOLATE_NEIGHBORS_METRIC_MANHATTAN,
+};
+
+
+
+/* Types of interpolation for nearest-neighbor. */
+enum gal_interpolate_neighbors_func
+{
+ GAL_INTERPOLATE_NEIGHBORS_FUNC_INVALID,
+
+ GAL_INTERPOLATE_NEIGHBORS_FUNC_MIN,
+ GAL_INTERPOLATE_NEIGHBORS_FUNC_MAX,
+ GAL_INTERPOLATE_NEIGHBORS_FUNC_MEDIAN,
 };
 
 
@@ -75,11 +87,11 @@ enum gal_interpolate_1D_types
 
 
 gal_data_t *
-gal_interpolate_close_neighbors(gal_data_t *input,
-                                struct gal_tile_two_layer_params *tl,
-                                uint8_t metric, size_t numneighbors,
-                                size_t numthreads, int onlyblank,
-                                int aslinkedlist);
+gal_interpolate_neighbors(gal_data_t *input,
+                             struct gal_tile_two_layer_params *tl,
+                             uint8_t metric, size_t numneighbors,
+                             size_t numthreads, int onlyblank,
+                             int aslinkedlist, int function);
 
 gsl_spline *
 gal_interpolate_1d_make_gsl_spline(gal_data_t *X, gal_data_t *Y, int type_1d);

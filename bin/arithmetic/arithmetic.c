@@ -703,9 +703,9 @@ arithmetic_invert(struct arithmeticparams *p, char *token)
 
 
 static void
-arithmetic_interpolate(struct arithmeticparams *p, char *token)
+arithmetic_interpolate(struct arithmeticparams *p, int operator, char *token)
 {
-  int num_int;
+  int num_int, interpop;
   gal_data_t *interpolated;
 
   /* First pop the number of nearby neighbors.*/
@@ -731,10 +731,28 @@ arithmetic_interpolate(struct arithmeticparams *p, char *token)
   num=gal_data_copy_to_new_type_free(num, GAL_TYPE_INT32);
   num_int = *((int32_t *)(num->array));
 
+  /* Set the interpolation operator. */
+  switch(operator)
+    {
+    case ARITHMETIC_OP_INTERPOLATE_MINNGB:
+      interpop=GAL_INTERPOLATE_NEIGHBORS_FUNC_MIN;
+      break;
+    case ARITHMETIC_OP_INTERPOLATE_MAXNGB:
+      interpop=GAL_INTERPOLATE_NEIGHBORS_FUNC_MAX;
+      break;
+    case ARITHMETIC_OP_INTERPOLATE_MEDIANNGB:
+      interpop=GAL_INTERPOLATE_NEIGHBORS_FUNC_MEDIAN;
+      break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+            "the problem. The operator code %d isn't recognized",
+            __func__, PACKAGE_BUGREPORT, operator);
+    }
+
   /* Call the interpolation function. */
-  interpolated=gal_interpolate_close_neighbors(in, NULL, p->cp.interpmetric,
-                                               num_int, p->cp.numthreads,
-                                               1, 0);
+  interpolated=gal_interpolate_neighbors(in, NULL, p->cp.interpmetric,
+                                         num_int, p->cp.numthreads,
+                                         1, 0, interpop);
 
   /* Clean up and push the interpolated array onto the stack. */
   gal_data_free(in);
@@ -1019,6 +1037,10 @@ arithmetic_set_operator(char *string, size_t *num_operands)
         { op=ARITHMETIC_OP_FILL_HOLES;            *num_operands=0; }
       else if (!strcmp(string, "invert"))
         { op=ARITHMETIC_OP_INVERT;                *num_operands=0; }
+      else if (!strcmp(string, "interpolate-minngb"))
+        { op=ARITHMETIC_OP_INTERPOLATE_MINNGB;    *num_operands=0; }
+      else if (!strcmp(string, "interpolate-maxngb"))
+        { op=ARITHMETIC_OP_INTERPOLATE_MAXNGB;    *num_operands=0; }
       else if (!strcmp(string, "interpolate-medianngb"))
         { op=ARITHMETIC_OP_INTERPOLATE_MEDIANNGB; *num_operands=0; }
       else if (!strcmp(string, "collapse-sum"))
@@ -1142,8 +1164,10 @@ arithmetic_operator_run(struct arithmeticparams *p, int operator,
           arithmetic_invert(p, operator_string);
           break;
 
+        case ARITHMETIC_OP_INTERPOLATE_MINNGB:
+        case ARITHMETIC_OP_INTERPOLATE_MAXNGB:
         case ARITHMETIC_OP_INTERPOLATE_MEDIANNGB:
-          arithmetic_interpolate(p, operator_string);
+          arithmetic_interpolate(p, operator, operator_string);
           break;
 
         case ARITHMETIC_OP_COLLAPSE_SUM:

@@ -271,11 +271,12 @@ statistics_interpolate_and_write(struct statisticsparams *p,
   if( p->interpolate
       && !(p->cp.interponlyblank && gal_blank_present(values, 1)==0) )
     {
-      interpd=gal_interpolate_close_neighbors(values, &cp->tl,
-                                              cp->interpmetric,
-                                              cp->interpnumngb,
-                                              cp->numthreads,
-                                              cp->interponlyblank, 0);
+      interpd=gal_interpolate_neighbors(values, &cp->tl,
+                                        cp->interpmetric,
+                                        cp->interpnumngb,
+                                        cp->numthreads,
+                                        cp->interponlyblank, 0,
+                                        GAL_INTERPOLATE_NEIGHBORS_FUNC_MEDIAN);
       gal_data_free(values);
       values=interpd;
     }
