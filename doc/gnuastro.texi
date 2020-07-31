@@ -3327,7 +3327,7 @@ Note that since we are making a plain text table, we'll define the necessary (fo
 
 @example
 $ echo "# Column 1: ID [name, str10] Object ID" > reddest.txt
-$ asttable cat/f105w-f160w.fits --range=COLOR_F105W_F160W,1.5,inf \
+$ asttable cat/mags-with-color.fits --range=F105W-F160W,1.5,inf \
            | awk '@{printf("%d_%-10d %f %f\n", $1, $2, $3, $4)@}' \
            >> reddest.txt
 @end example
