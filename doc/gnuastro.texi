@@ -10646,7 +10646,7 @@ But you can use @option{--onedasimage} or @option{--onedonstdout} to respectivel
 @cindex Erosion
 Erode the foreground pixels (with value @code{1}) of the input dataset (second popped operand).
 The first popped operand is the connectivity (see description in @command{connected-components}).
-Erosion is simply a flipping of all foreground pixels (to background; with value @code{0}) that are ``touching'' background pixels.
+Erosion is simply a flipping of all foreground pixels (with value @code{1}) to background (with value @code{0}) that are ``touching'' background pixels.
 ``Touching'' is defined by the connectivity.
 In effect, this carves off the outer borders of the foreground, making them thinner.
 This operator assumes a binary dataset (all pixels are @code{0} and @code{1}).
@@ -10655,7 +10655,7 @@ This operator assumes a binary dataset (all pixels are @code{0} and @code{1}).
 @cindex Dilation
 Dilate the foreground pixels (with value @code{1}) of the input dataset (second popped operand).
 The first popped operand is the connectivity (see description in @command{connected-components}).
-Erosion is simply a flipping of all background pixels (with value @code{0}) to foreground that are ``touching'' foreground pixels.
+Dilation is simply a flipping of all background pixels (with value @code{0}) to foreground (with value @code{1}) that are ``touching'' foreground pixels.
 ``Touching'' is defined by the connectivity.
 In effect, this expands the outer borders of the foreground.
 This operator assumes a binary dataset (all pixels are @code{0} and @code{1}).
