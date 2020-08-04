@@ -2692,7 +2692,18 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
                         "blank value cannot be deduced", filename, hdu,
                         keyname, index+1);
               else
-                gal_tableintern_read_blank(&allcols[index], value);
+                {
+                  /* Put in the blank value. */
+                  gal_tableintern_read_blank(&allcols[index], value);
+
+                  /* This flag is not relevant for FITS tables. */
+                  if(allcols[index].flag
+                     ==GAL_TABLEINTERN_FLAG_ARRAY_IS_BLANK_STRING)
+                    {
+                      allcols[index].flag=0;
+                      free(allcols[index].array);
+                    }
+                }
             }
         }
 
@@ -3131,14 +3142,33 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tableformat,
       break;
 
     case GAL_TABLE_FORMAT_BFITS:
+
       /* FITS binary tables don't accept NULL values for floating point or
-         string columns. For floating point is must be NaN and for strings
+         string columns. For floating point it must be NaN, and for strings
          it is a blank string. */
       if( col->type!=GAL_TYPE_FLOAT32
           && col->type!=GAL_TYPE_FLOAT64
           && col->type!=GAL_TYPE_STRING )
         {
+          /* The blank value must be the raw value within the FITS file
+             (before applying 'TZERO' OR 'TSCAL'). Therefore, because the
+             following integer types aren't native to the FITS standard, we
+             need to correct TNULL for them after applying TZERO. For
+             example for uin16_t, TZERO is 32768, so TNULL has to be 32767
+             (the maximum value of the signed integer with the same
+             width). In this way, adding TZERO to the TNULL, will make it
+             the actual NULL value we assume in Gnuastro for uint16_t (the
+             largest possible number). */
           blank=gal_blank_alloc_write(col->type);
+          switch(col->type)
+            {
+            case GAL_TYPE_INT8:   gal_type_min(GAL_TYPE_UINT8, blank); break;
+            case GAL_TYPE_UINT16: gal_type_max(GAL_TYPE_INT16, blank); break;
+            case GAL_TYPE_UINT32: gal_type_max(GAL_TYPE_INT32, blank); break;
+            case GAL_TYPE_UINT64: gal_type_max(GAL_TYPE_INT64, blank); break;
+            }
+
+          /* Prepare the name and write the keyword. */
           if( asprintf(&keyname, "TNULL%zu", colnum)<0 )
             error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
           fits_write_key(fptr, gal_fits_type_to_datatype(col->type),

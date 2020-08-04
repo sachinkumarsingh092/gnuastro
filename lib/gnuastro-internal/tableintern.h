@@ -52,6 +52,14 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
+/* Flags for columns. */
+enum tableintern_flags
+{
+ GAL_TABLEINTERN_FLAG_INVALID,  /* Zero according to FITS standard. */
+ GAL_TABLEINTERN_FLAG_ARRAY_IS_BLANK_STRING,
+};
+
+
 
 
 /************************************************************************/

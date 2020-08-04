@@ -7,6 +7,12 @@ See the end of the file for license conditions.
 
 ** New features
 
+  All programs:
+   - When reading plain-text tables, the blank value for numeric columns
+     can be any string (specified in the special comment-line format
+     described in the "Gnuastro text table format" of the manual). Until
+     now, it had to be a number in the same type.
+
   Arithmetic:
    - New operators:
      - interpolate-minngb: Fill blanks with minimum of nearest neighbors.
@@ -100,6 +106,7 @@ See the end of the file for license conditions.
   bug #58809: NoiseChisel not removing negative outlier tiles.
   bug #58833: Segment crashes when detetion map has blank pixels
   bug #58835: Floating point errors when comparing pixel scale in Crop.
+  bug #58901: Blank values for non-standard integer types in FITS tables.
 
 
 

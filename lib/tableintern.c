@@ -37,6 +37,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/checkset.h>
+#include <gnuastro-internal/tableintern.h>
 
 
 
@@ -405,9 +406,9 @@ gal_tableintern_col_print_info(gal_data_t *col, int tableformat,
 
 
 /* Use the input 'blank' string and the input column to put the blank value
-   in the column's array. This function should later be generalized into a
-   function to read a string into a given data type (see
-   'gal_data_string_to_array_elem'). It is only here temporarily. */
+   in the column's array. If the string cannot be interpretted as a blank
+   of that type, then store it in the 'mmapname' element of the data
+   structure. */
 void
 gal_tableintern_read_blank(gal_data_t *col, char *blank)
 {
@@ -423,10 +424,16 @@ gal_tableintern_read_blank(gal_data_t *col, char *blank)
 
   /* Read the blank value as the given type. If successful, then
      'gal_data_string_to_type' will return 0. In that case, we need to
-     initialize the necessary paramters to read this data structure
-     correctly. */
-  if( !gal_type_from_string((void **)(&col->array), blank, col->type) )
+     initialize the necessary parameters to read this data structure
+     correctly. If it isn't successful, then  */
+  if( gal_type_from_string((void **)(&col->array), blank, col->type) )
     {
+      col->flag=GAL_TABLEINTERN_FLAG_ARRAY_IS_BLANK_STRING;
+      gal_checkset_allocate_copy(blank, (char **)(&col->array));
+    }
+  else
+    {
+      col->flag=0;
       col->dsize=gal_pointer_allocate(GAL_TYPE_SIZE_T, 1, 0, __func__,
                                       "col->dsize");
       col->dsize[0]=col->ndim=col->size=1;

@@ -7719,8 +7719,12 @@ A column information comment is assumed to have the following format:
 Any sequence of characters between `@key{:}' and `@key{[}' will be interpreted as the column name (so it can contain anything except the `@key{[}' character).
 Anything between the `@key{]}' and the end of the line is defined as a comment.
 Within the brackets, anything before the first `@key{,}' is the units (physical units, for example km/s, or erg/s), anything before the second `@key{,}' is the short type identifier (see below, and @ref{Numeric data types}).
+
 Finally (still within the brackets), any non-white characters after the second `@key{,}' are interpreted as the blank value for that column (see @ref{Blank pixels}).
-Note that blank values will be stored in the same type as the column, not as a string@footnote{For floating point types, the @code{nan}, or @code{inf} strings (both not case-sensitive) refer to IEEE NaN (not a number) and infinity values respectively and will be stored as a floating point, so they are acceptable.}.
+The blank value can either be in the same type as the column (for example @code{-99} for a signed integer column), or any string (for example @code{NaN} in that same column).
+In both cases, the values will be stored in memory as Gnuastro's fixed blank values for each type.
+For floating point types, Gnuastro's internal blank value is IEEE NaN (Not-a-Number).
+For signed integers, it is the smallest possible value and for unsigned integers its the largest possible value.
 
 When a formatting problem occurs (for example you have specified the wrong type code, see below), or the column was already given meta-data in a previous comment, or the column number is larger than the actual number of columns in the table (the non-commented or empty lines), then the comment information line will be ignored.
 

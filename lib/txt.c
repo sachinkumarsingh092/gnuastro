@@ -286,7 +286,11 @@ txt_info_from_comment(char *in_line, gal_data_t **datall, char *comm_start,
 
 
       /* Write the blank value into the array. Note that this is not the
-         final column, we are just collecting information now. */
+         final column, we are just collecting information now. If the blank
+         value wasn't interpretted into the given type the 'flag' element
+         of the dataset will be set and the contents of the 'blank' string
+         will be copied into the 'array' element (so it should be
+         interpretted as a 'char *'). */
       gal_tableintern_read_blank(*datall, gal_txt_trim_space(blank));
     }
 
@@ -496,7 +500,7 @@ txt_infoll_to_array(gal_data_t *datall, size_t *numdata)
   /* First find the total number of columns. */
   for(data=datall; data!=NULL; data=data->next) ++numc;
 
-  /* Conversion to an arry is only necessary when there is more than one
+  /* Conversion to an array is only necessary when there is more than one
      element in the list. */
   if(numc>1)
     {
@@ -517,6 +521,7 @@ txt_infoll_to_array(gal_data_t *datall, size_t *numdata)
              of the array. About the pointers, instead of having to
              allocate them again, we will just set them to NULL so
              'gal_data_free' doesn't remove them.*/
+          dataarr[ind].flag       = data->flag;    data->flag=0;
           dataarr[ind].name       = data->name;    data->name=NULL;
           dataarr[ind].unit       = data->unit;    data->unit=NULL;
           dataarr[ind].array      = data->array;   data->array=NULL;
@@ -547,7 +552,8 @@ txt_infoll_to_array(gal_data_t *datall, size_t *numdata)
 
 static void
 txt_get_info_line(char *line, gal_data_t **datall, char *comm_start,
-                  int *firstlinedone, int format, size_t *dsize, int inplace)
+                  int *firstlinedone, int format, size_t *dsize,
+                  int inplace)
 {
   size_t numtokens;
 
@@ -727,94 +733,127 @@ txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
   float       *f = data->array,    *fb;
   double      *d = data->array,    *db;
 
-  /* Read the proper token into the column. */
-  switch(data->type)
+  /* See if this token is blank. */
+  int isblankstr = ( info->flag==GAL_TABLEINTERN_FLAG_ARRAY_IS_BLANK_STRING
+                     ? ( strcmp(info->array,token)==0 ? 1 : 0 )
+                     : 0);
+
+  /* If the string is equal to the given blank string, then just write
+     blank and don't bother parsing the token. */
+  if(isblankstr)
     {
-    case GAL_TYPE_STRING:
-      gal_checkset_allocate_copy(gal_txt_trim_space(token), &str[i]);
-      if( (strb=info->array) && !strcmp( *strb, str[i] ) )
+      switch(data->type)
         {
+        case GAL_TYPE_STRING:
           free(str[i]);
-          gal_checkset_allocate_copy(GAL_BLANK_STRING, &str[i]);
+          gal_checkset_allocate_copy(GAL_BLANK_STRING, &str[i]); break;
+        case GAL_TYPE_UINT8:  uc[i] = GAL_BLANK_UINT8;   break;
+        case GAL_TYPE_INT8:    c[i] = GAL_BLANK_INT8;    break;
+        case GAL_TYPE_UINT16: us[i] = GAL_BLANK_UINT16;  break;
+        case GAL_TYPE_INT16:   s[i] = GAL_BLANK_INT16;   break;
+        case GAL_TYPE_UINT32: ui[i] = GAL_BLANK_UINT32;  break;
+        case GAL_TYPE_INT32:  ii[i] = GAL_BLANK_INT32;   break;
+        case GAL_TYPE_UINT64: ul[i] = GAL_BLANK_UINT64;  break;
+        case GAL_TYPE_INT64:   l[i] = GAL_BLANK_INT64;   break;
+        case GAL_TYPE_FLOAT32: f[i] = GAL_BLANK_FLOAT32; break;
+        case GAL_TYPE_FLOAT64: d[i] = GAL_BLANK_FLOAT64; break;
+        default:
+          error(EXIT_FAILURE, 0, "%s: type code %d not recognized in "
+                "'blankstr' switch", __func__, data->type);
         }
-      break;
-
-    case GAL_TYPE_UINT8:
-      uc[i]=strtol(token, &tailptr, 0);
-      if( (ucb=info->array) && *ucb==uc[i] )
-        uc[i]=GAL_BLANK_UINT8;
-      break;
-
-    case GAL_TYPE_INT8:
-      c[i]=strtol(token, &tailptr, 0);
-      if( (cb=info->array) && *cb==c[i] )
-        c[i]=GAL_BLANK_INT8;
-      break;
-
-    case GAL_TYPE_UINT16:
-      us[i]=strtol(token, &tailptr, 0);
-      if( (usb=info->array) && *usb==us[i] )
-        us[i]=GAL_BLANK_UINT16;
-      break;
-
-    case GAL_TYPE_INT16:
-      s[i]=strtol(token, &tailptr, 0);
-      if( (sb=info->array) && *sb==s[i] )
-        s[i]=GAL_BLANK_INT16;
-      break;
-
-    case GAL_TYPE_UINT32:
-      ui[i]=strtol(token, &tailptr, 0);
-      if( (uib=info->array) && *uib==ui[i] )
-        ui[i]=GAL_BLANK_UINT32;
-      break;
-
-    case GAL_TYPE_INT32:
-      ii[i]=strtol(token, &tailptr, 0);
-      if( (ib=info->array) && *ib==ii[i] )
-        ii[i]=GAL_BLANK_INT32;
-      break;
-
-    case GAL_TYPE_UINT64:
-      ul[i]=strtoul(token, &tailptr, 0);
-      if( (ulb=info->array) && *ulb==ul[i] )
-        ul[i]=GAL_BLANK_UINT64;
-      break;
-
-    case GAL_TYPE_INT64:
-      l[i]=strtol(token, &tailptr, 0);
-      if( (lb=info->array) && *lb==l[i] )
-        l[i]=GAL_BLANK_INT64;
-      break;
-
-      /* For the blank value of floating point types, we need to make
-         sure it isn't a NaN, because a NaN value will fail on any
-         condition check (even '=='). If it isn't NaN, then we can
-         compare the values. */
-    case GAL_TYPE_FLOAT32:
-      f[i]=strtod(token, &tailptr);
-      if( (fb=info->array)
-          && ( (isnan(*fb) && isnan(f[i])) || *fb==f[i] ) )
-        f[i]=GAL_BLANK_FLOAT64;
-      break;
-
-    case GAL_TYPE_FLOAT64:
-      d[i]=strtod(token, &tailptr);
-      if( (db=info->array)
-          && ( (isnan(*db) && isnan(d[i])) || *db==d[i] ) )
-        d[i]=GAL_BLANK_FLOAT64;
-      break;
-
-    default:
-      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
-            __func__, data->type);
     }
 
-  /* If a number couldn't be read properly, then report an error. */
-  if(data->type!=GAL_TYPE_STRING && *tailptr!='\0')
-    error_at_line(EXIT_FAILURE, 0, filename, lineno, "column %zu "
-                  "('%s') couldn't be read as a '%s' number",
-                  colnum, token, gal_type_name(data->type, 1) );
+  /* Parse the token into the column's dataset. */
+  else
+    {
+      switch(data->type)
+        {
+        case GAL_TYPE_STRING:
+          gal_checkset_allocate_copy(gal_txt_trim_space(token), &str[i]);
+          if( (strb=info->array) && !strcmp( *strb, str[i] ) )
+            {
+              free(str[i]);
+              gal_checkset_allocate_copy(GAL_BLANK_STRING, &str[i]);
+            }
+          break;
+
+        case GAL_TYPE_UINT8:
+          uc[i]=strtol(token, &tailptr, 0);
+          if( (ucb=info->array) && *ucb==uc[i] )
+            uc[i]=GAL_BLANK_UINT8;
+          break;
+
+        case GAL_TYPE_INT8:
+          c[i]=strtol(token, &tailptr, 0);
+          if( (cb=info->array) && *cb==c[i] )
+            c[i]=GAL_BLANK_INT8;
+          break;
+
+        case GAL_TYPE_UINT16:
+          us[i]=strtol(token, &tailptr, 0);
+          if( (usb=info->array) && *usb==us[i] )
+            us[i]=GAL_BLANK_UINT16;
+          break;
+
+        case GAL_TYPE_INT16:
+          s[i]=strtol(token, &tailptr, 0);
+          if( (sb=info->array) && *sb==s[i] )
+            s[i]=GAL_BLANK_INT16;
+          break;
+
+        case GAL_TYPE_UINT32:
+          ui[i]=strtol(token, &tailptr, 0);
+          if( (uib=info->array) && *uib==ui[i] )
+            ui[i]=GAL_BLANK_UINT32;
+          break;
+
+        case GAL_TYPE_INT32:
+          ii[i]=strtol(token, &tailptr, 0);
+          if( (ib=info->array) && *ib==ii[i] )
+            ii[i]=GAL_BLANK_INT32;
+          break;
+
+        case GAL_TYPE_UINT64:
+          ul[i]=strtoul(token, &tailptr, 0);
+          if( (ulb=info->array) && *ulb==ul[i] )
+            ul[i]=GAL_BLANK_UINT64;
+          break;
+
+        case GAL_TYPE_INT64:
+          l[i]=strtol(token, &tailptr, 0);
+          if( (lb=info->array) && *lb==l[i] )
+            l[i]=GAL_BLANK_INT64;
+          break;
+
+          /* For the blank value of floating point types, we need to make
+             sure it isn't a NaN, because a NaN value will fail on any
+             condition check (even '=='). If it isn't NaN, then we can
+             compare the values. */
+        case GAL_TYPE_FLOAT32:
+          f[i]=strtod(token, &tailptr);
+          if( (fb=info->array)
+              && ( (isnan(*fb) && isnan(f[i])) || *fb==f[i] ) )
+            f[i]=GAL_BLANK_FLOAT64;
+          break;
+
+        case GAL_TYPE_FLOAT64:
+          d[i]=strtod(token, &tailptr);
+          if( (db=info->array)
+              && ( (isnan(*db) && isnan(d[i])) || *db==d[i] ) )
+            d[i]=GAL_BLANK_FLOAT64;
+          break;
+
+        default:
+          error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+                __func__, data->type);
+        }
+
+      /* If a number couldn't be read properly, then report an error. */
+      if(data->type!=GAL_TYPE_STRING && *tailptr!='\0')
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "column %zu "
+                      "('%s') couldn't be read as a '%s' number",
+                      colnum, token, gal_type_name(data->type, 1) );
+    }
 }
 
 
@@ -822,9 +861,9 @@ txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
 
 
 static void
-txt_fill(char *in_line, char **tokens, size_t maxcolnum, gal_data_t *info,
-         gal_data_t *out, size_t rowind, char *filename, size_t lineno,
-         int inplace, int format)
+txt_fill(char *in_line, char **tokens, size_t maxcolnum,
+         gal_data_t *colinfo, gal_data_t *out, size_t rowind,
+         char *filename, size_t lineno, int inplace, int format)
 {
   size_t i, n=0;
   gal_data_t *data;
@@ -857,7 +896,7 @@ txt_fill(char *in_line, char **tokens, size_t maxcolnum, gal_data_t *info,
          explanations in 'txt_info_from_first_row'. Note that an image has
          a single 'info' element for the whole array, while a table has one
          for each column. */
-      if( info[format==TXT_FORMAT_TABLE ? n-1 : 0].type == GAL_TYPE_STRING )
+      if( colinfo[format==TXT_FORMAT_TABLE ? n-1 : 0].type == GAL_TYPE_STRING )
         {
           /* Remove any delimiters and stop at the first non-delimiter. If
              we have reached the end of the line then its an error, because
@@ -867,7 +906,7 @@ txt_fill(char *in_line, char **tokens, size_t maxcolnum, gal_data_t *info,
 
           /* Everything is good, set the pointer and increment the line to
              the end of the allocated space for this string. */
-          line = (tokens[n]=line) + info[n-1].disp_width;
+          line = (tokens[n]=line) + colinfo[n-1].disp_width;
           if(line<end) *line++='\0';
         }
       else
@@ -894,19 +933,20 @@ txt_fill(char *in_line, char **tokens, size_t maxcolnum, gal_data_t *info,
 
   /* Read the desired tokens into the columns that need them. Note that
      when a blank value is defined for the column, the column's array
-     pointer ('info[col->status-1]') is not NULL and points to the blank
-     value. For strings, this will actually be a string. */
+     pointer ('colinfo[col->status-1]') is not NULL and points to the blank
+     value. For strings (or when the blank value is actually a string),
+     this will actually be a string. */
   switch(out->ndim)
     {
     case 1:
       for(data=out; data!=NULL; data=data->next)
-        txt_read_token(data, &info[data->status-1], tokens[data->status],
+        txt_read_token(data, &colinfo[data->status-1], tokens[data->status],
                        rowind, filename, lineno, data->status);
       break;
 
     case 2:
       for(i=0;i<out->dsize[1];++i)
-        txt_read_token(out, info, tokens[i+1], rowind * out->dsize[1] + i,
+        txt_read_token(out, colinfo, tokens[i+1], rowind * out->dsize[1] + i,
                        filename, lineno, i+1);
       break;
 
