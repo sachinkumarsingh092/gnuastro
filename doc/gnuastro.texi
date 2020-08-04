@@ -251,7 +251,7 @@ General program usage tutorial
 * Building custom programs with the library::  Easy way to build new programs.
 * Option management and configuration files::  Dealing with options and configuring them.
 * Warping to a new pixel grid::  Transforming/warping the dataset.
-* Multiextension FITS files NoiseChisel's output::  Using extensions in FITS files.
+* NoiseChisel and Multiextension FITS files::  Running NoiseChisel and having multiple HDUs.
 * NoiseChisel optimization for detection::  Check NoiseChisel's operation and improve it.
 * NoiseChisel optimization for storage::  Dramatically decrease output's volume.
 * Segmentation and making a catalog::  Finding true peaks and creating a catalog.
@@ -1939,7 +1939,7 @@ This will help simulate future situations when you are processing your own datas
 * Building custom programs with the library::  Easy way to build new programs.
 * Option management and configuration files::  Dealing with options and configuring them.
 * Warping to a new pixel grid::  Transforming/warping the dataset.
-* Multiextension FITS files NoiseChisel's output::  Using extensions in FITS files.
+* NoiseChisel and Multiextension FITS files::  Running NoiseChisel and having multiple HDUs.
 * NoiseChisel optimization for detection::  Check NoiseChisel's operation and improve it.
 * NoiseChisel optimization for storage::  Dramatically decrease output's volume.
 * Segmentation and making a catalog::  Finding true peaks and creating a catalog.
@@ -2063,20 +2063,21 @@ $ mkdir download
 $ cd download
 $ xdfurl=http://archive.stsci.edu/pub/hlsp/xdf
 $ wget $xdfurl/hlsp_xdf_hst_wfc3ir-60mas_hudf_f105w_v1_sci.fits
+$ wget $xdfurl/hlsp_xdf_hst_wfc3ir-60mas_hudf_f125w_v1_sci.fits
 $ wget $xdfurl/hlsp_xdf_hst_wfc3ir-60mas_hudf_f160w_v1_sci.fits
 $ cd ..
 @end example
 
 @noindent
-In this tutorial, we'll just use these two filters.
+In this tutorial, we'll just use these three filters.
 Later, you may need to download more filters.
 To do that, you can use the shell's @code{for} loop to download them all in series (one after the other@footnote{Note that you only have one port to the internet, so downloading in parallel will actually be slower than downloading in series.}) with one command like the one below for the WFC3 filters.
-Put this command instead of the two @code{wget} commands above.
+Put this command instead of the three @code{wget} commands above.
 Recall that all the extra spaces, back-slashes (@code{\}), and new lines can be ignored if you are typing on the lines on the terminal.
 
 @example
-$ for f in f105w f125w f140w f160w; do                              \
-    wget $xdfurl/hlsp_xdf_hst_wfc3ir-60mas_hudf_"$f"_v1_sci.fits;   \
+$ for f in f105w f125w f140w f160w; do \
+    wget $xdfurl/hlsp_xdf_hst_wfc3ir-60mas_hudf_"$f"_v1_sci.fits; \
   done
 @end example
 
@@ -2114,40 +2115,47 @@ But before that, to keep things organized, let's make a directory called @file{f
 
 @example
 $ mkdir flat-ir
-$ astcrop --mode=wcs -h0 --output=flat-ir/xdf-f105w.fits              \
-          --polygon="53.187414,-27.779152 : 53.159507,-27.759633 :    \
-                     53.134517,-27.787144 : 53.161906,-27.807208"     \
+$ astcrop --mode=wcs -h0 --output=flat-ir/xdf-f105w.fits \
+          --polygon="53.187414,-27.779152 : 53.159507,-27.759633 : \
+                     53.134517,-27.787144 : 53.161906,-27.807208" \
           download/hlsp_xdf_hst_wfc3ir-60mas_hudf_f105w_v1_sci.fits
-$ astcrop --mode=wcs -h0 --output=flat-ir/xdf-f160w.fits              \
-          --polygon="53.187414,-27.779152 : 53.159507,-27.759633 :    \
-                     53.134517,-27.787144 : 53.161906,-27.807208"     \
+
+$ astcrop --mode=wcs -h0 --output=flat-ir/xdf-f125w.fits \
+          --polygon="53.187414,-27.779152 : 53.159507,-27.759633 : \
+                     53.134517,-27.787144 : 53.161906,-27.807208" \
+          download/hlsp_xdf_hst_wfc3ir-60mas_hudf_f125w_v1_sci.fits
+
+$ astcrop --mode=wcs -h0 --output=flat-ir/xdf-f160w.fits \
+          --polygon="53.187414,-27.779152 : 53.159507,-27.759633 : \
+                     53.134517,-27.787144 : 53.161906,-27.807208" \
           download/hlsp_xdf_hst_wfc3ir-60mas_hudf_f160w_v1_sci.fits
 @end example
 
-The only thing varying in the two calls to Gnuastro's Crop program is the filter name.
-Therefore, to simplify the command, and later allow work on more filters, we can use the shell's @code{for} loop.
-Notice how the two places where the filter names (@file{f105w} and @file{f160w}) are used above have been replaced with @file{$f} (the shell variable that @code{for} will update in every loop) below.
-In such cases, you should generally avoid repeating a command manually and use loops like below.
-To generalize this for more filters later, you can simply add the other filter names in the first line before the semi-colon (@code{;}).
+The only thing varying in the three calls to Gnuastro's Crop program is the filter name!
+Note how everything else is the same.
+In such cases, you should generally avoid repeating a command manually, it is prone to many bugs, and as you see, it is very hard to read (didn't you suddently write a @code{7} as an @code{8}?).
+To simplify the command, and later allow work on more filters, we can use the shell's @code{for} loop as shown below.
+Notice how the place where the filter names (@file{f105w}, @file{f125w} and @file{f160w}) are used above, have been replaced with @file{$f} (the shell variable that @code{for} will update in every loop) below.
 
 @example
 $ rm flat-ir/*.fits
-$ for f in f105w f160w; do                                            \
-    astcrop --mode=wcs -h0 --output=flat-ir/xdf-$f.fits               \
-            --polygon="53.187414,-27.779152 : 53.159507,-27.759633 :  \
-                       53.134517,-27.787144 : 53.161906,-27.807208"   \
+$ for f in f105w f125w f160w; do \
+    astcrop --mode=wcs -h0 --output=flat-ir/xdf-$f.fits \
+            --polygon="53.187414,-27.779152 : 53.159507,-27.759633 : \
+                       53.134517,-27.787144 : 53.161906,-27.807208" \
             download/hlsp_xdf_hst_wfc3ir-60mas_hudf_"$f"_v1_sci.fits; \
   done
 @end example
 
 Please open these images and inspect them with the same @command{ds9} command you used above.
 You will see how it is nicely flat now and doesn't have varying depths.
-Another important result of this crop is that regions with no data now have a NaN (Not-a-Number, or a blank value) value, not zero.
-Zero is a number, and is thus meaningful, especially when you later want to NoiseChisel@footnote{As you will see below, unlike most other detection algorithms, NoiseChisel detects the objects from their faintest parts, it doesn't start with their high signal-to-noise ratio peaks.
+Another important result of this crop is that regions with no data now have a NaN (Not-a-Number, or a blank value) value.
+In the downloaded files, such regions had a value of zero.
+However, zero is a number, and is thus meaningful, especially when you later want to NoiseChisel@footnote{As you will see below, unlike most other detection algorithms, NoiseChisel detects the objects from their faintest parts, it doesn't start with their high signal-to-noise ratio peaks.
 Since the Sky is already subtracted in many images and noise fluctuates around zero, zero is commonly higher than the initial threshold applied.
 Therefore not ignoring zero-valued pixels in this image, will cause them to part of the detections!}.
 Generally, when you want to ignore some pixels in a dataset, and avoid higher-level ambiguities or complications, it is always best to give them blank values (not zero, or some other absurdly large or small number).
-Gnuastro has the Arithmetic program for such cases, and we'll introduce it during this tutorial.
+Gnuastro has the Arithmetic program for such cases, and we'll introduce it later in this tutorial.
 
 @node Angular coverage on the sky, Cosmological coverage, Dataset inspection and cropping, General program usage tutorial
 @subsection Angular coverage on the sky
@@ -2540,7 +2548,7 @@ $ rm -rf my-cosmology*
 @end example
 
 
-@node Warping to a new pixel grid, Multiextension FITS files NoiseChisel's output, Option management and configuration files, General program usage tutorial
+@node Warping to a new pixel grid, NoiseChisel and Multiextension FITS files, Option management and configuration files, General program usage tutorial
 @subsection Warping to a new pixel grid
 We are now ready to start processing the downloaded images.
 The XDF datasets we are using here are already aligned to the same pixel grid.
@@ -2599,8 +2607,8 @@ $ rm *.fits
 @end example
 
 
-@node Multiextension FITS files NoiseChisel's output, NoiseChisel optimization for detection, Warping to a new pixel grid, General program usage tutorial
-@subsection Multiextension FITS files (NoiseChisel's output)
+@node NoiseChisel and Multiextension FITS files, NoiseChisel optimization for detection, Warping to a new pixel grid, General program usage tutorial
+@subsection NoiseChisel and Multiextension FITS files
 Having completed a review of the basics in the previous sections, we are now ready to separate the signal (galaxies or stars) from the background noise in the image.
 We will be using the results of @ref{Dataset inspection and cropping}, so be sure you already have them.
 Gnuastro has NoiseChisel for this job.
@@ -2685,9 +2693,9 @@ See @ref{HDU manipulation} for more.
 
 
 
-@node NoiseChisel optimization for detection, NoiseChisel optimization for storage, Multiextension FITS files NoiseChisel's output, General program usage tutorial
+@node NoiseChisel optimization for detection, NoiseChisel optimization for storage, NoiseChisel and Multiextension FITS files, General program usage tutorial
 @subsection NoiseChisel optimization for detection
-In @ref{Multiextension FITS files NoiseChisel's output}, we ran NoiseChisel and reviewed NoiseChisel's output format.
+In @ref{NoiseChisel and Multiextension FITS files}, we ran NoiseChisel and reviewed NoiseChisel's output format.
 Now that you have a better feeling for multi-extension FITS files, let's optimize NoiseChisel for this particular dataset.
 
 One good way to see if you have missed any signal (small galaxies, or the wings of brighter galaxies) is to mask all the detected pixels and inspect the noise pixels.
@@ -2876,6 +2884,7 @@ output in a dedicated directory (@file{nc}).
 $ rm *.fits
 $ mkdir nc
 $ astnoisechisel flat-ir/xdf-f160w.fits --output=nc/xdf-f160w.fits
+$ astnoisechisel flat-ir/xdf-f125w.fits --output=nc/xdf-f125w.fits
 $ astnoisechisel flat-ir/xdf-f105w.fits --output=nc/xdf-f105w.fits
 @end example
 
@@ -2883,37 +2892,59 @@ $ astnoisechisel flat-ir/xdf-f105w.fits --output=nc/xdf-f105w.fits
 @node NoiseChisel optimization for storage, Segmentation and making a catalog, NoiseChisel optimization for detection, General program usage tutorial
 @subsection NoiseChisel optimization for storage
 
-As we showed before (in @ref{Multiextension FITS files NoiseChisel's output}), NoiseChisel's output is a multi-extension FITS file with several images the same size as the input.
+As we showed before (in @ref{NoiseChisel and Multiextension FITS files}), NoiseChisel's output is a multi-extension FITS file with several images the same size as the input.
 As the input datasets get larger this output can become hard to manage and waste a lot of storage space.
 Fortunately there is a solution to this problem (which is also useful for Segment's outputs).
-But first, let's have a look at the volume of NoiseChisel's output from @ref{NoiseChisel optimization for detection} (fast answer, its larger than 100 mega-bytes):
+
+In this small section we'll take a short detour to show this feature.
+Please note that the outputs generated here are not needed for the rest of the tutorial.
+But first, let's have a look at the contents/HDUs and volume of NoiseChisel's output from @ref{NoiseChisel optimization for detection} (fast answer, its larger than 100 mega-bytes):
 
 @example
+$ astfits nc/xdf-f160w.fits
 $ ls -lh nc/xdf-f160w.fits
 @end example
 
 Two options can drastically decrease NoiseChisel's output file size: 1) With the @option{--rawoutput} option, NoiseChisel won't create a Sky-subtracted input.
-After all, it is redundant: you can always generate it by subtracting the Sky from the input image (which you have in your database) using the Arithmetic program.
+After all, it is redundant: you can always generate it by subtracting the @code{SKY} extension from the input image (which you have in your database) using the Arithmetic program.
 2) With the @option{--oneelempertile}, you can tell NoiseChisel to store its Sky and Sky standard deviation results with one pixel per tile (instead of many pixels per tile).
+So let's run NoiseChisel with these options, then have another look at the HDUs and the over-all file size:
 
 @example
-$ astnoisechisel flat-ir/xdf-f160w.fits --oneelempertile --rawoutput
+$ astnoisechisel flat-ir/xdf-f160w.fits --oneelempertile --rawoutput \
+                 --output=nc-for-storage.fits
+$ astfits nc-for-storage.fits
+$ ls -lh nc-for-storage.fits
 @end example
 
 @noindent
-The output is now just under 8 mega byes! But you can even be more efficient in space by compressing it.
+See how @file{nc-for-storage.fits} has four HDUs, while @file{nc/xdf-f160w.fits} had five HDUs?
+As explained above, the missing extension is @code{INPUT-NO-SKY}.
+Also, look at the sizes of the @code{SKY} and @code{SKY_STD} HDUs, unlike before, they aren't the same size as @code{DETECTIONS}, they only have one pixel for each tile (group of pixels in raw input).
+Finally, you see that @file{nc-for-storage.fits} is just under 8 mega byes (while @file{nc/xdf-f160w.fits} was 100 mega bytes)!
+
+But were are not finished!
+You can even be more efficient in storage, archival or transferring NoiseChisel's output by compressing this file.
 Try the command below to see how NoiseChisel's output has now shrunk to about 250 kilo-byes while keeping all the necessary information as the original 100 mega-byte output.
 
 @example
-$ gzip --best xdf-f160w_detected.fits
-$ ls -lh xdf-f160w_detected.fits.gz
+$ gzip --best nc-for-storage.fits
+$ ls -lh nc-for-storage.fits.gz
 @end example
 
 We can get this wonderful level of compression because NoiseChisel's output is binary with only two values: 0 and 1.
 Compression algorithms are highly optimized in such scenarios.
 
-You can open @file{xdf-f160w_detected.fits.gz} directly in SAO DS9 or feed it to any of Gnuastro's programs without having to uncompress it.
-Higher-level programs that take NoiseChisel's output can also deal with this compressed image where the Sky and its Standard deviation are one pixel-per-tile.
+You can open @file{nc-for-storage.fits.gz} directly in SAO DS9 or feed it to any of Gnuastro's programs without having to uncompress it.
+Higher-level programs that take NoiseChisel's output (for example Segment or MakeCatalog) can also deal with this compressed image where the Sky and its Standard deviation are one pixel-per-tile.
+You just have to give the ``values'' image as a separate option, for more, see @ref{Segment} and @ref{MakeCatalog}.
+
+Segment (the program we will introduce in the next section for identifying sub-structure), also has similar features to optimize its output for storage.
+Since this file was only created for a fast detour demonstration, let's keep our top directory clean and move to the next step:
+
+@example
+rm nc-for-storage.fits.gz
+@end example
 
 
 
@@ -2927,6 +2958,7 @@ To find the galaxies over the detections, we'll use Gnuastro's @ref{Segment} pro
 @example
 $ mkdir seg
 $ astsegment nc/xdf-f160w.fits -oseg/xdf-f160w.fits
+$ astsegment nc/xdf-f125w.fits -oseg/xdf-f125w.fits
 $ astsegment nc/xdf-f105w.fits -oseg/xdf-f105w.fits
 @end example
 
@@ -2950,58 +2982,69 @@ Besides the IDs, we want to measure (in this order) the Right Ascension (with @o
 Furthermore, as mentioned above, we also want measurements on clumps, so we also need to call @option{--clumpscat}.
 The following command will make these measurements on Segment's F160W output and write them in a catalog for each object and clump in a FITS table.
 
-@c Keep the `--zeropoint' on a single line, because later, we'll add
-@c `--valuesfile' in that line also, and it would be more clear if both
-@c catalogs follow the same format.
 @example
 $ mkdir cat
 $ astmkcatalog seg/xdf-f160w.fits --ids --ra --dec --magnitude --sn \
-               --zeropoint=25.94                                    \
-               --clumpscat --output=cat/xdf-f160w.fits
+               --zeropoint=25.94 --clumpscat --output=cat/xdf-f160w.fits
 @end example
 
 @noindent
 From the printed statements on the command-line, you see that MakeCatalog read all the extensions in Segment's output for the various measurements it needed.
-To calculate colors, we also need magnitude measurements on the F105W filter.
-So let's repeat the command above on the F105W filter, just changing the file names and zeropoint.
+To calculate colors, we also need magnitude measurements on the other filters.
+So let's repeat the command above on them, just changing the file names and zeropoint (which we got from the XDF survey webpage):
 
 @example
-$ mkdir cat
+$ astmkcatalog seg/xdf-f125w.fits --ids --ra --dec --magnitude --sn \
+               --zeropoint=26.23 --clumpscat --output=cat/xdf-f125w.fits
+
 $ astmkcatalog seg/xdf-f105w.fits --ids --ra --dec --magnitude --sn \
-               --zeropoint=26.27                                    \
-               --clumpscat --output=cat/xdf-f105w.fits
+               --zeropoint=26.27 --clumpscat --output=cat/xdf-f105w.fits
 @end example
 
-However, the galaxy properties might differ between the filters (which is the whole purpose behind measuring colors).
+However, the galaxy properties might differ between the filters (which is the whole purpose behind observing in different filters!).
 Also, the noise properties and depth of the datasets differ.
-You can see the effect of these factors in the resulting clump catalogs, with Gnuastro's Table program (the @option{-i} option will print information about the columns and number of rows, to see the column values, just don't use the @option{-i}, we'll go deep into working with tables in the next section).
-In the output of each command below, look at the ``Number of rows:''
+You can see the effect of these factors in the resulting clump catalogs, with Gnuastro's Table program.
+We'll go deep into working with tables in the next section, but in summary: the @option{-i} option will print information about the columns and number of rows.
+To see the column values, just remove the @option{-i} option.
+In the output of each command below, look at the @code{Number of rows:}, and note that they are different.
 
 @example
 asttable cat/xdf-f105w.fits -hCLUMPS -i
+asttable cat/xdf-f125w.fits -hCLUMPS -i
 asttable cat/xdf-f160w.fits -hCLUMPS -i
 @end example
 
-Matching the two catalogs is possible (for example with @ref{Match}), but the fact that the measurements will be done on different pixels, can bias the result.
-Since the Point spread function (PSF) of both images is very similar, an accurate color calculation can only be done when magnitudes are measured from the same pixels on both images.
-Fortunately you can do this with MakeCatalog and is one of the reasons that NoiseChisel or Segment don't generate a catalog at all (to give you the freedom of selecting the pixels to do catalog measurements on).
+Matching the catalogs is possible (for example with @ref{Match}).
+However, the measurements of each column are also done on different pixels: the clump labels can/will differ from one filter to another for one object.
+Please open them and focus on one object to see for your self.
+Thiscan bias the result, if you match catalogs.
+
+An accurate color calculation can only be done when magnitudes are measured from the same pixels on both images.
+Fortunately in these images, the Point spread function (PSF) are very similar, allowing us to do this directly@footnote{When the PSFs between two images differ largely, you would have to PSF-match the images before using the same pixels for measurements.}.
+You can do this with MakeCatalog and is one of the reasons that NoiseChisel or Segment don't generate a catalog at all (to give you the freedom of selecting the pixels to do catalog measurements on).
 
 The F160W image is deeper, thus providing better detection/segmentation, and redder, thus observing smaller/older stars and representing more of the mass in the galaxies.
-We will thus use the F160W filter as a reference and use the pixel labels generated on the F160W filter, but do the measurements on the sky-subtracted F105W image (using MakeCatalog's @option{--valuesfile} option).
+We will thus use the F160W filter as a reference and use its segment labels to identify which pixels to use for which objects/clumps.
+But we will do the measurements on the sky-subtracted F105W and F125W images (using MakeCatalog's @option{--valuesfile} option) as shown below:
 Notice how the major difference between this call to MakeCatalog and the call to generate the F160W catalog (excluding the zeropoint and the output name) is the @option{--valuesfile}.
 
 @example
 $ astmkcatalog seg/xdf-f160w.fits --ids --ra --dec --magnitude --sn \
-               --valuesfile=nc/xdf-f105w.fits --zeropoint=26.27     \
+               --valuesfile=nc/xdf-f125w.fits --zeropoint=26.23 \
+               --clumpscat --output=cat/xdf-f125w-on-f160w-lab.fits
+
+$ astmkcatalog seg/xdf-f160w.fits --ids --ra --dec --magnitude --sn \
+               --valuesfile=nc/xdf-f105w.fits --zeropoint=26.27 \
                --clumpscat --output=cat/xdf-f105w-on-f160w-lab.fits
 @end example
 
-Look into what MakeCatalog printed on the command-line.
-You can see that (as requested) the object and clump labels were taken from the respective extensions in @file{seg/xdf-f160w.fits}, while the values and Sky standard deviation were done on @file{nc/xdf-f105w.fits}.
-Since we used the same labeled image on both filters, the number of rows in both catalogs are now the same:
+Look into what MakeCatalog printed on the command-line after running the commands above.
+You can see that (as requested) the object and clump labels were taken from the respective extensions in @file{seg/xdf-f160w.fits}, while the values and Sky standard deviation were taken from @file{nc/xdf-f105w.fits}.
+Since we used the same labeled image on both filters, the number of rows in both catalogs are now identical:
 
 @example
 asttable cat/xdf-f105w-on-f160w-lab.fits -hCLUMPS -i
+asttable cat/xdf-f125w-on-f160w-lab.fits -hCLUMPS -i
 asttable cat/xdf-f160w.fits -hCLUMPS -i
 @end example
 
@@ -3054,72 +3097,109 @@ Using column names instead of numbers has many advantages:
 Column meta-data (including a name) aren't just limited to FITS tables and can also be used in plain text tables, see @ref{Gnuastro text table format}.
 
 Since @file{cat/xdf-f160w.fits} and @file{cat/xdf-f105w-on-f160w-lab.fits} have exactly the same number of rows, we can use Table to merge the columns of these two tables, to have one table with magnitudes in both filters.
-We do this with the @option{--catcolumnfile} option like.
-You give this option a file name (which is assumed to be a table of the same number of rows as main argument), and all the table's columns will be concatenated/appended to the main table.
+We do this with the @option{--catcolumnfile} option like below.
+You give this option a file name (which is assumed to be a table that has the same number of rows), and all the table's columns will be concatenated/appended to the main table.
 So please try it out with the commands below.
-We'll first look at the metadata of the first table (only the @code{CLUMPS} extension), with the second command, we'll concatenate the two tables and write them in, @file{both-mags.fits} and finally, we'll check the output's metadata.
+We'll first look at the metadata of the first table (only the @code{CLUMPS} extension).
+With the second command, we'll concatenate the two tables and write them in, @file{two-in-one.fits} and finally, we'll check the new catalog's metadata.
 
 @example
 $ asttable cat/xdf-f160w.fits -i -hCLUMPS
-$ asttable cat/xdf-f160w.fits -hCLUMPS --output=both-mags.fits \
-           --catcolumnfile=cat/xdf-f105w-on-f160w-lab.fits \
+$ asttable cat/xdf-f160w.fits -hCLUMPS --output=two-in-one.fits \
+           --catcolumnfile=cat/xdf-f125w-on-f160w-lab.fits \
            --catcolumnhdu=CLUMPS
-$ asttable both-mags.fits -i
+$ asttable two-in-one.fits -i
 @end example
 
-Looking at the two metadata outputs (called with @option{-i}), note how both tables have the same number of rows.
-But what might attract your attention more, is that @file{both-mags.fits} has double the number of columns (as expected).
-However, Table has intentionally appended a @code{-1} to the column names of the appended table (so for example we have the original @code{RA} column, and another one called @code{RA-1}).
-You can concatenate any number of tables in one command (by calling @option{--catcolumnfile} multiple times, once for each table you want to append).
-The second table's columns will be appended by @code{-2} and so on.
+Looking at the two metadata outputs (called with @option{-i}), you may have noticed that both tables have the same number of rows.
+But what might have attracted your attention more, is that @file{both-mags.fits} has double the number of columns (as expected, after all, you merged both tables into one file).
+Infact, in one command, you can concatenate any number of other tables, for example:
+
+@example
+$ asttable cat/xdf-f160w.fits -hCLUMPS --output=three-in-one.fits \
+           --catcolumnfile=cat/xdf-f125w-on-f160w-lab.fits \
+           --catcolumnfile=cat/xdf-f105w-on-f160w-lab.fits \
+           --catcolumnhdu=CLUMPS --catcolumnhdu=CLUMPS
+$ asttable three-in-one.fits -i
+@end example
+
+As you see, to avoid confusion in column names, Table has intentionally appended a @code{-1} to the column names of the first concatenated table (so for example we have the original @code{RA} column, and another one called @code{RA-1}).
+Similarly a @code{-2} has been added for the columns of the second concatenated table.
 
 However, this example clearly shows a problem with this full concatenation: some columns are identical (for example @code{HOST_OBJ_ID} and @code{HOST_OBJ_ID-1}), or not needed (for example @code{RA-1} and @code{DEC-1} which are not necessary here).
 In such cases, you can use @option{--catcolumns} to only concatenate certain columns, not the whole table, for example this command:
 
 @example
-$ asttable cat/xdf-f160w.fits -hCLUMPS --output=both-mags.fits \
-           --catcolumnfile=cat/xdf-f105w-on-f160w-lab.fits \
+$ asttable cat/xdf-f160w.fits -hCLUMPS --output=two-in-one-2.fits \
+           --catcolumnfile=cat/xdf-f125w-on-f160w-lab.fits \
            --catcolumnhdu=CLUMPS --catcolumns=MAGNITUDE
-$ asttable both-mags.fits -i
+$ asttable three-in-one-2.fits -i
 @end example
 
-You see that we have now only appended the @code{MAGNITUDE} column of @file{cat/xdf-f105w-on-f160w-lab.fits}.
+You see that we have now only appended the @code{MAGNITUDE} column of @file{cat/xdf-f125w-on-f160w-lab.fits}.
 This is what we needed to be able to later subtract the magnitudes.
-But there are still problems in the metadata: its not clear which one of @code{MAGNITUDE} or @code{MAGNITUDE-1} belong to which filter.
-Right now, you know this.
-But in one hour, you'll start doubting your self: going through your command history, trying to answer this question: ``which magnitude corresponds to which filter?''.
-You should never torture your future-self (or colleagues) like this! So, let's rename these confusing columns in the matched catalog.
-
-Fortunately, with the @option{--colmetadata}, you can correct the column metadata of final table (just before it is written).
-For example by adding two calls to the previous command, we write the filter name in the magnitude column name and description.
+Let's go ahead and add the F105W magnitudes also with the command below.
+Note how we need to call @option{--catcolumnhdu} once for every table that should be appended, but we only call @option{--catcolumn} once (assuming all the tables that should be appended have this column).
 
 @example
-$ asttable cat/xdf-f160w.fits -hCLUMPS --output=both-mags.fits \
+$ asttable cat/xdf-f160w.fits -hCLUMPS --output=three-in-one-2.fits \
+           --catcolumnfile=cat/xdf-f125w-on-f160w-lab.fits \
            --catcolumnfile=cat/xdf-f105w-on-f160w-lab.fits \
-           --catcolumnhdu=CLUMPS --catcolumns=MAGNITUDE \
-           --colmetadata=MAGNITUDE,MAG-F160w,log,"Magnitude in F160W." \
-           --colmetadata=MAGNITUDE-1,MAG-F105w,log,"Magnitude in F105W."
-$ asttable both-mags.fits -i
+           --catcolumnhdu=CLUMPS --catcolumnhdu=CLUMPS \
+           --catcolumns=MAGNITUDE
+$ asttable three-in-one-2.fits -i
+@end example
+
+But we aren't finished yet!
+There is a very big problem: its not clear which one of @code{MAGNITUDE}, @code{MAGNITUDE-1} or @code{MAGNITUDE-2} columns belong to which filter!
+Right now, you know this because you just ran this command.
+But in one hour, you'll start doubting your self and will be forced to go through your command history, trying to answer this question.
+You should never torture your future-self (or your colleagues) like this!
+So, let's rename these confusing columns in the matched catalog.
+
+Fortunately, with the @option{--colmetadata} option, you can correct the column metadata of the final table (just before it is written).
+It takes four values: 1) the column name or number, 2) the column name, 3) the column unit and 4) the column comments.
+Since the comments are usually human-friendly sentences and contain space characters, you should put them in double quotations like below.
+For example by adding three calls of this option to the previous command, we write the filter name in the magnitude column name and description.
+
+@example
+$ asttable cat/xdf-f160w.fits -hCLUMPS --output=three-in-one-3.fits \
+        --catcolumnfile=cat/xdf-f125w-on-f160w-lab.fits \
+        --catcolumnfile=cat/xdf-f105w-on-f160w-lab.fits \
+        --catcolumnhdu=CLUMPS --catcolumnhdu=CLUMPS \
+        --catcolumns=MAGNITUDE \
+        --colmetadata=MAGNITUDE,MAG-F160w,log,"Magnitude in F160W." \
+        --colmetadata=MAGNITUDE-1,MAG-F125w,log,"Magnitude in F125W." \
+        --colmetadata=MAGNITUDE-2,MAG-F105w,log,"Magnitude in F105W."
+$ asttable three-in-one-3.fits -i
 @end example
 
 We now have both magnitudes in one table and can start doing arithmetic on them (to estimate colors, which are just a subtraction of magnitudes).
 To use column arithmetic, simply call the column selection option (@option{--column} or @option{-c}), put the value in single quotations and start the value with @code{arith} (followed by a space) like the example below.
 Column arithmetic uses the same notation as the Arithmetic program (see @ref{Reverse polish notation}), with almost all the same operators (see @ref{Arithmetic operators}), and some column-specific opertors (that aren't available for images).
-In column-arithmetic, you can identify columns by number (prefixed with a @code{$}) or name, see @ref{Column arithmetic}.
-For example with the @file{both-mags.fits} created above, all the commands below will produce the same output (column arithmetic can be mixed with other ways to choose output columns):
+In column-arithmetic, you can identify columns by number (prefixed with a @code{$}) or name, for more see @ref{Column arithmetic}.
+
+So let's estimate one color from @file{three-in-one-3.fits} using column arithmetic.
+All the commands below will produce the same output, try them each and focus on the differences.
+Note that column arithmetic can be mixed with other ways to choose output columns (the @code{-c} option).
 
 @example
-$ asttable both-mags.fits -ocolor-cat.fits \
+$ asttable three-in-one-3.fits -ocolor-cat.fits \
            -c1,2,RA,DEC,'arith $5 $7 -'
-$ asttable both-mags.fits -ocolor-cat.fits \
-           -c1,2,RA,DEC,'arith MAG-F105W MAG-F160W -'
-$ asttable both-mags.fits -ocolor-cat.fits -c1,2 \
+
+$ asttable three-in-one-3.fits -ocolor-cat.fits \
+           -c1,2,RA,DEC,'arith MAG-F125W MAG-F160W -'
+
+$ asttable three-in-one-3.fits -ocolor-cat.fits -c1,2 \
            -cRA,DEC --column='arith MAG-F105W MAG-F160W -'
 @end example
 
-This example again highlights the important point on column metadata: notice how clearly understandable the the last two commands are, and how cryptic the first one is.
-When you have column names, please use them and if they don't have a name, give them one when you create them.
-For example have a look at the column metadata of the table produced above:
+This example again highlights the important point on column metadata: do you see how clearly understandable the the last two commands are?
+On the contrary, do you feel how cryptic the first one is?
+When you have column names, please use them.
+If your table doesn't have column names, give them names with the @option{--colmetadata} (described above) as you are creating them.
+But how about the metadata for the column you just created with column arithmetic?
+Have a look at the column metadata of the table produced above:
 
 @example
 $ asttable color-cat.fits -i
@@ -3127,14 +3207,34 @@ $ asttable color-cat.fits -i
 
 The name of the column produced by arithmetic column is @command{ARITH_1}!
 This is natural: Arithmetic has no idea what the modified column is!
-So you can use @option{--colmetadata} to give a proper metadata like the example below.
-Since this is the final table (we want to store it in @file{cat/}), we'll also give it a clear name and use the @option{--range} option to only print columns with a signal-to-noise ratio (@code{SN} column) above 5.
+You could have multiplied two columns, or done much more complex transformations with many columns.
+Metadata can't be set automatically.
+To add metadata, you can use @option{--colmetadata} like before:
 
 @example
-$ asttable both-mags.fits --range=SN,5,inf -c1,2,RA,DEC \
-           -cMAG-F160W,MAG-F105W -c'arith MAG-F105W MAG-F160W -' \
-           --colmetadata=ARITH_1,F105W-F160W,log,"Magnitude difference" \
-           --output=cat/mags-with-color.fits
+$ asttable three-in-one-3.fits -ocolor-cat.fits -c1,2,RA,DEC \
+         --column='arith MAG-F105W MAG-F160W -' \
+         --colmetadata=ARITH_1,F125W-F160W,log,"Magnitude difference"
+@end example
+
+We are now ready to make our final table.
+We want it to have the magnitudes in all three filters, as well colors.
+Recall that by convention in astronomy colors are defined by subtracting the bluer magnitude from the redder magnitude.
+In this way a larger color value corresponds to a redder object.
+So from the three magnitudes, we can produce three colors (as shown below).
+Also, because this is the final table we are creating here and want to use it later, we'll store it in @file{cat/} and we'll also give it a clear name and use the @option{--range} option to only print columns with a signal-to-noise ratio (@code{SN} column, from the F160W filter) above 5.
+
+@example
+$ asttable three-in-one-3.fits --range=SN,5,inf -c1,2,RA,DEC,SN \
+         -cMAG-F160W,MAG-F125W,MAG-F105W \
+         -c'arith MAG-F125W MAG-F160W -' \
+         -c'arith MAG-F105W MAG-F125W -' \
+         -c'arith MAG-F105W MAG-F160W -' \
+         --colmetadata=SN,SN-F160W,ratio,"F160W signal to noise ratio" \
+         --colmetadata=ARITH_1,F125W-F160W,log,"Color F125W and F160W" \
+         --colmetadata=ARITH_2,F105W-F125W,log,"Color F105W and F125W" \
+         --colmetadata=ARITH_3,F105W-F160W,log,"Color F105W and F160W" \
+         --output=cat/mags-with-color.fits
 $ asttable cat/mags-with-color.fits -i
 @end example
 
@@ -3142,12 +3242,14 @@ The table now has all the columns we need and it has the proper metadata to let 
 You can now inspect the distribution of colors with the Statistics program.
 
 @example
+$ aststatistics cat/mags-with-color.fits -cF105W-F125W
 $ aststatistics cat/mags-with-color.fits -cF105W-F160W
+$ aststatistics cat/mags-with-color.fits -cF125W-F160W
 @end example
 
-This tiny and cute ASCII histogram gives you a crude (but very useful and fast) feeling on the color distribution of these galaxies.
+This tiny and cute ASCII histogram (and the general information printed above it) gives you a crude (but very useful and fast) feeling on the distribution.
 You can later use Gnuastro's Statistics program with the @option{--histogram} option to build a much more fine-grained histogram as a table to feed into your favorite plotting program for a much more accurate/appealing plot (for example with PGFPlots in @LaTeX{}).
-If you just want a specific measure, for example the mean, median and standard deviation, you can ask for them specifically with this command:
+If you just want a specific measure, for example the mean, median and standard deviation, you can ask for them specifically, like below:
 
 @example
 $ aststatistics cat/mags-with-color.fits -cF105W-F160W \
@@ -3161,26 +3263,35 @@ Above, updating/changing column metadata was done with the @option{--colmetadata
 But in many sitations, the table is already made and you just want to update the metadata of one column.
 In such cases using @option{--colmetadata} is over-kill (wasting CPU/RAM energy or time if the table is large) because it will load the full table data and metadata into memory, just change the metadata and write it back into a file.
 
-In scenarios when the table's data doesn't need to be changed, it is much more efficient to use basic FITS keyword editing to modify column metadata.
-The FITS standard for tables stores the column names in the @code{TTYPE} header keywords, so let's have a look:
+In scenarios when the table's data doesn't need to be changed and you just want to set or update the metadata, it is much more efficient to use basic FITS keyword editing.
+For example, in the FITS standard, column names are stored in the @code{TTYPE} header keywords, so let's have a look:
 
 @example
-$ asttable cat/xdf-f160w.fits -i
-$ astfits cat/xdf-f160w.fits -h1 | grep TTYPE
+$ asttable two-in-one.fits -i
+$ astfits two-in-one.fits -h1 | grep TTYPE
 @end example
 
 Changing/updating the column names is as easy as updating the values to these keywords.
-Below we'll just copy the table into the top/temporary directory, then change the column name and confirm the change:
+You don't need to touch the actual data!
+With the command below, we'll just update the @code{MAGNITUDE} and @code{MAGNITUDE-1} columns (which are respectively stored in the @code{TTYPE5} and @code{TTYPE11} keywords) by modifying the keyword values and checking the effect by listingthe column metadata again:
 
 @example
-$ cp cat/xdf-f160w.fits test.fits
-$ asttable test.fits -i
-$ astfits test.fits -h1 --update=TTYPE2,RA-F160W --update=TTYPE3,DEC-F160W
-$ asttable test.fits -i
+$ astfits two-in-one.fits -h1 \
+          --update=TTYPE5,MAG-F160W \
+          --update=TTYPE11,MAG-F125W
+$ asttable two-in-one.fits -i
 @end example
 
+You can see that the column names have indeed been changed without touching any of the data.
+You can do the same for the column units or comments by modifying the keywords starting with @code{TUNIT} or @code{TCOMM}.
 
+Generally, Gnuastro's table is a very useful program in data analysis and what you have seen so far is just the tip of the iceberg.
+But to keep the tutorial short, we'll stop reviewing the features here, for more, please see @ref{Table}.
+Finally, let's delete all the temporary FITS tables we placed in the top project directory:
 
+@example
+rm *.fits
+@end example
 
 @node Aperture photometry, Matching catalogs, Working with catalogs estimating colors, General program usage tutorial
 @subsection Aperture photometry
@@ -3403,19 +3514,6 @@ In the example below, we'll open Segment's output and load the regions over all 
 @example
 $ ds9 -mecube seg/xdf-f160w.fits -zscale -zoom to fit    \
       -regions load all reddest.reg
-@end example
-
-
-@node Citing and acknowledging Gnuastro, Writing scripts to automate the steps, Finding reddest clumps and visual inspection, General program usage tutorial
-@subsection Citing and acknowledging Gnuastro
-In conclusion, we hope this extended tutorial has been a good starting point to help in your exciting research.
-If this book or any of the programs in Gnuastro have been useful for your research, please cite the respective papers, and acknowledge the funding agencies that made all of this possible.
-All Gnuastro programs have a @option{--cite} option to facilitate the citation and acknowledgment.
-Just note that it may be necessary to cite additional papers for different programs, so please try it out on all the programs that you used, for example:
-
-@example
-$ astmkcatalog --cite
-$ astnoisechisel --cite
 @end example
 
 @node Writing scripts to automate the steps,  , Citing and acknowledging Gnuastro, General program usage tutorial
@@ -3732,6 +3830,19 @@ if ! [ -f $f160w_flat ]; then
 fi
 @end example
 
+@node Citing and acknowledging Gnuastro, Writing scripts to automate the steps, Finding reddest clumps and visual inspection, General program usage tutorial
+@subsection Citing and acknowledging Gnuastro
+In conclusion, we hope this extended tutorial has been a good starting point to help in your exciting research.
+If this book or any of the programs in Gnuastro have been useful for your research, please cite the respective papers, and acknowledge the funding agencies that made all of this possible.
+Without citations, we won't be able to secure future funding to continue working on Gnuastro or improving it, so please take software citation seriously (for all the scientific software you use, not just Gnuastro).
+
+To help you in this aspect is well, all Gnuastro programs have a @option{--cite} option to facilitate the citation and acknowledgment.
+Just note that it may be necessary to cite additional papers for different programs, so please try it out on all the programs that you used, for example:
+
+@example
+$ astmkcatalog --cite
+$ astnoisechisel --cite
+@end example
 
 
 
@@ -3816,7 +3927,7 @@ Let's see how NoiseChisel operates on it with its default parameters:
 $ astnoisechisel r.fits -h0
 @end example
 
-As described in @ref{Multiextension FITS files NoiseChisel's output}, NoiseChisel's default output is a multi-extension FITS file.
+As described in @ref{NoiseChisel and Multiextension FITS files}, NoiseChisel's default output is a multi-extension FITS file.
 Open the output @file{r_detected.fits} file and have a look at the extensions, the first extension is only meta-data and contains NoiseChisel's configuration parameters.
 The rest are the Sky-subtracted input, the detection map, Sky values and Sky standard deviation.
 
