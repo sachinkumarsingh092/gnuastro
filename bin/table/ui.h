@@ -62,7 +62,7 @@ enum option_keys_enum
   UI_KEY_CATCOLUMNS      = 'C',
   UI_KEY_CATCOLUMNHDU    = 'u',
   UI_KEY_CATCOLUMNFILE   = 'L',
-  UI_KEY_METAUPDATE      = 'm',
+  UI_KEY_COLMETADATA     = 'm',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */

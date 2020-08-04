@@ -104,7 +104,7 @@ struct tableparams
   gal_list_str_t *catcolumnhdu;  /* HDU/extension for the catcolumn.    */
   gal_list_str_t  *catcolumns;  /* List of columns to concatenate.      */
   uint8_t    catcolumnrawname;  /* Don't modify name of appended col.   */
-  gal_data_t      *metaupdate;  /* Update column metadata.              */
+  gal_data_t     *colmetadata;  /* Set column metadata.                 */
 
   /* Internal. */
   struct column_pack *outcols;  /* Output column packages.              */

@@ -677,14 +677,14 @@ table_catcolumn(struct tableparams *p)
 
 
 void
-table_metaupdate(struct tableparams *p)
+table_colmetadata(struct tableparams *p)
 {
   char **strarr;
   gal_data_t *meta, *col;
   size_t counter, *colnum;
 
   /* Loop through all the given updates and implement them. */
-  for(meta=p->metaupdate;meta!=NULL;meta=meta->next)
+  for(meta=p->colmetadata;meta!=NULL;meta=meta->next)
     {
       /* If the given column specifier is a name (not parse-able as a
          number), then this condition will fail. */
@@ -713,7 +713,7 @@ table_metaupdate(struct tableparams *p)
       /* If a match was found, then 'col' should not be NULL. */
       if(col==NULL)
         error(EXIT_FAILURE, 0, "no column found for '%s' (given to "
-              "'--metaupdate'). Columns can either be specified by "
+              "'--colmetadata'). Columns can either be specified by "
               "their position in the output table (integer counter, "
               "starting from 1), or their name (the first column "
               "found with the given name will be used)", meta->name);
@@ -785,7 +785,7 @@ table(struct tableparams *p)
   if(p->catcolumnfile) table_catcolumn(p);
 
   /* If column metadata should be updated, do it just before writing. */
-  if(p->metaupdate) table_metaupdate(p);
+  if(p->colmetadata) table_colmetadata(p);
 
   /* Write the output. */
   gal_table_write(p->table, NULL, p->cp.tableformat, p->cp.output,

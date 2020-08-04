@@ -155,13 +155,13 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "metaupdate",
-      UI_KEY_METAUPDATE,
+      "colmetadata",
+      UI_KEY_COLMETADATA,
       "STR,STR[,STR,STR]",
       0,
       "Update output metadata (name, unit, comments).",
       GAL_OPTIONS_GROUP_OUTPUT,
-      &p->metaupdate,
+      &p->colmetadata,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
