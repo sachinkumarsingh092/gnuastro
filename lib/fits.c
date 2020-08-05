@@ -1434,7 +1434,7 @@ gal_fits_key_write_filename(char *keynamebase, char *filename,
       /* Set the keyword value: */
       errno=0;
       thislen=strlen(&filename[i]);
-      value=malloc(maxlength);
+      value=malloc(maxlength+1);
       if(value==NULL)
         error(EXIT_FAILURE, errno, "%s: allocating %zu bytes", __func__,
               thislen);
@@ -3277,11 +3277,29 @@ gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
       fits_write_tnull_tcomm(fptr, col, tableformat, i+1, tform[i]);
 
       /* Set the blank pointer if its necessary, note that strings don't
-         need a blank pointer in a FITS ASCII table.*/
+         need a blank pointer in a FITS ASCII table. */
       blank = ( gal_blank_present(col, 0)
                 ? fits_blank_for_tnull(col->type) : NULL );
       if(tableformat==GAL_TABLE_FORMAT_AFITS && col->type==GAL_TYPE_STRING)
         { if(blank) free(blank); blank=NULL; }
+
+      /* Manually remove the 'blank' pointer for standard FITS table
+         numeric types (types below). We are doing this because as of
+         CFITSIO 3.48, CFITSIO crashes for these types when we define our
+         own blank values within this pointer, and such values actually
+         exist in the column. This is the error message: "Null value for
+         integer table column is not defined (FTPCLU)". Generally, for
+         these native FITS table types 'blank' is redundant because our
+         blank values are actually within their numerical data range. */
+      switch(col->type)
+        {
+        case GAL_TYPE_UINT8:
+        case GAL_TYPE_INT16:
+        case GAL_TYPE_INT32:
+        case GAL_TYPE_INT64:
+          free(blank); blank=NULL;
+          break;
+        }
 
       /* Write the full column into the table. */
       fits_write_colnull(fptr, gal_fits_type_to_datatype(col->type),
