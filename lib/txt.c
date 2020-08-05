@@ -865,10 +865,10 @@ txt_fill(char *in_line, char **tokens, size_t maxcolnum,
          gal_data_t *colinfo, gal_data_t *out, size_t rowind,
          char *filename, size_t lineno, int inplace, int format)
 {
-  size_t i, n=0;
   gal_data_t *data;
   int notenoughcols=0;
-  char *end, *line, *aline=NULL;
+  size_t i, n=0, strwidth;
+  char *end, *line, *tmpstr, *aline=NULL;
 
   /* Make a copy of the input line if necessary. */
   if(inplace) line=in_line;
@@ -879,12 +879,14 @@ txt_fill(char *in_line, char **tokens, size_t maxcolnum,
     }
   end=line+strlen(line);
 
-  /* See explanations in 'txt_info_from_first_row'. */
+  /* Remove the new-line character from the line. For more, see the top the
+     explanations in 'txt_info_from_first_row': 13 is the ASCII code for
+     the carriage return. */
   if( end>line+2 && *(end-2)==13 ) *(end-2)='\0';
   else if( *(end-1)=='\n' )        *(end-1)='\0';
 
-  /* Start parsing the line. Note that 'n' and 'maxcolnum' start from
-     one. */
+  /* Start parsing the line. Note that 'n' and 'maxcolnum' start from one
+     when entering this loop on the first time. */
   while(++n)
     {
       /* Break out of the parsing if we don't need the columns any
@@ -904,16 +906,31 @@ txt_fill(char *in_line, char **tokens, size_t maxcolnum,
           while(isspace(*line) || *line==',') ++line;
           if(*line=='\0') {notenoughcols=1; break;}
 
-          /* Everything is good, set the pointer and increment the line to
-             the end of the allocated space for this string. */
-          line = (tokens[n]=line) + colinfo[n-1].disp_width;
-          if(line<end) *line++='\0';
+          /* We are at the start of the string. Allocate space for, and
+             copy the necessary number of characters into the 'tmpstr'
+             string. We need to allocate this because the string column may
+             be immediately (next character) followed by the next
+             column. This leaves us no space to put the '\0' character. */
+          strwidth=colinfo[n-1].disp_width;
+          errno=0;
+          tmpstr=malloc(strwidth+1);
+          if(tmpstr==NULL)
+            error(EXIT_FAILURE, errno, "%s: %zu bytes couldn't be allocated "
+                  "for variable 'tmpstr'", __func__, strwidth+1);
+          if(line+strwidth<end) strncpy(tmpstr, line, strwidth);
+          else                  strncpy(tmpstr, line, end-line);
+          tmpstr[strwidth]='\0';
+          tokens[n]=tmpstr;
+
+          /* Increment the line pointer beyond to the next token.*/
+          line += strwidth;
         }
       else
         {
           /* If we have reached the end of the line, then 'strtok_r' will
              return a NULL pointer. */
-          tokens[n]=strtok_r(n==1?line:NULL, GAL_TXT_DELIMITERS, &line);
+          tmpstr=strtok_r(n==1?line:NULL, GAL_TXT_DELIMITERS, &line);
+          gal_checkset_allocate_copy(tmpstr, &tokens[n]);
           if(tokens[n]==NULL) {notenoughcols=1; break;}
         }
     }
@@ -954,6 +971,11 @@ txt_fill(char *in_line, char **tokens, size_t maxcolnum,
       error(EXIT_FAILURE, 0, "%s: currently only 1 and 2 dimensional "
             "datasets acceptable", __func__);
     }
+
+  /* Clean up the strings of each token within the tokens array, and set
+     the freed pointers to NULL. */
+  for(i=0;i<maxcolnum+1;++i)
+    if(tokens[i]) {free(tokens[i]); tokens[i]=NULL;}
 
   /* Clean up. */
   if(inplace==0) free(aline);
@@ -1054,7 +1076,7 @@ txt_read(char *filename, gal_list_str_t *lines, size_t *dsize,
      counted from one (unlike indexes that are counted from zero), so we
      need 'maxcolnum+1' elements in the array of tokens.*/
   errno=0;
-  tokens=malloc((maxcolnum+1)*sizeof *tokens);
+  tokens=calloc(maxcolnum+1, sizeof *tokens);
   if(tokens==NULL)
     error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for 'tokens'",
           __func__, (maxcolnum+1)*sizeof *tokens);

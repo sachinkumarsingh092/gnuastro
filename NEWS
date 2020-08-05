@@ -106,6 +106,7 @@ See the end of the file for license conditions.
   bug #58809: NoiseChisel not removing negative outlier tiles.
   bug #58833: Segment crashes when detetion map has blank pixels
   bug #58835: Floating point errors when comparing pixel scale in Crop.
+  bug #58898: Plain text string columns touching next, clear first character.
   bug #58901: Blank values for non-standard integer types in FITS tables.
 
 
