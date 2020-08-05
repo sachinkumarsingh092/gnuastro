@@ -3103,6 +3103,40 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tableformat,
 
 
 
+/* Set the blank value to use for TNULL keyword (necessary in reading and
+   writing).
+
+   The blank value must be the raw value within the FITS file (before
+   applying 'TZERO' OR 'TSCAL'). Therefore, because the following integer
+   types aren't native to the FITS standard, we need to correct TNULL for
+   them after applying TZERO. For example for uin16_t, TZERO is 32768, so
+   TNULL has to be 32767 (the maximum value of the signed integer with the
+   same width). In this way, adding TZERO to the TNULL, will make it the
+   actual NULL value we assume in Gnuastro for uint16_t (the largest
+   possible number). */
+static void *
+fits_blank_for_tnull(uint8_t type)
+{
+  /* Allocate the default blank value. */
+  void *blank=gal_blank_alloc_write(type);
+
+  /* For the non-native FITS type, correct the value. */
+  switch(type)
+    {
+    case GAL_TYPE_INT8:   gal_type_min(GAL_TYPE_UINT8, blank); break;
+    case GAL_TYPE_UINT16: gal_type_max(GAL_TYPE_INT16, blank); break;
+    case GAL_TYPE_UINT32: gal_type_max(GAL_TYPE_INT32, blank); break;
+    case GAL_TYPE_UINT64: gal_type_max(GAL_TYPE_INT64, blank); break;
+    }
+
+  /* Return the final allocated pointer. */
+  return blank;
+}
+
+
+
+
+
 /* Write the TNULLn keywords into the FITS file. Note that this depends on
    the type of the table: for an ASCII table, all the columns need it. For
    a binary table, only the non-floating point ones (even if they don't
@@ -3150,23 +3184,8 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tableformat,
           && col->type!=GAL_TYPE_FLOAT64
           && col->type!=GAL_TYPE_STRING )
         {
-          /* The blank value must be the raw value within the FITS file
-             (before applying 'TZERO' OR 'TSCAL'). Therefore, because the
-             following integer types aren't native to the FITS standard, we
-             need to correct TNULL for them after applying TZERO. For
-             example for uin16_t, TZERO is 32768, so TNULL has to be 32767
-             (the maximum value of the signed integer with the same
-             width). In this way, adding TZERO to the TNULL, will make it
-             the actual NULL value we assume in Gnuastro for uint16_t (the
-             largest possible number). */
-          blank=gal_blank_alloc_write(col->type);
-          switch(col->type)
-            {
-            case GAL_TYPE_INT8:   gal_type_min(GAL_TYPE_UINT8, blank); break;
-            case GAL_TYPE_UINT16: gal_type_max(GAL_TYPE_INT16, blank); break;
-            case GAL_TYPE_UINT32: gal_type_max(GAL_TYPE_INT32, blank); break;
-            case GAL_TYPE_UINT64: gal_type_max(GAL_TYPE_INT64, blank); break;
-            }
+          /* Allocate the blank value to write into the TNULL keyword. */
+          blank=fits_blank_for_tnull(col->type);
 
           /* Prepare the name and write the keyword. */
           if( asprintf(&keyname, "TNULL%zu", colnum)<0 )
@@ -3260,7 +3279,7 @@ gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
       /* Set the blank pointer if its necessary, note that strings don't
          need a blank pointer in a FITS ASCII table.*/
       blank = ( gal_blank_present(col, 0)
-                ? gal_blank_alloc_write(col->type) : NULL );
+                ? fits_blank_for_tnull(col->type) : NULL );
       if(tableformat==GAL_TABLE_FORMAT_AFITS && col->type==GAL_TYPE_STRING)
         { if(blank) free(blank); blank=NULL; }
 
