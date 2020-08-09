@@ -478,7 +478,7 @@ keywords_distortion_wcs(struct fitsparams *p)
           && gal_wcs_distortion_identify(inwcs)==GAL_WCS_DISTORTION_TPV
           && p->distortionid==GAL_WCS_DISTORTION_SIP )
         error(0, 0, "no data associated with WCS for distortion "
-              "converstion.\n\n"
+              "conversion.\n\n"
               "The requested conversion can't be done analytically, so a "
               "solution has to be found by fitting the parameters over a "
               "grid of pixels. We will use a default grid of %zux%zu pixels "

@@ -99,7 +99,7 @@ interpolate_neighbors_on_thread(void *in_prm)
   gal_list_dosizet_t *lQ, *sQ;
   size_t ngb_counter, pind, *dinc;
   size_t i, index, fullind, chstart=0, ndim=input->ndim;
-  gal_data_t *value, *tin, *tout, *tnear, *nearest=NULL;
+  gal_data_t *tin, *tout, *tnear, *value=NULL, *nearest=NULL;
   size_t size = (correct_index ? tl->tottilesinch : input->size);
   size_t *dsize = (correct_index ? tl->numtilesinch : input->dsize);
   size_t *icoord=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,

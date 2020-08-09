@@ -232,7 +232,7 @@ Steps necessary to Package Gnuastro for Debian.
      $ sudo apt-get install ssh devscripts pbuilder pristine-tar git quilt \
                             lintian lzip emacs dh-make
      $ sudo apt-get install ghostscript libcfitsio-dev libtool-bin wcslib-dev \
-                            libgsl-dev libjpeg-dev libtiff-dev libgit2-dev \
+                            libgsl-dev libjpeg-dev libtiff-dev libgit2-dev
      $ sudo pbuilder create
      $ su
      # usermod -aG sudo YOURUSERID   # Add your user to the 'sudo' group.
