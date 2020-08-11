@@ -80,9 +80,13 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
   int nkeys=0, status=0;
   struct wcsprm *wcs=NULL;
   char *fullheader, *to, *from;
+  int fixstatus[NWCSFIX]={0};/* For the various wcsfix checks.          */
   int relax    = WCSHDR_all; /* Macro: use all informal WCS extensions. */
   int ctrl     = 0;          /* Don't report why a keyword wasn't used. */
   int nreject  = 0;          /* Number of keywords rejected for syntax. */
+  int fixctrl  = 1;          /* Correct non-standard units in wcsfix.   */
+  void *fixnaxis = NULL;     /* For now disable cylfix() with this      */
+                             /* (because it depends on image size).     */
 
   /* CFITSIO function: */
   if( fits_hdr2str(fptr, 1, NULL, 0, &fullheader, &nkeys, &status) )
@@ -193,6 +197,32 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
           printf("latpole: %f\n", wcs->latpole);
           */
 
+          /* Fix non-standard WCS features. */
+          if( wcsfix(fixctrl, fixnaxis, wcs, fixstatus) )
+            {
+              if(fixstatus[CDFIX])
+                error(0, 0, "%s: (warning) wcsfix status for cdfix: %d",
+                      __func__, fixstatus[CDFIX]);
+              if(fixstatus[DATFIX])
+                error(0, 0, "%s: (warning) wcsfix status for datfix: %d",
+                      __func__, fixstatus[DATFIX]);
+              if(fixstatus[OBSFIX])
+                error(0, 0, "%s: (warning) wcsfix status for obsfix: %d",
+                      __func__, fixstatus[OBSFIX]);
+              if(fixstatus[UNITFIX])
+                error(0, 0, "%s: (warning) wcsfix status for unitfix: %d",
+                      __func__, fixstatus[UNITFIX]);
+              if(fixstatus[SPCFIX])
+                error(0, 0, "%s: (warning) wcsfix status for spcfix: %d",
+                      __func__, fixstatus[SPCFIX]);
+              if(fixstatus[CELFIX])
+                error(0, 0, "%s: (warning) wcsfix status for celfix: %d",
+                      __func__, fixstatus[CELFIX]);
+              if(fixstatus[CYLFIX])
+                error(0, 0, "%s: (warning) wcsfix status for cylfix: %d",
+                      __func__, fixstatus[CYLFIX]);
+            }
+
           /* Set the WCS structure. */
           status=wcsset(wcs);
           if(status)
@@ -206,13 +236,15 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
               *nwcs=0;
             }
           else
-            /* A correctly useful WCS is present. When no PC matrix
-               elements were present in the header, the default PC matrix
-               (a unity matrix) is used. In this case WCSLIB doesn't set
-               'altlin' (and gives it a value of 0). In Gnuastro, later on,
-               we might need to know the type of the matrix used, so in
-               such a case, we will set 'altlin' to 1. */
-            if(wcs->altlin==0) wcs->altlin=1;
+            {
+              /* A correctly useful WCS is present. When no PC matrix
+                 elements were present in the header, the default PC matrix
+                 (a unity matrix) is used. In this case WCSLIB doesn't set
+                 'altlin' (and gives it a value of 0). In Gnuastro, later on,
+                 we might need to know the type of the matrix used, so in
+                 such a case, we will set 'altlin' to 1. */
+              if(wcs->altlin==0) wcs->altlin=1;
+            }
         }
     }
 
@@ -1480,14 +1512,24 @@ gal_wcs_img_to_world(gal_data_t *coords, struct wcsprm *wcs, int inplace)
           wcs_errmsg[status]);
 
 
-  /* For a sanity check.
+  /* For a check.
   {
     size_t i;
-    printf("\n\n%s sanity check:\n", __func__);
+    printf("\n\n%s sanity check (%d dimensions):\n", __func__, nelem);
     for(i=0;i<coords->size;++i)
-      printf("(%g, %g, %g) --> (%g, %g, %g), [stat: %d]\n",
-             pixcrd[i*3], pixcrd[i*3+1], pixcrd[i*3+2],
-             world[i*3],  world[i*3+1],  world[i*3+2], stat[i]);
+      switch(nelem)
+        {
+        case 2:
+          printf("(%-10g %-10g) --> (%-10g %-10g), [stat: %d]\n",
+                 pixcrd[i*2], pixcrd[i*2+1],
+                 world[i*2],  world[i*2+1], stat[i]);
+          break;
+        case 3:
+          printf("(%g, %g, %g) --> (%g, %g, %g), [stat: %d]\n",
+                 pixcrd[i*3], pixcrd[i*3+1], pixcrd[i*3+2],
+                 world[i*3],  world[i*3+1],  world[i*3+2], stat[i]);
+          break;
+        }
   }
   */
 
