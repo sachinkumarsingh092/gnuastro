@@ -40,6 +40,18 @@ See the end of the file for license conditions.
      distortion, you can simply run 'astfits --wcsdistortion=SIP' on the
      file. The inverse conversion is also supported (from SIP to TPV).
 
+  Statistics
+   - New feature to create a 2D-histogram using two input columns (useful
+     when you have lots of points that are too dense and may hide important
+     features). This mode can be activated with the new '--histogram2d'
+     option. The binning of the first (X axis) column is specified with the
+     same 1D histogram options. The second column's binning is configured
+     with the following options:
+       --numbins2: Number of bins along the second column.
+       --greaterequal2: Only second column points that are larger than this.
+       --lessthan2; Only second column points that are less than this.
+       --onebinstart2: Make sure one bin starts at the value given here.
+
   Table:
    - New '--catcolumns' to specify which columns to concatenate (or append)
      to the output. You can specify the file name containing the columns to
@@ -67,6 +79,7 @@ See the end of the file for license conditions.
    - GAL_INTERPOLATE_NEIGHBORS_FUNC_INVALID: for error-handling/completeness.
    - GAL_CONFIG_HAVE_WCSLIB_DIS_H: if the host's WCSLIB supports distortions.
    - GAL_CONFIG_HAVE_WCSLIB_MJDREF: if the host's WCSLIB reads MJDREF keyword.
+   - gal_statistics_histogram2d: Generate 2D histogram from two columns.
    - GAL_WCS_FLTERROR: Limit to identify a floating point error for WCS.
    - gal_wcs_write: Write the given WCS into a FITS extension with no data.
    - gal_wcs_clean_errors: clean major WCS components from errors specified

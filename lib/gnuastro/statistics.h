@@ -163,6 +163,9 @@ gal_statistics_histogram(gal_data_t *data, gal_data_t *bins,
                          int normalize, int maxhistone);
 
 gal_data_t *
+gal_statistics_histogram2d(gal_data_t *input, gal_data_t *bins);
+
+gal_data_t *
 gal_statistics_cfp(gal_data_t *data, gal_data_t *bins, int normalize);
 
 

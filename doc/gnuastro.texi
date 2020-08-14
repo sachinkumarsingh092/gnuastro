@@ -259,8 +259,8 @@ General program usage tutorial
 * Aperture photometry::         Doing photometry on a fixed aperture.
 * Matching catalogs::           Easily find corresponding rows from two catalogs.
 * Finding reddest clumps and visual inspection::  Selecting some targets and inspecting them.
-* Citing and acknowledging Gnuastro::  How to cite and acknowledge Gnuastro in your papers.
 * Writing scripts to automate the steps::  Scripts will greatly help in re-doing things fast.
+* Citing and acknowledging Gnuastro::  How to cite and acknowledge Gnuastro in your papers.
 
 Detecting large extended targets
 
@@ -471,6 +471,7 @@ Data analysis
 Statistics
 
 * Histogram and Cumulative Frequency Plot::  Basic definitions.
+* 2D Histograms::               Plotting the distribution of two variables.
 * Sigma clipping::              Definition of @mymath{\sigma}-clipping.
 * Sky value::                   Definition and derivation of the Sky value.
 * Invoking aststatistics::      Arguments and options to Statistics.
@@ -1947,8 +1948,8 @@ This will help simulate future situations when you are processing your own datas
 * Aperture photometry::         Doing photometry on a fixed aperture.
 * Matching catalogs::           Easily find corresponding rows from two catalogs.
 * Finding reddest clumps and visual inspection::  Selecting some targets and inspecting them.
-* Citing and acknowledging Gnuastro::  How to cite and acknowledge Gnuastro in your papers.
 * Writing scripts to automate the steps::  Scripts will greatly help in re-doing things fast.
+* Citing and acknowledging Gnuastro::  How to cite and acknowledge Gnuastro in your papers.
 @end menu
 
 @node Calling Gnuastro's programs, Accessing documentation, General program usage tutorial, General program usage tutorial
@@ -3414,7 +3415,7 @@ $ astfits matched.fits
 
 
 
-@node Finding reddest clumps and visual inspection, Citing and acknowledging Gnuastro, Matching catalogs, General program usage tutorial
+@node Finding reddest clumps and visual inspection, Writing scripts to automate the steps, Matching catalogs, General program usage tutorial
 @subsection Finding reddest clumps and visual inspection
 @cindex GNU AWK
 As a final step, let's go back to the original clumps-based color measurement we generated in @ref{Working with catalogs estimating colors}.
@@ -3516,7 +3517,7 @@ $ ds9 -mecube seg/xdf-f160w.fits -zscale -zoom to fit    \
       -regions load all reddest.reg
 @end example
 
-@node Writing scripts to automate the steps,  , Citing and acknowledging Gnuastro, General program usage tutorial
+@node Writing scripts to automate the steps, Citing and acknowledging Gnuastro, Finding reddest clumps and visual inspection, General program usage tutorial
 @subsection Writing scripts to automate the steps
 
 In the previous sub-sections, we went through a series of steps like downloading the necessary datasets (in @ref{Setup and data download}), detecting the objects in the image, and finally selecting a particular subset of them to inspect visually (in @ref{Finding reddest clumps and visual inspection}).
@@ -3830,7 +3831,7 @@ if ! [ -f $f160w_flat ]; then
 fi
 @end example
 
-@node Citing and acknowledging Gnuastro, Writing scripts to automate the steps, Finding reddest clumps and visual inspection, General program usage tutorial
+@node Citing and acknowledging Gnuastro,  , Writing scripts to automate the steps, General program usage tutorial
 @subsection Citing and acknowledging Gnuastro
 In conclusion, we hope this extended tutorial has been a good starting point to help in your exciting research.
 If this book or any of the programs in Gnuastro have been useful for your research, please cite the respective papers, and acknowledge the funding agencies that made all of this possible.
@@ -12701,13 +12702,14 @@ The Statistics program is designed for such situations.
 
 @menu
 * Histogram and Cumulative Frequency Plot::  Basic definitions.
+* 2D Histograms::               Plotting the distribution of two variables.
 * Sigma clipping::              Definition of @mymath{\sigma}-clipping.
 * Sky value::                   Definition and derivation of the Sky value.
 * Invoking aststatistics::      Arguments and options to Statistics.
 @end menu
 
 
-@node Histogram and Cumulative Frequency Plot, Sigma clipping, Statistics, Statistics
+@node Histogram and Cumulative Frequency Plot, 2D Histograms, Statistics, Statistics
 @subsection Histogram and Cumulative Frequency Plot
 
 @cindex Histogram
@@ -12746,8 +12748,87 @@ Formally, an interval/bin between a and b is represented by [a, b).
 When the over-all range of the dataset is specified (with the @option{--greaterequal}, @option{--lessthan}, or @option{--qrange} options), the acceptable values of the dataset are also defined with a similar inclusive-exclusive manner.
 But when the range is determined from the actual dataset (none of these options is called), the last element in the dataset is included in the last bin's count.
 
+@node 2D Histograms, Sigma clipping, Histogram and Cumulative Frequency Plot, Statistics
+@subsection 2D Histograms
 
-@node  Sigma clipping, Sky value, Histogram and Cumulative Frequency Plot, Statistics
+In @ref{Histogram and Cumulative Frequency Plot} the concept of histograms were introduced on a single dataset.
+However, especially when doing high-level science on tables, the distribution in a 2D space may be of interest (for example a color-magnitude diagram).
+But the number of points may be too large for a simple scatter plot to show the concentration of the points: they will all fall over each other and just make a large connected region that will hide potentially interesting behaviors.
+This is where 2D histograms can become very useful.
+The desired 2D region is broken up into 2D bins (boxes) and the number of points falling within each box is returned.
+Added with a color-bar, you can now clearly see the distribution.
+
+Gnuastro's Statistics program has the @option{--histogram2d} option for this task.
+Its output will be three columns that have the centers of every box in both dimensions.
+The first column is the central box coordinates in the first dimension, the second has values along the second dimension and the third has the number of input points that fall within each box.
+You can specify the number of bins along each dimension through the @option{--numbins} (for first input column) an @option{--numbins2} (for second input column).
+the output file from this command can then be given to any plotting tool to visualize the distribution.
+
+You can then make high-quality plots within your paper (all in @LaTeX{}), you can use @url{https://ctan.org/pkg/pgfplots, PGFPlots} with the following minimal @LaTeX{} source:
+
+@example
+%% Replace 'XXXXXXXXX' with your selected number of bins in the first
+%% dimension.
+%%
+%% Then run these commands to build the plot in a LaTeX command.
+%%    mkdir tikz
+%%    pdflatex -shell-escape -halt-on-error plot.tex
+\documentclass@{article@}
+
+%% Load PGFPlots and set it to build the figure separately in a 'tikz'
+%% directory (which has to exist before LaTeX is run). This
+%% "externalization" is very useful to include the commands of multiple
+%% plots in the middle of your paper/report, but also have the plots
+%% separately to use in slides or other scenarios.
+\usepackage@{pgfplots@}
+\usetikzlibrary@{external@}
+\tikzexternalize
+\tikzsetexternalprefix@{tikz/@}
+
+%% Start the document
+\begin@{document@}
+
+  You can actually write a full paper here and include many figures!
+  Feel free to change this text.
+
+  %% Define the colormap.
+  \pgfplotsset@{
+    /pgfplots/colormap=@{coldredux@}@{
+      [1cm]
+      rgb255(0cm)=(255,255,255)
+      rgb255(2cm)=(0,192,255)
+      rgb255(4cm)=(0,0,255)
+      rgb255(6cm)=(0,0,0)
+    @}
+  @}
+
+  %% Draw the plot.
+  \begin@{tikzpicture@}
+    \small
+    \begin@{axis@}[
+      width=\linewidth,
+      view=@{0@}@{90@},
+      colorbar horizontal,
+      xlabel=X axis,
+      ylabel=Y axis,
+      ylabel shift=-0.1cm,
+      colorbar style=@{at=@{(0,1.01)@}, anchor=south west,
+                      xticklabel pos=upper@},
+    ]
+      \addplot3[
+        surf,
+        shader=flat corner,
+        mesh/ordering=rowwise,
+        mesh/cols=XXXXXXXXX,               %% <---- Correct this!
+      ] file @{cm-hist2d.txt@};
+
+  \end@{axis@}
+\end@{tikzpicture@}
+
+\end@{document@}
+@end example
+
+@node  Sigma clipping, Sky value, 2D Histograms, Statistics
 @subsection Sigma clipping
 
 Let's assume that you have pure noise (centered on zero) with a clear @url{https://en.wikipedia.org/wiki/Normal_distribution,Gaussian distribution}, or see @ref{Photon counting noise}.
@@ -13405,6 +13486,11 @@ By default (when no @option{--output} is specified) a plain text table will be c
 If a FITS name is specified, you can use the common option @option{--tableformat} to have it as a FITS ASCII or FITS binary format, see @ref{Common options}.
 This table can then be fed into your favorite plotting tool and get a much more clean and nice histogram than what the raw command-line can offer you (with the @option{--asciihist} option).
 
+@item --histogram2d
+Save the 2D histogram of two input columns into an output file, see @ref{2D Histograms}.
+The output will have three columns: the first two are the coordinates of each box's center in the first and second dimensions/columns.
+The third will be number of input points that fall within that box.
+
 @item -C
 @itemx --cumulative
 Save the cumulative frequency plot of the usable values in the input dataset into a table, similar to @option{--histogram}.
@@ -13476,6 +13562,18 @@ Therefore, if none of them are called calling this option is redundant.
 The @option{--onebinstart} option has a higher priority than this option.
 In other words, @option{--onebinstart} takes effect after the range has been finalized and the initial bins have been defined, therefore it has the power to (possibly) shift the bins.
 If you want to manually set the range of the bins @emph{and} have one bin on a special value, it is thus better to avoid @option{--onebinstart}.
+
+@item --numbins2=INT
+Similar to @option{--numbins}, but for the second column when a 2D histogram is requested, see @option{--histogram2d}.
+
+@item --greaterequal2=FLT
+Similar to @option{--greaterequal}, but for the second column when a 2D histogram is requested, see @option{--histogram2d}.
+
+@item --lessthan2=FLT
+Similar to @option{--lessthan}, but for the second column when a 2D histogram is requested, see @option{--histogram2d}.
+
+@item --onebinstart2=FLT
+Similar to @option{--onebinstart}, but for the second column when a 2D histogram is requested, see @option{--histogram2d}.
 
 @end table
 

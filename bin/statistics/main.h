@@ -58,10 +58,12 @@ struct statisticsparams
   gal_list_i32_t         *singlevalue; /* Single value calculations.     */
   gal_list_f64_t  *tp_args;  /* Arguments for printing.                  */
   char          *inputname;  /* Input filename.                          */
-  char             *column;  /* Column name or number if input is table. */
+  gal_list_str_t  *columns;  /* Column name or number if input is table. */
   char             *refcol;  /* Reference column name or number.         */
   float       greaterequal;  /* Only use values >= this value.           */
+  float      greaterequal2;  /* Only use values >= this value (2D hist). */
   float           lessthan;  /* Only use values <  this value.           */
+  float          lessthan2;  /* Only use values <  this value (2D hist). */
   float           quantmin;  /* Quantile min or range: from Q to 1-Q.    */
   float           quantmax;  /* Quantile maximum.                        */
   uint8_t           ontile;  /* Do single value calculations on tiles.   */
@@ -70,6 +72,7 @@ struct statisticsparams
   uint8_t        asciihist;  /* Print an ASCII histogram.                */
   uint8_t         asciicfp;  /* Print an ASCII cumulative frequency plot.*/
   uint8_t        histogram;  /* Save histogram in output.                */
+  uint8_t      histogram2d;  /* Save 2D-histogram in output.             */
   uint8_t       cumulative;  /* Save cumulative distibution in output.   */
   double            mirror;  /* Mirror value for hist and CFP.           */
   uint8_t              sky;  /* Find the Sky value over the image.       */
@@ -77,11 +80,13 @@ struct statisticsparams
   gal_data_t      *contour;  /* Levels to show contours.                 */
 
   size_t           numbins;  /* Number of bins in histogram or CFP.      */
+  size_t          numbins2;  /* No. of second-dim bins in 2D histogram.  */
   size_t      numasciibins;  /* Number of bins in ASCII plots.           */
   size_t       asciiheight;  /* Height of ASCII histogram or CFP plots.  */
   uint8_t        normalize;  /* set the sum of all bins to 1.            */
   uint8_t   manualbinrange;  /* Set bin min/max manually, not from data. */
   float        onebinstart;  /* Shift bins to start at this value.       */
+  float       onebinstart2;  /* Shift bins to start at this value.       */
   uint8_t        maxbinone;  /* Set the maximum bin to 1.                */
   float         mirrordist;  /* Maximum distance after mirror for mode.  */
 

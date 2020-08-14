@@ -506,7 +506,7 @@ print_ascii_plot(struct statisticsparams *p, gal_data_t *plot,
 
 /* Data structure that must be fed into 'gal_statistics_regular_bins'.*/
 static gal_data_t *
-set_bin_range_params(struct statisticsparams *p)
+set_bin_range_params(struct statisticsparams *p, size_t dim)
 {
   size_t rsize=2;
   gal_data_t *range=NULL;
@@ -516,8 +516,21 @@ set_bin_range_params(struct statisticsparams *p)
       /* Allocate the range data structure. */
       range=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &rsize, NULL, 0, -1, 1,
                            NULL, NULL, NULL);
-      ((float *)(range->array))[0]=p->greaterequal;
-      ((float *)(range->array))[1]=p->lessthan;
+      switch(dim)
+        {
+        case 1:
+          ((float *)(range->array))[0]=p->greaterequal;
+          ((float *)(range->array))[1]=p->lessthan;
+          break;
+        case 2:
+          ((float *)(range->array))[0]=p->greaterequal2;
+          ((float *)(range->array))[1]=p->lessthan2;
+          break;
+        default:
+          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
+                "address the problem. The value %zu for 'dim' isn't "
+                "recogized", __func__, PACKAGE_BUGREPORT, dim);
+        }
     }
   return range;
 }
@@ -532,7 +545,7 @@ ascii_plots(struct statisticsparams *p)
   gal_data_t *bins, *hist, *cfp=NULL, *range=NULL;
 
   /* Make the bins and the respective plot. */
-  range=set_bin_range_params(p);
+  range=set_bin_range_params(p, 1);
   bins=gal_statistics_regular_bins(p->input, range, p->numasciibins, NAN);
   hist=gal_statistics_histogram(p->input, bins, 0, 0);
   if(p->asciicfp)
@@ -616,7 +629,7 @@ write_output_table(struct statisticsparams *p, gal_data_t *table,
   gal_list_str_add(&comments, tmp, 0);
 
   if(strcmp(fix, "fits"))  /* The intro info will be in FITS files anyway.*/
-    gal_table_comments_add_intro(&comments, PROGRAM_NAME, &p->rawtime);
+    gal_table_comments_add_intro(&comments, PROGRAM_STRING, &p->rawtime);
 
 
   /* Write the table. */
@@ -657,7 +670,7 @@ save_hist_and_or_cfp(struct statisticsparams *p)
   /* Set the bins and make the histogram, this is necessary for both the
      histogram and CFP (recall that the CFP is built from the
      histogram). */
-  range=set_bin_range_params(p);
+  range=set_bin_range_params(p, 1);
   bins=gal_statistics_regular_bins(p->input, range, p->numbins,
                                    p->onebinstart);
   hist=gal_statistics_histogram(p->input, bins, p->normalize, p->maxbinone);
@@ -693,11 +706,11 @@ save_hist_and_or_cfp(struct statisticsparams *p)
 
   /* Prepare the contents. */
   if(p->histogram && p->cumulative)
-    { suf="_hist_cfp"; contents="Histogram and cumulative frequency plot"; }
+    { suf="-hist-cfp"; contents="Histogram and cumulative frequency plot"; }
   else if(p->histogram)
-    { suf="_hist";     contents="Histogram"; }
+    { suf="-hist";     contents="Histogram"; }
   else
-    { suf="_cfp";      contents="Cumulative frequency plot"; }
+    { suf="-cfp";      contents="Cumulative frequency plot"; }
 
 
   /* Set the output file name. */
@@ -705,6 +718,38 @@ save_hist_and_or_cfp(struct statisticsparams *p)
 
   /* Clean up. */
   gal_data_free(range);
+}
+
+
+
+
+
+static void
+histogram_2d(struct statisticsparams *p)
+{
+  char *suf, *contents;
+  gal_data_t *hist2d, *bins;
+  gal_data_t *range1, *range2;
+
+  /* Set the bins for each dimension */
+  range1=set_bin_range_params(p, 1);
+  range2=set_bin_range_params(p, 2);
+  bins=gal_statistics_regular_bins(p->input, range1, p->numbins,
+                                   p->onebinstart);
+  bins->next=gal_statistics_regular_bins(p->input->next, range2,
+                                         p->numbins2,
+                                         p->onebinstart2);
+
+  /* Build the 2D histogram. */
+  hist2d=gal_statistics_histogram2d(p->input, bins);
+
+  /* Write the output. */
+  suf="-hist2d";
+  contents="2D Histogram";
+  write_output_table(p, hist2d, suf, contents);
+
+  /* Clean up. */
+  gal_list_data_free(hist2d);
 }
 
 
@@ -785,8 +830,8 @@ print_input_info(struct statisticsparams *p)
   printf("Input: %s\n", name);
 
   /* If a table was given, print the column. */
-  if(p->column) printf("Column: %s\n",
-                       p->input->name ? p->input->name : p->column);
+  if(p->columns) printf("Column: %s\n",
+                        p->input->name ? p->input->name : p->columns->v);
 
   /* Range. */
   str=NULL;
@@ -899,7 +944,7 @@ print_basics(struct statisticsparams *p)
      range of the histogram. In that case, we want to print the histogram
      information. */
   printf("-------");
-  range=set_bin_range_params(p);
+  range=set_bin_range_params(p, 1);
   p->asciiheight = p->asciiheight ? p->asciiheight : 10;
   p->numasciibins = p->numasciibins ? p->numasciibins : 70;
   bins=gal_statistics_regular_bins(p->input, range, p->numasciibins, NAN);
@@ -1044,6 +1089,13 @@ statistics(struct statisticsparams *p)
     {
       print_basic_info=0;
       save_hist_and_or_cfp(p);
+    }
+
+  /* 2D histogram. */
+  if(p->histogram2d)
+    {
+      print_basic_info=0;
+      histogram_2d(p);
     }
 
   /* Print the sigma-clipped results. */

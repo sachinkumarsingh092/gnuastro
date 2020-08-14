@@ -127,8 +127,11 @@ ui_initialize_options(struct statisticsparams *p,
 
   /* Program-specific initializers */
   p->lessthan            = NAN;
+  p->lessthan2           = NAN;
   p->onebinstart         = NAN;
+  p->onebinstart2        = NAN;
   p->greaterequal        = NAN;
+  p->greaterequal2       = NAN;
   p->quantmin            = NAN;
   p->quantmax            = NAN;
   p->mirror              = NAN;
@@ -397,8 +400,8 @@ ui_read_check_only_options(struct statisticsparams *p)
   if( p->ontile || p->sky )
     {
       /* The tile or sky mode cannot be called with any other modes. */
-      if(p->asciihist || p->asciicfp || p->histogram || p->cumulative
-         || p->sigmaclip || !isnan(p->mirror) )
+      if( p->asciihist || p->asciicfp || p->histogram || p->histogram2d
+          || p->cumulative || p->sigmaclip || !isnan(p->mirror) )
         error(EXIT_FAILURE, 0, "'--ontile' or '--sky' cannot be called with "
               "any of the 'particular' calculation options, for example "
               "'--histogram'. This is because the latter work over the whole "
@@ -495,10 +498,15 @@ ui_read_check_only_options(struct statisticsparams *p)
 
 
   /* When binned outputs are requested, make sure that 'numbins' is set. */
-  if( (p->histogram || p->cumulative || !isnan(p->mirror)) && p->numbins==0)
+  if( (p->histogram || p->histogram2d || p->cumulative || !isnan(p->mirror))
+      && p->numbins==0)
     error(EXIT_FAILURE, 0, "'--numbins' isn't set. When the histogram or "
           "cumulative frequency plots are requested, the number of bins "
           "('--numbins') is necessary");
+  if( p->histogram2d && p->numbins2==0 )
+    error(EXIT_FAILURE, 0, "'--numbins2' isn't set. When a 2D histogram "
+          "is requested, the number of bins in the second dimension "
+          "('--numbins2') is also necessary");
 
 
   /* If an ascii plot is requested, check if the ascii number of bins and
@@ -539,7 +547,7 @@ ui_check_options_and_arguments(struct statisticsparams *p)
           /* If its an image, make sure column isn't given (in case the
              user confuses an image with a table). */
           p->hdu_type=gal_fits_hdu_format(p->inputname, p->cp.hdu);
-          if(p->hdu_type==IMAGE_HDU && p->column)
+          if(p->hdu_type==IMAGE_HDU && p->columns)
             error(EXIT_FAILURE, 0, "%s (hdu: %s): is a FITS image "
                   "extension. The '--column' option is only applicable "
                   "to tables.", p->inputname, p->cp.hdu);
@@ -574,8 +582,7 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
 {
   size_t one=1;
   unsigned char flags=GAL_ARITHMETIC_NUMOK;
-  unsigned char flagsor = ( GAL_ARITHMETIC_FREE
-                            | GAL_ARITHMETIC_INPLACE
+  unsigned char flagsor = ( GAL_ARITHMETIC_INPLACE
                             | GAL_ARITHMETIC_NUMOK );
   gal_data_t *tmp, *cond_g=NULL, *cond_l=NULL, *cond, *blank, *ref;
 
@@ -650,13 +657,22 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
 
   /* Set all the pixels that satisfy the condition to blank. Note that a
      blank value will be used in the proper type of the input in the
-     'where' operator.*/
+     'where' operator. Also reset the blank flags so they are checked again
+     if necessary.*/
   gal_arithmetic(GAL_ARITHMETIC_OP_WHERE, 1, flagsor, p->input, cond, blank);
-
-
-  /* Reset the blank flags so they are checked again if necessary. */
   p->input->flag &= ~GAL_DATA_FLAG_BLANK_CH;
   p->input->flag &= ~GAL_DATA_FLAG_HASBLANK;
+  if(p->input->next)
+    {
+      gal_arithmetic(GAL_ARITHMETIC_OP_WHERE, 1, flagsor, p->input->next,
+                     cond, blank);
+      p->input->next->flag &= ~GAL_DATA_FLAG_BLANK_CH;
+      p->input->next->flag &= ~GAL_DATA_FLAG_HASBLANK;
+    }
+
+  /* Clean up. */
+  gal_data_free(cond);
+  gal_data_free(blank);
 }
 
 
@@ -711,25 +727,82 @@ ui_make_sorted_if_necessary(struct statisticsparams *p)
 
 
 
+/* Merge all given columns into one list. This is because people may call
+   for different columns in one call to '--column' ('-c', separated by a
+   comma), or multiple calls to '-c'. */
+gal_list_str_t *
+ui_read_columns_in_one(gal_list_str_t *incolumns)
+{
+  size_t i;
+  gal_data_t *strs;
+  char *c, **strarr;
+  gal_list_str_t *tmp, *final=NULL;
+
+  /* Go over the separate calls to the '-c' option, see the explaination in
+     Table's 'ui_columns_prepare' function for more on every step. */
+  for(tmp=incolumns;tmp!=NULL;tmp=tmp->next)
+    {
+      /* Remove any new-line character. */
+      for(c=tmp->v;*c!='\0';++c)
+        if(*c=='\\' && *(c+1)=='\n') { *c=' '; *(++c)=' '; }
+
+      /* Read the different comma-separated strings into an array (within a
+         'gal_data_t'). */
+      strs=gal_options_parse_csv_strings_raw(tmp->v, NULL, 0);
+      strarr=strs->array;
+
+      /* Add each array element to the final list of columns. */
+      for(i=0;i<strs->size;++i)
+        gal_list_str_add(&final, strarr[i], 1);
+    }
+
+  /* Reverse the list to be in the same order. */
+  gal_list_str_reverse(&final);
+
+  /* For a check.
+  for(tmp=final;tmp!=NULL;tmp=tmp->next)
+    printf("%s\n", tmp->v);
+  */
+
+  /* Return the final unified list. */
+  return final;
+}
+
+
+
+
+
 void
 ui_read_columns(struct statisticsparams *p)
 {
   int toomanycols=0, tformat;
-  gal_list_str_t *column=NULL;
   gal_data_t *cols, *tmp, *cinfo;
   size_t size, ncols, nrows, counter=0;
+  gal_list_str_t *incols, *columnlist=NULL;
   gal_list_str_t *lines=gal_options_check_stdin(p->inputname,
                                                 p->cp.stdintimeout, "input");
+
+  /* Merge possibly multiple calls to '-c' (each possibly separated by a
+     coma) into one list. */
+  incols=ui_read_columns_in_one(p->columns);
+
+  /* If any columns are specified, make sure there is a maximum of two
+     columns.  */
+  if(gal_list_str_number(incols)>2)
+    error(EXIT_FAILURE, 0, "%zu input columns were given but currently a "
+          "maximum of two columns are supported (two columns only for "
+          "special operations, the majority of operations are on a single "
+          "column)", gal_list_str_number(incols));
 
   /* If a reference column is also given, add it to the list of columns to
      read. */
   if(p->refcol)
-    gal_list_str_add(&column, p->refcol, 0);
+    gal_list_str_add(&columnlist, p->refcol, 0);
 
   /* If no column is specified, Statistics will abort and an error will be
      printed when the table has more than one column. If there is only one
      column, there is no need to specify any, so Statistics will use it. */
-  if(p->column==NULL)
+  if(incols==NULL)
     {
       /* Get the basic table information. */
       cinfo=gal_table_info(p->inputname, p->cp.hdu, lines, &ncols, &nrows,
@@ -740,12 +813,12 @@ ui_read_columns(struct statisticsparams *p)
       switch(ncols)
         {
         case 0:
-          error(EXIT_FAILURE, 0, "%s contains no usable information",
+          error(EXIT_FAILURE, 0, "%s contains no usable columns",
                 ( p->inputname
                   ? gal_checkset_dataset_name(p->inputname, p->cp.hdu)
                   : "Standard input" ));
         case 1:
-          gal_checkset_allocate_copy("1", &p->column);
+          gal_list_str_add(&incols, "1", 1);
           break;
         default:
           error(EXIT_FAILURE, 0, "%s is a table containing more than one "
@@ -765,18 +838,19 @@ ui_read_columns(struct statisticsparams *p)
         }
 
     }
-  gal_list_str_add(&column, p->column, 0);
+  if(columnlist) columnlist->next=incols;
+  else           columnlist=incols;
 
   /* Read the desired column(s). */
-  cols=gal_table_read(p->inputname, p->cp.hdu, lines, column, p->cp.searchin,
-                      p->cp.ignorecase, p->cp.minmapsize, p->cp.quietmmap,
-                      NULL);
+  cols=gal_table_read(p->inputname, p->cp.hdu, lines, columnlist,
+                      p->cp.searchin, p->cp.ignorecase, p->cp.minmapsize,
+                      p->cp.quietmmap, NULL);
   gal_list_str_free(lines, 1);
 
-  /* If the input was from standard input, we can actually write this into
-     it (for future reporting). */
+  /* If the input was from standard input, we'll set the input name to be
+     'stdin' (for future reporting). */
   if(p->inputname==NULL)
-    gal_checkset_allocate_copy("statistics", &p->inputname);
+    gal_checkset_allocate_copy("stdin", &p->inputname);
 
   /* Put the columns into the proper gal_data_t. */
   size=cols->size;
@@ -806,8 +880,15 @@ ui_read_columns(struct statisticsparams *p)
       /* Put the column into the proper pointer. */
       switch(++counter)
         {
-        case 1: p->input=tmp;                                         break;
-        case 2: if(p->refcol) p->reference=tmp; else toomanycols=1;   break;
+        case 1: p->input=tmp; break;
+        case 2:
+          if(gal_list_str_number(incols)==2)
+            p->input->next=tmp;
+          else
+            if(p->refcol) p->reference=tmp; else toomanycols=1;
+          break;
+        case 3:
+          if(p->refcol) p->reference=tmp; else toomanycols=1;   break;
         default: toomanycols=1;
         }
 
@@ -822,7 +903,17 @@ ui_read_columns(struct statisticsparams *p)
     }
 
   /* Clean up. */
-  gal_list_str_free(column, 0);
+  gal_list_str_free(incols, 1);
+  if(columnlist!=incols)
+    {
+      columnlist->next=NULL;
+      gal_list_str_free(columnlist, 0);
+    }
+
+  /* For a check:
+  printf("Number of input columns: %zu\n", gal_list_data_number(p->input));
+  exit(0);
+  */
 }
 
 
@@ -832,8 +923,11 @@ ui_read_columns(struct statisticsparams *p)
 void
 ui_preparations(struct statisticsparams *p)
 {
-  gal_data_t *check;
+  unsigned char flagsor = ( GAL_ARITHMETIC_FREE
+                            | GAL_ARITHMETIC_INPLACE
+                            | GAL_ARITHMETIC_NUMOK );
   int keepinputdir=p->cp.keepinputdir;
+  gal_data_t *check, *flag1, *flag2, *flag;
   struct gal_options_common_params *cp=&p->cp;
   struct gal_tile_two_layer_params *tl=&cp->tl;
   char *checkbasename = p->cp.output ? p->cp.output : p->inputname;
@@ -855,8 +949,14 @@ ui_preparations(struct statisticsparams *p)
     }
   else
     {
+      /* Read the table columns. */
       ui_read_columns(p);
       p->inputformat=INPUT_FORMAT_TABLE;
+
+      /* Two columns can only be given with 2D histogram mode. */
+      if(p->histogram2d==0 && p->input->next!=NULL)
+        error(EXIT_FAILURE, 0, "two column input is currently only "
+              "supported for 2D histogram mode");
     }
 
   /* Read the convolution kernel if necessary. */
@@ -906,16 +1006,33 @@ ui_preparations(struct statisticsparams *p)
   /* If we are not to work on tiles, then re-order and change the input. */
   if(p->ontile==0 && p->sky==0 && p->contour==NULL)
     {
-      /* Only keep the elements we want. */
-      gal_blank_remove(p->input);
+      /* Only keep the elements we want. Note that if we have more than one
+         column, we need to move the same rows in both (otherwise their
+         widths won't be equal). */
+      if(p->input->next)
+        {
+          flag1=gal_blank_flag(p->input);
+          flag2=gal_blank_flag(p->input->next);
+          flag=gal_arithmetic(GAL_ARITHMETIC_OP_OR, 1, flagsor, flag1, flag2);
+
+          gal_blank_flag_apply(p->input, flag);
+          gal_blank_flag_apply(p->input->next, flag);
+
+          gal_blank_remove(p->input);
+          gal_blank_remove(p->input->next);
+
+          p->input->next->flag &= ~GAL_DATA_FLAG_HASBLANK ;
+          p->input->next->flag |= GAL_DATA_FLAG_BLANK_CH ;
+        }
+      else
+        gal_blank_remove(p->input);
+      p->input->flag &= ~GAL_DATA_FLAG_HASBLANK ;
+      p->input->flag |= GAL_DATA_FLAG_BLANK_CH ;
 
       /* Make sure there actually are any (non-blank) elements left. */
       if(p->input->size==0)
         error(EXIT_FAILURE, 0, "%s: all elements are blank",
               gal_fits_name_save_as_string(p->inputname, cp->hdu));
-
-      p->input->flag &= ~GAL_DATA_FLAG_HASBLANK ;
-      p->input->flag |= GAL_DATA_FLAG_BLANK_CH ;
 
       /* Make sure there is data remaining: */
       if(p->input->size==0)

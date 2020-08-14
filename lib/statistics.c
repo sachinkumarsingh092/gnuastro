@@ -1569,7 +1569,7 @@ gal_statistics_no_blank_sorted(gal_data_t *input, int inplace)
 
      * The 'inrange' data structure keeps the desired range along each
        dimension of the input data structure, it has to be in float32
-       type. Note that if
+       type. Note these points:
 
          - If you want the full range of the dataset (in any dimensions,
            then just set 'range' to NULL and the range will be specified
@@ -1846,6 +1846,146 @@ gal_statistics_histogram(gal_data_t *input, gal_data_t *bins, int normalize,
 
   /* Return the histogram. */
   return hist;
+}
+
+
+
+
+
+/* Build a 2D histogram from the two input columns (a list) and two bins
+   (also a list). */
+#define HISTOGRAM2D_TYPESET(AT, BT) {                                   \
+    BT *b=input->next->array;                                           \
+    AT *a=input->array, *af=a+input->size;                              \
+    do                                                                  \
+      {                                                                 \
+        if(*a>=mina && *a<=maxa && *b>=minb && *b<=maxb)                \
+          {                                                             \
+            i=(*a-mina)/binwidtha;                                      \
+            j=(*b-minb)/binwidthb;                                      \
+            /* When '*a' is the largest element (within floating */     \
+            /* point errors), 'ii' can be one element larger than */    \
+            /* the number of bins. But since its in the dataset, we */  \
+            /* need to count it. So we'll put it in the last bin. */    \
+            if(i==bsizea) --i;                                          \
+            if(j==bsizeb) --j;                                          \
+            ++h[ i*bsizeb+j ];                                          \
+          }                                                             \
+        ++b;                                                            \
+      }                                                                 \
+    while(++a<af);                                                      \
+  }
+
+#define HISTOGRAM2D_TYPESET_A(AT) {                                     \
+    switch(input->next->type)                                           \
+      {                                                                 \
+      case GAL_TYPE_UINT8:    HISTOGRAM2D_TYPESET(AT, uint8_t);  break; \
+      case GAL_TYPE_INT8:     HISTOGRAM2D_TYPESET(AT, int8_t);   break; \
+      case GAL_TYPE_UINT16:   HISTOGRAM2D_TYPESET(AT, uint16_t); break; \
+      case GAL_TYPE_INT16:    HISTOGRAM2D_TYPESET(AT, int16_t);  break; \
+      case GAL_TYPE_UINT32:   HISTOGRAM2D_TYPESET(AT, uint32_t); break; \
+      case GAL_TYPE_INT32:    HISTOGRAM2D_TYPESET(AT, int32_t);  break; \
+      case GAL_TYPE_UINT64:   HISTOGRAM2D_TYPESET(AT, uint64_t); break; \
+      case GAL_TYPE_INT64:    HISTOGRAM2D_TYPESET(AT, int64_t);  break; \
+      case GAL_TYPE_FLOAT32:  HISTOGRAM2D_TYPESET(AT, float);    break; \
+      case GAL_TYPE_FLOAT64:  HISTOGRAM2D_TYPESET(AT, double);   break; \
+      default:                                                          \
+        error(EXIT_FAILURE, 0, "%s: type code %d not recognized",       \
+              __func__, input->type);                                   \
+      }                                                                 \
+  }
+
+gal_data_t *
+gal_statistics_histogram2d(gal_data_t *input, gal_data_t *bins)
+{
+  double *o1, *o2;
+  gal_data_t *tmp, *out;
+  size_t i, j, *h, bsizea, bsizeb, outsize;
+  double *da, *db, binwidtha, binwidthb, mina, minb, maxa, maxb;
+
+  /* Basic sanity checks */
+  if(input->next==NULL)
+    error(EXIT_FAILURE, 0, "%s: 'input' has to be a list of two datasets",
+          __func__);
+  if(bins->next==NULL)
+    error(EXIT_FAILURE, 0, "%s: 'bins' has to be a list of two datasets",
+          __func__);
+  if(input->next->next)
+    error(EXIT_FAILURE, 0, "%s: 'input' should only contain two datasets, "
+          "not more", __func__);
+  if(bins->next->next)
+    error(EXIT_FAILURE, 0, "%s: 'bins' should only contain two datasets, "
+          "not more", __func__);
+  if(input->size != input->next->size)
+    error(EXIT_FAILURE, 0, "the two input datasets have to have the "
+          "same size");
+  if(bins->status!=GAL_STATISTICS_BINS_REGULAR
+     || bins->next->status!=GAL_STATISTICS_BINS_REGULAR)
+    error(EXIT_FAILURE, 0, "%s: the input bins are not regular. Currently "
+          "it is only implemented for regular bins", __func__);
+
+  /* For easy reading of bin sizes. */
+  da=bins->array;
+  bsizea=bins->size;
+  db=bins->next->array;
+  bsizeb=bins->next->size;
+
+  /* Allocate the output. */
+  outsize=bsizea*bsizeb;
+  out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &outsize,
+                     NULL, 1, input->minmapsize, input->quietmmap,
+                     "bin_dim1", input->unit,
+                     "Bin centers along first axis.");
+  tmp=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &outsize,
+                     NULL, 1, input->minmapsize, input->quietmmap,
+                     "bin_dim2", input->next->unit,
+                     "Bin centers along second axis.");
+  out->next=tmp;
+  tmp=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &outsize,
+                     NULL, 1, input->minmapsize, input->quietmmap,
+                     "hist_number", "counts",
+                     "Number of data points within each 2D-bin (box).");
+  out->next->next=tmp;
+
+  /* Fill in the first two output columns and set the histogram pointer. */
+  o1=out->array;
+  o2=out->next->array;
+  h=out->next->next->array;
+  for(i=0;i<bsizea;++i)
+    for(j=0;j<bsizeb;++j)
+      {
+        o1[i*bsizeb+j]=da[i];
+        o2[i*bsizeb+j]=db[j];
+      }
+
+  /* Set the minimum and maximum range of the histogram from the bins. */
+  binwidtha=da[1]-da[0];
+  binwidthb=db[1]-db[0];
+  mina=da[0]-binwidtha/2;
+  minb=db[0]-binwidthb/2;
+  maxa=da[ bins->size - 1      ] + binwidtha/2;
+  maxb=db[ bins->next->size - 1] + binwidthb/2;
+
+  /* Fill the histogram column. */
+  switch(input->type)
+    {
+    case GAL_TYPE_UINT8:     HISTOGRAM2D_TYPESET_A(uint8_t);     break;
+    case GAL_TYPE_INT8:      HISTOGRAM2D_TYPESET_A(int8_t);      break;
+    case GAL_TYPE_UINT16:    HISTOGRAM2D_TYPESET_A(uint16_t);    break;
+    case GAL_TYPE_INT16:     HISTOGRAM2D_TYPESET_A(int16_t);     break;
+    case GAL_TYPE_UINT32:    HISTOGRAM2D_TYPESET_A(uint32_t);    break;
+    case GAL_TYPE_INT32:     HISTOGRAM2D_TYPESET_A(int32_t);     break;
+    case GAL_TYPE_UINT64:    HISTOGRAM2D_TYPESET_A(uint64_t);    break;
+    case GAL_TYPE_INT64:     HISTOGRAM2D_TYPESET_A(int64_t);     break;
+    case GAL_TYPE_FLOAT32:   HISTOGRAM2D_TYPESET_A(float);       break;
+    case GAL_TYPE_FLOAT64:   HISTOGRAM2D_TYPESET_A(double);      break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, input->type);
+    }
+
+  /* Return the final output */
+  return out;
 }
 
 
