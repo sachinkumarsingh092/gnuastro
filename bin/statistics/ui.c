@@ -584,7 +584,7 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
   unsigned char flags=GAL_ARITHMETIC_NUMOK;
   unsigned char flagsor = ( GAL_ARITHMETIC_INPLACE
                             | GAL_ARITHMETIC_NUMOK );
-  gal_data_t *tmp, *cond_g=NULL, *cond_l=NULL, *cond, *blank, *ref;
+  gal_data_t *tmp, *tmp2, *cond_g=NULL, *cond_l=NULL, *cond, *blank, *ref;
 
 
   /* Set the dataset that should be used for the condition. */
@@ -621,6 +621,16 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
       cond_g=gal_arithmetic(GAL_ARITHMETIC_OP_LT, 1, flags, ref, tmp);
       gal_data_free(tmp);
     }
+  if( p->input->next && !isnan(p->greaterequal2) )
+    {
+      tmp=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1, 1,
+                         NULL, NULL, NULL);
+      *((float *)(tmp->array)) = p->greaterequal2;
+      tmp2=gal_arithmetic(GAL_ARITHMETIC_OP_LT, 1, flags, p->input->next, tmp);
+      cond_g=gal_arithmetic(GAL_ARITHMETIC_OP_OR, 1, flagsor, cond_g, tmp2);
+      gal_data_free(tmp);
+      gal_data_free(tmp2);
+    }
 
 
   /* Same reasoning as above for 'p->greaterthan'. */
@@ -631,6 +641,16 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
       *((float *)(tmp->array)) = p->lessthan;
       cond_l=gal_arithmetic(GAL_ARITHMETIC_OP_GE, 1, flags, ref, tmp);
       gal_data_free(tmp);
+    }
+  if(p->input->next && !isnan(p->lessthan2))
+    {
+      tmp=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &one, NULL, 0, -1, 1,
+                         NULL, NULL, NULL);
+      *((float *)(tmp->array)) = p->lessthan2;
+      tmp2=gal_arithmetic(GAL_ARITHMETIC_OP_GE, 1, flags, p->input->next, tmp);
+      cond_l=gal_arithmetic(GAL_ARITHMETIC_OP_OR, 1, flagsor, cond_l, tmp2);
+      gal_data_free(tmp);
+      gal_data_free(tmp2);
     }
 
 
