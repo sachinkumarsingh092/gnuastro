@@ -50,6 +50,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/* Static functions on for this file. */
+static void
+gal_wcs_to_cd(struct wcsprm *wcs);
+
+
+
+
+
 /*************************************************************
  ***********               Read WCS                ***********
  *************************************************************/
@@ -307,15 +315,76 @@ gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
  ***********               Write WCS               ***********
  *************************************************************/
 void
+gal_wcs_write_in_fitsptr(fitsfile *fptr, struct wcsprm *wcs)
+{
+  char *wcsstr;
+  int tpvdist, status=0, nkeyrec;
+
+  /* Prepare the main rotation matrix. Note that for TPV distortion, WCSLIB
+     versions 7.3 and before couldn't deal with the CDELT keys, so to be
+     safe, in such cases, we'll remove the effect of CDELT in the
+     'gal_wcs_to_cd' function. */
+  tpvdist=wcs->lin.disseq && !strcmp(wcs->lin.disseq->dtype[1], "TPV");
+  if( tpvdist ) gal_wcs_to_cd(wcs);
+  else          gal_wcs_decompose_pc_cdelt(wcs);
+
+  /* Clean up small errors in the PC matrix and CDELT values. */
+  gal_wcs_clean_errors(wcs);
+
+  /* Convert the WCS information to text. */
+  status=wcshdo(WCSHDO_safe, wcs, &nkeyrec, &wcsstr);
+  if(status)
+    error(0, 0, "%s: WARNING: WCSLIB error, no WCS in output.\n"
+          "wcshdu ERROR %d: %s", __func__, status,
+          wcs_errmsg[status]);
+  else
+    gal_fits_key_write_wcsstr(fptr, wcsstr, nkeyrec);
+  status=0;
+
+   /* WCSLIB is going to write PC+CDELT keywords in any case. But when we
+      have a TPV distortion, it is cleaner to use a CD matrix. Also,
+      including and before version 7.3, WCSLIB wouldn't convert coordinates
+      properly if the PC matrix is used with the TPV distortion. So to help
+      users with WCSLIB 7.3 or earlier, we need to conver the PC matrix to
+      CD. 'gal_wcs_to_cd' function already made sure that CDELT=1, so
+      effectively the CD matrix and PC matrix are equivalent, we just need
+      to convert the keyword names and delete the CDELT keywords. Note that
+      zero-valued PC/CD elements may not be present, so we'll manually set
+      'status' to zero and not let CFITSIO crash.*/
+  if(tpvdist)
+    {
+      status=0; fits_modify_name(fptr, "PC1_1", "CD1_1", &status);
+      status=0; fits_modify_name(fptr, "PC1_2", "CD1_2", &status);
+      status=0; fits_modify_name(fptr, "PC2_1", "CD2_1", &status);
+      status=0; fits_modify_name(fptr, "PC2_2", "CD2_2", &status);
+      status=0; fits_delete_str(fptr, "CDELT1", &status);
+      status=0; fits_delete_str(fptr, "CDELT2", &status);
+      status=0;
+      fits_write_comment(fptr, "The CD matrix is used instead of the "
+                         "PC+CDELT due to conflicts with TPV distortion "
+                         "in WCSLIB 7.3 (released on 2020/06/03) and "
+                         "ealier. By default Gnuastro will write "
+                         "PC+CDELT matrices because the rotation (PC) and "
+                         "pixel-scale (CDELT) are separate; providing "
+                         "more physically relevant metadata for human "
+                         "readers (PC+CDELT is also the default format "
+                         "of WCSLIB).", &status);
+    }
+}
+
+
+
+
+
+void
 gal_wcs_write(struct wcsprm *wcs, char *filename,
               char *extname, gal_fits_list_key_t *headers,
               char *program_string)
 {
-  char *wcsstr;
+  int status=0;
   size_t ndim=0;
   fitsfile *fptr;
   long *naxes=NULL;
-  int status=0, nkeyrec;
 
   /* Small sanity checks */
   if(wcs==NULL)
@@ -339,24 +408,12 @@ gal_wcs_write(struct wcsprm *wcs, char *filename,
   fits_delete_key(fptr, "COMMENT", &status);
   status=0;
 
+  /* If an extension name was requested, add it. */
   if(extname)
     fits_write_key(fptr, TSTRING, "EXTNAME", extname, "", &status);
 
-  /* Decompose the 'PCi_j' matrix and 'CDELTi' vector. */
-  gal_wcs_decompose_pc_cdelt(wcs);
-
-  /* Clean up small errors in the PC matrix and CDELT values. */
-  gal_wcs_clean_errors(wcs);
-
-  /* Convert the WCS information to text. */
-  status=wcshdo(WCSHDO_safe, wcs, &nkeyrec, &wcsstr);
-  if(status)
-    error(0, 0, "%s: WARNING: WCSLIB error, no WCS in output.\n"
-          "wcshdu ERROR %d: %s", __func__, status,
-          wcs_errmsg[status]);
-  else
-    gal_fits_key_write_wcsstr(fptr, wcsstr, nkeyrec);
-  status=0;
+  /* Write the WCS structure. */
+  gal_wcs_write_in_fitsptr(fptr, wcs);
 
   /* Write all the headers and the version information. */
   gal_fits_key_write_version_in_ptr(&headers, program_string, fptr);
@@ -1030,7 +1087,9 @@ gal_wcs_decompose_pc_cdelt(struct wcsprm *wcs)
   /* If there is on WCS, then don't do anything. */
   if(wcs==NULL) return;
 
-  /* The correction is only needed when the PC matrix is filled. */
+  /* The correction is only needed when the PC matrix is filled. Note that
+     internally, WCSLIB always uses the PC matrix, even when the input has
+     a CD matrix.*/
   if(wcs->pc)
     {
       /* Get the pixel scale. */
@@ -1065,6 +1124,65 @@ gal_wcs_decompose_pc_cdelt(struct wcsprm *wcs)
          to make sure that WCSLIB only looks into the 'PCi_j' and 'CDELTi'
          and makes no assumptioins about 'CDELTi'. */
       wcs->altlin=1;
+    }
+}
+
+
+
+
+
+/* Set the WCS structure to use the CD matrix. */
+static void
+gal_wcs_to_cd(struct wcsprm *wcs)
+{
+  size_t i, j, naxis;
+
+  /* If there is on WCS, then don't do anything. */
+  if(wcs==NULL) return;
+
+  /* 'wcs->altlin' identifies which rotation element is being used (PCi_j,
+     CDi_J or CROTAi). For PCi_j, the first bit will be 1 (==1), for CDi_j,
+     the second bit is 1 (==2) and for CROTAi, the third bit is 1 (==4). */
+  naxis=wcs->naxis;
+  switch(wcs->altlin)
+    {
+   /* PCi_j: Convert it to CDi_j. */
+    case 1:
+
+      /* Fill in the CD matrix and correct the PC and CDELT arrays. We have
+         to do this because ultimately, WCSLIB will be writing the PC and
+         CDELT keywords, even when 'altlin' is 2. So effectively we have to
+         multiply the PC and CDELT matrices, then set cdelt=1 in all
+         dimensions. This is actually how WCSLIB reads a FITS header with
+         only a CD matrix. */
+      for(i=0;i<naxis;++i)
+        {
+          for(j=0;j<naxis;++j)
+            wcs->cd[i*naxis+j] = wcs->pc[i*naxis+j] *= wcs->cdelt[i];
+          wcs->cdelt[i]=1;
+        }
+
+      /* Set the altlin to be the CD matrix and free the PC matrix. */
+      wcs->altlin=2;
+      break;
+
+    /* CDi_j: No need to do any conversion. */
+    case 2: return; break;
+
+    /* CROTAi: not yet supported. */
+    case 4:
+      error(0, 0, "%s: WARNING: Conversion of 'CROTAi' keywords to the CD "
+            "matrix is not yet supported (for lack of time!), please "
+            "contact us at %s to add this feature. But this may not cause a "
+            "problem at all, so please check if the output's WCS is "
+            "reasonable", __func__, PACKAGE_BUGREPORT);
+      break;
+
+    /* The value isn't supported! */
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+            "problem. The value %d for wcs->altlin isn't recognized",
+            __func__, PACKAGE_BUGREPORT, wcs->altlin);
     }
 }
 

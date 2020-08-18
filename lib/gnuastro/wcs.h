@@ -96,6 +96,9 @@ gal_wcs_write(struct wcsprm *wcs, char *filename,
               char *extname, gal_fits_list_key_t *headers,
               char *program_string);
 
+void
+gal_wcs_write_in_fitsptr(fitsfile *fptr, struct wcsprm *wcs);
+
 
 
 

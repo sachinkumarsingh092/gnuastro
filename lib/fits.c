@@ -2034,12 +2034,12 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
 {
   void *blank;
   int64_t *i64;
+  char *u64key;
   fitsfile *fptr;
   uint64_t *u64, *u64f;
   long fpixel=1, *naxes;
-  char *wcsstr, *u64key;
   size_t i, ndim=input->ndim;
-  int nkeyrec, hasblank, status=0, datatype=0;
+  int hasblank, status=0, datatype=0;
   gal_data_t *i64data, *towrite, *block=gal_tile_block(input);
 
   /* Small sanity check. */
@@ -2174,25 +2174,11 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
   if(towrite->comment)
     fits_write_comment(fptr, towrite->comment, &status);
 
+
   /* If a WCS structure is present, write it in */
   if(towrite->wcs)
-    {
-      /* Decompose the 'PCi_j' matrix and 'CDELTi' vector. */
-      gal_wcs_decompose_pc_cdelt(towrite->wcs);
+    gal_wcs_write_in_fitsptr(fptr, towrite->wcs);
 
-      /* Clean up small errors in the PC matrix and CDELT values. */
-      gal_wcs_clean_errors(towrite->wcs);
-
-      /* Convert the WCS information to text. */
-      status=wcshdo(WCSHDO_safe, towrite->wcs, &nkeyrec, &wcsstr);
-      if(status)
-        error(0, 0, "%s: WARNING: WCSLIB error, no WCS in output.\n"
-              "wcshdu ERROR %d: %s", __func__, status,
-              wcs_errmsg[status]);
-      else
-        gal_fits_key_write_wcsstr(fptr, wcsstr, nkeyrec);
-      status=0;
-    }
 
   /* Report any errors if we had any */
   free(naxes);
