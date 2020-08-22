@@ -588,7 +588,7 @@ ui_fill_fits_headerll(gal_list_str_t *input, gal_fits_list_key_t **output,
 
       /* Add it to the list of keywords. */
       gal_fits_key_list_add(output, type, keyname, 0, fvalue, vfree,
-                            comment, 0, unit);
+                            comment, 0, unit, 0);
       free(original);
     }
 

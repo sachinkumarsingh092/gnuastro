@@ -1070,10 +1070,10 @@ segment_output(struct segmentparams *p)
   /* The clump labels. */
   gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "CLUMPSN", 0,
                         &p->clumpsnthresh, 0, "Minimum S/N of true clumps",
-                        0, "ratio");
+                        0, "ratio", 0);
   gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "NUMLABS", 0,
                         &p->numclumps, 0, "Total number of clumps", 0,
-                        "counter");
+                        "counter", 0);
   p->clabel->name="CLUMPS";
   gal_fits_img_write(p->clabel, p->cp.output, keys, PROGRAM_NAME);
   p->clabel->name=NULL;
@@ -1085,7 +1085,7 @@ segment_output(struct segmentparams *p)
     {
       gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "NUMLABS", 0,
                             &p->numobjects, 0, "Total number of objects", 0,
-                            "counter");
+                            "counter", 0);
       p->olabel->name="OBJECTS";
       gal_fits_img_write(p->olabel, p->cp.output, keys, PROGRAM_NAME);
       p->olabel->name=NULL;
@@ -1101,17 +1101,17 @@ segment_output(struct segmentparams *p)
         gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "MAXSTD", 0,
                               &p->maxstd, 0,
                               "Maximum raw tile standard deviation", 0,
-                              p->input->unit);
+                              p->input->unit, 0);
       if( !isnan(p->minstd) )
         gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "MINSTD", 0,
                               &p->minstd, 0,
                               "Minimum raw tile standard deviation", 0,
-                              p->input->unit);
+                              p->input->unit, 0);
       if( !isnan(p->medstd) )
         gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "MEDSTD", 0,
                               &p->medstd, 0,
                               "Median raw tile standard deviation", 0,
-                              p->input->unit);
+                              p->input->unit, 0);
 
       /* If the input was actually a variance dataset, we'll need to take
          its square root before writing it. We want this output to be a

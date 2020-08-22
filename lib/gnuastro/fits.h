@@ -80,6 +80,7 @@ typedef struct gal_fits_list_key_t
   int                        kfree;   /* ==1, free keyword name.   */
   int                        vfree;   /* ==1, free keyword value.  */
   int                        cfree;   /* ==1, free comment.        */
+  int                        ufree;   /* ==1, free unit.           */
   uint8_t                     type;   /* Keyword value type.       */
   char                    *keyname;   /* Keyword Name.             */
   void                      *value;   /* Keyword value.            */
@@ -185,12 +186,12 @@ gal_fits_key_read(char *filename, char *hdu, gal_data_t *keysll,
 void
 gal_fits_key_list_add(gal_fits_list_key_t **list, uint8_t type,
                       char *keyname, int kfree, void *value, int vfree,
-                      char *comment, int cfree, char *unit);
+                      char *comment, int cfree, char *unit, int ufree);
 
 void
 gal_fits_key_list_add_end(gal_fits_list_key_t **list, uint8_t type,
                           char *keyname, int kfree, void *value, int vfree,
-                          char *comment, int cfree, char *unit);
+                          char *comment, int cfree, char *unit, int ufree);
 
 void
 gal_fits_key_list_reverse(gal_fits_list_key_t **list);

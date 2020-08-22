@@ -68,33 +68,34 @@ convertsaveoutput(struct mknoiseparams *p)
       gal_fits_key_list_add_end(&headers, GAL_TYPE_FLOAT64, keyname1, 0,
                                 &p->background_mag, 0, "Background "
                                 "value (in magnitude) for noise.",
-                                0, NULL);
+                                0, NULL, 0);
       strcpy(keyname2, "BZRPNT");
       gal_fits_key_list_add_end(&headers, GAL_TYPE_FLOAT64, keyname2, 0,
                                 &p->zeropoint, 0,
-                                "Zeropoint magnitude of image.", 0, NULL);
+                                "Zeropoint magnitude of image.", 0, NULL, 0);
       strcpy(keyname3, "INSTRU");
       gal_fits_key_list_add_end(&headers, GAL_TYPE_FLOAT64, keyname3, 0,
                                 &p->instrumental, 0,
                                 "Instrumental noise in units of flux.",
-                                0, NULL);
+                                0, NULL, 0);
     }
   else
     {
       strcpy(keyname1, "SIGMA");
       gal_fits_key_list_add_end(&headers, GAL_TYPE_FLOAT64, keyname1, 0,
-                                &p->sigma, 0, "Total noise sigma", 0, NULL);
+                                &p->sigma, 0, "Total noise sigma", 0,
+                                NULL, 0);
     }
   strcpy(keyname4, "RNGTYPE");
   gal_fits_key_list_add_end(&headers, GAL_TYPE_STRING, keyname4, 0,
                             (void *)(p->rng_name), 0,
                             "Random number generator (by GSL) type.",
-                            0, NULL);
+                            0, NULL, 0);
   strcpy(keyname5, "RNGSEED");
   gal_fits_key_list_add_end(&headers, GAL_TYPE_ULONG, keyname5, 0,
                             &p->rng_seed, 0,
                             "Random number generator (by GSL) seed.",
-                            0, NULL);
+                            0, NULL, 0);
 
   /* Save the output: */
   p->input=gal_data_copy_to_new_type_free(p->input, p->cp.type);

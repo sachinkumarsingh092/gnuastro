@@ -103,6 +103,8 @@ See the end of the file for license conditions.
      changed).
 
   Library:
+   - gal_fits_key_list_add: new 'ufree' argument to optionally free units.
+   - gal_fits_key_list_add_end: similar to 'gal_fits_key_list_add'.
    - gal_interpolate_neighbors: new name for gal_interpolate_close_neighbors.
    - gal_statistics_outlier_bydistance: new name for the old
      'gal_statistics_outlier_positive'. It can now use the same algorithm

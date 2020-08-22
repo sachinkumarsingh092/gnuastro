@@ -2804,7 +2804,7 @@ options_as_fits_keywords_write(gal_fits_list_key_t **keys,
               gal_checkset_allocate_copy(options[i].name, &name);
               gal_checkset_allocate_copy(options[i].doc,  &doc);
               gal_fits_key_list_add(keys, GAL_TYPE_STRING, name, 1, tmp->v,
-                                    0, doc, 1, NULL);
+                                    0, doc, 1, NULL, 0);
             }
         /* Normal types. */
         else
@@ -2835,7 +2835,7 @@ options_as_fits_keywords_write(gal_fits_list_key_t **keys,
               {
                 gal_checkset_allocate_copy(options[i].doc,  &doc);
                 gal_fits_key_list_add(keys, vtype, name, 1, vptr, 0, doc, 1,
-                                      NULL);
+                                      NULL, 0);
               }
           }
       }

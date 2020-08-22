@@ -1268,7 +1268,7 @@ gal_fits_key_read(char *filename, char *hdu, gal_data_t *keysll,
 void
 gal_fits_key_list_add(gal_fits_list_key_t **list, uint8_t type,
                       char *keyname, int kfree, void *value, int vfree,
-                      char *comment, int cfree, char *unit)
+                      char *comment, int cfree, char *unit, int ufree)
 {
   gal_fits_list_key_t *newnode;
 
@@ -1277,6 +1277,8 @@ gal_fits_key_list_add(gal_fits_list_key_t **list, uint8_t type,
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
     error(EXIT_FAILURE, errno, "%s: allocating new node", __func__);
+
+  /* Write the given values into the key structure. */
   newnode->type=type;
   newnode->keyname=keyname;
   newnode->value=value;
@@ -1285,7 +1287,9 @@ gal_fits_key_list_add(gal_fits_list_key_t **list, uint8_t type,
   newnode->kfree=kfree;                /* Free pointers after using them. */
   newnode->vfree=vfree;
   newnode->cfree=cfree;
+  newnode->ufree=ufree;
 
+  /* Set the next pointer. */
   newnode->next=*list;
   *list=newnode;
 }
@@ -1297,7 +1301,7 @@ gal_fits_key_list_add(gal_fits_list_key_t **list, uint8_t type,
 void
 gal_fits_key_list_add_end(gal_fits_list_key_t **list, uint8_t type,
                           char *keyname, int kfree, void *value, int vfree,
-                          char *comment, int cfree, char *unit)
+                          char *comment, int cfree, char *unit, int ufree)
 {
   gal_fits_list_key_t *newnode, *tmp;
 
@@ -1306,6 +1310,8 @@ gal_fits_key_list_add_end(gal_fits_list_key_t **list, uint8_t type,
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
     error(EXIT_FAILURE, errno, "%s: allocation of new node", __func__);
+
+  /* Write the given values into the key structure. */
   newnode->type=type;
   newnode->keyname=keyname;
   newnode->value=value;
@@ -1314,7 +1320,9 @@ gal_fits_key_list_add_end(gal_fits_list_key_t **list, uint8_t type,
   newnode->kfree=kfree;            /* Free pointers after using them. */
   newnode->vfree=vfree;
   newnode->cfree=cfree;
+  newnode->ufree=ufree;
 
+  /* Set the next pointer. */
   if(*list)         /* List is already full, add this node to the end */
     {
       /* After this line, tmp points to the last node. */
@@ -1448,10 +1456,10 @@ gal_fits_key_write_filename(char *keynamebase, char *filename,
         {
           if(top1end0)
             gal_fits_key_list_add(list, GAL_TYPE_STRING, keyname, 1,
-                                  value, 1, NULL, 0, NULL);
+                                  value, 1, NULL, 0, NULL, 0);
           else
             gal_fits_key_list_add_end(list, GAL_TYPE_STRING, keyname, 1,
-                                      value, 1, NULL, 0, NULL);
+                                      value, 1, NULL, 0, NULL, 0);
           break;
         }
       else
@@ -1484,10 +1492,10 @@ gal_fits_key_write_filename(char *keynamebase, char *filename,
           /* Convert the last useful character and save the file name.*/
           if(top1end0)
             gal_fits_key_list_add(list, GAL_TYPE_STRING, keyname, 1,
-                                  value, 1, NULL, 0, NULL);
+                                  value, 1, NULL, 0, NULL, 0);
           else
             gal_fits_key_list_add_end(list, GAL_TYPE_STRING, keyname, 1,
-                                      value, 1, NULL, 0, NULL);
+                                      value, 1, NULL, 0, NULL, 0);
           i+=j+1;
         }
     }
@@ -1589,6 +1597,7 @@ gal_fits_key_write_in_ptr(gal_fits_list_key_t **keylist, fitsfile *fptr)
       if(tmp->kfree) free(tmp->keyname);
       if(tmp->vfree) free(tmp->value);
       if(tmp->cfree) free(tmp->comment);
+      if(tmp->ufree) free(tmp->unit);
 
       /* Keep the pointer to the next keyword and free the allocated
          space for this keyword.*/

@@ -479,7 +479,7 @@ correct_wcs_save_output(struct warpparams *p)
       sprintf(&keyword[i*FLEN_KEYWORD], "WMTX%zu_%zu", i/3+1, i%3+1);
       gal_fits_key_list_add_end(&headers, GAL_TYPE_FLOAT64,
                                 &keyword[i*FLEN_KEYWORD], 0, &m[i], 0,
-                                "Warp matrix element value", 0, NULL);
+                                "Warp matrix element value", 0, NULL, 0);
     }
 
   /* Save the output into the proper type and write it. */

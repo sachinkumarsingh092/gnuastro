@@ -160,11 +160,11 @@ noisechisel_output(struct noisechiselparams *p)
   /* Write the detected pixels and useful information into it's header. */
   gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "DETSN", 0, &p->detsnthresh,
                         0, "Minimum S/N of true pseudo-detections", 0,
-                        "ratio");
+                        "ratio", 0);
   if(p->label)
     gal_fits_key_list_add(&keys, GAL_TYPE_SIZE_T, "NUMLABS", 0,
                           &p->numdetections, 0, "Total number of labels "
-                          "(inclusive)", 0, "counter");
+                          "(inclusive)", 0, "counter", 0);
   gal_fits_key_list_reverse(&keys);
   if(p->label)
     {
@@ -193,13 +193,13 @@ noisechisel_output(struct noisechiselparams *p)
   p->std->name="SKY_STD";
   gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "MAXSTD", 0, &p->maxstd, 0,
                         "Maximum raw tile standard deviation", 0,
-                        p->input->unit);
+                        p->input->unit, 0);
   gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "MINSTD", 0, &p->minstd, 0,
                         "Minimum raw tile standard deviation", 0,
-                        p->input->unit);
+                        p->input->unit, 0);
   gal_fits_key_list_add(&keys, GAL_TYPE_FLOAT32, "MEDSTD", 0, &p->medstd, 0,
                         "Median raw tile standard deviation", 0,
-                        p->input->unit);
+                        p->input->unit, 0);
   gal_tile_full_values_write(p->std, &p->cp.tl, !p->ignoreblankintiles,
                              p->cp.output, keys, PROGRAM_NAME);
   p->std->name=NULL;

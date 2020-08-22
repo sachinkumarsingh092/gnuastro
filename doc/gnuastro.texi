@@ -21983,22 +21983,23 @@ filename and HDU as input instead of an already opened CFITSIO
 @end deftypefun
 
 
-@deftypefun void gal_fits_key_list_add (gal_fits_list_key_t @code{**list}, uint8_t @code{type}, char @code{*keyname}, int @code{kfree}, void @code{*value}, int @code{vfree}, char @code{*comment}, int @code{cfree}, char @code{*unit})
-Add a keyword to the top of list of header keywords that need to be
-written into a FITS file. In the end, the keywords will have to be freed,
-so it is important to know before hand if they were allocated or not (hence
-the presence of the arguments ending in @code{free}). If the space for the
-respective element is not allocated, set these arguments to @code{0}
-(zero).
+@deftypefun void gal_fits_key_list_add (gal_fits_list_key_t @code{**list}, uint8_t @code{type}, char @code{*keyname}, int @code{kfree}, void @code{*value}, int @code{vfree}, char @code{*comment}, int @code{cfree}, char @code{*unit}, int @code{ufree})
+Add a keyword to the top of list of header keywords that need to be written into a FITS file.
+In the end, the keywords will have to be freed, so it is important to know before hand if they were allocated or not (hence the presence of the arguments ending in @code{free}).
+If the space for the respective element is not allocated, set these arguments to @code{0} (zero).
 
-@strong{Important note for strings}: the value should be the pointer to the
-string its-self (@code{char *}), not a pointer to a pointer (@code{char **}).
+You can call this function multiple times on a single list add several keys that will be written in one call to @code{gal_fits_key_write} or @code{gal_fits_key_write_in_ptr}.
+However, the resulting list will be a last-in-first-out list (for more on lists, see @ref{Linked lists}).
+Hence, the written keys will have the inverse order of your calls to this function.
+To avoid this problem, you can either use @code{gal_fits_key_list_add_end} instead (which will add each key to the end of the list, not to the top like this function).
+Alternatively, you can use @code{gal_fits_key_list_reverse} after adding all the keys with this function.
+
+@strong{Important note for strings}: the value should be the pointer to the string its-self (@code{char *}), not a pointer to a pointer (@code{char **}).
 @end deftypefun
 
-@deftypefun void gal_fits_key_list_add_end (gal_fits_list_key_t @code{**list}, uint8_t @code{type}, char @code{*keyname}, int @code{kfree}, void @code{*value}, int @code{vfree}, char @code{*comment}, int @code{cfree}, char @code{*unit})
-Similar to @code{gal_fits_key_list_add} (see above) but add the keyword to
-the end of the list. Use this function if you want the keywords to be
-written in the same order that you add nodes to the list of keywords.
+@deftypefun void gal_fits_key_list_add_end (gal_fits_list_key_t @code{**list}, uint8_t @code{type}, char @code{*keyname}, int @code{kfree}, void @code{*value}, int @code{vfree}, char @code{*comment}, int @code{cfree}, char @code{*unit}, int @code{ufree})
+Similar to @code{gal_fits_key_list_add}, but add the given keyword to the end of the list, see the description of @code{gal_fits_key_list_add} for more.
+Use this function if you want the keywords to be written in the same order that you add nodes to the list of keywords.
 @end deftypefun
 
 @deftypefun void gal_fits_key_list_reverse (gal_fits_list_key_t @code{**list})
@@ -22038,13 +22039,37 @@ each keyword record.
 @end deftypefun
 
 @deftypefun void gal_fits_key_write (gal_fits_list_key_t @code{**keylist}, char @code{*title}, char @code{*filename}, char @code{*hdu})
-Write the list of keywords in @code{keylist} into the @code{hdu} extension
-of the file called @code{filename} (it must already exist).
+Write the list of keywords in @code{keylist} into the @code{hdu} extension of the file called @code{filename} (the file must already exist) and free the list.
+
+The list nodes are meant to be dynamically allocated (because they will be freed after being written).
+We thus recommend using the @code{gal_fits_key_list_add} or @code{gal_fits_key_list_add_end} to create and fill the list.
+Below is one fully working example of using this function to write a keyword into an existing FITS file.
+
+@example
+#include <stdio.h>
+#include <stdlib.h>
+#include <gnuastro/fits.h>
+
+int main()
+@{
+  char *filename="test.fits";
+  gal_fits_list_key_t *keylist=NULL;
+
+  char *unit="unit";
+  float value=123.456;
+  char *keyname="MYKEY";
+  char *comment="A good description of the key";
+  gal_fits_key_list_add_end(&keylist, GAL_TYPE_FLOAT32, keyname, 0,
+                            &value, 0, comment, 0, unit, 0);
+  gal_fits_key_write(&keylist, "Matching metadata", filename, "1");
+  return EXIT_SUCCESS;
+@}
+@end example
 @end deftypefun
 
 @deftypefun void gal_fits_key_write_in_ptr (gal_fits_list_key_t @code{**keylist}, fitsfile @code{*fptr})
-Write the list of keywords in @code{keylist} into the given CFITSIO
-@code{fitsfile} pointer.
+Write the list of keywords in @code{keylist} into the given CFITSIO @code{fitsfile} pointer and free keylist.
+For more on the input @code{keylist}, see the description and example for @code{gal_fits_key_write}, above.
 @end deftypefun
 
 @deftypefun void gal_fits_key_write_version (gal_fits_list_key_t @code{**keylist}, char @code{*title}, char @code{*filename}, char @code{*hdu})
