@@ -1008,7 +1008,7 @@ ui_preparations(struct statisticsparams *p)
             {
               gal_checkset_writable_remove(tl->tilecheckname, 0,
                                            cp->dontdelete);
-              gal_table_write(check, NULL, cp->tableformat, tl->tilecheckname,
+              gal_table_write(check, NULL, NULL, cp->tableformat, tl->tilecheckname,
                               "TABLE", 0);
             }
           gal_data_free(check);

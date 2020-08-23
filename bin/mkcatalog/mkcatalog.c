@@ -651,7 +651,7 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
       /* Reverse the comments list (so it is printed in the same order
          here), write the objects catalog and free the comments. */
       gal_list_str_reverse(&comments);
-      gal_table_write(p->objectcols, comments, p->cp.tableformat,
+      gal_table_write(p->objectcols, NULL, comments, p->cp.tableformat,
                       p->objectsout, "OBJECTS", 0);
       gal_list_str_free(comments, 1);
 
@@ -668,7 +668,7 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
              Reverse the comments list (so it is printed in the same order
              here), write the objects catalog and free the comments. */
           gal_list_str_reverse(&comments);
-          gal_table_write(p->clumpcols, comments, p->cp.tableformat,
+          gal_table_write(p->clumpcols, NULL, comments, p->cp.tableformat,
                           p->clumpsout, "CLUMPS", 0);
           gal_list_str_free(comments, 1);
         }
@@ -698,7 +698,8 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
               {
                 /* Write the table. */
                 sprintf(str, "SPECTRUM_%zu", i+1);
-                gal_table_write(&p->spectra[i], NULL, GAL_TABLE_FORMAT_BFITS,
+                gal_table_write(&p->spectra[i], NULL, NULL,
+                                GAL_TABLE_FORMAT_BFITS,
                                 p->objectsout, str, 0);
               }
             else
@@ -706,7 +707,7 @@ mkcatalog_write_outputs(struct mkcatalogparams *p)
                 sprintf(str, "-spec-%zu.txt", i+1);
                 fname=gal_checkset_automatic_output(&p->cp, p->objectsout,
                                                     str);
-                gal_table_write(&p->spectra[i], NULL, GAL_TABLE_FORMAT_TXT,
+                gal_table_write(&p->spectra[i], NULL, NULL, GAL_TABLE_FORMAT_TXT,
                                 fname, NULL, 0);
                 free(fname);
               }

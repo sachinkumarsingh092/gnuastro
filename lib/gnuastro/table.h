@@ -156,9 +156,9 @@ gal_table_comments_add_intro(gal_list_str_t **comments,
                              char *program_string, time_t *rawtime);
 
 void
-gal_table_write(gal_data_t *cols, gal_list_str_t *comments,
-                int tableformat, char *filename, char *extname,
-                uint8_t colinfoinstdout);
+gal_table_write(gal_data_t *cols, struct gal_fits_list_key_t **keylist,
+                gal_list_str_t *comments, int tableformat, char *filename,
+                char *extname, uint8_t colinfoinstdout);
 
 void
 gal_table_write_log(gal_data_t *logll, char *program_string,

@@ -801,7 +801,7 @@ segment_save_sn_table(struct clumps_params *clprm)
   /* Set the column pointers and write them into a table.. */
   clumpinobj->next=sn;
   objind->next=clumpinobj;
-  gal_table_write(objind, comments, p->cp.tableformat, p->clumpsn_d_name,
+  gal_table_write(objind, NULL, comments, p->cp.tableformat, p->clumpsn_d_name,
                   "DET_CLUMP_SN", 0);
 
 

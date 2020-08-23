@@ -1279,6 +1279,7 @@ gal_fits_key_list_add(gal_fits_list_key_t **list, uint8_t type,
     error(EXIT_FAILURE, errno, "%s: allocating new node", __func__);
 
   /* Write the given values into the key structure. */
+  newnode->title=NULL;
   newnode->type=type;
   newnode->keyname=keyname;
   newnode->value=value;
@@ -1303,7 +1304,7 @@ gal_fits_key_list_add_end(gal_fits_list_key_t **list, uint8_t type,
                           char *keyname, int kfree, void *value, int vfree,
                           char *comment, int cfree, char *unit, int ufree)
 {
-  gal_fits_list_key_t *newnode, *tmp;
+  gal_fits_list_key_t *tmp, *newnode;
 
   /* Allocate space for the new node and fill it in. */
   errno=0;
@@ -1312,6 +1313,7 @@ gal_fits_key_list_add_end(gal_fits_list_key_t **list, uint8_t type,
     error(EXIT_FAILURE, errno, "%s: allocation of new node", __func__);
 
   /* Write the given values into the key structure. */
+  newnode->title=NULL;
   newnode->type=type;
   newnode->keyname=keyname;
   newnode->value=value;
@@ -1321,6 +1323,67 @@ gal_fits_key_list_add_end(gal_fits_list_key_t **list, uint8_t type,
   newnode->vfree=vfree;
   newnode->cfree=cfree;
   newnode->ufree=ufree;
+
+  /* Set the next pointer. */
+  if(*list)         /* List is already full, add this node to the end */
+    {
+      /* After this line, tmp points to the last node. */
+      tmp=*list; while(tmp->next!=NULL) tmp=tmp->next;
+      tmp->next=newnode;
+      newnode->next=NULL;
+    }
+  else                 /* List is empty */
+    {
+      newnode->next=*list;
+      *list=newnode;
+    }
+}
+
+
+
+
+/* Only set this key to be a title. */
+void
+gal_fits_key_list_title_add(gal_fits_list_key_t **list, char *title, int tfree)
+{
+  gal_fits_list_key_t *newnode;
+
+  /* Allocate space (and initialize to 0/NULL) for the new node and fill it
+     in. */
+  errno=0;
+  newnode=calloc(1, sizeof *newnode);
+  if(newnode==NULL)
+    error(EXIT_FAILURE, errno, "%s: allocating new node", __func__);
+
+  /* Set the arguments. */
+  newnode->title=title;
+  newnode->tfree=tfree;
+
+  /* Set the next pointer. */
+  newnode->next=*list;
+  *list=newnode;
+}
+
+
+
+
+/* Put the title keyword in the end. */
+void
+gal_fits_key_list_title_add_end(gal_fits_list_key_t **list, char *title,
+                                int tfree)
+{
+  gal_fits_list_key_t *tmp, *newnode;
+
+  /* Allocate space (and initialize to 0/NULL) for the new node and fill it
+     in. */
+  errno=0;
+  newnode=calloc(1, sizeof *newnode);
+  if(newnode==NULL)
+    error(EXIT_FAILURE, errno, "%s: allocating new node", __func__);
+
+  /* Set the arguments. */
+  newnode->title=title;
+  newnode->tfree=tfree;
 
   /* Set the next pointer. */
   if(*list)         /* List is already full, add this node to the end */
@@ -1574,30 +1637,40 @@ gal_fits_key_write_in_ptr(gal_fits_list_key_t **keylist, fitsfile *fptr)
   tmp=*keylist;
   while(tmp!=NULL)
     {
-      /* Write the basic key value and comments. */
-      if(tmp->value)
+      /* If a title is requested, only put a title. */
+      if(tmp->title)
         {
-          if( fits_update_key(fptr, gal_fits_type_to_datatype(tmp->type),
-                              tmp->keyname, tmp->value, tmp->comment,
-                              &status) )
-            gal_fits_io_error(status, NULL);
+          gal_fits_key_write_title_in_ptr(tmp->title, fptr);
+          if(tmp->tfree) free(tmp->title);
         }
       else
         {
-          if(fits_update_key_null(fptr, tmp->keyname, tmp->comment, &status))
+          /* Write the basic key value and comments. */
+          if(tmp->value)
+            {
+              if( fits_update_key(fptr, gal_fits_type_to_datatype(tmp->type),
+                                  tmp->keyname, tmp->value, tmp->comment,
+                                  &status) )
+                gal_fits_io_error(status, NULL);
+            }
+          else
+            {
+              if(fits_update_key_null(fptr, tmp->keyname, tmp->comment,
+                                      &status))
+                gal_fits_io_error(status, NULL);
+            }
+
+          /* Write the units if it was given. */
+          if( tmp->unit
+              && fits_write_key_unit(fptr, tmp->keyname, tmp->unit, &status) )
             gal_fits_io_error(status, NULL);
+
+          /* Free the value pointer if desired: */
+          if(tmp->kfree) free(tmp->keyname);
+          if(tmp->vfree) free(tmp->value);
+          if(tmp->cfree) free(tmp->comment);
+          if(tmp->ufree) free(tmp->unit);
         }
-
-      /* Write the units if it was given. */
-      if( tmp->unit
-          && fits_write_key_unit(fptr, tmp->keyname, tmp->unit, &status) )
-        gal_fits_io_error(status, NULL);
-
-      /* Free the value pointer if desired: */
-      if(tmp->kfree) free(tmp->keyname);
-      if(tmp->vfree) free(tmp->value);
-      if(tmp->cfree) free(tmp->comment);
-      if(tmp->ufree) free(tmp->unit);
 
       /* Keep the pointer to the next keyword and free the allocated
          space for this keyword.*/
@@ -3222,7 +3295,8 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tableformat,
    table.*/
 void
 gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
-                   int tableformat, char *filename, char *extname)
+                   int tableformat, char *filename, char *extname,
+                   struct gal_fits_list_key_t **keylist)
 {
   void *blank;
   fitsfile *fptr;
@@ -3306,6 +3380,9 @@ gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
       ++i;
     }
 
+  /* Write the requested keywords. */
+  if(keylist)
+    gal_fits_key_write_in_ptr(keylist, fptr);
 
   /* Write the comments if there were any. */
   for(strt=comments; strt!=NULL; strt=strt->next)

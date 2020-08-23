@@ -526,9 +526,9 @@ gal_table_comments_add_intro(gal_list_str_t **comments, char *program_string,
    table will then be written into 'filename' with a format that is
    specified by 'tableformat'. */
 void
-gal_table_write(gal_data_t *cols, gal_list_str_t *comments,
-                int tableformat, char *filename, char *extname,
-                uint8_t colinfoinstdout)
+gal_table_write(gal_data_t *cols, struct gal_fits_list_key_t **keylist,
+                gal_list_str_t *comments, int tableformat, char *filename,
+                char *extname, uint8_t colinfoinstdout)
 {
   /* If a filename was given, then the tableformat is relevant and must be
      used. When the filename is empty, a text table must be printed on the
@@ -536,13 +536,14 @@ gal_table_write(gal_data_t *cols, gal_list_str_t *comments,
   if(filename)
     {
       if(gal_fits_name_is_fits(filename))
-        gal_fits_tab_write(cols, comments, tableformat, filename, extname);
+        gal_fits_tab_write(cols, comments, tableformat, filename, extname,
+                           keylist);
       else
-        gal_txt_write(cols, comments, filename, colinfoinstdout);
+        gal_txt_write(cols, keylist, comments, filename, colinfoinstdout);
     }
   else
     /* Write to standard output. */
-    gal_txt_write(cols, comments, filename, colinfoinstdout);
+    gal_txt_write(cols, keylist, comments, filename, colinfoinstdout);
 }
 
 
@@ -560,7 +561,8 @@ gal_table_write_log(gal_data_t *logll, char *program_string,
   gal_table_comments_add_intro(&comments, program_string, rawtime);
 
   /* Write the log file to disk */
-  gal_table_write(logll, comments, GAL_TABLE_FORMAT_TXT, filename, "LOG", 0);
+  gal_table_write(logll, NULL, comments, GAL_TABLE_FORMAT_TXT,
+                  filename, "LOG", 0);
 
   /* In verbose mode, print the information. */
   if(!quiet)

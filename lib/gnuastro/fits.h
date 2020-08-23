@@ -47,7 +47,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/list.h>
 #include <gnuastro/data.h>
-#include <gnuastro/table.h>
+/* gnuastro/table.h is included below. */
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
@@ -77,17 +77,24 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 /* To create a linked list of headers. */
 typedef struct gal_fits_list_key_t
 {
+  int                        tfree;   /* ==1, free title string.   */
   int                        kfree;   /* ==1, free keyword name.   */
   int                        vfree;   /* ==1, free keyword value.  */
   int                        cfree;   /* ==1, free comment.        */
   int                        ufree;   /* ==1, free unit.           */
   uint8_t                     type;   /* Keyword value type.       */
+  char                      *title;   /* !=NULL, only print title. */
   char                    *keyname;   /* Keyword Name.             */
   void                      *value;   /* Keyword value.            */
   char                    *comment;   /* Keyword comment.          */
   char                       *unit;   /* Keyword unit.             */
   struct gal_fits_list_key_t *next;   /* Pointer next keyword.     */
 } gal_fits_list_key_t;
+
+
+
+/* table.h needs 'gal_fits_list_key_t'. */
+#include <gnuastro/table.h>
 
 
 
@@ -194,6 +201,14 @@ gal_fits_key_list_add_end(gal_fits_list_key_t **list, uint8_t type,
                           char *comment, int cfree, char *unit, int ufree);
 
 void
+gal_fits_key_list_title_add(gal_fits_list_key_t **list, char *title,
+                            int tfree);
+
+void
+gal_fits_key_list_title_add_end(gal_fits_list_key_t **list, char *title,
+                                int tfree);
+
+void
 gal_fits_key_list_reverse(gal_fits_list_key_t **list);
 
 void
@@ -292,7 +307,8 @@ gal_fits_tab_read(char *filename, char *hdu, size_t numrows,
 
 void
 gal_fits_tab_write(gal_data_t *cols, gal_list_str_t *comments,
-                   int tableformat, char *filename, char *extname);
+                   int tableformat, char *filename, char *extname,
+                   struct gal_fits_list_key_t **keywords);
 
 
 

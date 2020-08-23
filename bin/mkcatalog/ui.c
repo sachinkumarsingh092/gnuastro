@@ -1582,8 +1582,8 @@ ui_preparations_spectrum_wcs(struct mkcatalogparams *p)
   p->specsliceinfo->next=gal_data_copy_to_new_type(z, GAL_TYPE_FLOAT32);
 
   /* For a final check.
-  gal_table_write(p->specsliceinfo, NULL, GAL_TABLE_FORMAT_BFITS,
-                  "specsliceinfo.fits", "test-debug",0);
+  gal_table_write(p->specsliceinfo, NULL, NULL, GAL_TABLE_FORMAT_BFITS,
+                  "specsliceinfo.fits", "test-debug", 0);
   */
 
   /* Clean up. */

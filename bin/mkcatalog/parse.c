@@ -422,7 +422,7 @@ parse_spectrum(struct mkcatalog_passparams *pp, gal_data_t *xybin)
   free(tsize);
 
   /* For a check.
-  gal_table_write(pp->spectrum, NULL, GAL_TABLE_FORMAT_BFITS,
+  gal_table_write(pp->spectrum, NULL, NULL, GAL_TABLE_FORMAT_BFITS,
                   "spectrum.fits", "SPECTRUM", 0);
   */
 }

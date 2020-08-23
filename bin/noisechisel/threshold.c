@@ -223,7 +223,8 @@ threshold_write_sn_table(struct noisechiselparams *p, gal_data_t *insn,
      because when the output is a FITS table, we want all the tables in one
      FITS file. We have already deleted any existing file with the same
      name in 'ui_set_output_names'.*/
-  gal_table_write(cols, comments, p->cp.tableformat, filename, extname, 0);
+  gal_table_write(cols, NULL, comments, p->cp.tableformat, filename,
+                  extname, 0);
 
 
   /* Clean up (if necessary). */

@@ -788,6 +788,6 @@ table(struct tableparams *p)
   if(p->colmetadata) table_colmetadata(p);
 
   /* Write the output. */
-  gal_table_write(p->table, NULL, p->cp.tableformat, p->cp.output,
+  gal_table_write(p->table, NULL, NULL, p->cp.tableformat, p->cp.output,
                   "TABLE", p->colinfoinstdout);
 }

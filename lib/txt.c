@@ -1457,8 +1457,77 @@ txt_write_metadata(FILE *fp, gal_data_t *datall, char **fmts)
 
 
 
+static void
+txt_write_keys(FILE *fp, struct gal_fits_list_key_t **keylist)
+{
+  char *ending;
+  char *valuestr;
+  gal_fits_list_key_t *tmp, *ttmp;
+
+  tmp=*keylist;
+  while(tmp!=NULL)
+    {
+      /* If a title is requested, only put a title. */
+      if(tmp->title)
+        {
+          fprintf(fp, "# -------------\n# %s\n# -------------\n",
+                  tmp->title);
+          if(tmp->tfree) free(tmp->title);
+        }
+      else
+        {
+          /* For a string type, we need to return a pointer to the
+             string. */
+          valuestr = ( tmp->type==GAL_TYPE_STRING
+                       ? tmp->value
+                       : gal_type_to_string(tmp->value, tmp->type, 1) );
+
+          /* If a comment is requested, parepare it. */
+          ending=NULL;
+          if(tmp->unit)
+            {
+              if( asprintf(&ending, " / [%s] %s", tmp->unit,
+                           tmp->comment?tmp->comment:"")==-1 )
+                error(EXIT_FAILURE, errno, "%s: asprintf error for name",
+                      __func__);
+            }
+          else if(tmp->comment)
+            {
+              if( asprintf(&ending, " / %s", tmp->comment)==-1 )
+                error(EXIT_FAILURE, errno, "%s: asprintf error for name",
+                      __func__);
+            }
+
+          /* Write the keyword value. */
+          fprintf(fp, "# [key] %s: %s%s\n", tmp->keyname,
+                  valuestr, ending?ending:"");
+
+          /* Clean up. */
+          if(ending)     free(ending);
+          if(tmp->kfree) free(tmp->keyname);
+          if(tmp->vfree) free(tmp->value);
+          if(tmp->cfree) free(tmp->comment);
+          if(tmp->ufree) free(tmp->unit);
+        }
+
+      /* Keep the pointer to the next keyword and free the allocated
+         space for this keyword.*/
+      ttmp=tmp->next;
+      free(tmp);
+      tmp=ttmp;
+    }
+
+  /* Set it to NULL so it isn't mistakenly used later. */
+  *keylist=NULL;
+}
+
+
+
+
+
 void
-gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename,
+gal_txt_write(gal_data_t *input, struct gal_fits_list_key_t **keylist,
+              gal_list_str_t *comment, char *filename,
               uint8_t colinfoinstdout)
 {
   FILE *fp;
@@ -1529,6 +1598,9 @@ gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename,
       /* Write the comments if there were any. */
       for(strt=comment; strt!=NULL; strt=strt->next)
         fprintf(fp, "# %s\n", strt->v);
+
+      /* Write the keywords */
+      if(keylist) txt_write_keys(fp, keylist);
     }
   else
     fp=stdout;
@@ -1579,7 +1651,6 @@ gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename,
       error(EXIT_FAILURE, 0, "%s: a bug! input->ndim=%zu is not recognized",
             __func__, input->ndim);
     }
-
 
 
   /* Clean up. */

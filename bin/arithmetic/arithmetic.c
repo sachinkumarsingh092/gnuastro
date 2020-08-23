@@ -884,7 +884,7 @@ arithmetic_tofile(struct arithmeticparams *p, char *token, int freeflag)
   /* Save it to a file. */
   popped->wcs=p->refdata.wcs;
   if(popped->ndim==1 && p->onedasimage==0)
-    gal_table_write(popped, NULL, p->cp.tableformat, filename,
+    gal_table_write(popped, NULL, NULL, p->cp.tableformat, filename,
                     "ARITHMETIC", 0);
   else
     gal_fits_img_write(popped, filename, NULL, PROGRAM_NAME);
@@ -1314,7 +1314,7 @@ reversepolish(struct arithmeticparams *p)
          will be freed while freeing 'data'. */
       data->wcs=p->refdata.wcs;
       if(data->ndim==1 && p->onedasimage==0)
-        gal_table_write(data, NULL, p->cp.tableformat,
+        gal_table_write(data, NULL, NULL, p->cp.tableformat,
                         p->onedonstdout ? NULL : p->cp.output,
                         "ARITHMETIC", 0);
       else

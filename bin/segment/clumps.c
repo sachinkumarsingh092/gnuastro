@@ -539,7 +539,7 @@ clumps_write_sn_table(struct segmentparams *p, gal_data_t *insn,
   gal_table_comments_add_intro(&comments, PROGRAM_STRING, &p->rawtime);
 
   /* write the table. */
-  gal_table_write(cols, comments, p->cp.tableformat, filename,
+  gal_table_write(cols, NULL, comments, p->cp.tableformat, filename,
                   "SKY_CLUMP_SN", 0);
 
   /* Clean up (if necessary). */

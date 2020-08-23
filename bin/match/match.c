@@ -259,7 +259,8 @@ match_catalog_read_write_all(struct matchparams *p, size_t *permutation,
   else if(cat)
     {
       /* Write the catalog to a file. */
-      gal_table_write(cat, NULL, p->cp.tableformat, outname, extname, 0);
+      gal_table_write(cat, NULL, NULL, p->cp.tableformat, outname,
+                      extname, 0);
 
       /* Correct arrays and sizes (when 'notmatched' was called). The
          'array' element has to be corrected for later freeing.
@@ -340,7 +341,8 @@ match_catalog_write_one(struct matchparams *p, gal_data_t *a, gal_data_t *b,
 
   /* Reverse the table and write it out. */
   gal_list_data_reverse(&cat);
-  gal_table_write(cat, NULL, p->cp.tableformat, p->out1name, "MATCHED", 0);
+  gal_table_write(cat, NULL, NULL, p->cp.tableformat, p->out1name,
+                  "MATCHED", 0);
 }
 
 
@@ -423,7 +425,7 @@ match_catalog(struct matchparams *p)
         "from 1).";
 
       /* Write them into the table. */
-      gal_table_write(mcols, NULL, p->cp.tableformat, p->logname,
+      gal_table_write(mcols, NULL, NULL, p->cp.tableformat, p->logname,
                       "LOG_INFO", 0);
 
       /* Set the comment pointer to NULL: they weren't allocated. */

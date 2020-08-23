@@ -634,7 +634,8 @@ write_output_table(struct statisticsparams *p, gal_data_t *table,
 
   /* Write the table. */
   gal_checkset_writable_remove(output, 0, p->cp.dontdelete);
-  gal_table_write(table, comments, p->cp.tableformat, output, "TABLE", 0);
+  gal_table_write(table, NULL, comments, p->cp.tableformat, output,
+                  "TABLE", 0);
 
 
   /* Write the configuration information if we have a FITS output. */

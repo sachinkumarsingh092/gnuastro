@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    must be included before the C++ preparations below */
 
 #include <gnuastro/list.h>
+#include <gnuastro/fits.h>
 
 
 
@@ -102,7 +103,8 @@ gal_list_str_t *
 gal_txt_stdin_read(long timeout_microsec);
 
 void
-gal_txt_write(gal_data_t *input, gal_list_str_t *comment, char *filename,
+gal_txt_write(gal_data_t *input, struct gal_fits_list_key_t **keylist,
+              gal_list_str_t *comment, char *filename,
               uint8_t colinfoinstdout);
 
 

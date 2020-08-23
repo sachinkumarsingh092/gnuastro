@@ -800,7 +800,7 @@ convolve(struct convolveparams *p)
 
   /* Save the output (which is in p->input) array. */
   if(p->input->ndim==1)
-    gal_table_write(p->input, NULL, p->cp.tableformat, p->cp.output,
+    gal_table_write(p->input, NULL, NULL, p->cp.tableformat, p->cp.output,
                     "CONVOLVED", 0);
   else
     gal_fits_img_write_to_type(p->input, cp->output, NULL, PROGRAM_NAME,

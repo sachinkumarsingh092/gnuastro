@@ -21563,7 +21563,8 @@ this line is ignored.
 @end itemize
 @end deftypefun
 
-@deftypefun void gal_table_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comments}, int @code{tableformat}, char @code{*filename}, char @code{*extname}, uint8_t @code{colinfoinstdout})
+@deftypefun void gal_table_write (gal_data_t @code{*cols}, struct gal_fits_list_key_t @code{**keywords}, gal_list_str_t @code{*comments}, int @code{tableformat}, char @code{*filename}, char @code{*extname}, uint8_t @code{colinfoinstdout})
+
 Write @code{cols} (a list of datasets, see @ref{List of gal_data_t}) into a
 table stored in @code{filename}. The format of the table can be determined
 with @code{tableformat} that accepts the macros defined above. When
@@ -22002,6 +22003,14 @@ Similar to @code{gal_fits_key_list_add}, but add the given keyword to the end of
 Use this function if you want the keywords to be written in the same order that you add nodes to the list of keywords.
 @end deftypefun
 
+@deftypefun void gal_fits_key_list_title_add (gal_fits_list_key_t @code{**list}, char @code{*title}, int @code{tfree})
+Add a special ``title'' keyword (with the @code{title} string) to the top of the keywords list.
+@end deftypefun
+
+@deftypefun void gal_fits_key_list_title_add_end (gal_fits_list_key_t @code{**list}, char @code{*title}, int @code{tfree})
+Add a special ``title'' keyword (with the @code{title} string) to the end/bottom of the keywords list.
+@end deftypefun
+
 @deftypefun void gal_fits_key_list_reverse (gal_fits_list_key_t @code{**list})
 Reverse the input list of keywords.
 @end deftypefun
@@ -22412,7 +22421,7 @@ We often need to read a text file several times: once to count how many columns 
 So it easier to keep it all in allocated memory and pass it on from the start for each round.
 @end deftypefun
 
-@deftypefun void gal_txt_write (gal_data_t @code{*cols}, gal_list_str_t @code{*comment}, char @code{*filename}, uint8_t @code{colinfoinstdout})
+@deftypefun void gal_txt_write (gal_data_t @code{*cols}, struct gal_fits_list_key_t @code{**keylist}, gal_list_str_t @code{*comment}, char @code{*filename}, uint8_t @code{colinfoinstdout})
 Write @code{cols} in a plain text file @code{filename}.
 @code{cols} may have one or two dimensions which determines the output:
 
@@ -22427,6 +22436,17 @@ So if @code{cols->next!=NULL} the next nodes in the list are ignored and will no
 
 This is a low-level function for tables.
 It is recommended to use @code{gal_table_write} for generic writing of tables in a variety of formats, see @ref{Table input output}.
+
+It is possible to add two types of metadata to the printed table: comments and keywords.
+Each string in the list given to @code{comments} will be printed into the file as a separate line, starting with @code{#}.
+Keywords have a more specific and computer-parsable format and are passed through @code{keylist}.
+Each keyword is also printed in one line, but with the format below.
+Because of the various components in a keyword, it is thus necessary to use the @code{gal_fits_list_key_t} data structure.
+For more, see @ref{FITS header keywords}.
+
+@example
+# [key] NAME: VALUE / [UNIT] KEYWORD COMMENT.
+@end example
 
 If @code{filename} already exists this function will abort with an error and will not write over the existing file.
 Before calling this function make sure if the file exists or not.
@@ -26149,7 +26169,8 @@ main(void)
   /* Set names for the columns and write them out. */
   c1->name = "COUNTER";
   c2->name = "VALUE";
-  gal_table_write(c1, NULL, GAL_TABLE_FORMAT_BFITS, outname);
+  gal_table_write(c1, NULL, NULL, GAL_TABLE_FORMAT_BFITS, outname,
+                  "MY-COLUMNS", 0);
 
   /* The names weren't allocated, so to avoid cleaning-up problems,
    * we'll set them to NULL. */
