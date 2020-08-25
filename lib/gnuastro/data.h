@@ -263,6 +263,11 @@ gal_data_array_calloc(size_t size);
 void
 gal_data_array_free(gal_data_t *dataarr, size_t num, int free_array);
 
+gal_data_t **
+gal_data_array_ptr_calloc(size_t size);
+
+void
+gal_data_array_ptr_free(gal_data_t **dataptr, size_t size, int free_array);
 
 
 

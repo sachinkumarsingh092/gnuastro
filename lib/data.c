@@ -391,6 +391,55 @@ gal_data_array_free(gal_data_t *dataarr, size_t size, int free_array)
 
 
 
+/* Create an array of gal_data_t pointers and initializes them. */
+gal_data_t **
+gal_data_array_ptr_calloc(size_t size)
+{
+  size_t i;
+  gal_data_t **out;
+
+  /* Allocate the array to keep the pointers. */
+  errno=0;
+  out=malloc(size*sizeof *out);
+  if(out==NULL)
+    error(EXIT_FAILURE, errno, "%s: %zu bytes for 'out'", __func__,
+          size*sizeof *out);
+
+  /* Initialize all the pointers to NULL and return. */
+  for(i=0;i<size;++i) out[i]=NULL;
+  return out;
+}
+
+
+
+
+
+/* Assuming that we have an array of pointers to data structures, this
+   function frees them. */
+void
+gal_data_array_ptr_free(gal_data_t **dataptr, size_t size, int free_array)
+{
+  size_t i;
+  for(i=0;i<size;++i)
+    {
+      /* If the user doesn't want to free the array, it must be because
+         they are keeping its pointer somewhere else (that their own
+         responsability!), so we can just set it to NULL for the
+         'gal_data_free' to not free it. */
+      if(free_array==0)
+        dataptr[i]->array=NULL;
+
+      /* Free this data structure. */
+      gal_data_free(dataptr[i]);
+    }
+
+  /* Free the 'gal_data_t **'. */
+  free(dataptr);
+}
+
+
+
+
 
 
 

@@ -20213,6 +20213,15 @@ element of all the datasets will also be freed, see @ref{Generic data
 container}.
 @end deftypefun
 
+@deftypefun {gal_data_t **} gal_data_array_ptr_calloc (size_t @code{size})
+Allocate an array of pointers to Gnuastro's generic data structure and initalize all pointers to @code{NULL}.
+This is useful when you want to allocate individual datasets later (for example with @code{gal_data_alloc}).
+@end deftypefun
+
+@deftypefun void gal_data_array_ptr_free (gal_data_t @code{**dataptr}, size_t @code{size}, int @code{free_array});
+Free all the individual datasets within the elements of @code{dataptr}, then free @code{dataptr} itself (the array of pointers that was probably allocated with @code{gal_data_array_ptr_calloc}.
+@end deftypefun
+
 @node Copying datasets,  , Arrays of datasets, Library data container
 @subsubsection Copying datasets
 

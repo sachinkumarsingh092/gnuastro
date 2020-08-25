@@ -72,6 +72,8 @@ See the end of the file for license conditions.
    - Spectral lines library: SiIII, OIII, CIV, NV and rest of Lyman series.
    - GAL_CONFIG_HAVE_WCSLIB_DIS_H: if the host's WCSLIB supports distortions.
    - GAL_CONFIG_HAVE_WCSLIB_MJDREF: if the host's WCSLIB reads MJDREF keyword.
+   - gal_data_array_ptr_calloc: Allocate array of pointers to gal_data_t
+   - gal_data_array_ptr_free: Free all the datasets within the array and itself.
    - gal_fits_key_list_title_add: Add a title key word to the list.
    - gal_fits_key_list_title_add_end: Add a title key word to the list's end.
    - GAL_INTERPOLATE_NEIGHBORS_METRIC_RADIAL: Radial metric for interpolation.
