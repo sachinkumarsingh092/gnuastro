@@ -2599,6 +2599,11 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
   int status=0, datatype, *tscal;
   char keyname[FLEN_KEYWORD]="XXXXXXXXXXXXX", value[FLEN_VALUE];
 
+  /* Necessary when a keyword can't be written immediately as it is read in
+     the FITS header and it actually depends on other data before. */
+  gal_list_str_t *tmp_n, *later_name=NULL;
+  gal_list_str_t *tmp_v, *later_value=NULL;
+  gal_list_sizet_t *tmp_i, *later_index=NULL;
 
   /* Open the FITS file and get the basic information. */
   fptr=gal_fits_hdu_open_format(filename, hdu, 1);
@@ -2754,11 +2759,12 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields )
             {
-              if(allcols[index].type<0)
-                fprintf(stderr, "%s (hdu: %s): %s is located before "
-                        "TFORM%zu, so the proper type to read/store the "
-                        "blank value cannot be deduced", filename, hdu,
-                        keyname, index+1);
+              if(allcols[index].type==0)
+                {
+                  gal_list_str_add(&later_name, keyname, 1);
+                  gal_list_str_add(&later_value, value, 1);
+                  gal_list_sizet_add(&later_index, index);
+                }
               else
                 {
                   /* Put in the blank value. */
@@ -2787,10 +2793,52 @@ gal_fits_tab_info(char *filename, char *hdu, size_t *numcols,
       /* Column zero. */
     }
 
+
+  /* If any columns should be added later because of missing information,
+     add them here. */
+  if(later_name)
+    {
+      /* Interpret the necessary 'later_' keys. */
+      tmp_i=later_index;
+      tmp_v=later_value;
+      for(tmp_n=later_name; tmp_n!=NULL; tmp_n=tmp_n->next)
+        {
+          /* Go over the known types and do the job. */
+          if(strncmp(tmp_n->v, "TNULL", 5)==0)
+            {
+              /* Put in the blank value. */
+              gal_tableintern_read_blank(&allcols[tmp_i->v], tmp_v->v);
+
+              /* This flag is not relevant for FITS tables. */
+              if(allcols[tmp_i->v].flag
+                 ==GAL_TABLEINTERN_FLAG_ARRAY_IS_BLANK_STRING)
+                {
+                  allcols[tmp_i->v].flag=0;
+                  free(allcols[tmp_i->v].array);
+                }
+            }
+          else
+            error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
+                  "fix the problem. Post-processing of keyword '%s' failed",
+                  __func__, PACKAGE_BUGREPORT, tmp_n->v);
+
+          /* Increment the other two lists too. */
+          tmp_v=tmp_v->next;
+          tmp_i=tmp_i->next;
+        }
+
+      /* Clean up. */
+      gal_list_sizet_free(later_index);
+      gal_list_str_free(later_name, 1);
+      gal_list_str_free(later_value, 1);
+    }
+
+
   /* Correct integer types, then free the allocated arrays. */
   fits_correct_bin_table_int_types(allcols, tfields, tscal, tzero);
   free(tscal);
   free(tzero);
+
 
   /* Close the FITS file and report an error if we had any. */
   fits_close_file(fptr, &status);

@@ -133,7 +133,7 @@ See the end of the file for license conditions.
   bug #58898: Plain text string columns touching next, clear first character.
   bug #58901: Blank values for non-standard integer types in FITS tables.
   bug #58974: WCS conversion not reasonable on processed TPV data.
-
+  bug #59019: FITS Table crash when TFORM comes before TNULL.
 
 
 
