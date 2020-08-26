@@ -72,7 +72,7 @@ cosmiccal_print_input(struct cosmiccalparams *p)
 static void
 cosmiccal_printall(struct cosmiccalparams *p)
 {
-  double ad, ld, vz, pd, absmagconv;
+  double ad, ld, vz, pd, vel, absmagconv;
   double curage, ccritd, distmod, outage, zcritd;
 
   /* The user wants everything, do all the calculations and print
@@ -104,6 +104,8 @@ cosmiccal_printall(struct cosmiccalparams *p)
   zcritd=gal_cosmology_critical_density(p->redshift, p->H0, p->olambda,
                                         p->omatter, p->oradiation);
 
+  vel=gal_cosmology_velocity_from_z(p->redshift);
+
   vz=gal_cosmology_comoving_volume(p->redshift, p->H0, p->olambda, p->omatter,
                                    p->oradiation);
 
@@ -115,6 +117,7 @@ cosmiccal_printall(struct cosmiccalparams *p)
   printf(    " ------------\n");
   printf(FLTFORMAT, "Age of Universe now (Ga*):", curage);
   printf(EXPFORMAT, "Critical density now (g/cm^3):",  ccritd);
+  printf(FLTFORMAT, "Velocity at z (km/s):", vel);
   printf(FLTFORMAT, "Proper distance to z (Mpc):", pd);
   printf(FLTFORMAT, "Angular diameter distance to z (Mpc):", ad);
   printf(FLTFORMAT, "Tangential distance covered by 1 arcsec at z (Kpc):",
@@ -254,6 +257,10 @@ cosmiccal(struct cosmiccalparams *p)
                                                           p->olambda,
                                                           p->omatter,
                                                           p->oradiation));
+              break;
+
+            case UI_KEY_USEDVELOCITY:
+              printf("%g", gal_cosmology_velocity_from_z(p->redshift));
               break;
 
             case UI_KEY_LINEATZ:

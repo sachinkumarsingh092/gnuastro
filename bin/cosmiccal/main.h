@@ -47,11 +47,12 @@ struct cosmiccalparams
 
   /* Input: */
   double              redshift; /* Redshift of interest.                */
+  gal_data_t          *obsline; /* Observed wavelength of a line.       */
+  double              velocity; /* Velocity of interest.                */
   double                    H0; /* Current expansion rate (km/sec/Mpc). */
   double               olambda; /* Current cosmological constant dens.  */
   double               omatter; /* Current matter density.              */
   double            oradiation; /* Current radiation density.           */
-  gal_data_t          *obsline; /* Observed wavelength of a line.       */
   uint8_t            listlines; /* List the known spectral lines.       */
   uint8_t         listlinesatz; /* List the known spectral lines.       */
 

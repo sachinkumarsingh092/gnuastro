@@ -88,6 +88,12 @@ double
 gal_cosmology_to_absolute_mag(double z, double H0, double o_lambda_0,
                               double o_matter_0, double o_radiation_0);
 
+double
+gal_cosmology_velocity_from_z(double z);
+
+double
+gal_cosmology_z_from_velocity(double v);
+
 __END_C_DECLS    /* From C++ preparations */
 
 #endif           /* __GAL_COSMOLOGY_H__ */

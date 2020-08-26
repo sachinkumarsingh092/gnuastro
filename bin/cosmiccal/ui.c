@@ -116,6 +116,7 @@ ui_initialize_options(struct cosmiccalparams *p,
 
   /* Program specific initializations. */
   p->redshift            = NAN;
+  p->velocity            = NAN;
 
   /* Modify the common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
@@ -378,6 +379,9 @@ ui_parse_obsline(struct argp_option *option, char *arg,
 static void
 ui_read_check_only_options(struct cosmiccalparams *p)
 {
+  int hasobsline=p->obsline!=NULL;
+  int hasredshift=!isnan(p->redshift);
+  int hasvelocity=!isnan(p->velocity);
   double sum = p->olambda + p->omatter + p->oradiation;
 
   /* Check if the density fractions add up to 1 (within floating point
@@ -394,17 +398,19 @@ ui_read_check_only_options(struct cosmiccalparams *p)
     error(EXIT_FAILURE, 0, "'--listlines' and '--listlinesatz' can't be "
           "called together");
 
-  /* Make sure that atleast one of '--redshift' or '--obsline' are given
-     for the running redshift. Except when '--listlines' is used (that
-     doesn't need any redshift). */
-  if(isnan(p->redshift) && p->obsline==NULL && p->listlines==0)
-    error(EXIT_FAILURE, 0, "no redshift specified! Please use '--redshift' "
-          "or '--obsline' to specify a redshift");
+  /* Make sure that atleast one of '--redshift', '--obsline', or velocity
+     are given for the running redshift. Except when '--listlines' is used
+     (that doesn't need any redshift). */
+  if(isnan(p->redshift) && isnan(p->velocity) && p->obsline==NULL
+     && p->listlines==0)
+    error(EXIT_FAILURE, 0, "no redshift/velocity specified! Please use "
+          "'--redshift', '--velocity' (in km/s), or '--obsline' to specify "
+          "a redshift, run with '--help' for more");
 
   /* Make sure that '--redshift' and '--obsline' aren't called together. */
-  if(!isnan(p->redshift) && p->obsline)
-    error(EXIT_FAILURE, 0, "'--redshift' and '--obsline' cannot be called "
-          "together");
+  if( (hasredshift + hasvelocity + hasobsline) > 1 )
+    error(EXIT_FAILURE, 0, "only one of '--redshift', '--velocity', or "
+          "'--obsline' can be called in each run");
 }
 
 
@@ -475,12 +481,18 @@ ui_preparations(struct cosmiccalparams *p)
   if(p->listlines)
     ui_list_lines(p);
 
-  /* If '--obsline' has been given, set the redshift based on it. */
+  /* If '--obsline' has been given, set the redshift based on it (it can't
+     be called with '--velocity'). */
   if(p->obsline)
     p->redshift = ( (p->obsline->status==GAL_SPECLINES_INVALID)
                     ? gal_speclines_line_redshift(obsline[0], obsline[1])
                     : gal_speclines_line_redshift_code(obsline[0],
                                                        p->obsline->status) );
+
+  /* If '--velocity' has been given, set the redshift based on it (it can't
+     be called with '--obsline'). */
+  if( !isnan(p->velocity) )
+    p->redshift = gal_cosmology_z_from_velocity(p->velocity);
 
   /* Currently GSL will fail for z=0. So if a value of zero is given (bug
      #56299). As a work-around, in such cases, we'll change it to an

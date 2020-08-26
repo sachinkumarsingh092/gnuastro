@@ -43,13 +43,14 @@ enum program_args_groups
 
 /* Available letters for short options:
 
-   f j k n p t w x y
-   B E J Q R W X Y
+   f j k n p t w x
+   B E J Q R W X
 */
 enum option_keys_enum
 {
   /* With short-option version. */
   UI_KEY_REDSHIFT            = 'z',
+  UI_KEY_VELOCITY            = 'y',
   UI_KEY_OBSLINE             = 'O',
   UI_KEY_H0                  = 'H',
   UI_KEY_OLAMBDA             = 'l',
@@ -69,6 +70,7 @@ enum option_keys_enum
   UI_KEY_LOOKBACKTIME        = 'b',
   UI_KEY_CRITICALDENSITY     = 'c',
   UI_KEY_VOLUME              = 'v',
+  UI_KEY_USEDVELOCITY        = 'Y',
   UI_KEY_LINEATZ             = 'i',
 
   /* Only with long version (start with a value 1000, the rest will be set

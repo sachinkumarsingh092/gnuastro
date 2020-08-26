@@ -26,6 +26,8 @@ See the end of the file for license conditions.
      in Table.
 
   CosmicCalculator:
+   --velocity: Velocity (in km/s) to use instead of input redshift.
+   --usedvelocity: Print the velocity (in km/s) at input redshift.
    --listlinesatz: Print the wavelength of all pre-defined spectral lines
      at given redshift as a simple table with the line names. This is very
      convenient and can be used in conjunction with '--obsline' for example
@@ -72,6 +74,8 @@ See the end of the file for license conditions.
    - Spectral lines library: SiIII, OIII, CIV, NV and rest of Lyman series.
    - GAL_CONFIG_HAVE_WCSLIB_DIS_H: if the host's WCSLIB supports distortions.
    - GAL_CONFIG_HAVE_WCSLIB_MJDREF: if the host's WCSLIB reads MJDREF keyword.
+   - gal_cosmology_velocity_from_z: Calculate velocity from redshift.
+   - gal_cosmology_z_from_velocity: Calculate redshift from velocity.
    - gal_data_array_ptr_calloc: Allocate array of pointers to gal_data_t
    - gal_data_array_ptr_free: Free all the datasets within the array and itself.
    - gal_fits_key_list_title_add: Add a title key word to the list.

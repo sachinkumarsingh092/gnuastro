@@ -17877,8 +17877,17 @@ The inputs to CosmicCalculator can be specified with the following options:
 @item -z FLT
 @itemx --redshift=FLT
 The redshift of interest.
-You can also specify the target redshift from spectral lines and their observed wavelengths, for that see @option{--obsline}.
-Note that this option cannot be called with @option{--obsline}.
+There are two other ways that you can specify the target redshift:
+1) Spectral lines and their observed wavelengths, see @option{--obsline}.
+2) Velocity, see @option{--velocity}.
+Hence this option cannot be called with @option{--obsline} or @option{--velocity}.
+
+@item -y FLT
+@itemx --velocity=FLT
+Input velocity in km/s.
+The given value will be converted to redshift internally, and used in any subsequent calculation.
+This option is thus an alternative to @code{--redshift} or @code{--obsline}, it cannot be used with them.
+The conversion will be done with the more general and accurate relativistic equation of @mymath{1+z=\sqrt{(c+v)/(c-v)}}, not the simplified @mymath{z\approx v/c}.
 
 @item -H FLT
 @itemx --H0=FLT
@@ -17901,7 +17910,7 @@ Radiation density divided by the critical density in the current Universe (@myma
 @cindex Rest-frame wavelength
 @cindex Wavelength, rest-frame
 Find the redshift to use in next steps based on the rest-frame and observed wavelengths of a line.
-This option can be used instead of @option{--redshift}.
+This option is thus an alternative to @code{--redshift} or @code{--velocity}, it cannot be used with them.
 Wavelengths are assumed to be in Angstroms.
 The first argument identifies the line.
 It can be one of the standard names below, or any rest-frame wavelength in Angstroms.
@@ -18128,7 +18137,13 @@ In case you have forgot the units, you can use the @option{--help} option which 
 @itemx --usedredshift
 The redshift that was used in this run.
 In many cases this is the main input parameter to CosmicCalculator, but it is useful in others.
-For example in combination with @option{--obsline} (where you give an observed and rest-frame wavelength and would like to know the redshift), or if you want to run CosmicCalculator in a loop while changing the redshift and you want to keep the redshift value.
+For example in combination with @option{--obsline} (where you give an observed and rest-frame wavelength and would like to know the redshift) or with @option{--velocity} (where you specify the velocity instead of redshift).
+Another example is when you run CosmicCalculator in a loop, while changing the redshift and you want to keep the redshift value with the resulting calculation.
+
+@item -Y
+@itemx --usedvelocity
+The velocity (in km/s) that was used in this run.
+The conversion from redshift will be done with the more general and accurate relativistic equation of @mymath{1+z=\sqrt{(c+v)/(c-v)}}, not the simplified @mymath{z\approx v/c}.
 
 @item -G
 @itemx --agenow
@@ -25783,6 +25798,13 @@ redshift @code{z}. This value has to be added to the apparent magnitude to
 give the absolute magnitude of an object at redshift @code{z}.
 @end deftypefun
 
+@deftypefun double gal_cosmology_velocity_from_z (double @code{z})
+Return the velocity (in km/s) corresponding to the given redshift (@code{z}).
+@end deftypefun
+
+@deftypefun double gal_cosmology_z_from_velocity (double @code{v})
+Return the redshift corresponding to the given velocity (@code{v} in km/s).
+@end deftypefun
 
 @node Library demo programs,  , Gnuastro library, Library
 @section Library demo programs
