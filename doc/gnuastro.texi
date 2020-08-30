@@ -615,6 +615,7 @@ Gnuastro library
 * Bounding box::                Finding the bounding box.
 * Polygons::                    Working with the vertices of a polygon.
 * Qsort functions::             Helper functions for Qsort.
+* K-d tree::                    Space partitioning in K dimensions.
 * Permutations::                Re-order (or permute) the values in a dataset.
 * Matching::                    Matching catalogs based on position.
 * Statistical operations::      Functions for basic statistics.
@@ -18934,6 +18935,7 @@ If you use the Info version of this manual (see @ref{Info}), you don't have to w
 * Bounding box::                Finding the bounding box.
 * Polygons::                    Working with the vertices of a polygon.
 * Qsort functions::             Helper functions for Qsort.
+* K-d tree::                    Space partitioning in K dimensions.
 * Permutations::                Re-order (or permute) the values in a dataset.
 * Matching::                    Matching catalogs based on position.
 * Statistical operations::      Functions for basic statistics.
@@ -24102,7 +24104,7 @@ Finally, both these arrays are merged together to get the final sorted array of 
 
 
 
-@node Qsort functions, Permutations, Polygons, Gnuastro library
+@node Qsort functions, K-d tree, Polygons, Gnuastro library
 @subsection Qsort functions (@file{qsort.h})
 
 @cindex @code{qsort}
@@ -24231,7 +24233,147 @@ increasing order (first element will have the smallest value).
 
 
 
-@node Permutations, Matching, Qsort functions, Gnuastro library
+
+@node K-d tree, Permutations, Qsort functions, Gnuastro library
+@subsection K-d tree (@file{kdtree.h})
+@cindex K-d tree
+K-d tree is a space-partitioning binary search tree for organizing points in a k-dimensional space.
+They are a very useful data structure for multidimensional searches like range searches and nearest neighbor searches.
+For a more formal and complete introduction see @url{https://en.wikipedia.org/wiki/K-d_tree, the Wikipedia page}.
+
+Each non-leaf node in a k-d tree divides the space into two parts, known as half-spaces.
+To select the top/root node for partitioning, we find the median of the points and make a hyperplane normal to the first dimension.
+The points to the left of this space are represented by the left subtree of that node and points to the right of the space are represented by the right subtree.
+This is then repeated for all the points in the input, thus associating a ``left'' and ``right'' branch for each input point.
+
+Gnuastro uses the standard algorithms of the k-d tree with one small difference that makes it much more memory and CPU optimized.
+The set of input points that define the tree nodes are given as a list of Gnuastro's data container type, see @ref{List of gal_data_t}.
+Each @code{gal_data_t} in the list represents the point's coordinate in one dimension, and the first element in the list is the first dimension.
+Hence the number of data values in each @code{gal_data_t} (which must be equal in all of them) represents the number of points.
+This is the same format that Gnuastro's Table reading/writing functions read/write columns in tables, see @ref{Table input output}.
+
+The output k-d tree is a list of two @code{gal_data_t}s, representing the input's row-number (or index, counting from 0) of the left and right subtrees of each row.
+Each @code{gal_data_t} thus has the same number of rows (or points) as the input, but only containing integers with a type of @code{uint32_t} (unsigned 32-bit integer).
+If a node has no left, or right subtree, then @code{GAL_BLANK_UINT32} will be used.
+Below you can see the simple tree for 2D points from Wikipedia.
+The input point coordinates are represented as two input @code{gal_data_t}s (@code{X} and @code{Y}, where @code{X->next=Y} and @code{Y->next=NULL}).
+If you had three dimensional points, you could define an extra @code{gal_data_t} such that @code{Y->next=Z} and @code{Z->next=NULL}.
+The output is always a list of two @code{gal_data_t}s, where the first one contains the index of the left sub-tree in the input, and the second one, the index of the right subtree.
+The index of the root node (@code{2} in the case below) is also returned as a single number.
+
+@example
+INDEX         INPUT              OUTPUT                 K-D Tree
+(as guide)    X --> Y        LEFT --> RIGHT           (visualized)
+----------    -------        --------------        ------------------
+0             5     4        1        4                   (7,2)
+1             2     3        BLANK    BLANK               /   \
+2             7     2        0        3               (5,4)    \
+3             9     6        5        BLANK           /   \    (9,6)
+4             4     7        BLANK    BLANK       (2,3) (4,7)  /
+5             8     1        BLANK    BLANK                   (8,1)
+@end example
+
+This format is therefore scalable to any number of dimensions: the number of dimensions are determined from the number of nodes in the input list of @code{gal_data_t}s (for example, using @code{gal_list_data_number}).
+In Gnuastro's k-d tree implementation, there are thus no special structures to keep every tree node (which would take extra memory and would need to be moved around as the tree is being created).
+Everything is done internally on the index of each point in the input dataset: the only thing that is flipped/sorted during tree creation is the index to the input row for any number of dimensions.
+As a result, Gnuastro's k-d tree implementation is very memory and CPU efficient and its two output columns can directly be written into a standrad table (without having to define any special binary format).
+
+@deftypefun {gal_data_t *} gal_kdtree_create (gal_data_t @code{*coords_raw}, size_t @code{*root})
+Create a k-d tree in a bottom-up manner (from leaves to the root).
+This function returns two @code{gal_data_t}s connected as a list, see description above.
+The first dataset contains the indexes of left and right nodes of the subtrees for each input node.
+The index of the root node is written into the memory that @code{root} points to.
+@code{coords_raw} is the list of the input points (one @code{gal_data_t} per dimension, see above).
+
+@example
+#include <stdio.h>
+#include <gnuastro/table.h>
+#include <gnuastro/kdtree.h>
+
+int
+main (void)
+@{
+  size_t root;
+  gal_data_t *input, *kdtree;
+  char kdtreefile[]="kd-tree.txt";    /* Inputs and outputs can */
+  char inputfile[]="coordinates.txt"; /* also be FITS tables.   */
+
+  /* Read the input table. Note: this assumes the table only
+   * contains your input point coordinates (one column for each
+   * dimension). If it contains more columns with other properties
+   * for each point, you can specify which columns to read by
+   * name or number, see the documentation of 'gal_table_read'. */
+  input=gal_table_read(inputfile, "1", NULL, NULL,
+                       GAL_TABLE_SEARCH_NAME, 0, -1, 0, NULL);
+
+  /* Construct a k-d tree. The index of root is stored in `root` */
+  kdtree=gal_kdtree_create(coords_raw, &root);
+
+  /* Write output to a file. */
+  gal_table_write(kdtree, NULL, GAL_TABLE_FORMAT_BFITS,
+                  kdtreefile, "kdtree", 0);
+
+  /* Report k-d tree root. */
+  printf("Root row of '%s': %zu\n", kdtreefile, root);
+
+  /* Clean up and return. */
+  gal_list_data_free(input);
+  gal_list_data_free(kdtree);
+  return EXIT_SUCCESS;
+@}
+@end example
+@end deftypefun
+
+@deftypefun size_t gal_kdtree_nearest_neighbour (gal_data_t @code{*coords_raw}, gal_data_t @code{*kdtree}, size_t @code{root}, double @code{*point}, double @code{*least_dist})
+Returns the index of the nearest input point to the query point (@code{point}, assumed to be an array with same number of elements as @code{gal_data_t}s in @code{coords_raw}).
+The distance between the query point and its nearest neighbor is stored in the space that @code{least_dist} points to.
+This search is efficient due to the constantly checking for the presence of possible best points in other brances.
+If it isn't possible for the other branch to have a better nearest neighbor, that branch is not searched.
+
+For example the function below reads the input, and the k-d tree file created in the example of @code{gal_kdtree_create} (so you won't have to re-create the k-d tree every time) and finds the input point that is closest to a given query point.
+
+@example
+#include <stdio.h>
+#include <gnuastro/table.h>
+#include <gnuastro/kdtree.h>
+
+int
+main (void)
+@{
+  size_t root=KDTREE_ROOT;
+  gal_data_t *input, *kdtree;
+  char kdtreefile[]="kd-tree.txt";    /* Inputs and outputs can */
+  char inputfile[]="coordinates.txt"; /* also be FITS tables.   */
+
+  double point[2]=@{9,8@};              /* assuming a 2-d tree.   */
+  size_t nearest_index;
+
+  /* Read the input coordinates, see comments in example of
+   * 'gal_kdtree_create' for more. */
+  input=gal_table_read(inputfile, "1", NULL, NULL,
+                       GAL_TABLE_SEARCH_NAME, 0, -1, 0, NULL);
+
+  /* Read the k-d tree (created before). */
+  kdtree=gal_table_read(kdtreefile, "1", NULL, NULL,
+                        GAL_TABLE_SEARCH_NAME, 0, -1, 0, NULL);
+
+  /* Find the nearest neighbour of the point. */
+  nearest_index=gal_kdtree_nearest_neighbour(input, kdtree, root,
+                                             point);
+
+  /* Clean up and return. */
+  gal_list_data_free(input);
+  gal_list_data_free(kdtree);
+  return EXIT_SUCCESS;
+@}
+@end example
+@end deftypefun
+
+
+
+
+
+@node Permutations, Matching, K-d tree, Gnuastro library
 @subsection Permutations (@file{permutation.h})
 @cindex permutation
 Permutation is the technical name for re-ordering of values. The need for

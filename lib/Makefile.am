@@ -67,9 +67,9 @@ libgnuastro_la_SOURCES = $(MAYBE_WCSDISTORTION) arithmetic.c \
   arithmetic-le.c arithmetic-lt.c arithmetic-minus.c arithmetic-modulo.c \
   arithmetic-multiply.c arithmetic-ne.c arithmetic-or.c arithmetic-plus.c \
   array.c binary.c blank.c box.c checkset.c convolve.c cosmology.c data.c \
-  eps.c fits.c git.c interpolate.c jpeg.c label.c list.c match.c options.c \
-  pdf.c permutation.c pointer.c polygon.c qsort.c dimension.c speclines.c \
-  statistics.c table.c tableintern.c threads.c tiff.c tile.c \
+  eps.c fits.c git.c interpolate.c jpeg.c kdtree.c label.c list.c match.c \
+  options.c pdf.c permutation.c pointer.c polygon.c qsort.c dimension.c \
+  speclines.c statistics.c table.c tableintern.c threads.c tiff.c tile.c \
   tile-internal.c timing.c txt.c type.c units.c wcs.c
 
 
@@ -85,10 +85,10 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h \
   $(headersdir)/box.h $(headersdir)/convolve.h $(headersdir)/cosmology.h \
   $(headersdir)/data.h $(headersdir)/dimension.h $(headersdir)/eps.h \
   $(headersdir)/fits.h $(headersdir)/git.h $(headersdir)/interpolate.h \
-  $(headersdir)/jpeg.h $(headersdir)/label.h $(headersdir)/list.h \
-  $(headersdir)/match.h $(headersdir)/pdf.h $(headersdir)/permutation.h \
-  $(headersdir)/pointer.h $(headersdir)/polygon.h $(headersdir)/qsort.h \
-  $(headersdir)/speclines.h $(headersdir)/statistics.h \
+  $(headersdir)/jpeg.h $(headersdir)/jpeg.h $(headersdir)/label.h \
+  $(headersdir)/list.h $(headersdir)/match.h $(headersdir)/pdf.h \
+  $(headersdir)/permutation.h $(headersdir)/pointer.h $(headersdir)/polygon.h \
+  $(headersdir)/qsort.h $(headersdir)/speclines.h $(headersdir)/statistics.h \
   $(headersdir)/table.h $(headersdir)/threads.h $(headersdir)/tiff.h \
   $(headersdir)/tile.h $(headersdir)/txt.h $(headersdir)/type.h \
   $(headersdir)/units.h $(headersdir)/wcs.h

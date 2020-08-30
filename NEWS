@@ -87,6 +87,8 @@ See the end of the file for license conditions.
    - GAL_INTERPOLATE_NEIGHBORS_FUNC_MAX: Use maximum for interpolation.
    - GAL_INTERPOLATE_NEIGHBORS_FUNC_MEDIAN: Use median for interpolation.
    - GAL_INTERPOLATE_NEIGHBORS_FUNC_INVALID: for error-handling/completeness.
+   - gal_kdtree_create: Create a k-d tree for optimal spatial searching.
+   - gal_kdtree_nearest_neighbour: Find the nearest neighbor using a k-d tree.
    - gal_statistics_histogram2d: Generate 2D histogram from two columns.
    - GAL_WCS_FLTERROR: Limit to identify a floating point error for WCS.
    - gal_wcs_write: Write the given WCS into a FITS extension with no data.
