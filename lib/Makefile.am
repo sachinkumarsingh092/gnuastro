@@ -85,7 +85,7 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h \
   $(headersdir)/box.h $(headersdir)/convolve.h $(headersdir)/cosmology.h \
   $(headersdir)/data.h $(headersdir)/dimension.h $(headersdir)/eps.h \
   $(headersdir)/fits.h $(headersdir)/git.h $(headersdir)/interpolate.h \
-  $(headersdir)/jpeg.h $(headersdir)/jpeg.h $(headersdir)/label.h \
+  $(headersdir)/jpeg.h $(headersdir)/kdtree.h $(headersdir)/label.h \
   $(headersdir)/list.h $(headersdir)/match.h $(headersdir)/pdf.h \
   $(headersdir)/permutation.h $(headersdir)/pointer.h $(headersdir)/polygon.h \
   $(headersdir)/qsort.h $(headersdir)/speclines.h $(headersdir)/statistics.h \
