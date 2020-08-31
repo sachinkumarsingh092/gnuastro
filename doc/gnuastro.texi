@@ -9220,8 +9220,13 @@ Viridis is the default colormap of the popular Matplotlib module of Python and a
 @cindex SLS Color
 @cindex Colormap: SLS
 The SLS color range, taken from the commonly used @url{http://ds9.si.edu,SAO DS9}.
-The advantage of this color range is that it ranges from black to dark blue, and finishes with red and white.
-So unlike the HSV color range, it includes black and white and brighter colors (like yellow, red and white) show the larger values.
+The advantage of this color range is that it starts with black, going into dark blue and comes to brighter colors, finishings with red and white.
+So unlike the HSV color range, it includes black and white and brighter colors (like yellow, red) show the larger values.
+
+@item sls-inverse
+@cindex Colormap: SLS-inverse
+The inverse of the SLS color map (see above), where the lowest value corresponds to white and the highest value is black.
+While SLS is good for visualizing on the monitor, SLS-inverse is good for printing.
 @end table
 
 @item --rgbtohsv

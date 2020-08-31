@@ -25,6 +25,10 @@ See the end of the file for license conditions.
      will be read as floating point. This also applies to column arithmetic
      in Table.
 
+  ConvertType:
+   - New colormap: 'sls-inverse' is the inverse of the SLS color, good for
+     printing because of a white background.
+
   CosmicCalculator:
    --velocity: Velocity (in km/s) to use instead of input redshift.
    --usedvelocity: Print the velocity (in km/s) at input redshift.

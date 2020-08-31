@@ -206,7 +206,9 @@ color_from_mono_sls(struct converttparams *p)
       if(isnan(*f))
         *r=*g=*b=0.0;
       else
-        switch( (int)((*f-min)/(max-min)*200) )
+        switch( p->colormap->status==COLOR_SLS
+                ? (int)((*f-min)/(max-min)*200)
+                : 200 - (int)((*f-min)/(max-min)*200) )
           {
           case 0:   *r=0.000000; *g=0.000000; *b=0.000000; break;
           case 1:   *r=0.043442; *g=0.000000; *b=0.052883; break;
@@ -764,9 +766,10 @@ color_map_prepare(struct converttparams *p)
   switch(p->colormap->status)
     {
     case COLOR_HSV:          color_from_mono_hsv(p); break;
-    case COLOR_SLS:          color_from_mono_sls(p); break;
     case COLOR_VIRIDIS:      color_from_mono_viridis(p); break;
     case COLOR_GRAY:         convertt_scale_to_uchar(p); break;
+    case COLOR_SLS:
+    case COLOR_SLS_INVERSE:  color_from_mono_sls(p); break;
     default:
       error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
             "the problem. The value %d is not a recognized color-space "
