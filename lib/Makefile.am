@@ -140,14 +140,16 @@ gnuastro/config.h: Makefile $(internaldir)/config.h.in
 	rm -f $@ $@.tmp
 	$(MKDIR_P) gnuastro
 	$(SED) -e 's|@VERSION[@]|$(VERSION)|g' \
+	       -e 's|@SIZEOF_LONG[@]|$(SIZEOF_LONG)|g' \
 	       -e 's|@HAVE_LIBGIT2[@]|$(HAVE_LIBGIT2)|g' \
-	       -e 's|@HAVE_WCSLIB_VERSION[@]|$(HAVE_WCSLIB_VERSION)|g' \
+	       -e 's|@SIZEOF_SIZE_T[@]|$(SIZEOF_SIZE_T)|g' \
 	       -e 's|@HAVE_WCSLIB_DIS_H[@]|$(HAVE_WCSLIB_DIS_H)|g' \
 	       -e 's|@HAVE_WCSLIB_MJDREF[@]|$(HAVE_WCSLIB_MJDREF)|g' \
+	       -e 's|@HAVE_WCSLIB_OBSFIX[@]|$(HAVE_WCSLIB_OBSFIX)|g' \
+	       -e 's|@HAVE_WCSLIB_VERSION[@]|$(HAVE_WCSLIB_VERSION)|g' \
 	       -e 's|@HAVE_PTHREAD_BARRIER[@]|$(HAVE_PTHREAD_BARRIER)|g' \
-	       -e 's|@SIZEOF_LONG[@]|$(SIZEOF_LONG)|g' \
-	       -e 's|@SIZEOF_SIZE_T[@]|$(SIZEOF_SIZE_T)|g' \
 	       -e 's|@RESTRICT_REPLACEMENT[@]|$(RESTRICT_REPLACEMENT)|g' \
+	       -e 's|@HAVE_FITS_IS_REENTRANT[@]|$(HAVE_FITS_IS_REENTRANT)|g' \
                $(internaldir)/config.h.in >> $@.tmp
 	chmod a-w $@.tmp
 	mv $@.tmp $@

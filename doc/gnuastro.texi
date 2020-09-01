@@ -19006,6 +19006,10 @@ This macro has a value of 1 if the host's WCSLIB has the @file{wcslib/dis.h} hea
 This macro has a value of 1 if the host's WCSLIB reads and stores the @file{MJDREF} FITS header keyword as part of its core @code{wcsprm} structure.
 @end deffn
 
+@deffn Macro GAL_CONFIG_HAVE_WCSLIB_OBSFIX
+This macro has a value of 1 if the host's WCSLIB supports the @code{OBSFIX} feature (used by @code{wcsfix} function to parse the input WCS for known errors).
+@end deffn
+
 @deffn Macro GAL_CONFIG_HAVE_PTHREAD_BARRIER
 The POSIX threads standard define barriers as an optional requirement.
 Therefore, some operating systems choose to not include it.

@@ -214,9 +214,11 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
               if(fixstatus[DATFIX])
                 error(0, 0, "%s: (warning) wcsfix status for datfix: %d",
                       __func__, fixstatus[DATFIX]);
+#if GAL_CONFIG_HAVE_WCSLIB_OBSFIX
               if(fixstatus[OBSFIX])
                 error(0, 0, "%s: (warning) wcsfix status for obsfix: %d",
                       __func__, fixstatus[OBSFIX]);
+#endif
               if(fixstatus[UNITFIX])
                 error(0, 0, "%s: (warning) wcsfix status for unitfix: %d",
                       __func__, fixstatus[UNITFIX]);

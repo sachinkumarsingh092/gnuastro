@@ -461,6 +461,14 @@ AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_WCSLIB_MJDREF], [$has_wcslib_mjdref],
 AC_SUBST(HAVE_WCSLIB_MJDREF, [$has_wcslib_mjdref])
 
 
+# If the WCS library has the OBSFIX macro.
+AC_CHECK_DECL(OBSFIX, [has_wcslib_obsfix=1],
+              [has_wcslib_obsfix=0], [[#include <wcslib/wcsfix.h>]])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_WCSLIB_OBSFIX], [$has_wcslib_obsfix],
+                   [WCSLIB comes with OBSFIX macro])
+AC_SUBST(HAVE_WCSLIB_OBSFIX, [$has_wcslib_obsfix])
+
+
 # If the pthreads library has 'pthread_barrier_wait'.
 AC_CHECK_LIB([pthread], [pthread_barrier_wait], [has_pthread_barrier=1],
              [has_pthread_barrier=0])
