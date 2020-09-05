@@ -16799,9 +16799,9 @@ The columns related to each parameter can be determined both by number, or by ma
 Without any file given to the @option{--background} option, MakeProfiles will make a zero-valued image and build the profiles on that (its size and main WCS parameters can also be defined through the options described in @ref{MakeProfiles output dataset}).
 Besides the main/merged image containing all the profiles in the catalog, it is also possible to build individual images for each profile (only enclosing one full profile to its truncation radius) with the @option{--individual} option.
 
-If an image is given to the @option{--background} option, the pixels of that image are used as the background value for every pixel.
-The flux value of each profile pixel will be added to the pixel in that background value.
-In this case, the values to all options relating to the output size and WCS will be ignored if specified (for example @option{--oversample}, @option{--mergedsize}, and @option{--prepforconv}) on the command-line or in the configuration files.
+If an image is given to the @option{--background} option, the pixels of that image are used as the background value for every pixel hence flux value of each profile pixel will be added to the pixel in that background value.
+You can disable this with the @code{--clearcanvas} option (which will initialize the background to zero-valued pixels and build profiles over that).
+With the @option{--background} option, the values to all options relating to the ``canvas'' (output size and WCS) will be ignored if specified, for example @option{--oversample}, @option{--mergedsize}, and @option{--prepforconv}.
 
 The sections below discuss the options specific to MakeProfiles based on context: the input catalog settings which can have many rows for different profiles are discussed in @ref{MakeProfiles catalog}, in @ref{MakeProfiles profile settings}, we discuss how you can set general profile settings (that are the same for all the profiles in the catalog).
 Finally @ref{MakeProfiles output dataset} and @ref{MakeProfiles log file} discuss the outputs of MakeProfiles and how you can configure them.

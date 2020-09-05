@@ -747,11 +747,12 @@ mkprof_write(struct mkprofparams *p)
 void
 mkprof(struct mkprofparams *p)
 {
-  int err;
   char *tmp;
   pthread_t t;            /* Thread id not used, all are saved here. */
+  int err, origquiet;
   pthread_attr_t attr;
   pthread_barrier_t b;
+  size_t numforprint=50;
   struct mkonthread *mkp;
   gal_list_str_t *comments=NULL;
   size_t i, fi, *indexs, thrdcols;
@@ -832,8 +833,28 @@ mkprof(struct mkprofparams *p)
     }
 
 
-  /* Write the created arrays into the image. */
+  /* If there are too many profiles, don't print the fact that a profile
+     has been built. */
+  if(p->num>numforprint)
+    {
+      /* Let the user know that building is ongoing. */
+      if(p->cp.quiet==0)
+        printf("  ---- Building %zu profiles... ", p->num);
+
+      /* Disable the quiet flag.*/
+      origquiet=p->cp.quiet;
+      p->cp.quiet=1;
+    }
+
+
+  /* Write the created arrays into the image. Set the original quiet flag
+     and let the user know that its done. */
   mkprof_write(p);
+  if(p->num>numforprint)
+    {
+      p->cp.quiet=origquiet;
+      if(p->cp.quiet==0) printf("done.\n");
+    }
 
 
   /* Write the log file. */
@@ -860,6 +881,9 @@ mkprof(struct mkprofparams *p)
       pthread_mutex_destroy(&p->qlock);
     }
 
+  /* If a merged image was created, let the user know.... */
+  if(p->mergedimgname)
+    printf("  -- Output: %s\n", p->mergedimgname);
 
   /* Clean up. */
   free(mkp);

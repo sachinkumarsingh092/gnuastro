@@ -111,6 +111,12 @@ See the end of the file for license conditions.
    - The 'pow' operator can also accept integer inputs. This also applies
      to column arithmetic in Table.
 
+  MakeProfiles:
+   - The status of every created profile (along with the number of
+     remaining profiles) is no longer printed when there are more than 50
+     profiles. This is done because printing itself can slow down the
+     program an in a general/automated script this info is redundant.
+
   Table:
    --catcolumnfile ('-L') is new name for '--catcolumn' ('-C').
    --catcolumnhdu is new name for '--catcolhdu' (short option name hasn't
