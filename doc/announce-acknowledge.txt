@@ -1,15 +1,5 @@
 Alphabetically ordered list to acknowledge in the next release.
 
-Marjan Akbari
-Carlos Allende Prieto
-Leindert Boogaard
-Mark Calabretta
-Alexey Dokuchaev
-Raúl Infante Sainz
-Samane Raji
-Joanna Sakowska
-Zahra Sharbaf
-Ole Streicher
 
 
 

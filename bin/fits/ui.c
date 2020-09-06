@@ -362,7 +362,8 @@ ui_read_check_only_options(struct fitsparams *p)
     }
 
   /* Same for the extension-related options */
-  if( p->remove || p->copy || p->cut || p->numhdus || p->datasum )
+  if( p->remove || p->copy || p->cut || p->numhdus || p->datasum
+      || p->pixelscale )
     {
       /* A small sanity check. */
       if(p->mode!=FITS_MODE_INVALID)

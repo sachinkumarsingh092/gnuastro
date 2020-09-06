@@ -3,7 +3,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 Copyright (C) 2015-2020 Free Software Foundation, Inc.
 See the end of the file for license conditions.
 
-* Noteworthy changes in release X.XX (library XX.X.X) (XXXX-XX-XX) [stable]
+* Noteworthy changes in release 0.13 (library 11.0.0) (2020-09-06) [stable]
 
 ** New features
 
@@ -40,6 +40,8 @@ See the end of the file for license conditions.
         astcosmiccal --obsline=lyalpha,4000 --listlinesatz
 
   FITS:
+   - New '--pixelscale' option will return the size of pixels in each
+     dimension in the "world coordinates".
    - New '--wcsdistortion' option allows conversion between the various WCS
      distortions. For example if you have a FITS image with the TPV-based
      WCS distortion, and you would like to convert it to a SIP-based
@@ -140,7 +142,7 @@ See the end of the file for license conditions.
   bug #58696: Warp with --centeroncorner --scale making wrong size.
   bug #58774: Warp' s output on a cube is a 2D image or wrong size.
   bug #58809: NoiseChisel not removing negative outlier tiles.
-  bug #58833: Segment crashes when detetion map has blank pixels
+  bug #58833: Segment crashes when detection map has blank pixels.
   bug #58835: Floating point errors when comparing pixel scale in Crop.
   bug #58898: Plain text string columns touching next, clear first character.
   bug #58901: Blank values for non-standard integer types in FITS tables.

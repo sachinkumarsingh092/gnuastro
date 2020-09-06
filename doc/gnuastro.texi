@@ -1391,6 +1391,7 @@ Work on improving Gnuastro and making it mature is now continuing primarily in t
 In general, we would like to gratefully thank the following people for their useful and constructive comments and suggestions (in alphabetical order by family name):
 Valentina Abril-melgarejo,
 Marjan Akbari,
+Carlos Allende Prieto,
 Hamed Altafi,
 Roland Bacon,
 Roberto Baena Gall@'e,
@@ -1402,6 +1403,7 @@ Stefan Br@"uns,
 Fernando Buitrago,
 Adrian Bunk,
 Rosa Calvi,
+Mark Calabretta
 Nushkia Chamba,
 Benjamin Clement,
 Nima Dehdilani,
@@ -1438,11 +1440,14 @@ Mamta Pommier,
 Marcel Popescu,
 Bob Proulx,
 Joseph Putko,
+Samane Raji,
 Teymoor Saifollahi,
+Joanna Sakowska,
 Elham Saremi,
 Yahya Sefidbakht,
 Alejandro Serrano Borlaff,
 Zahra Sharbaf,
+David Shupe
 Jenny Sorce,
 Lee Spitler,
 Richard Stallman,
@@ -1462,7 +1467,7 @@ Johannes Zabl.
 The GNU French Translation Team is also managing the French version of the top Gnuastro webpage which we highly appreciate.
 Finally we should thank all the (sometimes anonymous) people in various online forums which patiently answered all our small (but imporant) technical questions.
 
-All work on Gnuastro has been voluntary, but the authors are most grateful to the following institutions (in chronological order) for hosting us in our research.
+All work on Gnuastro has been voluntary, but the authors are most grateful to the following institutions (in chronological order) for hosting/supporting us in our research.
 Where necessary, these institutions have disclaimed any ownership of the parts of Gnuastro that were developed there, thus insuring the freedom of Gnuastro for the future (see @ref{Copyright assignment}).
 We highly appreciate their support for free software, and thus free science, and therefore a free society.
 
@@ -1471,6 +1476,7 @@ Tohoku University Astronomical Institute, Sendai, Japan.@*
 University of Salento, Lecce, Italy.@*
 Centre de Recherche Astrophysique de Lyon (CRAL), Lyon, France.@*
 Instituto de Astrofisica de Canarias (IAC), Tenerife, Spain.@*
+Google Summer of Code 2020
 @end quotation
 
 
@@ -2135,7 +2141,7 @@ $ astcrop --mode=wcs -h0 --output=flat-ir/xdf-f160w.fits \
 
 The only thing varying in the three calls to Gnuastro's Crop program is the filter name!
 Note how everything else is the same.
-In such cases, you should generally avoid repeating a command manually, it is prone to many bugs, and as you see, it is very hard to read (didn't you suddently write a @code{7} as an @code{8}?).
+In such cases, you should generally avoid repeating a command manually, it is prone to many bugs, and as you see, it is very hard to read (didn't you suddenly write a @code{7} as an @code{8}?).
 To simplify the command, and later allow work on more filters, we can use the shell's @code{for} loop as shown below.
 Notice how the place where the filter names (@file{f105w}, @file{f125w} and @file{f160w}) are used above, have been replaced with @file{$f} (the shell variable that @code{for} will update in every loop) below.
 
@@ -2167,18 +2173,29 @@ Gnuastro has the Arithmetic program for such cases, and we'll introduce it later
 @cindex Scales, coordinate
 This is the deepest image we currently have of the sky.
 The first thing that comes to mind may be this: ``How large is this field on the sky?''.
-The FITS world coordinate system (WCS) meta data standard contains the key to answering this question: the @code{CDELT} keyword@footnote{In the FITS standard, the @code{CDELT} keywords (@code{CDELT1} and @code{CDELT2} in a 2D image) specify the scales of each coordinate.
-In the case of this image it is in units of degrees-per-pixel.
-See Section 8 of the @url{https://fits.gsfc.nasa.gov/standard40/fits_standard40aa-le.pdf, FITS standard} for more.
-In short, with the @code{CDELT} convention, rotation (@code{PC} or @code{CD} keywords) and scales (@code{CDELT}) are separated.
+The FITS world coordinate system (WCS) meta data standard contains the key to answering this question.
+Run the following command to see all the FITS keywords (metadata) for one of the images (mostly the same with the other filters because they were are scaled to the same region of Sky):
+
+@example
+astfits flat-ir/xdf-f160w.fits -h1
+@end example
+
+Look into the keywords grouped under the `@code{World Coordinate System (WCS)}' title.
+These keywords define how the image relates to the outside world.
+In particular, the @code{CDELT*} keywords (or @code{CDELT1} and @code{CDELT2} in this 2D image) contain the ``Coordinate DELTa'' (or change in coordinate units) with a change in one pixel.
+But what is the units of each ``world'' coordinate?
+The @code{CUNIT*} keywords (for ``Coordinate UNIT'') have the answer.
+In this case, both @code{CUNIT1} and @code{CUNIT1} have a value of @code{deg}, so both ``world'' coordiantes are in units of degrees.
+We can thus conclude that the value of @code{CDELT*} is in units of degrees-per-pixel@footnote{With the FITS @code{CDELT} convention, rotation (@code{PC} or @code{CD} keywords) and scales (@code{CDELT}) are separated.
 In the FITS standard the @code{CDELT} keywords are optional.
 When @code{CDELT} keywords aren't present, the @code{PC} matrix is assumed to contain @emph{both} the coordinate rotation and scales.
 Note that not all FITS writers use the @code{CDELT} convention.
 So you might not find the @code{CDELT} keywords in the WCS meta data of some FITS files.
 However, all Gnuastro programs (which use the default FITS keyword writing format of WCSLIB) write their output WCS with the @code{CDELT} convention, even if the input doesn't have it.
-If your dataset doesn't use the @code{CDELT} convention, you can feed it to any (simple) Gnuastro program (for example Arithmetic) and the output will have the @code{CDELT} keyword.}.
+If your dataset doesn't use the @code{CDELT} convention, you can feed it to any (simple) Gnuastro program (for example Arithmetic) and the output will have the @code{CDELT} keyword.
+See Section 8 of the @url{https://fits.gsfc.nasa.gov/standard40/fits_standard40aa-le.pdf, FITS standard} for more}.
 
-With the commands below, we'll use @code{CDELT} (along with the image size) to find the answer.
+With the commands below, we'll use @code{CDELT} (along with the image size) to find the answer of our initial question: ``how much of the sky does this image cover?''.
 The lines starting with @code{##} are just comments for you to read and understand each command.
 Don't type them on the terminal.
 The commands are intentionally repetitive in some places to better understand each step and also to demonstrate the beauty of command-line features like history, variables, pipes and loops (which you will commonly use as you master the command-line).
@@ -2937,7 +2954,7 @@ $ ls -lh nc-for-storage.fits.gz
 We can get this wonderful level of compression because NoiseChisel's output is binary with only two values: 0 and 1.
 Compression algorithms are highly optimized in such scenarios.
 
-You can open @file{nc-for-storage.fits.gz} directly in SAO DS9 or feed it to any of Gnuastro's programs without having to uncompress it.
+You can open @file{nc-for-storage.fits.gz} directly in SAO DS9 or feed it to any of Gnuastro's programs without having to decompress it.
 Higher-level programs that take NoiseChisel's output (for example Segment or MakeCatalog) can also deal with this compressed image where the Sky and its Standard deviation are one pixel-per-tile.
 You just have to give the ``values'' image as a separate option, for more, see @ref{Segment} and @ref{MakeCatalog}.
 
@@ -3019,7 +3036,7 @@ asttable cat/xdf-f160w.fits -hCLUMPS -i
 Matching the catalogs is possible (for example with @ref{Match}).
 However, the measurements of each column are also done on different pixels: the clump labels can/will differ from one filter to another for one object.
 Please open them and focus on one object to see for your self.
-Thiscan bias the result, if you match catalogs.
+This can bias the result, if you match catalogs.
 
 An accurate color calculation can only be done when magnitudes are measured from the same pixels on both images.
 Fortunately in these images, the Point spread function (PSF) are very similar, allowing us to do this directly@footnote{When the PSFs between two images differ largely, you would have to PSF-match the images before using the same pixels for measurements.}.
@@ -3115,7 +3132,7 @@ $ asttable two-in-one.fits -i
 
 Looking at the two metadata outputs (called with @option{-i}), you may have noticed that both tables have the same number of rows.
 But what might have attracted your attention more, is that @file{both-mags.fits} has double the number of columns (as expected, after all, you merged both tables into one file).
-Infact, in one command, you can concatenate any number of other tables, for example:
+In fact you can concatenate any number of other tables in one command, for example:
 
 @example
 $ asttable cat/xdf-f160w.fits -hCLUMPS --output=three-in-one.fits \
@@ -3178,7 +3195,7 @@ $ asttable three-in-one-3.fits -i
 
 We now have both magnitudes in one table and can start doing arithmetic on them (to estimate colors, which are just a subtraction of magnitudes).
 To use column arithmetic, simply call the column selection option (@option{--column} or @option{-c}), put the value in single quotations and start the value with @code{arith} (followed by a space) like the example below.
-Column arithmetic uses the same notation as the Arithmetic program (see @ref{Reverse polish notation}), with almost all the same operators (see @ref{Arithmetic operators}), and some column-specific opertors (that aren't available for images).
+Column arithmetic uses the same notation as the Arithmetic program (see @ref{Reverse polish notation}), with almost all the same operators (see @ref{Arithmetic operators}), and some column-specific operators (that aren't available for images).
 In column-arithmetic, you can identify columns by number (prefixed with a @code{$}) or name, for more see @ref{Column arithmetic}.
 
 So let's estimate one color from @file{three-in-one-3.fits} using column arithmetic.
@@ -3240,7 +3257,7 @@ $ asttable three-in-one-3.fits --range=SN,5,inf -c1,2,RA,DEC,SN \
 $ asttable cat/mags-with-color.fits -i
 @end example
 
-The table now has all the columns we need and it has the proper metadata to let us safely use it later (without frustrating over column orders!) or passing it to colleages.
+The table now has all the columns we need and it has the proper metadata to let us safely use it later (without frustrating over column orders!) or passing it to colleagues.
 You can now inspect the distribution of colors with the Statistics program.
 
 @example
@@ -3262,7 +3279,7 @@ We won't go much deeper into the Statistics program here, but there is so much m
 
 Let's finish this section of the tutorial with a useful tip on modifying column metadata.
 Above, updating/changing column metadata was done with the @option{--colmetadata} in the same command that produced the newly created Table file.
-But in many sitations, the table is already made and you just want to update the metadata of one column.
+But in many situations, the table is already made and you just want to update the metadata of one column.
 In such cases using @option{--colmetadata} is over-kill (wasting CPU/RAM energy or time if the table is large) because it will load the full table data and metadata into memory, just change the metadata and write it back into a file.
 
 In scenarios when the table's data doesn't need to be changed and you just want to set or update the metadata, it is much more efficient to use basic FITS keyword editing.
@@ -3275,7 +3292,7 @@ $ astfits two-in-one.fits -h1 | grep TTYPE
 
 Changing/updating the column names is as easy as updating the values to these keywords.
 You don't need to touch the actual data!
-With the command below, we'll just update the @code{MAGNITUDE} and @code{MAGNITUDE-1} columns (which are respectively stored in the @code{TTYPE5} and @code{TTYPE11} keywords) by modifying the keyword values and checking the effect by listingthe column metadata again:
+With the command below, we'll just update the @code{MAGNITUDE} and @code{MAGNITUDE-1} columns (which are respectively stored in the @code{TTYPE5} and @code{TTYPE11} keywords) by modifying the keyword values and checking the effect by listing the column metadata again:
 
 @example
 $ astfits two-in-one.fits -h1 \
@@ -3299,7 +3316,7 @@ rm *.fits
 @subsection Aperture photometry
 The colors we calculated in @ref{Working with catalogs estimating colors} used a different segmentation map for each object.
 This might not satisfy some science cases that need the flux within a fixed area/aperture.
-Fortunately the modularity of Gnuastro's modular programs make it very easy to alo do this type of measurement/photometry.
+Fortunately Gnuastro's modular programs make it very easy do this type of measurement (photometry).
 To do this, we can ignore the labeled images of NoiseChisel of Segment, we can just built our own labeled image!
 That labeled image can then be given to MakeCatalog
 
@@ -3329,7 +3346,7 @@ $ astmkprof apertures.txt --background=flat-ir/xdf-f160w.fits     \
 
 The first thing you might notice in the printed information is that the profiles are not built in order.
 This is because MakeProfiles works in parallel, and parallel CPU operations are asynchronous.
-You can try running MakeProfiles with one thread (using @option{--numthreads=1}) to see how order is respected in that case, but slower (note that the mult-threaded run will be much more faster when more mathematically-complicated profiles are built, like S@'eric profiles).
+You can try running MakeProfiles with one thread (using @option{--numthreads=1}) to see how order is respected in that case, but slower (note that the multi-threaded run will be much more faster when more mathematically-complicated profiles are built, like S@'eric profiles).
 
 Open @file{apertures.fits} with a FITS viewer and look around at the circles placed over the targets.
 Also open the input image and Segment's clumps image and compare them with the positions of these circles.
@@ -3338,7 +3355,7 @@ In the future, MakeCatalog will be able to work with overlapping labels, but cur
 If you are interested, please join us in completing Gnuastro with added improvements like this (see task 14750 @footnote{@url{https://savannah.gnu.org/task/index.php?14750}}).
 
 We can now feed the @file{apertures.fits} labeled image into MakeCatalog instead of Segment's output as shown below.
-In comparison with the previous MakeCatalog call, you will notice that there is no more @option{--clumpscat} option, since there is no more separarate ``clump'' imge now, each aperture is treated as a separate ``object''.
+In comparison with the previous MakeCatalog call, you will notice that there is no more @option{--clumpscat} option, since there is no more separate ``clump'' image now, each aperture is treated as a separate ``object''.
 
 @example
 $ astmkcatalog apertures.fits -h1 --zeropoint=26.27 \
@@ -3359,7 +3376,7 @@ You can also change the filter name and zeropoint magnitudes and run this comman
 
 In the example above, we had the luxury to generate the catalogs ourselves, and where thus able to generate them in a way that the rows match.
 But this isn't generally the case.
-In many situations, you need to use catalogs from many different telescopes, or catalogs with high-level calculations that you can't simply regenrate with the same pixels without spending a lot of time or using heavy computation.
+In many situations, you need to use catalogs from many different telescopes, or catalogs with high-level calculations that you can't simply regenerate with the same pixels without spending a lot of time or using heavy computation.
 In such cases, when each catalog has the coordinates of its own objects, you can use the coordinates to match the rows with Gnuastro's Match program (see @ref{Match}).
 
 As the name suggests, Gnuastro's Match program will match rows based on distance (or aperture in 2D) in one, two, or three columns.
@@ -3384,7 +3401,7 @@ $ astfits matched.fits
 @end example
 
 From the second command, you see that the output has two extensions and that both have the same number of rows.
-The rows in each extenion correspond with the rows in the other.
+The rows in each extension correspond with the rows in the other.
 You can also see which objects didn't match with the @option{--notmatched}, like below.
 Note how each extension now has a different number of rows.
 
@@ -3448,7 +3465,7 @@ $ asttable cat/mags-with-color.fits --range=F105W-F160W,1.5,inf \
 We can now feed @file{reddest.txt} into Gnuastro's Crop program to see what these objects look like.
 To keep things clean, we'll make a directory called @file{crop-red} and ask Crop to save the crops in this directory.
 We'll also add a @file{-f160w.fits} suffix to the crops (to remind us which filter they came from).
-The width of the crops will be 15 arcseconds (or 15/3600 degrees, which is the units of the WCS).
+The width of the crops will be 15 arc-seconds (or 15/3600 degrees, which is the units of the WCS).
 
 @example
 $ mkdir crop-red
@@ -8278,7 +8295,10 @@ For more on the datasum feature of the FITS standard, see @ref{Keyword manipulat
 You can use this option to confirm that the data in two different HDUs (possibly with different keywords) is identical.
 Its advantage over @option{--write=datasum} (which writes the @code{DATASUM} keyword into the given HDU) is that it doesn't require write permissions.
 
-
+@item --pixelscale
+Print the HDU's pixel-scale (change in world coordinate for one pixel along each dimension).
+Without the @option{--quiet} option, the output of @option{--pixelscale} is more human-friendly by printing the file/HDU name, number of dimensions, and the units of each number along with the actual pixel scales.
+However, in scripts (that are to be run automatically), this human-friendly format is annoying, so when called with the @option{--quiet} option, only the pixel-scale value(s) along each dimension is(are) printed in one line.
 
 @item -C STR
 @itemx --copy=STR
@@ -9220,7 +9240,7 @@ Viridis is the default colormap of the popular Matplotlib module of Python and a
 @cindex SLS Color
 @cindex Colormap: SLS
 The SLS color range, taken from the commonly used @url{http://ds9.si.edu,SAO DS9}.
-The advantage of this color range is that it starts with black, going into dark blue and comes to brighter colors, finishings with red and white.
+The advantage of this color range is that it starts with black, going into dark blue and finishes with the brighter colors of red and white.
 So unlike the HSV color range, it includes black and white and brighter colors (like yellow, red) show the larger values.
 
 @item sls-inverse
@@ -9812,7 +9832,7 @@ Look into that file's metadata (with @command{asttable temp.fits -i}) to see the
 Recall that when a name is given, this option will update the metadata of the first column that matches, so if you have multiple columns with the same name, you can call this options multiple times with the same first argument to change them all.
 
 Finally, if you already have a FITS table by other means (for example by downloading) and you merely want to update the column metadata and leave the data intact, it is much more efficient to directly modify the respective FITS header keywords with @code{astfits}, using the keyword manipulation features described in @ref{Keyword manipulation}.
-@option{--colmetadata} is mainly intended for scenarios where you want to edit the data so it will always load the full/partial dataset into memory, then write out the resulting datasets with updated/correced metadata.
+@option{--colmetadata} is mainly intended for scenarios where you want to edit the data so it will always load the full/partial dataset into memory, then write out the resulting datasets with updated/corrected metadata.
 @end table
 
 
@@ -17866,7 +17886,7 @@ In this case, no description or units will be printed.
 See @ref{CosmicCalculator basic cosmology calculations} for the full list of these options along with some explanations how when/how they can be useful.
 
 Another common operation in observational cosmology is dealing with spectral lines at different redshifts.
-CosmicCalculator also has features to help in such sitatuions, please see @ref{CosmicCalculator spectral line calculations}.
+CosmicCalculator also has features to help in such situations, please see @ref{CosmicCalculator spectral line calculations}.
 
 @menu
 * CosmicCalculator input options::  Options to specify input conditions.
@@ -18213,7 +18233,7 @@ The comoving volume in Megaparsecs cube (Mpc@mymath{^3}) until the desired redsh
 @subsubsection CosmicCalculator spectral line calculations
 
 @cindex Rest frame wavelength
-At different redhifts, observed spectral lines are shifted compared to their rest frame wavelengths with this simple relation: @mymath{\lambda_{obs}=\lambda_{rest}(1+z)}.
+At different redshifts, observed spectral lines are shifted compared to their rest frame wavelengths with this simple relation: @mymath{\lambda_{obs}=\lambda_{rest}(1+z)}.
 Although this relation is very simple and can be done for one line in the head (or a simple calculator!), it slowly becomes tiring when dealing with a lot of lines or redshifts, or some precision is necessary.
 The options in this section are thus provided to greatly simplify usage of this simple equation, and also helping by storing a list of pre-defined spectral line wavelengths.
 
@@ -20240,7 +20260,7 @@ container}.
 @end deftypefun
 
 @deftypefun {gal_data_t **} gal_data_array_ptr_calloc (size_t @code{size})
-Allocate an array of pointers to Gnuastro's generic data structure and initalize all pointers to @code{NULL}.
+Allocate an array of pointers to Gnuastro's generic data structure and initialize all pointers to @code{NULL}.
 This is useful when you want to allocate individual datasets later (for example with @code{gal_data_alloc}).
 @end deftypefun
 
@@ -22842,12 +22862,12 @@ the rotation.
 
 @deftypefun int gal_wcs_distortion_from_string (char @code{*distortion})
 Convert the given string (assumed to be a FITS-standard, string-based distortion identifier) to a Gnuastro's integer-based distortion identifier (one of the @code{GAL_WCS_DISTORTION_*} macros defined above).
-The sting-based distortion identifiers have three characters and are all in captial letters.
+The sting-based distortion identifiers have three characters and are all in capital letters.
 @end deftypefun
 
 @deftypefun int gal_wcs_distortion_to_string (int @code{distortion})
 Convert the given Gnuastro integer-based distortion identifier (one of the @code{GAL_WCS_DISTORTION_*} macros defined above) to the string-based distortion identifier) of the FITS standard.
-The sting-based distortion identifiers have three characters and are all in captial letters.
+The sting-based distortion identifiers have three characters and are all in capital letters.
 @end deftypefun
 
 @cindex WCS distortion
@@ -24285,7 +24305,7 @@ INDEX         INPUT              OUTPUT                 K-D Tree
 This format is therefore scalable to any number of dimensions: the number of dimensions are determined from the number of nodes in the input list of @code{gal_data_t}s (for example, using @code{gal_list_data_number}).
 In Gnuastro's k-d tree implementation, there are thus no special structures to keep every tree node (which would take extra memory and would need to be moved around as the tree is being created).
 Everything is done internally on the index of each point in the input dataset: the only thing that is flipped/sorted during tree creation is the index to the input row for any number of dimensions.
-As a result, Gnuastro's k-d tree implementation is very memory and CPU efficient and its two output columns can directly be written into a standrad table (without having to define any special binary format).
+As a result, Gnuastro's k-d tree implementation is very memory and CPU efficient and its two output columns can directly be written into a standard table (without having to define any special binary format).
 
 @deftypefun {gal_data_t *} gal_kdtree_create (gal_data_t @code{*coords_raw}, size_t @code{*root})
 Create a k-d tree in a bottom-up manner (from leaves to the root).
@@ -24336,7 +24356,7 @@ main (void)
 @deftypefun size_t gal_kdtree_nearest_neighbour (gal_data_t @code{*coords_raw}, gal_data_t @code{*kdtree}, size_t @code{root}, double @code{*point}, double @code{*least_dist})
 Returns the index of the nearest input point to the query point (@code{point}, assumed to be an array with same number of elements as @code{gal_data_t}s in @code{coords_raw}).
 The distance between the query point and its nearest neighbor is stored in the space that @code{least_dist} points to.
-This search is efficient due to the constantly checking for the presence of possible best points in other brances.
+This search is efficient due to the constantly checking for the presence of possible best points in other branches.
 If it isn't possible for the other branch to have a better nearest neighbor, that branch is not searched.
 
 For example the function below reads the input, and the k-d tree file created in the example of @code{gal_kdtree_create} (so you won't have to re-create the k-d tree every time) and finds the input point that is closest to a given query point.
@@ -25469,7 +25489,7 @@ A manhattan metric will always be an integer and is like steps (but is also much
 @deffnx Macro GAL_INTERPOLATE_NEIGHBORS_FUNC_MEDIAN
 @deffnx Macro GAL_INTERPOLATE_NEIGHBORS_FUNC_INVALID
 @cindex Saturated stars
-The various types of nearest-neighbor interporation functions for @code{gal_interpolate_neighbors}.
+The various types of nearest-neighbor interpolation functions for @code{gal_interpolate_neighbors}.
 The names are descriptive for the operation they do, so we won't go into much more detail here.
 The median operator will be one of the most used, but operators like the maximum are good to fill the center of saturated stars.
 @end deffn
@@ -25480,7 +25500,7 @@ Interpolate the values in the input dataset using a calculated statistics from t
 The desired statistics is determined from the @code{func} argument, which takes any of the @code{GAL_INTERPOLATE_NEIGHBORS_FUNC_} macros (see above).
 This function is non-parametric and thus agnostic to the input's number of dimension or shape of the distribution.
 
-Distance can be defined on different metrics that are dentified through @code{metric} (taking values determined by the @code{GAL_INTERPOLATE_NEIGHBORS_METRIC_} macros described above).
+Distance can be defined on different metrics that are identified through @code{metric} (taking values determined by the @code{GAL_INTERPOLATE_NEIGHBORS_METRIC_} macros described above).
 If @code{onlyblank} is non-zero, then only blank elements will be interpolated and pixels that already have a value will be left untouched.
 This function is multi-threaded and will run on @code{numthreads} threads (see @code{gal_threads_number} in @ref{Multithreaded programming}).
 

@@ -21,7 +21,7 @@ all the commits needed for this release have been completed.
    added in the 'THANKS' file since the last stable release (to add in the
    book), you can use this command:
 
-       $ git diff gnuastro_vP.P..HEAD THANKS
+       $ git diff gnuastro_vX.X..HEAD THANKS
 
 
  - Build the Debian distribution (just for a test) and correct any build or
@@ -56,7 +56,7 @@ all the commits needed for this release have been completed.
    code and those that must be acknowledged for the announcement ('P.P' is
    the previous version).
 
-     $ git shortlog gnuastro_vP.P...HEAD --numbered --summary > ~/people.txt
+     $ git shortlog gnuastro_vX.X...HEAD --numbered --summary > ~/people.txt
      $ cat doc/announce-acknowledge.txt >> ~/people.txt
 
      [STABLE] Remove the names in 'doc/announce-acknowledge.txt'.
@@ -405,7 +405,7 @@ Steps necessary to Package Gnuastro for Debian.
    Streicher (olebole@debian.org) mentioned privately: "this links all
    Debian Astro packages together".
 
-     $ lintian -E -I --pedantic                                         \
+     $ lintian -E -I --pedantic \
                /var/cache/pbuilder/result/gnuastro_$ver-1_amd64.changes
 
 

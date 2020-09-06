@@ -115,6 +115,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "pixelscale",
+      UI_KEY_PIXELSCALE,
+      0,
+      0,
+      "Return the pixel-scale of the HDU's WCS.",
+      UI_GROUP_EXTENSION,
+      &p->pixelscale,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 

@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <unistd.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/list.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/blank.h>
@@ -283,7 +284,7 @@ fits_datasum(struct fitsparams *p)
   fitsfile *fptr;
   unsigned long datasum, hdusum;
 
-  /* Read the first extension (necessary for reading the rest). */
+  /* Read the desired extension (necessary for reading the rest). */
   fptr=gal_fits_hdu_open(p->filename, p->cp.hdu, READONLY);
 
   /* Calculate the checksum and datasum of the opened HDU. */
@@ -295,6 +296,57 @@ fits_datasum(struct fitsparams *p)
 
   /* Print the datasum */
   printf("%ld\n", datasum);
+}
+
+
+
+
+
+static void
+fits_pixelscale(struct fitsparams *p)
+{
+  size_t i, ndim;
+  double *pixelscale;
+  struct wcsprm *wcs;
+  int nwcs=0;
+
+  /* Read the desired WCS. */
+  wcs=gal_wcs_read(p->filename, p->cp.hdu, 0, 0, &nwcs);
+
+  /* If a WCS doesn't exist, let the user know and return. */
+  if(wcs)
+    ndim=wcs->naxis;
+  else
+    error(EXIT_FAILURE, 0, "%s (hdu %s): no WCS could be read by WCSLIB, "
+          "hence the pixel-scale cannot be determined", p->filename,
+          p->cp.hdu);
+
+  /* Calculate the pixel-scale in each dimension. */
+  pixelscale=gal_wcs_pixel_scale(wcs);
+
+  /* If not in quiet-mode, print some extra information. We don't want the
+     last number to have a space after it, so we'll write the last one
+     outside the loop.*/
+  if(p->cp.quiet==0)
+    {
+      printf("Basic information for --pixelscale (remove extra info "
+             "with '--quiet' or '-q')\n");
+      printf("  Input: %s (hdu %s) has %zu dimensions.\n", p->filename,
+             p->cp.hdu, ndim);
+      printf("  Pixel scale in each dimension:\n");
+      for(i=0;i<ndim;++i)
+        printf("    %zu: %g (%s/pixel)\n", i+1, pixelscale[i], wcs->cunit[i]);
+    }
+  else
+    {
+      for(i=0;i<ndim-1;++i)
+        printf("%g ", pixelscale[i]);
+      printf("%g\n", pixelscale[ndim-1]);
+    }
+
+  /* Clean up. */
+  wcsfree(wcs);
+  free(pixelscale);
 }
 
 
@@ -428,10 +480,9 @@ fits(struct fitsparams *p)
     case FITS_MODE_HDU:
 
       /* Options that must be called alone. */
-      if(p->numhdus)
-        fits_hdu_number(p);
-      else if(p->datasum)
-        fits_datasum(p);
+      if(p->numhdus) fits_hdu_number(p);
+      else if(p->datasum) fits_datasum(p);
+      else if(p->pixelscale) fits_pixelscale(p);
 
       /* Options that can be called together. */
       else
