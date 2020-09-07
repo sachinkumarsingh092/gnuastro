@@ -176,7 +176,8 @@ all the commits needed for this release have been completed.
    contents of '~/people.txt' to the announcement.
 
 
- - Add the size of the files (in mega-bytes) to the announcement.
+ - Add the size of the detached signatures (833B) to the announcement. By
+   default it only prints the size of the actual tarball(s).
 
 
  - Run a spell-check on the announcement and remove '~/people.txt'.

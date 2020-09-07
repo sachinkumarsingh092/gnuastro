@@ -4896,7 +4896,7 @@ $ sudo pacman -S ghostscript libtool libjpeg libtiff        \
 @item @command{zypper} (openSUSE and SUSE Linux Enterprise Server)
 @cindex openSUSE
 @cindex SUSE Linux Enterprise Server
-@cindex @command{zypper} @url{https://www.opensuse.org,openSUSE} is a community project supported by @url{https://www.suse.com,SUSE} with both stable and rolling releases.
+@cindex @command{zypper}, OpenSUSE package manager
 SUSE Linux Enterprise Server@footnote{@url{https://www.suse.com/products/server}} (SLES) is the commercial offering which shares code and tools.
 Many additional packages are offered in the Build Service@footnote{@url{https://build.opensuse.org}}.
 openSUSE and SLES use @command{zypper} (cli) and YaST (GUI) for managing repositories and
