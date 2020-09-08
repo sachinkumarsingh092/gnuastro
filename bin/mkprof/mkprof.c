@@ -749,12 +749,12 @@ mkprof(struct mkprofparams *p)
 {
   char *tmp;
   pthread_t t;            /* Thread id not used, all are saved here. */
-  int err, origquiet;
   pthread_attr_t attr;
   pthread_barrier_t b;
   size_t numforprint=50;
   struct mkonthread *mkp;
   gal_list_str_t *comments=NULL;
+  int err, origquiet=p->cp.quiet;
   size_t i, fi, *indexs, thrdcols;
   long *onaxes=NULL, os=p->oversample;
   size_t nb, ndim=p->ndim, nt=p->cp.numthreads;
@@ -842,7 +842,6 @@ mkprof(struct mkprofparams *p)
         printf("  ---- Building %zu profiles... ", p->num);
 
       /* Disable the quiet flag.*/
-      origquiet=p->cp.quiet;
       p->cp.quiet=1;
     }
 
