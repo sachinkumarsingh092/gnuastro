@@ -85,6 +85,10 @@ categories/chapters.
     in noise (galaxies in the sky), using thresholds that are below the Sky
     value (see arXiv:1505.01664).
 
+  - Query (astquery): High-level interface to query pre-defined remote, or
+    external, databases and directly download the required sub-tables on the
+    command-line.
+
   - Segment (astsegment): Segment a detection based on the structure of
     signal within it.
 

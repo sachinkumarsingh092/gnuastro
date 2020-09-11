@@ -3,6 +3,27 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 Copyright (C) 2015-2020 Free Software Foundation, Inc.
 See the end of the file for license conditions.
 
+* Noteworthy changes in release 0.XX (library XX.X.X) (XXXX-XX-XX) [stable]
+
+** New features
+
+  New program:
+   - Query ('astquery') is a new program to allow easy submission of
+     queries to extenral datasets and retrieve the result as a FITS file,
+     directly on the command-line. You can either directly write the
+     database's query statement yourself, or use Query's high-level
+     interface to avoid having to learn it.
+
+** Removed features
+
+** Changed features
+
+** Bugs fixed
+
+
+
+
+
 * Noteworthy changes in release 0.13 (library 11.0.0) (2020-09-06) [stable]
 
 ** New features

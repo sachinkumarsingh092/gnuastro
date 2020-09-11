@@ -117,6 +117,9 @@ endif
 if COND_NOISECHISEL
   MAYBE_NOISECHISEL_MAN = man/astnoisechisel.1
 endif
+if COND_QUERY
+  MAYBE_QUERY_MAN = man/astquery.1
+endif
 if COND_SEGMENT
   MAYBE_SEGMENT_MAN = man/astsegment.1
 endif
@@ -132,12 +135,13 @@ endif
 #if COND_TEMPLATE
 #  MAYBE_TEMPLATE_MAN = man/astTEMPLATE.1
 #endif
-dist_man_MANS = $(MAYBE_ARITHMETIC_MAN) $(MAYBE_BUILDPROG_MAN)          \
-  $(MAYBE_CONVERTT_MAN) $(MAYBE_CONVOLVE_MAN) $(MAYBE_COSMICCAL_MAN)    \
-  $(MAYBE_CROP_MAN) $(MAYBE_FITS_MAN) $(MAYBE_MATCH_MAN)                \
-  $(MAYBE_MKCATALOG_MAN) $(MAYBE_MKNOISE_MAN) $(MAYBE_MKPROF_MAN)       \
-  $(MAYBE_NOISECHISEL_MAN) $(MAYBE_SEGMENT_MAN) $(MAYBE_STATISTICS_MAN) \
-  $(MAYBE_TABLE_MAN) $(MAYBE_WARP_MAN) man/astscript-sort-by-night.1
+dist_man_MANS = $(MAYBE_ARITHMETIC_MAN) $(MAYBE_BUILDPROG_MAN) \
+  $(MAYBE_CONVERTT_MAN) $(MAYBE_CONVOLVE_MAN) $(MAYBE_COSMICCAL_MAN) \
+  $(MAYBE_CROP_MAN) $(MAYBE_FITS_MAN) $(MAYBE_MATCH_MAN) \
+  $(MAYBE_MKCATALOG_MAN) $(MAYBE_MKNOISE_MAN) $(MAYBE_MKPROF_MAN) \
+  $(MAYBE_NOISECHISEL_MAN) $(MAYBE_QUERY_MAN) $(MAYBE_SEGMENT_MAN) \
+  $(MAYBE_STATISTICS_MAN) $(MAYBE_TABLE_MAN) $(MAYBE_WARP_MAN) \
+  man/astscript-sort-by-night.1
 
 
 ## See if help2man is present or not. When help2man doesn't exist, we don't
@@ -203,6 +207,10 @@ man/astmkprof.1: $(top_srcdir)/bin/mkprof/args.h  $(ALLMANSDEP)
 man/astnoisechisel.1: $(top_srcdir)/bin/noisechisel/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) -n "detect signal in a noisy image"              \
 	                  --libtool $(toputildir)/noisechisel/astnoisechisel
+
+man/astquery.1: $(top_srcdir)/bin/query/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) -n "query remote data servers and download"      \
+	                  --libtool $(toputildir)/query/astquery
 
 man/astscript-sort-by-night.1: $(top_srcdir)/bin/script/sort-by-night.in   \
                                $(ALLMANSDEP)

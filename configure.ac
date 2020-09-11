@@ -718,103 +718,109 @@ ayes=false
 AC_ARG_ENABLE([arithmetic],
               [AS_HELP_STRING([--enable-arithmetic],
                     [Install Arithmetic and other enabled programs.])],
-	      [AS_IF([test "x$enable_arithmetic" != xno],
+              [AS_IF([test "x$enable_arithmetic" != xno],
                      [enable_arithmetic=yes; ayes=true])],
               [enable_arithmetic=notset])
 AC_ARG_ENABLE([buildprog],
               [AS_HELP_STRING([--enable-buildprog],
                     [Install BuildProgram and other enabled programs.])],
-	      [AS_IF([test "x$enable_buildprog" != xno],
+              [AS_IF([test "x$enable_buildprog" != xno],
                      [enable_buildprog=yes; ayes=true])],
               [enable_buildprog=notset])
 AC_ARG_ENABLE([convertt],
               [AS_HELP_STRING([--enable-convertt],
                     [Install ConvertType and other enabled programs.])],
-	      [AS_IF([test "x$enable_convertt" != xno],
+              [AS_IF([test "x$enable_convertt" != xno],
                      [enable_convertt=yes; ayes=true])],
               [enable_convertt=notset])
 AC_ARG_ENABLE([convolve],
               [AS_HELP_STRING([--enable-convolve],
                     [Install Convolve and other enabled programs.])],
-	      [AS_IF([test "x$enable_convolve" != xno],
+              [AS_IF([test "x$enable_convolve" != xno],
                      [enable_cognvolve=yes; ayes=true])],
               [enable_convolve=notset])
 AC_ARG_ENABLE([cosmiccal],
               [AS_HELP_STRING([--enable-cosmiccal],
                     [Install CosmicCalculator and other enabled programs.])],
-	      [AS_IF([test "x$enable_cosmiccal" != xno],
+              [AS_IF([test "x$enable_cosmiccal" != xno],
                      [enable_cosmiccal=yes; ayes=true])],
               [enable_cosmiccal=notset])
 AC_ARG_ENABLE([crop],
               [AS_HELP_STRING([--enable-crop],
                     [Install Crop and other enabled programs.])],
-	      [AS_IF([test "x$enable_crop" != xno],
+              [AS_IF([test "x$enable_crop" != xno],
                      [enable_crop=yes; ayes=true])],
               [enable_crop=notset])
 AC_ARG_ENABLE([fits],
               [AS_HELP_STRING([--enable-fits],
                     [Install Fits and other enabled programs.])],
-	      [AS_IF([test "x$enable_fits" != xno],
+              [AS_IF([test "x$enable_fits" != xno],
                      [enable_fits=yes; ayes=true])],
               [enable_fits=notset])
 AC_ARG_ENABLE([match],
               [AS_HELP_STRING([--enable-match],
                     [Install Match and other enabled programs.])],
-	      [AS_IF([test "x$enable_match" != xno],
+              [AS_IF([test "x$enable_match" != xno],
                      [enable_match=yes; ayes=true])],
               [enable_match=notset])
 AC_ARG_ENABLE([mkcatalog],
               [AS_HELP_STRING([--enable-mkcatalog],
                     [Install MakeCatalog and other enabled programs.])],
-	      [AS_IF([test "x$enable_mkcatalog" != xno],
+              [AS_IF([test "x$enable_mkcatalog" != xno],
                      [enable_mkcatalog=yes; ayes=true])],
               [enable_mkcatalog=notset])
 AC_ARG_ENABLE([mknoise],
               [AS_HELP_STRING([--enable-mknoise],
                     [Install MakeNoise and other enabled programs.])],
-	      [AS_IF([test "x$enable_mknoise" != xno],
+              [AS_IF([test "x$enable_mknoise" != xno],
                      [enable_mknoise=yes; ayes=true])],
               [enable_mknoise=notset])
 AC_ARG_ENABLE([mkprof],
               [AS_HELP_STRING([--enable-mkprof],
                     [Install MakeProfile and other enabled programs.])],
-	      [AS_IF([test "x$enable_mkprof" != xno],
+              [AS_IF([test "x$enable_mkprof" != xno],
                      [enable_mkprof=yes; ayes=true])],
               [enable_mkprof=notset])
 AC_ARG_ENABLE([noisechisel],
               [AS_HELP_STRING([--enable-noisechisel],
                     [Install NoiseChisel and other enabled programs.])],
-	      [AS_IF([test "x$enable_noisechisel" != xno],
+              [AS_IF([test "x$enable_noisechisel" != xno],
                      [enable_noisechisel=yes; ayes=true])],
               [enable_noisechisel=notset])
+AC_ARG_ENABLE([query],
+              [AS_HELP_STRING([--enable-query],
+                    [Install query and other enabled packages.])],
+              [AS_IF([test "x$enable_query" != xno],
+                     [enable_query=yes; ayes=true])],
+              [enable_query=notset])
 AC_ARG_ENABLE([segment],
               [AS_HELP_STRING([--enable-segment],
                     [Install Segment and other enabled programs.])],
-	      [AS_IF([test "x$enable_segment" != xno],
+              [AS_IF([test "x$enable_segment" != xno],
                      [enable_segment=yes; ayes=true])],
               [enable_segment=notset])
 AC_ARG_ENABLE([statistics],
               [AS_HELP_STRING([--enable-statistics],
                     [Install Statistics and other enabled programs.])],
-	      [AS_IF([test "x$enable_statistics" != xno],
+              [AS_IF([test "x$enable_statistics" != xno],
                      [enable_statistics=yes; ayes=true])],
               [enable_statistics=notset])
 AC_ARG_ENABLE([table],
               [AS_HELP_STRING([--enable-table],
                     [Install Table and other enabled programs.])],
-	      [AS_IF([test "x$enable_table" != xno],
+              [AS_IF([test "x$enable_table" != xno],
                      [enable_table=yes; ayes=true])],
               [enable_table=notset])
 #AC_ARG_ENABLE([TEMPLATE],
 #              [AS_HELP_STRING([--enable-TEMPLATE],
 #                    [Install TEMPLATE and other enabled packages.])],
-#	      [AS_IF([test "x$enable_TEMPLATE" != xno],
+#              [AS_IF([test "x$enable_TEMPLATE" != xno],
 #                     [enable_TEMPLATE=yes; ayes=true])],
 #              [enable_TEMPLATE=notset])
 AC_ARG_ENABLE([warp],
               [AS_HELP_STRING([--enable-warp],
                     [Install Warp and other enabled programs.])],
-	      [AS_IF([test "x$enable_warp" != xno],
+              [AS_IF([test "x$enable_warp" != xno],
                      [enable_warp=yes; ayes=true])],
               [enable_warp=notset])
 
@@ -840,6 +846,7 @@ AS_IF([test $ayes = true ],
        AS_IF([test $enable_mknoise = notset],     [enable_mknoise=no])
        AS_IF([test $enable_mkprof = notset],      [enable_mkprof=no])
        AS_IF([test $enable_noisechisel = notset], [enable_noisechisel=no])
+       AS_IF([test $enable_query = notset],       [enable_query=no])
        AS_IF([test $enable_segment = notset],     [enable_segment=no])
        AS_IF([test $enable_statistics = notset],  [enable_statistics=no])
        AS_IF([test $enable_table = notset],       [enable_table=no])
@@ -860,6 +867,7 @@ AS_IF([test $ayes = true ],
        AS_IF([test $enable_mknoise = notset],     [enable_mknoise=yes])
        AS_IF([test $enable_mkprof = notset],      [enable_mkprof=yes])
        AS_IF([test $enable_noisechisel = notset], [enable_noisechisel=yes])
+       AS_IF([test $enable_query = notset],       [enable_query=yes])
        AS_IF([test $enable_segment = notset],     [enable_segment=yes])
        AS_IF([test $enable_statistics = notset],  [enable_statistics=yes])
        AS_IF([test $enable_table = notset],       [enable_table=yes])
@@ -893,6 +901,7 @@ AM_CONDITIONAL([COND_MKCATALOG],   [test $enable_mkcatalog = yes])
 AM_CONDITIONAL([COND_MKNOISE],     [test $enable_mknoise = yes])
 AM_CONDITIONAL([COND_MKPROF],      [test $enable_mkprof = yes])
 AM_CONDITIONAL([COND_NOISECHISEL], [test $enable_noisechisel = yes])
+AM_CONDITIONAL([COND_QUERY],       [test $enable_query = yes])
 AM_CONDITIONAL([COND_SEGMENT],     [test $enable_segment = yes])
 AM_CONDITIONAL([COND_STATISTICS],  [test $enable_statistics = yes])
 AM_CONDITIONAL([COND_TABLE],       [test $enable_table = yes])
@@ -921,12 +930,13 @@ AS_ECHO(["linking flags (LDADD) ... $LDADD"])
 AC_CONFIG_FILES([Makefile
                  doc/Makefile
                  lib/Makefile
-		 tests/Makefile
+                 tests/Makefile
                  bin/crop/Makefile
                  bin/fits/Makefile
                  bin/warp/Makefile
                  bin/table/Makefile
                  bin/match/Makefile
+                 bin/query/Makefile
                  bin/mkprof/Makefile
                  bin/script/Makefile
                  bin/mknoise/Makefile
@@ -935,9 +945,9 @@ AC_CONFIG_FILES([Makefile
                  bin/convolve/Makefile
                  bin/buildprog/Makefile
                  bin/cosmiccal/Makefile
-           	 bin/mkcatalog/Makefile
+                 bin/mkcatalog/Makefile
                  bin/arithmetic/Makefile
-           	 bin/statistics/Makefile
+                 bin/statistics/Makefile
                  bin/noisechisel/Makefile
                  bootstrapped/lib/Makefile
                  bootstrapped/tests/Makefile
@@ -957,7 +967,7 @@ AC_CONFIG_FILES([Makefile
 AC_ARG_ENABLE([guide-message],
               [AS_HELP_STRING([--disable-guide-message],
                    [No messages after each build step.])],
-	      [], [enable_guide_message=yes])
+              [], [enable_guide_message=yes])
 AC_SUBST(GUIDEMESSAGE, [$enable_guide_message])
 
 

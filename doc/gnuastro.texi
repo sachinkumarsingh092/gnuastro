@@ -565,6 +565,7 @@ Noise basics
 High-level calculations
 
 * CosmicCalculator::            Calculate cosmological variables
+* Query::                       Import data from external databases
 
 CosmicCalculator
 
@@ -17622,9 +17623,10 @@ Even higher-level analysis is still needed to convert the observed magnitudes, s
 
 @menu
 * CosmicCalculator::            Calculate cosmological variables
+* Query::                       Import data from external databases
 @end menu
 
-@node CosmicCalculator,  , High-level calculations, High-level calculations
+@node CosmicCalculator, Query, High-level calculations, High-level calculations
 @section CosmicCalculator
 
 To derive higher-level information regarding our sources in extra-galactic astronomy, cosmological calculations are necessary.
@@ -18282,6 +18284,150 @@ In the former case (when a name is given), the returned number is in units of An
 In the latter (when a number is given), the returned value is the same units of the input number (assuming its a wavelength).
 
 @end table
+
+
+
+
+
+
+
+
+
+
+
+@node Query,  , CosmicCalculator, High-level calculations
+@section Query
+
+There are many astronomical databases available for downloading astronomical data.
+Each has its own interface, which is usually very well documented in their own webpages.
+However, remembering the exact URLs and interface of each database is not easily possible and using the graphic web interface (which is commonly easier to use), is not an automatic process.
+
+Gnuastro's Query program is designed to address these problems: it has a common high-level interface for general operations that are common between its recognized databases.
+For example, importing a catalog of objects within a certain distance of a given coordinate.
+
+@node Invoking astquery
+@subsection Invoking Query
+
+Query provides a high-level interface to downloading subsets of data from databases.
+The executable name is @file{astquery} with the following general template
+
+@example
+$ astquery [OPTION...] ...
+@end example
+
+@noindent
+One line examples:
+
+@example
+## Import all the columns of all entries in the Gaia DR2 catalog within
+## 0.1 degrees of the given coordinate.
+$ astquery  --database=gaia --dataset=dr2 --output=sub-gaia.fits \
+            --center=113.8729761,31.9027152 --radius=0.1
+
+## Similar to above, but only import the ID, RA, Dec and G-band
+## magnitude of the sources (not all the columns).
+$ astquery  --database=gaia --dataset=dr2 --output=sub-gaia.fits \
+            --center=113.8729761,31.9027152 --radius=0.1 \
+            --column=source_id,ra,dec,phot_g_mean_mag
+
+## Use a custom query to extract entries in the Gaia DR2 catalog.
+## The 'XXXX YYYY ZZZZ' can be a query of any size on the command-line.
+$ astquery --database=esa --query="XXXX YYYY ZZZZ" --output=my-gaia.fits
+@end example
+
+Query doesn't take any input argument, because the main goal is to retreive data from external sources.
+The main input to Query is the @option{--database} option which specifies which database should be contacted for submitting the query.
+The name of the downloaded output file can optionally be set with @option{--output}.
+If @option{--output} is not set, an automatically generated name will be used.
+
+There are two methods to query the database: 1) with @option{--query} you can directly give a raw query statement that is recognized by the database, 2) with the @option{--center} and @option{--radius}, the low-level query will constructed automatically for the particular database.
+The former is very low level and will require some knowledge of the database's query language, but of course, it is much more powerful.
+The latter is much more limited in terms of capabilities (the only constraint is the location of the objects compared to the given center), but doesn't require any knowledge of the database's query language.
+
+@cartouche
+@noindent
+@strong{Under development, request for feedback:} Query is a new member of the Gnuastro family of programs.
+It currently requires that the @command{curl} executable (for the cURL downloading program) to be present on the host and the number of databases it supports is still limited, see the list under the @option{--database} option below.
+More downloader tools, and databases will be added in the near future as it is used more often, so please don't hesitate to suggest any that you may need.
+@end cartouche
+
+@table @option
+
+@item -d STR
+@itemx --database=STR
+Identifer for the database for sending the query.
+The current list of databases are listed here:
+
+@table @code
+@item gaia
+The Gaia project (@url{https://www.cosmos.esa.int/web/gaia}) database which is a large collection of star positions on the celestial sphere, as well as peculiar velocities, paralloxes and magnitudes in some bands among many others.
+Besides scientific studies (like studying resolved stellar populations in the Galaxy and its halo), Gaia is also invaluable for raw data calibrations, like astrometry.
+The query given to this database will be submitted to @code{https://gea.esac.esa.int/tap-server/tap/sync}.
+@end table
+
+@item -Q "STR"
+@itemx --query="STR"
+Directly specify the query to be passed onto the database.
+The queries will generally contain space and other meta-characters, so we recommend placing the query within quotations.
+
+@item -c FLT,FLT
+@itemx --center=FLT,FLT
+The center to use for the automatically generated query (not compatible with @option{--query}).
+All objects within a certain distance of the requested center position will be requested from the dataset.
+The distance can be specified with the @option{--radius} option.
+
+@item -r FLT
+@itemx --radius FLT
+The radius about the requested center to use for the automatically generated query (not compatible with @option{--query}).
+Since the center is usually determined in units of degrees, the radius to select sources is also in the same units.
+
+@item -s STR
+@itemx --dataset=STR
+The dataset to query within the database for the automatically generated query (not compatible with @option{--query}).
+The reason for this is that many databases have different types of datasets, for example different data releases (DRs), or various high-level calculations on subsets of the database elements.
+For example when @option{--database=gaia}, you can set @option{--dataset=dr2} to only select objects within the second data release (DR2).
+
+You can either use the database's official name of the datasets, for example @code{gaiadr2.gaia_source} for the second data release of the Gaia database, or a simplified version that maps to it (@code{dr2}) for easy typing on the command-line.
+Below is a list of the simplified names for the databases that have them.
+
+@table @code
+@item gaia
+@itemize
+@item
+@code{dr2 --> gaiadr2.gaia_source}
+@item
+@code{dr2 --> gaiadr1.gaia_source}
+@item
+@code{tyco2 --> public.tyco2}
+@item
+@code{hipparcos --> public.hipparcos}
+@end itemize
+@end table
+
+@item -C STR
+@itemx --column=STR[,STR[,...]]
+The optional column name(s) to retrieve from the dataset in the automatically generated query (not compatible with @option{--query}).
+If not given, all the dataset's columns for the selected rows will be used (which can be large!).
+This option can take multiple values in one instance (for example @option{--column=ra,dec,mag}), or in multiple instances (for example @option{-cra -cdec -cmag}), or mixed (for example @option{-cra,dec -cmag}).
+
+In case, you don't know the full list of the dataset's column names, one solution is to run this program once without any @option{--column} and setting @option{--radius=0} (to have few, or no, rows and download fast).
+You can then inspect the column names with @ref{Table}.
+In case the database doesn't support a search radius of 0, or can't return a table with no rows, you can increase the radius.
+Here is an example on the Gaia DR2 catalog to show the full list of available columns:
+
+@example
+$ astquery --database=gaia --dataset=dr2 --center=0,0 \
+           --radius=0 --output=gaia-dr2-cols.fits
+$ asttable gaia-dr2-cols.fits --info
+@end example
+@end table
+
+
+
+
+
+
+
 
 
 
@@ -28096,6 +28242,11 @@ that match with each other within a given aperture (may be an ellipse).
 uses a technique to detect very faint and diffuse, irregularly shaped
 signal in noise (galaxies in the sky), using thresholds that are below the
 Sky value, see @url{http://arxiv.org/abs/1505.01664, arXiv:1505.01664}.
+
+@item Query
+(@file{astquery}, see @ref{Query}) High-level interface to query
+pre-defined remote, or external databases, and directly download the
+required sub-tables on the command-line.
 
 @item Segment
 (@file{astsegment}, see @ref{Segment}) Segment detected regions based on
