@@ -90,14 +90,14 @@ query_gaia_sanitycheck(struct queryparams *p)
   if(p->center)
     {
       /* Make sure the radius is given, and that it isn't zero. */
-      if( isnan(p->radius) )
-        error(EXIT_FAILURE, 0, "the '--radius' ('-r') option is necessary "
-              "with the '--center' ('-c') option");
+      if( p->radius==NULL && p->width==NULL)
+        error(EXIT_FAILURE, 0, "the '--radius' ('-r') or '--width' ('-w') "
+              "options are necessary with the '--center' ('-C') option");
 
       /* Make sure a dataset is also given. */
       if( p->datasetstr==NULL)
         error(EXIT_FAILURE, 0, "the '--dataset' ('-s') option is necessary "
-              "with the '--center' ('-c') option");
+              "with the '--center' ('-C') option");
 
 
       /* Use simpler names for the commonly used datasets. */
@@ -131,7 +131,8 @@ query_gaia_sanitycheck(struct queryparams *p)
 void
 query_gaia(struct queryparams *p)
 {
-  double *center;
+  char *regionstr;
+  double *center, *darray;
   char *command, *columns, allcols[]="*", *querystr;
 
   /* Make sure everything is fine. */
@@ -153,16 +154,32 @@ query_gaia(struct queryparams *p)
       */
       columns = p->columns ? query_strlist_to_str(p->columns) : allcols;
 
+      /* Write the region. */
+      if(p->radius)
+        {
+          darray=p->radius->array;
+          if( asprintf(&regionstr, "CIRCLE('ICRS', %.8f, %.8f, %g) )",
+                       center[0], center[1], darray[0])<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation ('regionstr')", __func__);
+        }
+      else if(p->width)
+        {
+          darray=p->width->array;
+          if( asprintf( &regionstr, "BOX('ICRS', %.8f, %.8f, %.8f, %.8f) )",
+                        center[0], center[1], darray[0],
+                        p->width->size==1 ? darray[0] : darray[1] )<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation ('regionstr')", __func__);
+        }
+
       /* Write the automatically generated query string. */
       if( asprintf(&querystr,  "SELECT %s "
                    "FROM %s "
-                   "WHERE 1=CONTAINS( "
-                   "POINT('ICRS', ra, dec), "
-                   "CIRCLE('ICRS', %.8f, %.8f, %g) )", columns,
-                   p->datasetstr, center[0], center[1], p->radius)<0 )
+                   "WHERE 1=CONTAINS( POINT('ICRS', ra, dec), %s )", columns,
+                   p->datasetstr, regionstr)<0 )
         error(EXIT_FAILURE, 0, "%s: asprintf allocation ('querystr')", __func__);
 
       /* Clean up. */
+      free(regionstr);
       if(columns!=allcols) free(columns);
     }
 
@@ -178,7 +195,6 @@ query_gaia(struct queryparams *p)
   /* Print the calling command for the user to know. */
   if(p->cp.quiet==0)
     printf("Running: %s\n", command);
-  //exit(0);
 
   /* Run the command. */
   if(system(command))

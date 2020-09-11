@@ -51,9 +51,9 @@ enum option_keys_enum
   UI_KEY_DATABASE        = 'd',
   UI_KEY_QUERY           = 'Q',
   UI_KEY_DATASET         = 's',
-  UI_KEY_CENTER          = 'c',
+  UI_KEY_CENTER          = 'C',
   UI_KEY_RADIUS          = 'r',
-  UI_KEY_COLUMN          = 'C',
+  UI_KEY_COLUMN          = 'c',
   UI_KEY_WIDTH           = 'w',
 
   /* Only with long version (start with a value 1000, the rest will be set

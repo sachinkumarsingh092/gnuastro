@@ -110,9 +110,6 @@ ui_initialize_options(struct queryparams *p,
   cp->program_authors    = PROGRAM_AUTHORS;
   cp->coptions           = gal_commonopts_options;
 
-  /* Program-specific initializations. */
-  p->radius              = NAN;
-
   /* Modify common options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
     {
@@ -127,6 +124,7 @@ ui_initialize_options(struct queryparams *p,
         case GAL_OPTIONS_KEY_IGNORECASE:
         case GAL_OPTIONS_KEY_NUMTHREADS:
         case GAL_OPTIONS_KEY_MINMAPSIZE:
+        case GAL_OPTIONS_KEY_TABLEFORMAT:
         case GAL_OPTIONS_KEY_STDINTIMEOUT:
         case GAL_OPTIONS_KEY_KEEPINPUTDIR:
           cp->coptions[i].flags=OPTION_HIDDEN;
@@ -260,6 +258,8 @@ ui_parse_database(struct argp_option *option, char *arg,
 static void
 ui_read_check_only_options(struct queryparams *p)
 {
+  size_t i;
+
   /* See if database has been specified. */
   if(p->database==0)
     error(EXIT_FAILURE, 0, "no input dataset.\n\n"
@@ -272,9 +272,40 @@ ui_read_check_only_options(struct queryparams *p)
     error(EXIT_FAILURE, 0, "the '--center' and '--query' options cannot be "
           "called together (they are parallel ways to define a query)");
 
-  /* If radius is given, it should be positive. */
-  if( !isnan(p->radius) && p->radius<0 )
-    error(EXIT_FAILURE, 0, "the '--radius' option value cannot be negative");
+  /* The radius and width cannot be called together. */
+  if(p->radius && p->width)
+    error(EXIT_FAILURE, 0, "the '--radius' and '--width' options cannot be "
+          "called together");
+
+  /* If radius is given, it should be one value and positive. */
+  if(p->radius)
+    {
+      if(p->radius->size>1)
+        error(EXIT_FAILURE, 0, "only one value can be given to '--radius' "
+              "('-r') option");
+
+      if( ((double *)(p->radius->array))[0]<0 )
+        error(EXIT_FAILURE, 0, "the '--radius' option value cannot be negative");
+    }
+
+  /* Sanity checks on  width (if we are in the center-mode). */
+  if(p->width && p->center)
+    {
+      /* Width should have the same number of elements as the center
+         coordinates */
+      if( p->width->size > 1 && p->width->size != p->center->size )
+        error(EXIT_FAILURE, 0, "'--width' should either have a single "
+              "value (used for all dimensions), or one value for each "
+              "dimension. However, you have provided %zu coordinate "
+              "values, and %zu width values", p->center->size,
+              p->width->size);
+
+      /* All values must be positive. */
+      for(i=0;i<p->width->size;++i)
+        if( ((double *)(p->width->array))[i]<0 )
+          error(EXIT_FAILURE, 0, "the '--width' option value(s) cannot "
+                "be negative");
+    }
 
   /* If an output name isn't given, set one. */
   if(p->cp.output)

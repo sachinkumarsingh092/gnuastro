@@ -4597,14 +4597,19 @@ $ sudo make install
 @node Optional dependencies, Bootstrapping dependencies, Mandatory dependencies, Dependencies
 @subsection Optional dependencies
 
-The libraries listed here are only used for very specific applications, therefore if you don't want these operations, Gnuastro will be built and installed without them and you don't have to have the dependencies.
+The libraries listed here are only used for very specific applications, therefore they are optional and Gnuastro can be built without them (with only those specific features disabled).
+Since these are pretty low-level tools, they are not too hard to install from source, but you can also use your operating system's package manager to easily install all of them.
+For more, see @ref{Dependencies from package managers}.
 
 @cindex GPL Ghostscript
-If the @command{./configure} script can't find these requirements, it will warn you in the end that they are not present and notify you of the operation(s) you can't do due to not having them.
-If the output you request from a program requires a missing library, that program is going to warn you and abort.
-In the case of program dependencies (like GPL GhostScript), if you install them at a later time, the program will run.
-This is because if required libraries are not present at build time, the executables cannot be built, but an executable is called by the built program at run time so if it becomes available, it will be used.
-If you do install an optional library later, you will have to rebuild Gnuastro and reinstall it for it to take effect.
+If the @command{./configure} script can't find any of these optional dependencies, it will notify you of the operation(s) you can't do due to not having them.
+If you continue the build and request an operation that uses a missing library, Gnuastro's programs will warn that the optional library was missing at build-time and abort.
+Since Gnuastro was built without that library, installing the library afterwards won't help.
+The only way is to re-build Gnuastro from scratch (after the library has been installed).
+However, for program dependencies (like cURL or GhostScript) things are easier: you can install them after building Gnuastro also.
+This is because libraries are used to build the internal structure of Gnuastro's executables.
+However, a program dependency is called by Gnuastro's programs at run-time and has no effect on their internal structure.
+So if a dependency program becomes available later, it will be used next time it is requested.
 
 @table @asis
 
@@ -4651,14 +4656,16 @@ libtiff is used by ConvertType and the libraries to read TIFF images, see @ref{R
 @url{http://www.simplesystems.org/libtiff/, libtiff} is a very basic library that provides tools to read and write TIFF images, most Unix-like operating system graphic programs and libraries use it.
 Therefore even if you don't have it installed, it must be easily available in your package manager.
 
+@item cURL
+@cindex cURL (downloading tool)
+cURL's executable (@command{curl}) is called by @ref{Query} for submitting queries to remote datasets and retrieving the results.
+It isn't necessary for the build of Gnuastro from source (only a warning will be printed if it can't be found at configure time), so if you don't have it at build-time there is no problem.
+Just be sure to have it when you run @command{astquery}, otherwise you'll get an error about not finding @command{curl}.
 
 @item GPL Ghostscript
 @cindex GPL Ghostscript
 GPL Ghostscript's executable (@command{gs}) is called by ConvertType to compile a PDF file from a source PostScript file, see @ref{ConvertType}.
 Therefore its headers (and libraries) are not needed.
-With a very high probability you already have it in your GNU/Linux distribution.
-Unfortunately it does not follow the standard GNU build style so installing it is very hard.
-It is best to rely on your distribution's package managers for this.
 
 @end table
 
@@ -4829,7 +4836,7 @@ This arguably makes Debian-based OSs the largest, and most used, class of GNU/Li
 All of them use Debian's Advanced Packaging Tool (APT, for example @command{apt-get}) for managing packages.
 @example
 $ sudo apt-get install ghostscript libtool-bin libjpeg-dev  \
-                       libtiff-dev libgit2-dev lzip         \
+                       libtiff-dev libgit2-dev curl lzip    \
                                                             \
                        libgsl0-dev libcfitsio-dev wcslib-dev
 @end example
@@ -4853,9 +4860,9 @@ But since it is free software, many other teams use its code to spin-off their o
 Red Hat-based GNU/Linux distributions initially used the ``Yellowdog Updated, Modifier'' (YUM) package manager, which has been replaced by ``Dandified yum'' (DNF).
 If the latter isn't available on your system, you can use @command{yum} instead of @command{dnf} in the command below.
 @example
-$ sudo dnf install ghostscript libtool libjpeg-devel        \
-                   libtiff-devel libgit2-devel lzip         \
-                                                            \
+$ sudo dnf install ghostscript libtool libjpeg-devel     \
+                   libtiff-devel libgit2-devel lzip curl \
+                                                         \
                    gsl-devel cfitsio-devel wcslib-devel
 @end example
 
@@ -4873,9 +4880,9 @@ If not already installed, first obtain Homebrew by following the instructions at
 Homebrew manages packages in different `taps'.
 To install WCSLIB (discussed in @ref{Mandatory dependencies}) via Homebrew you will need to @command{tap} into @command{brewsci/science} first (the tap may change in the future, but can be found by calling @command{brew search wcslib}).
 @example
-$ brew install ghostscript libtool libjpeg libtiff          \
-               libgit2 lzip                                 \
-                                                            \
+$ brew install ghostscript libtool libjpeg libtiff \
+               libgit2 curl lzip                   \
+                                                   \
                gsl cfitsio
 $ brew tap brewsci/science
 $ brew install wcslib
@@ -4888,9 +4895,9 @@ $ brew install wcslib
 It ``focuses on elegance, code correctness, minimalism and simplicity, and expects the user to be willing to make some effort to understand the system's operation''.
 Arch Linux uses ``Package manager'' (Pacman) to manage its packages/components.
 @example
-$ sudo pacman -S ghostscript libtool libjpeg libtiff        \
-                 libgit2 lzip                               \
-                                                            \
+$ sudo pacman -S ghostscript libtool libjpeg libtiff \
+                 libgit2 curl lzip                   \
+                                                     \
                  gsl cfitsio wcslib
 @end example
 
@@ -4904,10 +4911,11 @@ openSUSE and SLES use @command{zypper} (cli) and YaST (GUI) for managing reposit
 packages.
 
 @example
-$ sudo zypper install ghostscript_any libtool pkgconfig    \
-              cfitsio-devel gsl-devel libcurl-devel        \
-              libgit2-devel libjpeg62-devel libtiff-devel  \
-              wcslib-devel
+$ sudo zypper install ghostscript_any libtool pkgconfig   \
+              libcurl-devel libgit2-devel libjpeg62-devel \
+              libtiff-devel curl                          \
+                                                          \
+              gsl-devel cfitsio-devel wcslib-devel
 @end example
 @noindent
 When building Gnuastro, run the configure script with the following @code{CPPFLAGS} environment variable:
@@ -18320,19 +18328,24 @@ One line examples:
 
 @example
 ## Import all the columns of all entries in the Gaia DR2 catalog within
-## 0.1 degrees of the given coordinate.
-$ astquery  --database=gaia --dataset=dr2 --output=sub-gaia.fits \
-            --center=113.8729761,31.9027152 --radius=0.1
+## 20 arc-minutes of the given coordinate.
+$ astquery --database=gaia --dataset=dr2 --output=my-gaia.fits \
+           --center=113.8729761,31.9027152 --radius=20/60
 
-## Similar to above, but only import the ID, RA, Dec and G-band
+## Similar to above, but return all objects within a square box of
+## 30 arcminutes (can also be rectangular, see '--width').
+$ astquery --database=gaia --dataset=dr2 --output=my-gaia.fits \
+           --center=113.8729761,31.9027152 --width=30/60
+
+## Similar to first example, but only import the ID, RA, Dec and G-band
 ## magnitude of the sources (not all the columns).
-$ astquery  --database=gaia --dataset=dr2 --output=sub-gaia.fits \
-            --center=113.8729761,31.9027152 --radius=0.1 \
-            --column=source_id,ra,dec,phot_g_mean_mag
+$ astquery --database=gaia --dataset=dr2 --output=my-gaia.fits \
+           --center=113.8729761,31.9027152 --radius=0.1 \
+           --column=source_id,ra,dec,phot_g_mean_mag
 
 ## Use a custom query to extract entries in the Gaia DR2 catalog.
-## The 'XXXX YYYY ZZZZ' can be a query of any size on the command-line.
-$ astquery --database=esa --query="XXXX YYYY ZZZZ" --output=my-gaia.fits
+## The 'XXXX YYYY' can be a query of any size on the command-line.
+$ astquery --database=gaia --query="XXXX YYYY" --output=my-gaia.fits
 @end example
 
 Query doesn't take any input argument, because the main goal is to retreive data from external sources.
@@ -18370,16 +18383,25 @@ The query given to this database will be submitted to @code{https://gea.esac.esa
 Directly specify the query to be passed onto the database.
 The queries will generally contain space and other meta-characters, so we recommend placing the query within quotations.
 
-@item -c FLT,FLT
+@item -C FLT,FLT
 @itemx --center=FLT,FLT
 The center to use for the automatically generated query (not compatible with @option{--query}).
 All objects within a certain distance of the requested center position will be requested from the dataset.
 The distance can be specified with the @option{--radius} option.
 
 @item -r FLT
-@itemx --radius FLT
+@itemx --radius=FLT
 The radius about the requested center to use for the automatically generated query (not compatible with @option{--query}).
-Since the center is usually determined in units of degrees, the radius to select sources is also in the same units.
+The radius is in units of degrees, but you can use simple division with this option directly on the command-line.
+For example if you want a radius of 20 arc-minutes or 20 arc-seconds, you can use @option{--radius=20/60} or @option{--radius=20/3600} respectively (which is much more human-friendly than @code{0.3333} or @code{0.005556}).
+
+@item -w FLT[,FLT]
+@itemx --width=FLT[,FLT]
+The square (or rectangle) side length (width) about the requested center to use for the automatically generated query (not compatible with @option{--query}).
+If only one value is given to @code{--width} the region will be a square, but if two values are given, the widths of the query box along each dimension will be different.
+The value(s) is(are) in units of degrees, but you can use simple division for each value directly on the command-line, see the description of @option{--radius} for more on using division.
+
+
 
 @item -s STR
 @itemx --dataset=STR
@@ -18404,7 +18426,7 @@ Below is a list of the simplified names for the databases that have them.
 @end itemize
 @end table
 
-@item -C STR
+@item -c STR
 @itemx --column=STR[,STR[,...]]
 The optional column name(s) to retrieve from the dataset in the automatically generated query (not compatible with @option{--query}).
 If not given, all the dataset's columns for the selected rows will be used (which can be large!).

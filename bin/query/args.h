@@ -80,7 +80,7 @@ struct argp_option program_options[] =
     /* Query by center. */
     {
       0, 0, 0, 0,
-      "Calculate query by center:",
+      "Generate query by center (not compatible with '--query'):",
       UI_GROUP_BYCENTER,
     },
     {
@@ -105,10 +105,25 @@ struct argp_option program_options[] =
       "Radius around center to select targets.",
       UI_GROUP_BYCENTER,
       &p->radius,
-      GAL_TYPE_FLOAT64,
+      GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
+      gal_options_parse_csv_float64
+    },
+    {
+      "width",
+      UI_KEY_WIDTH,
+      "FLT[,FLT]",
+      0,
+      "Width of box to select targets.",
+      UI_GROUP_BYCENTER,
+      &p->width,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_csv_float64
     },
     {
       "column",

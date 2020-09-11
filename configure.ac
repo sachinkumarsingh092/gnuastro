@@ -487,6 +487,10 @@ AC_SUBST(HAVE_PTHREAD_BARRIER, [$has_pthread_barrier])
 AC_CHECK_PROG(has_help2man, help2man, [yes], [no])
 AM_CONDITIONAL([COND_HASHELP2MAN], [test "x$has_help2man" = "xyes"])
 
+# cURL:
+AC_CHECK_PROG(has_curl, curl, [yes], [no])
+AS_IF([test "x$has_curl" = "xno"], [anywarnings=yes])
+
 # Check the libtool executable on the system. Note that Gnuastro also ships
 # with a version of Libtool. We don't want Gnuastro's Libtool, here we want
 # to see if the system has libtool independent of Gnuastro so BuildProgram
@@ -632,6 +636,8 @@ AS_IF([test "x$missing_mandatory" = "xyes"],
                       [ AS_ECHO([" - Missing Libtiff (TIFF files): http://libtiff.maptools.org"]) ])
                 AS_IF([test "x$has_libgit2" = "x0"],
                       [ AS_ECHO([" - Missing Libgit2: https://libgit2.org"])                      ])
+                AS_IF([test "x$has_curl" = "x0"],
+                      [ AS_ECHO([" - Missing cURL: https://curl.haxx.se"])                        ])
                 AS_IF([test "x$usable_libtool" = "xno"],
                       [ AS_ECHO([" - Unusable GNU Libtool: https://www.gnu.org/s/libtool"])
                         AS_IF([test "x$has_gnulibtool" = "xyes"],
@@ -1076,6 +1082,16 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO(["    with the executable name 'gs', was not found in your PATH environment"])
                AS_ECHO(["    variable. If PDF outputs are desired, the respective tool it will abort"])
                AS_ECHO(["    with an EPS output which you can convert to PDF by other means."])
+               AS_ECHO([]) ])
+
+        AS_IF([test "x$has_curl" = "xno"],
+              [dependency_notice=yes
+               AS_ECHO(["  - cURL (https://curl.haxx.se) with the executable name 'curl' was not"])
+               AS_ECHO(["    found in your PATH environment variable. 'astquery' uses it to access"])
+               AS_ECHO(["    remote databases at run-time. So not having 'curl' won't affect this"])
+               AS_ECHO(["    build of Gnuastro, you can continue for now. But to use 'astquery',"])
+               AS_ECHO(["    don't forget to install cURL later (before using 'astquery' for the"])
+               AS_ECHO(["    first time)."])
                AS_ECHO([]) ])
 
         # Notice for obtaining the optional dependencies using a package
