@@ -305,10 +305,10 @@ fits_datasum(struct fitsparams *p)
 static void
 fits_pixelscale(struct fitsparams *p)
 {
-  size_t i, ndim;
+  int nwcs=0;
+  size_t i, ndim=0;
   double *pixelscale;
   struct wcsprm *wcs;
-  int nwcs=0;
 
   /* Read the desired WCS. */
   wcs=gal_wcs_read(p->filename, p->cp.hdu, 0, 0, &nwcs);
