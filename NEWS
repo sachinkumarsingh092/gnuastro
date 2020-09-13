@@ -37,6 +37,9 @@ See the end of the file for license conditions.
      'astquery' option, to easily search the contents of external databases
      within the image.
 
+  Library:
+   - gal_wcs_dimension_name: return the name of the requested WCS dim.
+
 ** Removed features
 
 ** Changed features

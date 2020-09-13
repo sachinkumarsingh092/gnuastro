@@ -23045,6 +23045,13 @@ number of coordinate representations found into the space that @code{nwcs}
 points to. Please see @code{gal_wcs_read_fitsptr} for more.
 @end deftypefun
 
+
+@deftypefun {char *} gal_wcs_dimension_name (struct wcsprm @code{*wcs}, size_t @code{dimension})
+Return an allocated string array (that should be freed later) containing the first part of the @code{CTYPEi} FITS keyword (which contains the dimension name in the FITS standard).
+For example if @code{CTYPE1} is @code{RA---TAN}, the string that function returns will be @code{RA}.
+Recall that the second component of @code{CTYPEi} contains the type of projection.
+@end deftypefun
+
 @deftypefun void gal_wcs_write (struct wcsprm @code{*wcs}, char @code{*filename}, char @code{*extname}, gal_fits_list_key_t @code{*headers}, char @code{*program_string})
 Write the given WCS structure into the second extension of an empty FITS header.
 The first/primary extension will be empty like the default format of all Gnuastro outputs.

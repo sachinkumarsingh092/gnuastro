@@ -41,6 +41,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/dimension.h>
 #include <gnuastro/permutation.h>
 
+#include <gnuastro-internal/checkset.h>
+
 #if GAL_CONFIG_HAVE_WCSLIB_DIS_H
 #include <wcslib/dis.h>
 #include <gnuastro-internal/wcsdistortion.h>
@@ -294,6 +296,32 @@ gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
   return wcs;
 }
 
+
+
+
+
+/* Extract the dimension name from CTYPE. */
+char *
+gal_wcs_dimension_name(struct wcsprm *wcs, size_t dimension)
+{
+  size_t i;
+  char *out;
+
+  /* Make sure a WCS pointer actually exists. */
+  if(wcs==NULL) return NULL;
+
+  /* Make sure the requested dimension is not larger than the number of
+     dimensions in the WCS. */
+  if(dimension >= wcs->naxis) return NULL;
+
+  /* Make a copy of the CTYPE value and set the first occurance of '-' to
+     '\0', to avoid the projection type. */
+  gal_checkset_allocate_copy(wcs->ctype[dimension], &out);
+  for(i=0;i<strlen(out);++i) if(out[i]=='-') out[i]='\0';
+
+  /* Return the output array. */
+  return out;
+}
 
 
 

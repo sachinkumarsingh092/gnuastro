@@ -85,6 +85,8 @@ struct wcsprm *
 gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
              size_t hendwcs, int *nwcs);
 
+char *
+gal_wcs_dimension_name(struct wcsprm *wcs, size_t dimension);
 
 
 

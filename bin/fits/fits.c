@@ -353,25 +353,6 @@ fits_pixelscale(struct fitsparams *p)
 
 
 
-/* Extract the dimension name from CTYPE. */
-static char *
-fits_wcs_dim_name(char *ctype)
-{
-  size_t i;
-  char *out;
-
-  /* Make a copy of the CTYPE value and set the first occurance of '-' to
-     '\0', to avoid the projection type. */
-  gal_checkset_allocate_copy(ctype, &out);
-  for(i=0;i<strlen(out);++i) if(out[i]=='-') out[i]='\0';
-
-  /* Return the output array. */
-  return out;
-}
-
-
-
-
 
 static void
 fits_skycoverage(struct fitsparams *p)
@@ -531,8 +512,8 @@ fits_skycoverage(struct fitsparams *p)
       /* For the range type of coverage. */
       printf("\nSky coverage by range along dimensions:\n");
       for(i=0;i<ndim;++i)
-        printf("  %-8s %-15.10g%-15.10g\n",
-               fits_wcs_dim_name(wcs->ctype[i]), min[i], max[i]);
+        printf("  %-8s %-15.10g%-15.10g\n", gal_wcs_dimension_name(wcs, i),
+               min[i], max[i]);
     }
 
   /* Clean up. */
