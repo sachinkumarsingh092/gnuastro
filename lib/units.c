@@ -69,9 +69,11 @@ gal_units_extract_decimal(char *convert, const char *delimiter,
           args[i++] = strtod (token, &end);
           if (*end && *end != *delimiter)
             {
-              free(copy);
+              /* In case a warning is necessary
               error(0, 0, "%s: unable to parse element %zu in '%s'\n",
                     __func__, i, convert);
+              */
+              free(copy);
               return 0;
             }
         }
@@ -82,8 +84,10 @@ gal_units_extract_decimal(char *convert, const char *delimiter,
   /* Check if the number of elements parsed. */
   if (i != n)
     {
-      error (0, 0, "%s: input '%s' must contain %lu numbers, but has "
-             "%lu numbers\n", __func__, convert, n, i);
+      /* In case a warning is necessary
+      error(0, 0, "%s: input '%s' must contain %lu numbers, but has "
+            "%lu numbers\n", __func__, convert, n, i);
+      */
       return 0;
     }
 
@@ -121,44 +125,25 @@ gal_units_ra_to_degree(char *convert)
   double decimal=0.0;
 
   /* Check whether the string is successfully parsed */
-  if(gal_units_extract_decimal (convert, ":", val, 3))
+  if(gal_units_extract_decimal(convert, ":hms", val, 3))
     {
       /* Check whether the first value is in within limits, and add it. */
-      if(val[0]<0.0 || val[0]>24.0)
-        {
-          error(0, 0, "%s: value of first decimal (%g) in '%s' should be "
-                "between 0 and 24", __func__, val[0], convert);
-          return NAN;
-        }
+      if(val[0]<0.0 || val[0]>24.0) return NAN;
       decimal += val[0];
 
-      /* Check whether value of minutes is in within limits, and add it. */
-      if(val[1]<0.0 || val[1]>60.0)
-        {
-          error(0, 0, "%s: value of second decimal (%g) in '%s' should be "
-                "between 0 and 60", __func__, val[0], convert);
-          return NAN;
-        }
+      /* Check whether value of minutes is within limits, and add it. */
+      if(val[1]<0.0 || val[1]>60.0) return NAN;
       decimal += val[1] / 60;
 
       /* Check whether value of seconds is in within limits, and add it. */
-      if(val[2]<0.0 || val[2]>60.0)
-        {
-          error(0, 0, "%s: value of third decimal (%g) in '%s' should be "
-                "between 0 and 60", __func__, val[0], convert);
-          return NAN;
-        }
+      if(val[2]<0.0 || val[2]>60.0) return NAN;
       decimal += val[2] / 3600;
 
       /* Convert value to degrees and return. */
       decimal *= 15.0;
       return decimal;
     }
-  else
-    {
-      error(0, 0, "%s: input '%s' couldn't be parsed", __func__, convert);
-      return NAN;
-    }
+  else return NAN;
 
   /* Control shouldn't reach this point. If it does, its a bug! */
   error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
@@ -174,21 +159,16 @@ gal_units_ra_to_degree(char *convert)
 /* Parse the declination input as a string in form of dd:mm:ss to a decimal
  * calculated by (dd + mm / 60 + ss / 3600 ). */
 double
-gal_units_dec_to_degree (char *convert)
+gal_units_dec_to_degree(char *convert)
 {
   int sign;
   double val[3], decimal=0.0;
 
   /* Parse the values in the input string. */
-  if(gal_units_extract_decimal (convert, ":", val, 3))
+  if(gal_units_extract_decimal(convert, ":dms", val, 3))
     {
       /* Check whether the first value is in within limits. */
-      if(val[0]<-90.0 || val[0]>90.0)
-        {
-          error(0, 0, "%s: value of first decimal (%g) in '%s' should be "
-                "between -90 and 90", __func__, val[0], convert);
-          return NAN;
-        }
+      if(val[0]<-90.0 || val[0]>90.0) return NAN;
 
       /* If declination is negative, the first value in the array will be
          negative and all other values will be positive. In that case, we
@@ -199,35 +179,18 @@ gal_units_dec_to_degree (char *convert)
       decimal += val[0] * sign;
 
       /* Check whether value of arc-minutes is in within limits. */
-      if(val[1]<0.0 || val[1]>60.0)
-        {
-          error(0, 0, "%s: value of second decimal (%g) in '%s' should be "
-                "between 0 and 60", __func__, val[1], convert);
-          return NAN;
-        }
-      /* Convert arc-minutes to decimal and add to the decimal value */
+      if(val[1]<0.0 || val[1]>60.0) return NAN;
       decimal += val[1] / 60;
 
       /* Check whether value of arc-seconds is in within limits */
-      if (val[2] < 0.0 || val[2] > 60.0)
-        {
-          error(0, 0, "%s: value of third decimal (%g) in '%s' should be "
-                "between 0 and 60", __func__, val[2], convert);
-          return NAN;
-        }
-
-      /* Convert arc-seconds to decimal and add to the decimal value */
+      if (val[2] < 0.0 || val[2] > 60.0) return NAN;
       decimal += val[2] / 3600;
 
       /* Make the sign of the decimal value same as input and return. */
       decimal *= sign;
       return decimal;
     }
-  else
-    {
-      error(0, 0, "%s: input '%s' couldn't be parsed", __func__, convert);
-      return NAN;
-    }
+  else return NAN;
 
   /* Control shouldn't reach this point. If it does, its a bug! */
   error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
@@ -265,14 +228,14 @@ gal_units_dec_to_degree (char *convert)
 /* Parse the right ascension input as a decimal to a string in form of
    hh:mm:ss.ss . */
 char *
-gal_units_degree_to_ra(double decimal)
+gal_units_degree_to_ra(double decimal, int usecolon)
 {
   size_t nchars;
   int hours=0, minutes=0;
   float seconds=0.0; /* For sub-second accuracy */
 
-  /* Allocate string of length 15 which is large enough for string of
-     format hh:mm:ss.ss and sign */
+  /* Allocate a long string which is large enough for string of format
+     hh:mm:ss.ss and sign */
   char *ra=gal_pointer_allocate(GAL_TYPE_UINT8, UNITS_RADECSTR_MAXLENGTH,
                                 0, __func__, "ra");
 
@@ -299,7 +262,8 @@ gal_units_degree_to_ra(double decimal)
 
   /* Format the extracted hours, minutes and seconds as a string with
      leading zeros if required, in hh:mm:ss format */
-  nchars = snprintf(ra, UNITS_RADECSTR_MAXLENGTH-1, "%02d:%02d:%g",
+  nchars = snprintf(ra, UNITS_RADECSTR_MAXLENGTH-1,
+                    usecolon ? "%02d:%02d:%g" : "%02dh%02dm%gs",
                     hours, minutes, seconds);
   if(nchars>UNITS_RADECSTR_MAXLENGTH)
     error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to address "
@@ -316,7 +280,7 @@ gal_units_degree_to_ra(double decimal)
 
 /* Parse the declination input as a decimal to a string in form of dd:mm:ss*/
 char *
-gal_units_degree_to_dec(double decimal)
+gal_units_degree_to_dec(double decimal, int usecolon)
 {
   size_t nchars;
   float arc_seconds=0.0;
@@ -356,7 +320,8 @@ gal_units_degree_to_dec(double decimal)
   /* Format the extracted degrees, arc-minutes and arc-seconds as a string
      with leading zeros if required, in hh:mm:ss format with correct
      sign. */
-  nchars = snprintf(dec, UNITS_RADECSTR_MAXLENGTH-1, "%s%02d:%02d:%g",
+  nchars = snprintf(dec, UNITS_RADECSTR_MAXLENGTH-1,
+                    usecolon ? "%s%02d:%02d:%g" : "%s%02dd%02dm%gs",
                     sign<0?"-":"+", degrees, arc_minutes, arc_seconds);
   if(nchars>UNITS_RADECSTR_MAXLENGTH)
     error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to address "

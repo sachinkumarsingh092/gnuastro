@@ -68,10 +68,10 @@ double
 gal_units_dec_to_degree (char *convert);
 
 char *
-gal_units_degree_to_ra (double decimal);
+gal_units_degree_to_ra (double decimal, int usecolon);
 
 char *
-gal_units_degree_to_dec (double decimal);
+gal_units_degree_to_dec (double decimal, int usecolon);
 
 __END_C_DECLS    /* From C++ preparations */
 

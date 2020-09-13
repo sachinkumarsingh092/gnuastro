@@ -14,12 +14,41 @@ See the end of the file for license conditions.
      database's query statement yourself, or use Query's high-level
      interface to avoid having to learn it.
 
+  All programs:
+   - Plain text table inputs can have floating point columns that are in
+     sexagesimal format of '_h_m_s' or '_d_m_s' (where '_' is a
+     number). These are the classical format to respectively represent
+     Right Ascension (RA) and Declination (Dec). They will be directly read
+     as a single floating point number (in units of degrees) into
+     memory. Therefore the same column of a plain-text table, can be
+     degrees in some rows and sexagesimal in others. Besides large tables,
+     with this feature, conversion to sexagesimal coordinates to degrees
+     becomes very easy, for example:
+         echo "7h34m35.5498 31d53m14.352s" | asttable
+     Recall that the inverse can also be done with the more general column
+     arithmetic:
+         echo "113.64812416667 31.88732" \
+              | asttable -c'arith $1 degree-to-ra $2 degree-to-dec'
+
 ** Removed features
 
 ** Changed features
 
-** Bugs fixed
+  Table:
+   - Column arithmetic operators 'degree-to-ra' and 'degree-to-dec' will
+     return the sexagesimal format of '_h_m_s' and '_d_m_s'
+     respectively. Until this version, they would both use colons as
+     delimiters ('_:_:_').
 
+  Library:
+   - gal_units_degree_to_ra: new 'usecolon' argument to optionally format
+     output string with colons as delimiters ('_:_:_'). When this option is
+     zero, the string will be in the '_h_m_s' format.
+   - gal_units_degree_to_dec: similar to 'gal_units_degree_to_ra', but when
+     'usecolon' is zero, the string will be in the '_d_m_s' format.
+
+** Bugs fixed
+  bug #59105: Column arithmetic operator degree-to-ra, returning to dec
 
 
 

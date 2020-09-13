@@ -353,6 +353,15 @@ arithmetic_abs(int flags, gal_data_t *in)
 
 
 
+/* Wrapper functions for RA/Dec strings. */
+static char *
+arithmetic_units_degree_to_ra(double decimal)
+{ return gal_units_degree_to_ra(decimal, 0); }
+
+static char *
+arithmetic_units_degree_to_dec(double decimal)
+{ return gal_units_degree_to_dec(decimal, 0); }
+
 #define UNIFUNC_RUN_FUNCTION_ON_ELEMENT(OT, IT, OP){                    \
     OT *oa=o->array;                                                    \
     IT *ia=in->array, *iaf=ia + in->size;                               \
@@ -548,11 +557,11 @@ arithmetic_unary_function(int operator, int flags, gal_data_t *in)
       break;
 
     case GAL_ARITHMETIC_OP_DEGREE_TO_RA:
-      UNIARY_FUNCTION_ON_ELEMENT_OUTPUT_STRING(gal_units_degree_to_ra);
+      UNIARY_FUNCTION_ON_ELEMENT_OUTPUT_STRING(arithmetic_units_degree_to_ra);
       break;
 
     case GAL_ARITHMETIC_OP_DEGREE_TO_DEC:
-      UNIARY_FUNCTION_ON_ELEMENT_OUTPUT_STRING(gal_units_degree_to_dec);
+      UNIARY_FUNCTION_ON_ELEMENT_OUTPUT_STRING(arithmetic_units_degree_to_dec);
       break;
 
     default:
@@ -1837,7 +1846,7 @@ gal_arithmetic_set_operator(char *string, size_t *num_operands)
   else if (!strcmp(string, "dec-to-degree"))
     { op=GAL_ARITHMETIC_OP_DEC_TO_DEGREE;  *num_operands=1;  }
   else if (!strcmp(string, "degree-to-ra"))
-    { op=GAL_ARITHMETIC_OP_DEGREE_TO_DEC;  *num_operands=1;  }
+    { op=GAL_ARITHMETIC_OP_DEGREE_TO_RA;   *num_operands=1;  }
   else if (!strcmp(string, "degree-to-dec"))
     { op=GAL_ARITHMETIC_OP_DEGREE_TO_DEC;  *num_operands=1;  }
 

@@ -9527,8 +9527,8 @@ The distance (along a great circle) on a sphere between two points is calculated
 @dispmath {\cos(d)=\sin(d_1)\sin(d_2)+\cos(d_1)\cos(d_2)\cos(r_1-r_2)}
 
 @item ra-to-degree
-Convert the hour-wise Right Ascension (RA) string, in the format of @code{HH:MM:SS}, to degrees.
-Note that the input column has to be an string format.
+Convert the hour-wise Right Ascension (RA) string, in the sexagesimal format of @code{_h_m_s} or @code{_:_:_}, to degrees.
+Note that the input column has to have a string format.
 In FITS tables, string columns are well-defined.
 For plain-text tables, please follow the standards defined in @ref{Gnuastro text table format}, otherwise the string column won't be read.
 @example
@@ -9537,19 +9537,20 @@ $ asttable catalog.fits -c'arith $5 ra-to-degree'
 @end example
 
 @item dec-to-degree
-Convert the Declination (Dec) string, in the format of @code{DD:MM:SS}, to degrees (a single floating point number).
+Convert the sexagesimal Declination (Dec) string, in the format of @code{_d_m_s} or @code{_:_:_}, to degrees (a single floating point number).
 For more details please see the @option{ra-to-degree} operator.
 
 @item degree-to-ra
+@cindex Sexagesimal
 @cindex Right Ascension
-Convert degrees (a column with a single floating point number) to the Right Ascension, RA, string (in the format of @code{HH:MM:SS}).
+Convert degrees (a column with a single floating point number) to the Right Ascension, RA, string (in the sexagesimal format hours, minutes and seconds, written as @code{_h_m_s}).
 The output will be a string column so no further mathematical operations can be done on it.
-The output can be in any format (for example FITS or plain-text).
-If its plain-text, the string column will be written following the standards described in @ref{Gnuastro text table format}.
+The output file can be in any format (for example FITS or plain-text).
+If it is plain-text, the string column will be written following the standards described in @ref{Gnuastro text table format}.
 
 @item degree-to-dec
 @cindex Declination
-Convert degrees (a column with a single floating point number) to the Declination, Dec, string (in the format of @code{DD:MM:SS}).
+Convert degrees (a column with a single floating point number) to the Declination, Dec, string (in the format of @code{_d_m_s}).
 See the @option{degree-to-ra} for more on the format of the output.
 @end table
 
@@ -9599,6 +9600,15 @@ $ asttable bintab.fits --sort=3 -ooutput.txt
 ## Subtract the first column from the second in `cat.fits' (can also
 ## be a text table) and keep the third and fourth columns.
 $ asttable cat.txt -c'arith $2 $1 -',3,4 -ocat.fits
+
+## Convert sexagesimal coordiantes to degrees (same can be done in a
+## large table given as argument).
+$ echo "7h34m35.5498 31d53m14.352s" | asttable
+
+## Convert RA and Dec in degrees to sexagesimal (same can be done in a
+## large table given as argument).
+echo "113.64812416667 31.88732" \
+     | asttable -c'arith $1 degree-to-ra $2 degree-to-dec'
 @end example
 
 Table's input dataset can be given either as a file or from Standard input (see @ref{Standard input}).
@@ -9614,6 +9624,25 @@ For the full list of options common to all Gnuastro programs please see @ref{Com
 Options can also be stored in directory, user or system-wide configuration files to avoid repeating on the command-line, see @ref{Configuration files}.
 Table does not follow Automatic output that is common in most Gnuastro programs, see @ref{Automatic output}.
 Thus, in the absence of an output file, the selected columns will be printed on the command-line with no column information, ready for redirecting to other tools like AWK or sort, similar to the examples above.
+
+@cartouche
+@noindent
+@strong{Sexagesimal coordinates as floats in plain-text tables:}
+When a column is determined to be a floating point type (32-bit or 64-bit) in a plain-text table, it can contain sexagesimal values in the format of `@code{_h_m_s}' (for RA) and `@code{_d_m_s}' (for Dec).
+In this case, the string will be immediately converted to a single floating point number (in units of degrees) and stored in memory with the rest of the column or table.
+Besides being useful in large tables, with this feature, conversion to sexagesimal coordinates to degrees becomes very easy, for example:
+@example
+echo "7h34m35.5498 31d53m14.352s" | asttable
+@end example
+
+@noindent
+The inverse can also be done with the more general column arithmetic
+operators:
+@example
+echo "113.64812416667 31.88732" \
+     | asttable -c'arith $1 degree-to-ra $2 degree-to-dec'
+@end example
+@end cartouche
 
 @table @option
 
@@ -23280,10 +23309,11 @@ different type, you can convert the input to a floating point type with
 @deffnx Macro GAL_ARITHMETIC_OP_DEC_TO_DEGREE
 @deffnx Macro GAL_ARITHMETIC_OP_DEGREE_TO_RA
 @deffnx Macro GAL_ARITHMETIC_OP_DEGREE_TO_DEC
+@cindex Sexagesimal
 @cindex Declination
 @cindex Right Ascension
-Unary operators to convert between degrees (as a single floating point number) to the standard Right Ascension and Declination notation (as strings, respectively in the format of @code{HH:MM:SS} and @code{DD:MM:SS}).
-The first two operators expect a string operand and will return a double-precision floating point operand.
+Unary operators to convert between degrees (as a single floating point number) to the sexagesimal Right Ascension and Declination format (as strings, respectively in the format of @code{_h_m_s} and @code{_d_m_s}).
+The first two operators expect a string operand (in the sexagesimal formats mentioned above, but also in the @code{_:_:_}) and will return a double-precision floating point operand.
 The latter two are the opposite.
 @end deffn
 
@@ -25899,22 +25929,24 @@ If the number of values parsed in the string is different from @code{n}, this fu
 
 @deftypefun double gal_units_ra_to_degree (char @code{*convert})
 @cindex Right Ascension
-Convert the input Right Ascension (RA) string (in the format of @code{HH:MM:SS}) to degrees (a single floating point number).
+Convert the input Right Ascension (RA) string (in the format of hours, minutes and seconds either as @code{_h_m_s} or @code{_:_:_}) to degrees (a single floating point number).
 @end deftypefun
 
 @deftypefun double gal_units_dec_to_degree (char @code{*convert})
 @cindex Declination
-Convert the input Declination (Dec) string (in the format of @code{DD:MM:SS}) to degrees (a single floating point number).
+Convert the input Declination (Dec) string (in the format of degrees, arc-minutes and arc-seconds either as @code{_d_m_s} or @code{_:_:_}) to degrees (a single floating point number).
 @end deftypefun
 
-@deftypefun {char *} gal_units_degree_to_ra (double @code{decimal})
+@deftypefun {char *} gal_units_degree_to_ra (double @code{decimal}, int @code{usecolon})
 @cindex Right Ascension
-Convert the input Right Ascension (RA) degree (a single floating point number) to old/standard notation (in the format of @code{HH:MM:SS}).
+Convert the input Right Ascension (RA) degree (a single floating point number) to old/standard notation (in the format of hours, minutes and seconds of @code{_h_m_s}).
+If @code{usecolon!=0}, then the delimiters between the components will be colons: @code{_:_:_}.
 @end deftypefun
 
-@deftypefun {char *} gal_units_degree_to_dec (double @code{decimal})
+@deftypefun {char *} gal_units_degree_to_dec (double @code{decimal}, int @code{usecolon})
 @cindex Declination
-Convert the input Declination (RA) degree (a single floating point number) to old/standard notation (in the format of @code{HH:MM:SS}).
+Convert the input Declination (Dec) degree (a single floating point number) to old/standard notation (in the format of degrees, arc-minutes and arc-seconds of @code{_d_m_s}).
+If @code{usecolon!=0}, then the delimiters between the components will be colons: @code{_:_:_}.
 @end deftypefun
 
 @node Spectral lines library, Cosmology library, Unit conversion library (@file{units.h}), Gnuastro library

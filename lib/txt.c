@@ -33,6 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/txt.h>
 #include <gnuastro/list.h>
+#include <gnuastro/units.h>
 #include <gnuastro/blank.h>
 #include <gnuastro/table.h>
 
@@ -720,7 +721,7 @@ static void
 txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
                size_t i, char *filename, size_t lineno, size_t colnum)
 {
-  char   *tailptr;
+  char   *tailptr, emptystr[1]="\0";
   char     **str = data->array, **strb;
   uint8_t    *uc = data->array,   *ucb;
   int8_t      *c = data->array,    *cb;
@@ -831,13 +832,31 @@ txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
              compare the values. */
         case GAL_TYPE_FLOAT32:
           f[i]=strtod(token, &tailptr);
+          if( (*tailptr=='h' || *tailptr=='d') && isdigit(*(tailptr+1)) )
+            {
+              f[i] = ( *tailptr=='h'
+                       ? gal_units_ra_to_degree(token)
+                       : gal_units_dec_to_degree(token) );
+              if( !isnan(f[i]) ) tailptr=emptystr;
+            }
           if( (fb=info->array)
               && ( (isnan(*fb) && isnan(f[i])) || *fb==f[i] ) )
-            f[i]=GAL_BLANK_FLOAT64;
+            f[i]=GAL_BLANK_FLOAT32;
           break;
 
+        /* In astronomical datasets, it can happen that a column is in the
+           format of __h__m__s or __d__m__s (where every '_' is a digit),
+           in these cases, they are actually coordinates (RA for first, Dec
+           for second). */
         case GAL_TYPE_FLOAT64:
           d[i]=strtod(token, &tailptr);
+          if( (*tailptr=='h' || *tailptr=='d') && isdigit(*(tailptr+1)) )
+            {
+              d[i] = ( *tailptr=='h'
+                       ? gal_units_ra_to_degree(token)
+                       : gal_units_dec_to_degree(token) );
+              if( !isnan(d[i]) ) tailptr=emptystr;
+            }
           if( (db=info->array)
               && ( (isnan(*db) && isnan(d[i])) || *db==d[i] ) )
             d[i]=GAL_BLANK_FLOAT64;
@@ -850,9 +869,29 @@ txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
 
       /* If a number couldn't be read properly, then report an error. */
       if(data->type!=GAL_TYPE_STRING && *tailptr!='\0')
-        error_at_line(EXIT_FAILURE, 0, filename, lineno, "column %zu "
-                      "('%s') couldn't be read as a '%s' number",
-                      colnum, token, gal_type_name(data->type, 1) );
+        {
+          if( tailptr!=token
+              && isdigit(*(tailptr-1))
+              && *tailptr==':'
+              && isdigit(*(tailptr+1)) )
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "column %zu "
+                          "('%s') couldn't be read as a '%s' number.\n\n"
+                          "If it was meant to be celestial coordinates (RA "
+                          "or Dec), please use the '_h_m_s' format for RA "
+                          "or '_d_m_s' for Dec. The '_:_:_' format is "
+                          "ambiguous (can be used for both RA and Dec). "
+                          "Alternatively, you can use the column arithmetic "
+                          "operators 'ra-to-degree' or 'dec-to-degree' of "
+                          "'asttable' which also accept the '_:_:_' "
+                          "format. For more, please run this command\n\n"
+                          "   $ info gnuastro \"column arithmetic\"",
+                          colnum, token,
+                          gal_type_name(data->type, 1) );
+          else
+            error_at_line(EXIT_FAILURE, 0, filename, lineno, "column %zu "
+                          "('%s') couldn't be read as a '%s' number",
+                          colnum, token, gal_type_name(data->type, 1) );
+        }
     }
 }
 
