@@ -322,7 +322,7 @@ ui_check_copykeys(struct fitsparams *p)
 static void
 ui_read_check_only_options(struct fitsparams *p)
 {
-  uint8_t stdoutcheck;
+  uint8_t stdoutcheck=0;
 
   /* If any of the keyword manipulation options are requested, then set the
      mode flag to keyword-mode. */
@@ -363,7 +363,7 @@ ui_read_check_only_options(struct fitsparams *p)
 
   /* Same for the extension-related options */
   if( p->remove || p->copy || p->cut || p->numhdus || p->datasum
-      || p->pixelscale )
+      || p->pixelscale || p->skycoverage )
     {
       /* A small sanity check. */
       if(p->mode!=FITS_MODE_INVALID)
@@ -371,22 +371,29 @@ ui_read_check_only_options(struct fitsparams *p)
               "cannot be called together");
 
       /* Some HDU options cannot be called with other options. */
-      stdoutcheck = 0;
-      stdoutcheck = p->numhdus + p->datasum;
+      stdoutcheck = p->numhdus + p->datasum + p->pixelscale + p->skycoverage;
 
-      /* Make sure the output name is set. */
+      /* Make sure if an output file is needed. */
       if(stdoutcheck)
         {
           /* Make sure the other HDU-related options aren't called. */
           if(p->remove || p->copy || p->cut)
-            error(EXIT_FAILURE, 0, "'--numhdus' or '--datasum' options "
-                  "must be called alone");
+            error(EXIT_FAILURE, 0, "'--numhdus', '--datasum', '--pixelscale' "
+                  "or '--skycoverage' options cannot be called with any of "
+                  "the '--remove', '--copy' or '--cut' options");
 
-          /* Make sure the HDU is given for the datasum option. */
-          if( p->datasum && p->cp.hdu==NULL )
+          /* Make sure these options are called alone. */
+          if(stdoutcheck>1)
+            error(EXIT_FAILURE, 0, "'--numhdus', '--datasum', '--pixelscale' "
+                  "or '--skycoverage' options cannot be called together, "
+                  "only one at a time");
+
+          /* Make sure the HDU is given if any of the options except
+             '--numhdus' are called. */
+          if( stdoutcheck-p->numhdus && p->cp.hdu==NULL )
             error(EXIT_FAILURE, 0, "a HDU (extension) is necessary for the "
-                  " '--checksum' or '--datasum' options. Please use the "
-                  "'--hdu' (or '-h') option to select one");
+                  "'--datasum', '--pixelscale' or '--skycoverage' options. "
+                  "Please use the '--hdu' (or '-h') option to select one");
         }
       else
         {

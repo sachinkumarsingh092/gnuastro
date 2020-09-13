@@ -31,50 +31,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Array of acceptable options. */
 struct argp_option program_options[] =
   {
-    /* Input options */
     {
       0, 0, 0, 0,
-      "HDUs (extensions):",
-      UI_GROUP_EXTENSION
-    },
-    {
-      "remove",
-      UI_KEY_REMOVE,
-      "STR",
-      0,
-      "Remove extension from input file.",
-      UI_GROUP_EXTENSION,
-      &p->remove,
-      GAL_TYPE_STRLL,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "copy",
-      UI_KEY_COPY,
-      "STR",
-      0,
-      "Copy extension to output file.",
-      UI_GROUP_EXTENSION,
-      &p->copy,
-      GAL_TYPE_STRLL,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "cut",
-      UI_KEY_CUT,
-      "STR",
-      0,
-      "Copy extension to output and remove from input.",
-      UI_GROUP_EXTENSION,
-      &p->cut,
-      GAL_TYPE_STRLL,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
+      "HDU (extension) information:",
+      UI_GROUP_EXTENSION_INFORMATION
     },
     {
       "numhdus",
@@ -82,21 +42,8 @@ struct argp_option program_options[] =
       0,
       0,
       "Print number of HDUs in the given FITS file.",
-      UI_GROUP_EXTENSION,
+      UI_GROUP_EXTENSION_INFORMATION,
       &p->numhdus,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "primaryimghdu",
-      UI_KEY_PRIMARYIMGHDU,
-      0,
-      0,
-      "Copy/cut image HDUs to primary/zero-th HDU.",
-      UI_GROUP_EXTENSION,
-      &p->primaryimghdu,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,
@@ -108,7 +55,7 @@ struct argp_option program_options[] =
       0,
       0,
       "Calculate HDU's datasum and print in stdout.",
-      UI_GROUP_EXTENSION,
+      UI_GROUP_EXTENSION_INFORMATION,
       &p->datasum,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
@@ -121,8 +68,82 @@ struct argp_option program_options[] =
       0,
       0,
       "Return the pixel-scale of the HDU's WCS.",
-      UI_GROUP_EXTENSION,
+      UI_GROUP_EXTENSION_INFORMATION,
       &p->pixelscale,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "skycoverage",
+      UI_KEY_SKYCOVERAGE,
+      0,
+      0,
+      "Image coverage in the WCS coordinates.",
+      UI_GROUP_EXTENSION_INFORMATION,
+      &p->skycoverage,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
+
+
+
+    {
+      0, 0, 0, 0,
+      "HDU (extension) manipulation:",
+      UI_GROUP_EXTENSION_MANIPULATION
+    },
+    {
+      "remove",
+      UI_KEY_REMOVE,
+      "STR",
+      0,
+      "Remove extension from input file.",
+      UI_GROUP_EXTENSION_MANIPULATION,
+      &p->remove,
+      GAL_TYPE_STRLL,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "copy",
+      UI_KEY_COPY,
+      "STR",
+      0,
+      "Copy extension to output file.",
+      UI_GROUP_EXTENSION_MANIPULATION,
+      &p->copy,
+      GAL_TYPE_STRLL,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "cut",
+      UI_KEY_CUT,
+      "STR",
+      0,
+      "Copy extension to output and remove from input.",
+      UI_GROUP_EXTENSION_MANIPULATION,
+      &p->cut,
+      GAL_TYPE_STRLL,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "primaryimghdu",
+      UI_KEY_PRIMARYIMGHDU,
+      0,
+      0,
+      "Copy/cut image HDUs to primary/zero-th HDU.",
+      UI_GROUP_EXTENSION_MANIPULATION,
+      &p->primaryimghdu,
       GAL_OPTIONS_NO_ARG_TYPE,
       GAL_OPTIONS_RANGE_0_OR_1,
       GAL_OPTIONS_NOT_MANDATORY,

@@ -93,6 +93,9 @@ A copy of the license is included in the section entitled ``GNU Free Documentati
 * Segment: (gnuastro)Segment. Segment detections based on signal structure.
 * astsegment: (gnuastro)Invoking astsegment. Options to Segment.
 
+* Query: (gnuastro)Query. Access remote databases for downloading data.
+* astquery: (gnuastro)Invoking astquery. Options to Query.
+
 * Statistics: (gnuastro)Statistics. Get image Statistics.
 * aststatistics: (gnuastro)Invoking aststatistics. Options to Statistics.
 
@@ -384,7 +387,7 @@ Fits
 
 Invoking Fits
 
-* HDU manipulation::            Manipulate HDUs within a FITS file.
+* HDU information and manipulation::  Learn about the HDUs and move them.
 * Keyword manipulation::        Manipulate metadata keywords in a HDU
 
 Sort FITS files by night
@@ -578,6 +581,10 @@ Invoking CosmicCalculator
 * CosmicCalculator input options::  Options to specify input conditions.
 * CosmicCalculator basic cosmology calculations::  Like distance modulus, distances and etc.
 * CosmicCalculator spectral line calculations::  How they get affected by redshift.
+
+Query
+
+* Invoking astquery::           Inputs, outputs and configuration of Query.
 
 Library
 
@@ -2709,7 +2716,7 @@ $ astfits xdf-f160w_detected.fits --copy=DETECTIONS -odetections.fits
 @end example
 
 There are similar options to conveniently cut (@option{--cut}, copy, then remove from the input) or delete (@option{--remove}) HDUs from a FITS file also.
-See @ref{HDU manipulation} for more.
+See @ref{HDU information and manipulation} for more.
 
 
 
@@ -8254,12 +8261,12 @@ Therefore as described in the paragraphs above, when no explicit call to the @op
 
 The operating mode and input/output options to Fits are similar to the other programs and fully described in @ref{Common options}.
 The options particular to Fits can be divided into two groups:
-1) those related to modifying HDUs or extensions (see @ref{HDU manipulation}), and
+1) those related to modifying HDUs or extensions (see @ref{HDU information and manipulation}), and
 2) those related to viewing/modifying meta-data keywords (see @ref{Keyword manipulation}).
 These two classes of options cannot be called together in one run: you can either work on the extensions or meta-data keywords in any instance of Fits.
 
 @menu
-* HDU manipulation::            Manipulate HDUs within a FITS file.
+* HDU information and manipulation::  Learn about the HDUs and move them.
 * Keyword manipulation::        Manipulate metadata keywords in a HDU
 @end menu
 
@@ -8267,23 +8274,17 @@ These two classes of options cannot be called together in one run: you can eithe
 
 
 
-@node HDU manipulation, Keyword manipulation, Invoking astfits, Invoking astfits
-@subsubsection HDU manipulation
-Each header data unit, or HDU (also known as an extension), in a FITS file is an independent dataset (data + meta-data).
+@node HDU information and manipulation, Keyword manipulation, Invoking astfits, Invoking astfits
+@subsubsection HDU information and manipulation
+Each FITS file header data unit, or HDU (also known as an extension) is an independent dataset (data + meta-data).
 Multiple HDUs can be stored in one FITS file, see @ref{Fits}.
-The HDU modifying options to the Fits program are listed below.
+The general HDU-related options to the Fits program are listed below as two general classes:
+the first group below focus on HDU information while the latter focus on manipulating (moving or deleting) the HDUs.
 
-These options may be called multiple times in one run.
-If so, the extensions will be copied from the input FITS file to the output FITS file in the given order (on the command-line and also in configuration files, see @ref{Configuration file precedence}).
-If the separate classes are called together in one run of Fits, then first @option{--copy} is run (on all specified HDUs), followed by @option{--cut} (again on all specified HDUs), and then @option{--remove} (on all specified HDUs).
-
-The @option{--copy} and @option{--cut} options need an output FITS file (specified with the @option{--output} option).
-If the output file exists, then the specified HDU will be copied following the last extension of the output file (the existing HDUs in it will be untouched).
-Thus, after Fits finishes, the copied HDU will be the last HDU of the output file.
-If no output file name is given, then automatic output will be used to store the HDUs given to this option (see @ref{Automatic output}).
+The options below print information about the given HDU on the command-line.
+Thus they cannot be called together in one command (each has its own independent output).
 
 @table @option
-
 @item -n
 @itemx --numhdus
 Print the number of extensions/HDUs in the given file.
@@ -8292,6 +8293,48 @@ It is thus useful in scripts, for example when you need to do check the number o
 
 For a complete list of basic meta-data on the extensions in a FITS file, don't use any of the options in this section or in @ref{Keyword manipulation}.
 For more, see @ref{Invoking astfits}.
+
+@item --pixelscale
+Print the HDU's pixel-scale (change in world coordinate for one pixel along each dimension).
+Without the @option{--quiet} option, the output of @option{--pixelscale} is more human-friendly by printing the file/HDU name, number of dimensions, and the units of each number along with the actual pixel scales.
+However, in scripts (that are to be run automatically), this human-friendly format is annoying, so when called with the @option{--quiet} option, only the pixel-scale value(s) along each dimension is(are) printed in one line.
+
+@item --skycoverage
+@cindex Image's sky coverage
+@cindex Coverage of image over sky
+Print the rectangular area (or 3D cube) covered by the given image/datacube HDU over the Sky in the WCS units.
+The covered area is reported in two ways:
+1) the center and full width in each dimension,
+2) the minimum and maximum sky coordinates in each dimension.
+This is option is thus useful when you want to get a general feeling of a new image/dataset, or prepare the inputs to query external databases in the region of the image (for example with @ref{Query}).
+
+If run without the @option{--quiet} option, the values are given with a human-friendly description.
+For example here is the output of this option on an image taken near the star Castor:
+
+@example
+$ astfits castor.fits --skycoverage
+Input file: castor.fits (hdu: 1)
+
+Sky coverage by center and (full) width:
+  Center: 113.9149075    31.93759664
+  Width:  2.41762045     2.67945253
+
+Sky coverage by range along dimensions:
+  RA       112.7235592    115.1411797
+  DEC      30.59262123    33.27207376
+@end example
+
+With the @option{--quiet} option, the values are more machine-friendly (easy to parse).
+It has two lines, where the first line contains the center/width values and the second line shows the coordinate ranges in each dimension.
+
+@example
+$ astfits castor.fits --skycoverage --quiet
+113.9149075     31.93759664     2.41762045      2.67945253
+112.7235592     115.1411797     30.59262123     33.27207376
+@end example
+
+Note that this is a simple rectangle (cube in 3D) definition, so if the image is rotated in relation to the celestial coordinates a general polygon is necessary to exactly describe the coverage.
+Hence when there is rotation, the reported area will be larger than the actual area containing data, you can visually see the area with the @option{--align} option of @ref{Warp}.
 
 @item --datasum
 @cindex @code{DATASUM}: FITS keyword
@@ -8303,11 +8346,19 @@ For more on the datasum feature of the FITS standard, see @ref{Keyword manipulat
 
 You can use this option to confirm that the data in two different HDUs (possibly with different keywords) is identical.
 Its advantage over @option{--write=datasum} (which writes the @code{DATASUM} keyword into the given HDU) is that it doesn't require write permissions.
+@end table
 
-@item --pixelscale
-Print the HDU's pixel-scale (change in world coordinate for one pixel along each dimension).
-Without the @option{--quiet} option, the output of @option{--pixelscale} is more human-friendly by printing the file/HDU name, number of dimensions, and the units of each number along with the actual pixel scales.
-However, in scripts (that are to be run automatically), this human-friendly format is annoying, so when called with the @option{--quiet} option, only the pixel-scale value(s) along each dimension is(are) printed in one line.
+The following options manipulate (move/delete) the HDUs in one FITS file or to another FITS file.
+These options may be called multiple times in one run.
+If so, the extensions will be copied from the input FITS file to the output FITS file in the given order (on the command-line and also in configuration files, see @ref{Configuration file precedence}).
+If the separate classes are called together in one run of Fits, then first @option{--copy} is run (on all specified HDUs), followed by @option{--cut} (again on all specified HDUs), and then @option{--remove} (on all specified HDUs).
+
+The @option{--copy} and @option{--cut} options need an output FITS file (specified with the @option{--output} option).
+If the output file exists, then the specified HDU will be copied following the last extension of the output file (the existing HDUs in it will be untouched).
+Thus, after Fits finishes, the copied HDU will be the last HDU of the output file.
+If no output file name is given, then automatic output will be used to store the HDUs given to this option (see @ref{Automatic output}).
+
+@table @option
 
 @item -C STR
 @itemx --copy=STR
@@ -8343,7 +8394,7 @@ If we hadn't used @option{--primaryimghdu}, then the zero-th extension of @file{
 @end table
 
 
-@node Keyword manipulation,  , HDU manipulation, Invoking astfits
+@node Keyword manipulation,  , HDU information and manipulation, Invoking astfits
 @subsubsection Keyword manipulation
 The meta-data in each header data unit, or HDU (also known as extension, see @ref{Fits}) is stored as ``keyword''s.
 Each keyword consists of a name, value, unit, and comments.
@@ -8690,7 +8741,7 @@ Here are some examples
 
 @itemize
 @item
-If you need to copy the files, but only need a single extension (not the whole file), you can add a step just before the making of the symbolic links, or copies, and change it to only copy a certain extension of the FITS file using the Fits program's @option{--copy} option, see @ref{HDU manipulation}.
+If you need to copy the files, but only need a single extension (not the whole file), you can add a step just before the making of the symbolic links, or copies, and change it to only copy a certain extension of the FITS file using the Fits program's @option{--copy} option, see @ref{HDU information and manipulation}.
 
 @item
 If you need to classify the files with finer detail (for example the purpose of the dataset), you can add a step just before the making of the symbolic links, or copies, to specify a file-name prefix based on other certain keyword values in the files.
@@ -18342,7 +18393,11 @@ However, remembering the exact URLs and interface of each database is not easily
 Gnuastro's Query program is designed to address these problems: it has a common high-level interface for general operations that are common between its recognized databases.
 For example, importing a catalog of objects within a certain distance of a given coordinate.
 
-@node Invoking astquery
+@menu
+* Invoking astquery::           Inputs, outputs and configuration of Query.
+@end menu
+
+@node Invoking astquery,  , Query, Query
 @subsection Invoking Query
 
 Query provides a high-level interface to downloading subsets of data from databases.

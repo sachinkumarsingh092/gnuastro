@@ -30,6 +30,13 @@ See the end of the file for license conditions.
          echo "113.64812416667 31.88732" \
               | asttable -c'arith $1 degree-to-ra $2 degree-to-dec'
 
+  Fits:
+   - New '--skycoverage' option will report the area of the input image in
+     RA/Dec, both in units of center/width, and box minimum/maximum
+     format. This is paritcularly useful in combination with the new
+     'astquery' option, to easily search the contents of external databases
+     within the image.
+
 ** Removed features
 
 ** Changed features
@@ -49,6 +56,7 @@ See the end of the file for license conditions.
 
 ** Bugs fixed
   bug #59105: Column arithmetic operator degree-to-ra, returning to dec
+
 
 
 

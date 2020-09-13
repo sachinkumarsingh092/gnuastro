@@ -63,6 +63,7 @@ struct fitsparams
   uint8_t         numhdus;     /* Print number of HDUs in FITS file.    */
   uint8_t         datasum;     /* Calculate and print HDU's datasum.    */
   uint8_t      pixelscale;     /* Calculate and print HDU's pixelscale. */
+  uint8_t     skycoverage;     /* Calculate and image coverage in WCS.  */
   uint8_t   primaryimghdu;     /* Copy/cut HDU into primary HDU.        */
   uint8_t    printallkeys;     /* Print all the header keywords.        */
   uint8_t            date;     /* Set DATE to current time.             */
