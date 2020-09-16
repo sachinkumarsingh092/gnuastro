@@ -2,7 +2,11 @@ Alphabetically ordered list to acknowledge in the next release.
 
 Sebastian Luna Valero
 Samane Raji
+Joanna Sakowska
 Sachin Kumar Singh
+
+
+
 
 
 Copyright (C) 2015-2020 Free Software Foundation, Inc.

@@ -59,6 +59,7 @@ See the end of the file for license conditions.
 
 ** Bugs fixed
   bug #59105: Column arithmetic operator degree-to-ra, returning to dec
+  bug #59017: Segment's object IDs are not thread-safe (i.e., reproducible).
 
 
 
@@ -209,6 +210,7 @@ See the end of the file for license conditions.
   bug #58901: Blank values for non-standard integer types in FITS tables.
   bug #58974: WCS conversion not reasonable on processed TPV data.
   bug #59019: FITS Table crash when TFORM comes before TNULL.
+
 
 
 

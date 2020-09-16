@@ -824,6 +824,54 @@ segment_save_sn_table(struct clumps_params *clprm)
 
 
 
+/* Avoid non-reproducible labels (when built on multiple threads). Note
+   that when working with objects, the clump labels don't need to be
+   re-labeled (they always start from 1 within each object and are thus
+   already thread-safe).*/
+static void
+segment_reproducible_labels(struct segmentparams *p)
+{
+  size_t i;
+  gal_data_t *new;
+  int32_t currentlab=0, *oldarr, *newarr, *newlabs;
+  gal_data_t *old = p->onlyclumps ? p->clabel : p->olabel;
+  size_t numlabsplus1 = (p->onlyclumps ? p->numclumps : p->numobjects) + 1;
+
+  /* Allocate the necessary datasets. */
+  new=gal_data_alloc(NULL, old->type, old->ndim, old->dsize, old->wcs, 0,
+                     p->cp.minmapsize, p->cp.quietmmap, old->name, old->unit,
+                     old->comment);
+  newlabs=gal_pointer_allocate(old->type, numlabsplus1, 0, __func__,
+                               "newlabs");
+
+  /* Initialize the newlabs array to blank (so we don't relabel
+     things). */
+  for(i=0;i<numlabsplus1;++i) newlabs[i]=GAL_BLANK_INT32;
+
+  /* Parse the old dataset and set the new labels. */
+  oldarr=old->array;
+  for(i=0;i<old->size;++i)
+    if( oldarr[i] > 0 && newlabs[ oldarr[i] ]==GAL_BLANK_INT32 )
+      newlabs[ oldarr[i] ] = ++currentlab;
+
+  /* For a check.
+  for(i=0;i<numlabsplus1;++i) printf("%zu --> %d\n", i, newlabs[i]);
+  */
+
+  /* Fill the newly labeled dataset. */
+  newarr=new->array;
+  for(i=0;i<old->size;++i)
+    newarr[i] = oldarr[i]>0 ? newlabs[ oldarr[i] ] : oldarr[i];
+
+  /* Clean up. */
+  free(newlabs);
+  if(p->onlyclumps) { gal_data_free(p->clabel); p->clabel=new; }
+  else              { gal_data_free(p->olabel); p->olabel=new; }
+}
+
+
+
+
 /* Find true clumps over the detected regions. */
 static void
 segment_detections(struct segmentparams *p)
@@ -1026,6 +1074,13 @@ segment_detections(struct segmentparams *p)
      function. */
   p->numclumps=clprm.totclumps;
   p->numobjects=clprm.totobjects;
+
+
+  /* Correct the final object labels to start from the bottom of the
+     image. This is necessary because we define objects on multiple
+     threads, so every time a program is run, an object can have a
+     different label! */
+  segment_reproducible_labels(p);
 
 
   /* Clean up allocated structures and destroy the mutex. */
