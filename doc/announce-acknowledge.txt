@@ -3,6 +3,7 @@ Alphabetically ordered list to acknowledge in the next release.
 Sebastian Luna Valero
 Samane Raji
 Joanna Sakowska
+Zahra Sharbaf
 Sachin Kumar Singh
 
 

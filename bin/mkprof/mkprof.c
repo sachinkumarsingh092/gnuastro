@@ -632,7 +632,7 @@ mkprof_write(struct mkprofparams *p)
          array. */
       if(ibq->overlaps && out)
         GAL_TILE_PO_OISET(float,float,ibq->overlap_i,ibq->overlap_m,1,0, {
-            *o  = p->replace ? ( *i==0.0f ? *o : *i ) :  (*i + *o);
+            *o  = p->replace ? ( *i>*o ? *i : *o ) :  (*i + *o);
             sum += *i;
           });
 
