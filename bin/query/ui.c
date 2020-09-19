@@ -259,6 +259,7 @@ static void
 ui_read_check_only_options(struct queryparams *p)
 {
   size_t i;
+  gal_data_t *tmp;
 
   /* See if database has been specified. */
   if(p->database==0)
@@ -287,6 +288,21 @@ ui_read_check_only_options(struct queryparams *p)
       if( ((double *)(p->radius->array))[0]<0 )
         error(EXIT_FAILURE, 0, "the '--radius' option value cannot be negative");
     }
+
+  /* If magnitude is given, it should only be two values. */
+  i=0;
+  if(p->range)
+    for(tmp=p->range; tmp!=NULL; tmp=tmp->next)
+      {
+        ++i;
+        if(tmp->size!=2)
+          error(EXIT_FAILURE, 0, "two values (separated by ',' or ':') "
+                "should be given to '--range'. But %zu values were given "
+                "to the %zu%s call of this option (recall that the first "
+                "value should be the column name in the given dataset)",
+                tmp->size, i,
+                i==1 ? "st" : i==2 ? "nd" : i==3 ? "rd" : "th");
+      }
 
   /* Sanity checks on  width (if we are in the center-mode). */
   if(p->width && p->center)

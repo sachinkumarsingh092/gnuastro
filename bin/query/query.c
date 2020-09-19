@@ -131,8 +131,9 @@ query_gaia_sanitycheck(struct queryparams *p)
 void
 query_gaia(struct queryparams *p)
 {
-  char *regionstr;
+  gal_data_t *tmp;
   double *center, *darray;
+  char *tmpstr, *regionstr, *rangestr=NULL;
   char *command, *columns, allcols[]="*", *querystr;
 
   /* Make sure everything is fine. */
@@ -158,24 +159,42 @@ query_gaia(struct queryparams *p)
       if(p->radius)
         {
           darray=p->radius->array;
-          if( asprintf(&regionstr, "CIRCLE('ICRS', %.8f, %.8f, %g) )",
+          if( asprintf(&regionstr, "CIRCLE('ICRS', %.8f, %.8f, %g)",
                        center[0], center[1], darray[0])<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation ('regionstr')", __func__);
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation ('regionstr')",
+                  __func__);
         }
       else if(p->width)
         {
           darray=p->width->array;
-          if( asprintf( &regionstr, "BOX('ICRS', %.8f, %.8f, %.8f, %.8f) )",
+          if( asprintf( &regionstr, "BOX('ICRS', %.8f, %.8f, %.8f, %.8f)",
                         center[0], center[1], darray[0],
                         p->width->size==1 ? darray[0] : darray[1] )<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation ('regionstr')", __func__);
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation ('regionstr')",
+                  __func__);
         }
+
+      /* Set the range criteria on the requested columns. */
+      if(p->range)
+        for(tmp=p->range; tmp!=NULL; tmp=tmp->next)
+          {
+            darray=tmp->array;
+            if( asprintf(&tmpstr, "%s%sAND %s>=%g AND %s<=%g",
+                         rangestr==NULL ? "" : rangestr,
+                         rangestr==NULL ? "" : " ",
+                         tmp->name, darray[0], tmp->name, darray[1]) < 0 )
+              error(EXIT_FAILURE, 0, "%s: asprintf allocation ('tmpstr')",
+                    __func__);
+            free(rangestr);
+            rangestr=tmpstr;
+          }
 
       /* Write the automatically generated query string. */
       if( asprintf(&querystr,  "SELECT %s "
                    "FROM %s "
-                   "WHERE 1=CONTAINS( POINT('ICRS', ra, dec), %s )", columns,
-                   p->datasetstr, regionstr)<0 )
+                   "WHERE 1=CONTAINS( POINT('ICRS', ra, dec), %s ) %s",
+                   columns, p->datasetstr, regionstr,
+                   rangestr ? rangestr : "")<0 )
         error(EXIT_FAILURE, 0, "%s: asprintf allocation ('querystr')", __func__);
 
       /* Clean up. */

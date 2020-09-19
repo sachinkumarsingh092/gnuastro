@@ -47,19 +47,6 @@ struct argp_option program_options[] =
       ui_parse_database
     },
     {
-      "dataset",
-      UI_KEY_DATASET,
-      "STR",
-      0,
-      "Name of dataset in database (e.g., 'gaiadr2').",
-      GAL_OPTIONS_GROUP_INPUT,
-      &p->datasetstr,
-      GAL_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET,
-    },
-    {
       "query",
       UI_KEY_QUERY,
       "STR",
@@ -82,6 +69,19 @@ struct argp_option program_options[] =
       0, 0, 0, 0,
       "Generate query by center (not compatible with '--query'):",
       UI_GROUP_BYCENTER,
+    },
+    {
+      "dataset",
+      UI_KEY_DATASET,
+      "STR",
+      0,
+      "Name of dataset in database.",
+      UI_GROUP_BYCENTER,
+      &p->datasetstr,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
     },
     {
       "center",
@@ -124,6 +124,20 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
       gal_options_parse_csv_float64
+    },
+    {
+      "range",
+      UI_KEY_RANGE,
+      "STR,FLT:FLT",
+      0,
+      "Range of selected targets in given column.",
+      UI_GROUP_BYCENTER,
+      &p->range,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_name_and_float64s
     },
     {
       "column",
