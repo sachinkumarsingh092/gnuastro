@@ -779,49 +779,49 @@ txt_read_token(gal_data_t *data, gal_data_t *info, char *token,
           break;
 
         case GAL_TYPE_UINT8:
-          uc[i]=strtol(token, &tailptr, 0);
+          uc[i]=strtol(token, &tailptr, 10);
           if( (ucb=info->array) && *ucb==uc[i] )
             uc[i]=GAL_BLANK_UINT8;
           break;
 
         case GAL_TYPE_INT8:
-          c[i]=strtol(token, &tailptr, 0);
+          c[i]=strtol(token, &tailptr, 10);
           if( (cb=info->array) && *cb==c[i] )
             c[i]=GAL_BLANK_INT8;
           break;
 
         case GAL_TYPE_UINT16:
-          us[i]=strtol(token, &tailptr, 0);
+          us[i]=strtol(token, &tailptr, 10);
           if( (usb=info->array) && *usb==us[i] )
             us[i]=GAL_BLANK_UINT16;
           break;
 
         case GAL_TYPE_INT16:
-          s[i]=strtol(token, &tailptr, 0);
+          s[i]=strtol(token, &tailptr, 10);
           if( (sb=info->array) && *sb==s[i] )
             s[i]=GAL_BLANK_INT16;
           break;
 
         case GAL_TYPE_UINT32:
-          ui[i]=strtol(token, &tailptr, 0);
+          ui[i]=strtol(token, &tailptr, 10);
           if( (uib=info->array) && *uib==ui[i] )
             ui[i]=GAL_BLANK_UINT32;
           break;
 
         case GAL_TYPE_INT32:
-          ii[i]=strtol(token, &tailptr, 0);
+          ii[i]=strtol(token, &tailptr, 10);
           if( (ib=info->array) && *ib==ii[i] )
             ii[i]=GAL_BLANK_INT32;
           break;
 
         case GAL_TYPE_UINT64:
-          ul[i]=strtoul(token, &tailptr, 0);
+          ul[i]=strtoul(token, &tailptr, 10);
           if( (ulb=info->array) && *ulb==ul[i] )
             ul[i]=GAL_BLANK_UINT64;
           break;
 
         case GAL_TYPE_INT64:
-          l[i]=strtol(token, &tailptr, 0);
+          l[i]=strtol(token, &tailptr, 10);
           if( (lb=info->array) && *lb==l[i] )
             l[i]=GAL_BLANK_INT64;
           break;
