@@ -9994,6 +9994,10 @@ $ astquery --database=gaia --dataset=dr2 --output=my-gaia.fits \
            --center=113.8729761,31.9027152 --radius=0.1 \
            --column=source_id,ra,dec,phot_g_mean_mag
 
+## Find the ID, RA and Dec of all Gaia sources within an image.
+$ astquery --database=gaia --dataset=dr2 --overlapwith=image.fits
+           -csource_id,ra,dec
+
 ## Use a custom query to extract entries in the Gaia DR2 catalog.
 ## The 'XXXX YYYY' can be a query of any size on the command-line.
 $ astquery --database=gaia --query="XXXX YYYY" --output=my-gaia.fits
@@ -10058,6 +10062,13 @@ Below is a list of the simplified names for the databases that have them.
 @code{hipparcos --> public.hipparcos}
 @end itemize
 @end table
+
+@item -v STR
+@itemx --overlapwith=STR
+File name containing image (in the HDU given by @option{--hdu}) to use for identifying the region to query in the give database and dataset.
+Based on the image's WCS, the area it covers is estimated and values to the @option{--center}, @option{--width} will be calculated internally.
+Hence this option cannot be used with @code{--center}, @code{--width} or @code{--radius}.
+Also, since it internally generates the query, it can't be used with @code{--query}.
 
 @item -C FLT,FLT
 @itemx --center=FLT,FLT
@@ -23215,6 +23226,11 @@ return @code{NULL}.
 Return the pixel area of @code{wcs} in arcsecond squared. If the input WCS
 structure is not two dimensional and the units (@code{CUNIT} keywords) are
 not @code{deg} (for degrees), then this function will return a NaN.
+@end deftypefun
+
+@deftypefun int gal_wcs_coverage (char @code{*filename}, char @code{*hdu}, size_t @code{*ondim}, double @code{**ocenter}, double @code{**owidth}, double @code{**omin}, double @code{**omax})
+Find the sky coverage of the image HDU (@code{hdu}) within @file{filename}.
+The the number of dimensions is written into @code{ndim}, and space for the various output arrays is internally allocated and filled with the respective values.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_wcs_world_to_img (gal_data_t @code{*coords}, struct wcsprm @code{*wcs}, int @code{inplace})

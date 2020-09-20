@@ -154,7 +154,10 @@ gal_wcs_pixel_scale(struct wcsprm *wcs);
 double
 gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs);
 
-
+int
+gal_wcs_coverage(char *filename, char *hdu, size_t *ndim,
+                 double **center, double **width, double **min,
+                 double **max);
 
 
 

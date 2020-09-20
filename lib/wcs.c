@@ -39,6 +39,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/fits.h>
 #include <gnuastro/pointer.h>
 #include <gnuastro/dimension.h>
+#include <gnuastro/statistics.h>
 #include <gnuastro/permutation.h>
 
 #include <gnuastro-internal/checkset.h>
@@ -1427,6 +1428,159 @@ gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs)
   return out;
 }
 
+
+
+
+
+int
+gal_wcs_coverage(char *filename, char *hdu, size_t *ondim,
+                 double **ocenter, double **owidth, double **omin,
+                 double **omax)
+{
+  fitsfile *fptr;
+  struct wcsprm *wcs;
+  int nwcs=0, type, status=0;
+  char *name=NULL, *unit=NULL;
+  gal_data_t *tmp, *coords=NULL;
+  size_t i, ndim, *dsize=NULL, numrows;
+  double *x, *y, *z, *min, *max, *center, *width;
+
+  /* Read the desired WCS. */
+  wcs=gal_wcs_read(filename, hdu, 0, 0, &nwcs);
+
+  /* If a WCS doesn't exist, return NULL. */
+  if(wcs==NULL) return 0;
+
+  /* Make sure the input HDU is an image. */
+  if( gal_fits_hdu_format(filename, hdu) != IMAGE_HDU )
+    error(EXIT_FAILURE, 0, "%s (hdu %s): is not an image HDU, the "
+          "'--skycoverage' option only applies to image extensions",
+          filename, hdu);
+
+  /* Get the array information of the image. */
+  fptr=gal_fits_hdu_open(filename, hdu, READONLY);
+  gal_fits_img_info(fptr, &type, ondim, &dsize, &name, &unit);
+  fits_close_file(fptr, &status);
+  ndim=*ondim;
+
+  /* Abort if we have more than 3 dimensions. */
+  if(ndim==1 || ndim>3) return 0;
+
+  /* Allocate the output datasets. */
+  center=*ocenter=gal_pointer_allocate(GAL_TYPE_FLOAT64, ndim, 0, __func__,
+                                       "ocenter");
+  width=*owidth=gal_pointer_allocate(GAL_TYPE_FLOAT64, ndim, 0, __func__,
+                                     "owidth");
+  min=*omin=gal_pointer_allocate(GAL_TYPE_FLOAT64, ndim, 0, __func__,
+                                 "omin");
+  max=*omax=gal_pointer_allocate(GAL_TYPE_FLOAT64, ndim, 0, __func__,
+                                 "omax");
+
+  /* Now that we have the number of dimensions in the image, allocate the
+     space needed for the coordinates. */
+  numrows = (ndim==2) ? 5 : 9;
+  for(i=0;i<ndim;++i)
+    {
+      tmp=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &numrows, NULL, 0,
+                         -1, 1, NULL, NULL, NULL);
+      tmp->next=coords;
+      coords=tmp;
+    }
+
+  /* Fill in the coordinate arrays, Note that 'dsize' is ordered in C
+     dimensions, for the WCS conversion, we need to have the dimensions
+     ordered in FITS/Fortran order. */
+  switch(ndim)
+    {
+    case 2:
+      x=coords->array;  y=coords->next->array;
+      x[0] = 1;         y[0] = 1;
+      x[1] = dsize[1];  y[1] = 1;
+      x[2] = 1;         y[2] = dsize[0];
+      x[3] = dsize[1];  y[3] = dsize[0];
+      x[4] = dsize[1]/2 + (dsize[1]%2 ? 1 : 0.5f);
+      y[4] = dsize[0]/2 + (dsize[0]%2 ? 1 : 0.5f);
+      break;
+    case 3:
+      x=coords->array; y=coords->next->array; z=coords->next->next->array;
+      x[0] = 1;        y[0] = 1;              z[0]=1;
+      x[1] = dsize[2]; y[1] = 1;              z[1]=1;
+      x[2] = 1;        y[2] = dsize[1];       z[2]=1;
+      x[3] = dsize[2]; y[3] = dsize[1];       z[3]=1;
+      x[4] = 1;        y[4] = 1;              z[4]=dsize[0];
+      x[5] = dsize[2]; y[5] = 1;              z[5]=dsize[0];
+      x[6] = 1;        y[6] = dsize[1];       z[6]=dsize[0];
+      x[7] = dsize[2]; y[7] = dsize[1];       z[7]=dsize[0];
+      x[8] = dsize[2]/2 + (dsize[2]%2 ? 1 : 0.5f);
+      y[8] = dsize[1]/2 + (dsize[1]%2 ? 1 : 0.5f);
+      z[8] = dsize[0]/2 + (dsize[0]%2 ? 1 : 0.5f);
+      break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
+            "fix the problem. 'ndim' of %zu is not recognized.",
+            __func__, PACKAGE_BUGREPORT, ndim);
+    }
+
+  /* For a check:
+  printf("IMAGE COORDINATES:\n");
+  for(i=0;i<numrows;++i)
+    if(ndim==2)
+      printf("%-15g%-15g\n", x[i], y[i]);
+    else
+      printf("%-15g%-15g%-15g\n", x[i], y[i], z[i]);
+  */
+
+  /* Convert to the world coordinate system. */
+  gal_wcs_img_to_world(coords, wcs, 1);
+
+  /* For a check:
+  printf("\nWORLD COORDINATES:\n");
+  for(i=0;i<numrows;++i)
+    if(ndim==2)
+      printf("%-15g%-15g\n", x[i], y[i]);
+    else
+      printf("%-15g%-15g%-15g\n", x[i], y[i], z[i]);
+  */
+
+  /* Get the minimum and maximum values in each dimension. */
+  tmp=gal_statistics_minimum(coords);
+  min[0] = ((double *)(tmp->array))[0];      gal_data_free(tmp);
+  tmp=gal_statistics_maximum(coords);
+  max[0] = ((double *)(tmp->array))[0];      gal_data_free(tmp);
+  tmp=gal_statistics_minimum(coords->next);
+  min[1] = ((double *)(tmp->array))[0];      gal_data_free(tmp);
+  tmp=gal_statistics_maximum(coords->next);
+  max[1] = ((double *)(tmp->array))[0];      gal_data_free(tmp);
+  if(ndim>2)
+    {
+      tmp=gal_statistics_minimum(coords->next->next);
+      min[2] = ((double *)(tmp->array))[0];      gal_data_free(tmp);
+      tmp=gal_statistics_maximum(coords->next->next);
+      max[2] = ((double *)(tmp->array))[0];      gal_data_free(tmp);
+    }
+
+  /* Write the center and width. */
+  switch(ndim)
+    {
+    case 2:
+      center[0]=x[4];         center[1]=y[4];
+      width[0]=max[0]-min[0]; width[1]=max[1]-min[1];
+      break;
+    case 3:
+      center[0]=x[8];         center[1]=y[8];         center[2]=z[8];
+      width[0]=max[0]-min[0]; width[1]=max[1]-min[1]; width[2]=max[2]-min[2];
+      break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to solve the "
+            "problem. The value %zu is not a recognized dimension", __func__,
+            PACKAGE_BUGREPORT, ndim);
+    }
+
+  /* Clean up and return success. */
+  free(dsize);
+  wcsfree(wcs);
+  return 1;
+}
 
 
 

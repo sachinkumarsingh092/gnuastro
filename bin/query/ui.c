@@ -116,7 +116,6 @@ ui_initialize_options(struct queryparams *p,
       /* Select individually. */
       switch(cp->coptions[i].key)
         {
-        case GAL_OPTIONS_KEY_HDU:
         case GAL_OPTIONS_KEY_LOG:
         case GAL_OPTIONS_KEY_TYPE:
         case GAL_OPTIONS_KEY_SEARCHIN:
@@ -269,9 +268,15 @@ ui_read_check_only_options(struct queryparams *p)
           "command) for the current databases");
 
   /* Make sure that '--query' and '--center' are not called together. */
-  if(p->center && p->query)
-    error(EXIT_FAILURE, 0, "the '--center' and '--query' options cannot be "
-          "called together (they are parallel ways to define a query)");
+  if(p->query && (p->center || p->overlapwith) )
+    error(EXIT_FAILURE, 0, "the '--query' option cannot be called together "
+          "together with '--center' or '--overlapwith'");
+
+  /* Overlapwith cannot be called with the manual query. */
+  if( p->overlapwith && (p->center || p->width || p->radius) )
+    error(EXIT_FAILURE, 0, "the '--overlapwith' option cannot be called "
+          "with the manual region specifiers ('--center', '--width' or "
+          "'--radius')");
 
   /* The radius and width cannot be called together. */
   if(p->radius && p->width)
@@ -332,7 +337,7 @@ ui_read_check_only_options(struct queryparams *p)
               "FITS file outputs are supported", p->cp.output);
     }
   else
-    gal_checkset_automatic_output(&p->cp, "./query.fits", ".fits");
+    p->cp.output=gal_checkset_automatic_output(&p->cp, "./query.fits", ".fits");
 }
 
 

@@ -46,6 +46,7 @@ struct queryparams
   struct gal_options_common_params cp; /* Common parameters.           */
   int                 database;  /* ID of database to use.             */
   char             *datasetstr;  /* ID of dataset in database to use.  */
+  char            *overlapwith;  /* Image to use instead of center.    */
   gal_data_t           *center;  /* Center position of query.          */
   gal_data_t           *radius;  /* Radius around center.              */
   gal_data_t            *range;  /* Range of magnitudes to query.      */

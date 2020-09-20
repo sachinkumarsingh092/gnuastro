@@ -28,6 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/pointer.h>
 
 #include <gnuastro-internal/checkset.h>
@@ -82,15 +83,16 @@ void
 query_gaia_sanitycheck(struct queryparams *p)
 {
   /* Make sure that atleast one type of constraint is specified. */
-  if(p->center==NULL && p->query==NULL)
-    error(EXIT_FAILURE, 0, "no '--center' or '--query' specified. At least "
-          "one of these options are necessary in the Gaia dataset");
+  if(p->query==NULL && p->center==NULL && p->overlapwith==NULL)
+    error(EXIT_FAILURE, 0, "no '--query', '--center' or '--overlapwith' "
+          "specified. At least one of these options are necessary in the "
+          "Gaia dataset");
 
   /* If '--center' is given, '--radius' is also necessary. */
-  if(p->center)
+  if(p->center || p->overlapwith)
     {
       /* Make sure the radius is given, and that it isn't zero. */
-      if( p->radius==NULL && p->width==NULL)
+      if(p->overlapwith==NULL && p->radius==NULL && p->width==NULL)
         error(EXIT_FAILURE, 0, "the '--radius' ('-r') or '--width' ('-w') "
               "options are necessary with the '--center' ('-C') option");
 
@@ -98,7 +100,6 @@ query_gaia_sanitycheck(struct queryparams *p)
       if( p->datasetstr==NULL)
         error(EXIT_FAILURE, 0, "the '--dataset' ('-s') option is necessary "
               "with the '--center' ('-C') option");
-
 
       /* Use simpler names for the commonly used datasets. */
       if( !strcmp(p->datasetstr, "dr2") )
@@ -131,10 +132,12 @@ query_gaia_sanitycheck(struct queryparams *p)
 void
 query_gaia(struct queryparams *p)
 {
+  size_t ndim;
   gal_data_t *tmp;
-  double *center, *darray;
+  double width2, *center, *darray;
   char *tmpstr, *regionstr, *rangestr=NULL;
   char *command, *columns, allcols[]="*", *querystr;
+  double *ocenter=NULL, *owidth=NULL, *omin=NULL, *omax=NULL;
 
   /* Make sure everything is fine. */
   query_gaia_sanitycheck(p);
@@ -145,15 +148,17 @@ query_gaia(struct queryparams *p)
     querystr=p->query;
   else
     {
-      /* For easy reading. */
-      center=p->center->array;
-
       /* If certain columns have been requested use them, otherwise
-         download all existing columns.
-
-         columns="source_id,ra,dec,phot_g_mean_mag";
-      */
+         download all existing columns.*/
       columns = p->columns ? query_strlist_to_str(p->columns) : allcols;
+
+      /* If the user wanted an overlap with an image, then calculate it. */
+      if(p->overlapwith)
+        gal_wcs_coverage(p->overlapwith, p->cp.hdu, &ndim, &ocenter,
+                         &owidth, &omin, &omax);
+
+      /* For easy reading. */
+      center = p->overlapwith ? ocenter : p->center->array;
 
       /* Write the region. */
       if(p->radius)
@@ -164,12 +169,13 @@ query_gaia(struct queryparams *p)
             error(EXIT_FAILURE, 0, "%s: asprintf allocation ('regionstr')",
                   __func__);
         }
-      else if(p->width)
+      else if(p->width || p->overlapwith)
         {
-          darray=p->width->array;
+          darray = p->overlapwith ? owidth : p->width->array;
+          width2 = ( (p->overlapwith || p->width->size==2)
+                     ? darray[1] : darray[0] );
           if( asprintf( &regionstr, "BOX('ICRS', %.8f, %.8f, %.8f, %.8f)",
-                        center[0], center[1], darray[0],
-                        p->width->size==1 ? darray[0] : darray[1] )<0 )
+                        center[0], center[1], darray[0], width2 )<0 )
             error(EXIT_FAILURE, 0, "%s: asprintf allocation ('regionstr')",
                   __func__);
         }
@@ -195,11 +201,14 @@ query_gaia(struct queryparams *p)
                    "WHERE 1=CONTAINS( POINT('ICRS', ra, dec), %s ) %s",
                    columns, p->datasetstr, regionstr,
                    rangestr ? rangestr : "")<0 )
-        error(EXIT_FAILURE, 0, "%s: asprintf allocation ('querystr')", __func__);
+        error(EXIT_FAILURE, 0, "%s: asprintf allocation ('querystr')",
+              __func__);
 
       /* Clean up. */
       free(regionstr);
       if(columns!=allcols) free(columns);
+      if(p->overlapwith)
+        {free(ocenter); free(owidth); free(omin); free(omax);}
     }
 
 
