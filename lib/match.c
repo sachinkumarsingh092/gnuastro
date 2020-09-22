@@ -25,12 +25,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
+#include <float.h>
 #include <stdlib.h>
 
 #include <gsl/gsl_sort.h>
 
 #include <gnuastro/box.h>
 #include <gnuastro/list.h>
+#include <gnuastro/blank.h>
 #include <gnuastro/pointer.h>
 #include <gnuastro/permutation.h>
 
@@ -217,19 +219,50 @@ match_coordinaes_sanity_check(gal_data_t *coord1, gal_data_t *coord2,
 static size_t *
 match_coordinates_prepare_sort(gal_data_t *coords, size_t minmapsize)
 {
+  size_t i;
+  double *darr;
   gal_data_t *tmp;
   size_t *permutation=gal_pointer_allocate(GAL_TYPE_SIZE_T, coords->size, 0,
                                            __func__, "permutation");
+
+  /* Unfortunately 'gsl_sort_index' doesn't account for NaN elements. So we
+     need to set them to the maximum possible floating point value. */
+  if( gal_blank_present(coords, 1) )
+    {
+      darr=coords->array;
+      for(i=0;i<coords->size;++i)
+        if( isnan(darr[i]) ) darr[i]=FLT_MAX;
+    }
 
   /* Get the permutation necessary to sort all the columns (based on the
      first column). */
   gsl_sort_index(permutation, coords->array, 1, coords->size);
 
+  /* For a check.
+  if(coords->size>1)
+    for(size_t i=0; i<coords->size; ++i) printf("%zu\n", permutation[i]);
+  */
+
   /* Sort all the coordinates. */
   for(tmp=coords; tmp!=NULL; tmp=tmp->next)
     gal_permutation_apply(tmp, permutation);
 
-  /* Clean up. */
+  /* For a check.
+  if(coords->size>1)
+    {
+      for(i=0;i<coords->size;++i)
+        {
+          for(tmp=coords; tmp!=NULL; tmp=tmp->next)
+            {
+              printf("%f ", ((double *)(tmp->array))[i]);
+            }
+          printf("\n");
+        }
+      exit(0);
+    }
+  */
+
+  /* Return the permutation. */
   return permutation;
 }
 
@@ -505,7 +538,7 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
      in catalog b within the maximum distance. Note that both catalogs are
      sorted by their first axis coordinate.*/
   for(ai=0;ai<ar;++ai)
-    if(blow<br)
+    if( !isnan(a[0][ai]) && blow<br)
       {
         /* Initialize 'bina'. */
         bina[ai]=NULL;
@@ -526,12 +559,10 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
         for( blow=prevblow; blow<br && b[0][blow] < a[0][ai]-dist[0]; ++blow)
           { /* This can be blank, the 'for' does all we need :-). */ }
 
-
         /* 'blow' is now found for this 'ai' and will be used unchanged to
            the end of the loop. So keep its value to help the search for
            the next entry in catalog 'a'. */
         prevblow=blow;
-
 
         /* Go through catalog 'b' (starting at 'blow') with a first axis
            value smaller than the maximum acceptable range for 'si'. */
@@ -550,7 +581,7 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
                each other to easily define an independent sorting in the
                second axis. */
             if( ndim<2
-                || ( b[1][bi] >= a[1][ai]-dist[1]
+                || (    b[1][bi] >= a[1][ai]-dist[1]
                      && b[1][bi] <= a[1][ai]+dist[1] ) )
               {
                 /* Now, 'bi' is within the rectangular range of 'ai'. But
@@ -594,23 +625,22 @@ match_coordinates_second_in_first(gal_data_t *A, gal_data_t *B,
               }
           }
 
-
         /* If there was no objects within the acceptable distance, then the
            linked list pointer will be NULL, so go on to the next 'ai'. */
         if(bina[ai]==NULL)
           continue;
 
         /* For checking the status of affairs uncomment this block
-           {
-           struct match_coordinate_sfll *tmp;
-           printf("\n\nai: %lu:\n", ai);
-           printf("ax: %f (%f -- %f)\n", a[0][ai], a[0][ai]-dist[0],
-           a[0][ai]+dist[0]);
-           printf("ay: %f (%f -- %f)\n", a[1][ai], a[1][ai]-dist[1],
-           a[1][ai]+dist[1]);
-           for(tmp=bina[ai];tmp!=NULL;tmp=tmp->next)
-           printf("%lu: %f\n", tmp->v, tmp->f);
-           }
+        {
+          struct match_coordinate_sfll *tmp;
+          printf("\n\nai: %lu:\n", ai);
+          printf("ax: %f (%f -- %f)\n", a[0][ai], a[0][ai]-dist[0],
+                 a[0][ai]+dist[0]);
+          printf("ay: %f (%f -- %f)\n", a[1][ai], a[1][ai]-dist[1],
+                 a[1][ai]+dist[1]);
+          for(tmp=bina[ai];tmp!=NULL;tmp=tmp->next)
+            printf("%lu: %f\n", tmp->v, tmp->f);
+        }
         */
       }
 }

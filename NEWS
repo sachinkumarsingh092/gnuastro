@@ -37,7 +37,17 @@ See the end of the file for license conditions.
      'astquery' option, to easily search the contents of external databases
      within the image.
 
+  Table:
+   - New '--noblank' option will remove all rows in output table that have
+     atleast one blank value in the specified columns. For example if
+     'table.fits' has blank values (NaN in floating point types) in the
+     'magnitude' and 'sn' columns, with '--noblank=magnitude,sn', you can
+     be sure that all rows with blank values in these columns have been
+     removed.
+
   Library:
+   - gal_blank_flag_remove: Remove all flagged elements in a dataset.
+   - gal_blank_remove_rows: remove all rows that have atleast one blank.
    - gal_wcs_coverage: Return the sky coverage of given image HDU.
    - gal_wcs_dimension_name: return the name of the requested WCS dim.
 
@@ -62,6 +72,7 @@ See the end of the file for license conditions.
   bug #59017: Segment's object IDs are not thread-safe (i.e., reproducible).
   bug #59105: Column arithmetic operator degree-to-ra, returning to dec.
   bug #59136: Makeprofiles with --replace is not thread-safe.
+  bug #59155: Match cannot find the proper row when coordinates have NaN.
 
 
 

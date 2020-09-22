@@ -41,7 +41,7 @@ enum program_args_groups
 
 /* Available letters for short options:
 
-   a b d f g j k l p t v x y z
+   a d f g j k l p t v x y z
    A B E G H J O Q R X Y
 */
 enum option_keys_enum
@@ -59,6 +59,7 @@ enum option_keys_enum
   UI_KEY_DESCENDING      = 'd',
   UI_KEY_HEAD            = 'H',
   UI_KEY_TAIL            = 't',
+  UI_KEY_NOBLANK         = 'b',
   UI_KEY_CATCOLUMNS      = 'C',
   UI_KEY_CATCOLUMNHDU    = 'u',
   UI_KEY_CATCOLUMNFILE   = 'L',

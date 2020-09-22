@@ -597,7 +597,8 @@ gal_blank_flag(gal_data_t *input)
 void
 gal_blank_flag_apply(gal_data_t *input, gal_data_t *flag)
 {
-  char **str=input->array;
+  size_t j;
+  char **strarr=input->array;
   uint8_t *f=flag->array, *ff=f+flag->size;
 
   /* Sanity check. */
@@ -626,16 +627,15 @@ gal_blank_flag_apply(gal_data_t *input, gal_data_t *flag)
 
     /* Strings. */
     case GAL_TYPE_STRING:
-      do
+      for(j=0; j<input->size; ++j)
         {
           if(*f && *f!=GAL_BLANK_UINT8)
             {
-              free(*str);
-              *str=gal_blank_as_string(GAL_TYPE_STRING, 0);
+              free(strarr[j]);
+              gal_checkset_allocate_copy(GAL_BLANK_STRING, &strarr[j]);
             }
-          ++str;
+          ++f;
         }
-      while(++f<ff);
       break;
 
     /* Currently unsupported types. */
@@ -659,6 +659,72 @@ gal_blank_flag_apply(gal_data_t *input, gal_data_t *flag)
 
 
 
+/* Remove flagged elements from a dataset (which may not necessarily
+   blank), convert it to a 1D dataset and adjust the size properly. In
+   practice this function doesn't 'realloc' the input array, all it does is
+   to shift the blank eleemnts to the end and adjust the size elements of
+   the 'gal_data_t'. */
+#define BLANK_FLAG_REMOVE(IT) {                                         \
+    IT *a=input->array, *af=a+input->size, *o=input->array;             \
+    do {                                                                \
+      if(*f==0) {++num; *o++=*a; }                                      \
+      ++f;                                                              \
+    }                                                                   \
+    while(++a<af);                                                      \
+  }
+void
+gal_blank_flag_remove(gal_data_t *input, gal_data_t *flag)
+{
+  char **strarr;
+  size_t i, num=0;
+  uint8_t *f=flag->array;
+
+  /* Sanity check. */
+  if(flag->type!=GAL_TYPE_UINT8)
+    error(EXIT_FAILURE, 0, "%s: the 'flag' argument has a '%s' type, it "
+          "must have an unsigned 8-bit type", __func__,
+          gal_type_name(flag->type, 1));
+  if(gal_dimension_is_different(input, flag))
+    error(EXIT_FAILURE, 0, "%s: the 'flag' argument doesn't have the same "
+          "size as the 'input' argument", __func__);
+
+  /* Shift all non-blank elements to the start of the array. */
+  switch(input->type)
+    {
+    case GAL_TYPE_UINT8:    BLANK_FLAG_REMOVE( uint8_t  );    break;
+    case GAL_TYPE_INT8:     BLANK_FLAG_REMOVE( int8_t   );    break;
+    case GAL_TYPE_UINT16:   BLANK_FLAG_REMOVE( uint16_t );    break;
+    case GAL_TYPE_INT16:    BLANK_FLAG_REMOVE( int16_t  );    break;
+    case GAL_TYPE_UINT32:   BLANK_FLAG_REMOVE( uint32_t );    break;
+    case GAL_TYPE_INT32:    BLANK_FLAG_REMOVE( int32_t  );    break;
+    case GAL_TYPE_UINT64:   BLANK_FLAG_REMOVE( uint64_t );    break;
+    case GAL_TYPE_INT64:    BLANK_FLAG_REMOVE( int64_t  );    break;
+    case GAL_TYPE_FLOAT32:  BLANK_FLAG_REMOVE( float    );    break;
+    case GAL_TYPE_FLOAT64:  BLANK_FLAG_REMOVE( double   );    break;
+    case GAL_TYPE_STRING:
+      strarr=input->array;
+      for(i=0;i<input->size;++i)
+        {
+          if( *f && *f!=GAL_BLANK_UINT8 )        /* Flagged to be removed */
+            { free(strarr[i]); strarr[i]=NULL; }
+          else strarr[num++]=strarr[i];          /* Keep. */
+          ++f;
+        }
+      break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
+            __func__, input->type);
+    }
+
+  /* Adjust the size elements of the dataset. */
+  input->ndim=1;
+  input->dsize[0]=input->size=num;
+}
+
+
+
+
+
 /* Remove blank elements from a dataset, convert it to a 1D dataset and
    adjust the size properly. In practice this function doesn't 'realloc'
    the input array, all it does is to shift the blank eleemnts to the end
@@ -674,7 +740,8 @@ gal_blank_flag_apply(gal_data_t *input, gal_data_t *flag)
 void
 gal_blank_remove(gal_data_t *input)
 {
-  size_t num=0;
+  char **strarr;
+  size_t i, num=0;
 
   /* This function currently assumes a contiguous patch of memory. */
   if(input->block && input->ndim!=1 )
@@ -698,6 +765,13 @@ gal_blank_remove(gal_data_t *input)
         case GAL_TYPE_INT64:    BLANK_REMOVE( int64_t  );    break;
         case GAL_TYPE_FLOAT32:  BLANK_REMOVE( float    );    break;
         case GAL_TYPE_FLOAT64:  BLANK_REMOVE( double   );    break;
+        case GAL_TYPE_STRING:
+          strarr=input->array;
+          for(i=0;i<input->size;++i)
+            if( strcmp(strarr[i], GAL_BLANK_STRING) ) /* Not blank. */
+              { strarr[num++]=strarr[i]; }
+            else { free(strarr[i]); strarr[i]=NULL; }  /* Is blank. */
+          break;
         default:
           error(EXIT_FAILURE, 0, "%s: type code %d not recognized",
                 __func__, input->type);
@@ -731,4 +805,91 @@ gal_blank_remove_realloc(gal_data_t *input)
                        input->size*gal_type_sizeof(input->type));
   if(input->array==NULL)
     error(EXIT_FAILURE, 0, "%s: couldn't reallocate memory", __func__);
+}
+
+
+
+
+
+static gal_data_t *
+blank_remove_in_list_merge_flags(gal_data_t *thisdata, gal_data_t *flag)
+{
+  size_t i;
+  uint8_t *u, *tu;
+  gal_data_t *flagtmp;
+
+  /* Build the flag of blank elements for this column. */
+  flagtmp=gal_blank_flag(thisdata);
+
+  /* If this is the first column, then use flagtmp as flag. */
+  if(flag)
+    {
+      u=flag->array;
+      tu=flagtmp->array;
+      for(i=0;i<flag->size;++i) u[i] = u[i] || tu[i];
+      gal_data_free(flagtmp);
+    }
+  else
+    flag=flagtmp;
+
+  /* For a check.
+  u=flag->array;
+  double *d=thisdata->array;
+  for(i=0;i<flag->size;++i) printf("%f, %u\n", d[i], u[i]);
+  printf("\n");
+  */
+
+  /* Return the flag dataset. */
+  return flag;
+}
+
+
+
+
+
+/* Remove any row that has a blank in any of the given columns. */
+gal_data_t *
+gal_blank_remove_rows(gal_data_t *columns, gal_list_sizet_t *column_indexs)
+{
+  size_t i;
+  gal_list_sizet_t *tcol;
+  gal_data_t *tmp, *flag=NULL;
+
+  /* If any columns are requested, only use the given columns for the
+     flags, otherwise use all the input columns. */
+  if(column_indexs)
+    for(tcol=column_indexs; tcol!=NULL; tcol=tcol->next)
+      {
+        /* Find the correct column in the full list. */
+        i=0;
+        for(tmp=columns; tmp!=NULL; tmp=tmp->next)
+          if(i++==tcol->v) break;
+
+        /* If the given index is larger than the number of elements in the
+           input list, then print an error. */
+        if(tmp==NULL)
+          error(EXIT_FAILURE, 0, "%s: input list has %zu elements, but the "
+                "column %zu (counting from zero) has been requested",
+                __func__, gal_list_data_number(columns), tcol->v);
+
+        /* Build the flag of blank elements for this column. */
+        flag=blank_remove_in_list_merge_flags(tmp, flag);
+      }
+  else
+    for(tmp=columns; tmp!=NULL; tmp=tmp->next)
+      flag=blank_remove_in_list_merge_flags(tmp, flag);
+
+  /* Now that the flags have been set, remove the rows. */
+  for(tmp=columns; tmp!=NULL; tmp=tmp->next)
+    gal_blank_flag_remove(tmp, flag);
+
+  /* For a check.
+  double *d1=columns->array, *d2=columns->next->array;
+  for(i=0;i<columns->size;++i)
+    printf("%f, %f\n", d2[i], d1[i]);
+  printf("\n");
+  */
+
+  /* Return the flag. */
+  return flag;
 }

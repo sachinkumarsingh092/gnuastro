@@ -315,6 +315,21 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "noblank",
+      UI_KEY_NOBLANK,
+      "STR[,STR]",
+      0,
+      "Remove rows with blank in given columns.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->noblank,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_csv_strings
+    },
+
 
 
 

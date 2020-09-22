@@ -39,6 +39,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/config.h>
 #endif
 
+#include <gnuastro/list.h>
+
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
 #undef __END_C_DECLS
@@ -135,6 +137,8 @@ gal_blank_remove(gal_data_t *data);
 void
 gal_blank_remove_realloc(gal_data_t *input);
 
+gal_data_t *
+gal_blank_remove_rows(gal_data_t *columns, gal_list_sizet_t *column_indexs);
 
 __END_C_DECLS    /* From C++ preparations */
 
