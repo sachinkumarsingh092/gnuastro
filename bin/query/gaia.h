@@ -1,5 +1,5 @@
 /*********************************************************************
-Query - Retreive data from a remote data server.
+Gaia Query: retrieve tables from Gaia catalog.
 Query is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -20,19 +20,12 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef QUERY_H
-#define QUERY_H
+#ifndef GAIA_H
+#define GAIA_H
 
 #include "main.h"
 
-enum query_databases
-{
-  QUERY_DATABASE_INVALID,
-  QUERY_DATABASE_GAIA,
-};
-
-
 void
-query(struct queryparams *p);
+gaia_query(struct queryparams *p);
 
 #endif

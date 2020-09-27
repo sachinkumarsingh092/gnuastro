@@ -64,7 +64,8 @@ enum option_keys_enum
 
 
 
-
+char *
+ui_strlist_to_str(gal_list_str_t *input);
 
 void
 ui_read_check_inputs_setup(int argc, char *argv[], struct queryparams *p);

@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 
 #include <gnuastro/fits.h>
+#include <gnuastro/pointer.h>
 
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/options.h>
@@ -228,6 +229,44 @@ ui_parse_database(struct argp_option *option, char *arg,
       /* Our job is done, return NULL. */
       return NULL;
     }
+}
+
+
+
+
+
+char *
+ui_strlist_to_str(gal_list_str_t *input)
+{
+  char *out=NULL;
+  gal_list_str_t *node;
+  size_t n, nn, nnodes=0, alllen=0;
+
+  /* First calculate the full length of all nodes. */
+  for(node=input; node!=NULL; node=node->next)
+    {
+      /* We'll add two extra for each. One for the ',' that must come in
+         between it and the next one. One just for a buffer, incase we
+         haven't accounted for something. */
+      alllen += strlen(node->v) + 2;
+      ++nnodes;
+    }
+
+  /* Allocate the output string. */
+  out=gal_pointer_allocate(GAL_TYPE_STRING, alllen, 1, "out", __func__);
+
+  /* Write all the strings into the allocated space. */
+  n=nn=0;
+  for(node=input; node!=NULL; node=node->next)
+    {
+      if(nn++==nnodes-1)
+        sprintf(out+n, "%s", node->v);
+      else
+        n += sprintf(out+n, "%s,", node->v);
+    }
+
+  /* Return the merged string. */
+  return out;
 }
 
 
