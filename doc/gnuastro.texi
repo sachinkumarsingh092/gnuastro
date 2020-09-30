@@ -3967,9 +3967,9 @@ The second extension also seems reasonable with a large detection map that cover
 
 Now try flipping between the @code{DETECTIONS} and @code{SKY} extensions.
 In the @code{SKY} extension, you'll notice that there is still significant signal beyond the detected pixels.
-You can tell that this signal belongs to the galaxy because the far-right side of the image is dark and the brighter tiles are surrounding the detected pixels.
+You can tell that this signal belongs to the galaxy because the far-right side of the image is dark and the brighter parts are just surrounding the detected pixels.
 
-The fact that signal from the galaxy remains in the Sky dataset shows that you haven't done a good detection.
+The fact that signal from the galaxy remains in the @code{SKY} HDU shows that you haven't done a good detection.
 The @code{SKY} extension must not contain any light around the galaxy.
 Generally, any time your target is much larger than the tile size and the signal is almost flat (like this case), this @emph{will} happen.
 Therefore, when there are large objects in the dataset, @strong{the best place} to check the accuracy of your detection is the estimated Sky image.
@@ -3999,8 +3999,7 @@ To see which tiles were used for estimating the quantile threshold (no skewness 
 $ astnoisechisel r.fits -h0 --checkqthresh
 @end example
 
-Notice how this option doesn't allow NoiseChisel to finish.
-NoiseChisel aborted after finding and applying the quantile thresholds.
+Did you see how NoiseChisel aborted after finding and applying the quantile thresholds?
 When you call any of NoiseChisel's @option{--check*} options, by default, it will abort as soon as all the check steps have been written in the check file (a multi-extension FITS file).
 This allows you to focus on the problem you wanted to check as soon as possible (you can disable this feature with the @option{--continueaftercheck} option).
 
@@ -4036,90 +4035,113 @@ For more on @option{--convolved}, see @ref{NoiseChisel input}.
 @end cartouche
 
 To identify the skewness caused by the flat NGC 5195 and M51 tidal features on the tiles under it, we thus have to choose a tile size that is larger than the gradient of the signal.
-Let's try a tile size of 75 by 75 pixels:
+Let's try a tile size of 100 by 100 pixels:
 
 @example
-$ astnoisechisel r.fits -h0 --tilesize=75,75 --checkqthresh
+$ astnoisechisel r.fits -h0 --tilesize=100,100 --checkqthresh
 @end example
 
-You can clearly see the effect of this increased tile size: the tiles are much larger and when you look into @code{VALUE1_NO_OUTLIER}, you see that almost all the previous tiles under the galaxy have been discarded and we only have a few tiles on the edge with a gradient.
-So let's define a more strict condition to keep tiles:
+You can clearly see the effect of this increased tile size: the tiles are much larger and when you look into @code{VALUE1_NO_OUTLIER}, you see that all the tiles are nicely grouped on the right side of the image (the farthest from M51, where we didn't see any gradient before).
+Things look good now, so let's remove @option{--checkqthresh} and let NoiseChisel proceed with its detection.
 
 @example
-$ astnoisechisel r.fits -h0 --tilesize=75,75 --meanmedqdiff=0.001 \
-                 --checkqthresh
+$ astnoisechisel r.fits -h0 --tilesize=100,100
 @end example
 
-After constraining @code{--meanmedqdiff}, NoiseChisel stopped with a different error.
-Please read it: at the start, it says that only 6 tiles passed the constraint while you have asked for 9.
-The @file{r_qthresh.fits} image also only has 8 extensions (not the original 15).
-Take a look at the initially selected tiles and those after outlier rejection.
-You can see the place of the tiles that passed.
-They seem to be in the good place (very far away from the M51 group and its tidal feature.
-Using the 6 nearest neighbors is also not too bad.
-So let's decrease the number of neighboring tiles for interpolation so NoiseChisel can continue:
+The resulting detected pixels have expanded a little, but not as much as we may had expected from the tiles that were used for the thresholding: there is still a gradient in the @code{SKY} image that is far from the tiles used.
+Let's check the next series of detection steps by adding the @code{--checkdetection} option this time:
 
 @example
-$ astnoisechisel r.fits -h0 --tilesize=75,75 --meanmedqdiff=0.001 \
-                 --interpnumngb=6 --checkqthresh
+$ astnoisechisel r.fits -h0 --tilesize=100,100 --checkdetection
 @end example
 
-The next group of extensions (those ending with @code{_INTERP}), give a value to all blank tiles based on the nearest tiles with a measurement.
-The following group of extensions (ending with @code{_SMOOTH}) have smoothed the interpolated image to avoid sharp cuts on tile edges.
-Inspecting @code{THRESH1_SMOOTH}, you can see that there is no longer any significant gradient and no major signature of NGC 5195 exists.
+The output now has 16 extensions, showing every step that is taken by NoiseChisel.
+The first and second (@code{INPUT} and @code{CONVOLVED}) are clear from their names.
+The third (@code{THRESHOLDED}) is the thresholded image after finding the quantile threshold (last extension of the output of @code{--checkqthresh}).
+The fourth HDU (@code{ERODED} is new: its the name-stake of NoiseChisel, or eroding pixels that are above the threshold.
+By erosion, we mean that all pixels with a value of @code{1} (above the threshold) that are touching a pixel with a value of @code{0} (below the threshold) will be flipped to zero (or ``carved'' out)@footnote{Pixels with a value of @code{2} are very high signal-to-noise pixels, they are not eroded, to preserve sharp and bright sources.}.
+You can see its effect directly by flipping between the @code{THRESHOLDED} and @code{ERODED} extensions.
 
-We can now remove @option{--checkqthresh} and let NoiseChisel proceed with its detection.
-Also, similar to the argument in @ref{NoiseChisel optimization for detection}, in the command above, we set the pseudo-detection signal-to-noise ratio quantile (@option{--snquant}) to 0.95.
+In the fifth extension (@code{OPENED-AND-LABELED}) the image is ``opened'', which is a name for erodeding once, then dilating. This is good to remove thin connections that are only due to noise.
+Each separate connected group of pixels is also given its unique label here.
+Do you see how just beyond the large M51 detection, there are many smaller detections that get smaller as you go more distant?
+This hints at the solution: the default number of erosions is too much.
+Let's see how many erosions take place by default:
 
 @example
-$ rm r_qthresh.fits
-$ astnoisechisel r.fits -h0 --tilesize=75,75 --meanmedqdiff=0.001 \
-                 --interpnumngb=6 --snquant=0.95
+$ astnoisechisel r.fits -h0 --tilesize=100,100 -P | grep erode
 @end example
 
-Looking at the @code{DETECTIONS} extension of NoiseChisel's output, we see the right-ward edges in particular have many holes that are fully surrounded by signal and the signal stretches out in the noise very thinly (the size of the holes increases as we go out).
-This suggests that there is still signal that can be detected.
-You can confirm this guess by looking at the @code{SKY} extension to see that indeed, there is a clear footprint of the M51 group in the Sky image (which is not good!).
+@noindent
+We see that the value to @code{erode} is @code{2}!
+The default NoiseChisel parameters are primarily targetted to processed images (where there is correlated noise due to all the processing that has gone into the warping and stacking of raw images).
+In those scenarios 2 erosions are commonly necessary.
+But here, we have a single-exposure image where there is no correlated noise (the pixels aren't mixed).
+So let's see how things change with only one erosion:
+
+@example
+$ astnoisechisel r.fits -h0 --tilesize=100,100 --erode=1 --checkdetection
+@end example
+
+Looking at the @code{OPENED-AND-LABELED} extension again, we see that the main/large detection is now much larger than before.
+While the immediately-outer connected regions are still present, they have decreased dramatically, so we can pass this step.
+
+After the @code{OPENED-AND-LABELED} extension, NoiseChisel goes onto finding false detections using the undetected pixels.
+The process is fully described in Section 3.1.5. (Defining and Removing False Detections) of arXiv:@url{https://arxiv.org/pdf/1505.01664.pdf,1505.01664}.
+Please compare the extensions to what you read there and things will be very clear.
+In the last HDU (@code{DETECTION-FINAL}), we have the final detected pixels that will be used to estimate the Sky and its Standard deviation.
+We see that the main detection has indeed been detected very far out, so let's see how the full NoiseChisel will estimate the Sky and its standrad deviation (by removing @code{--checkdetection}):
+
+@example
+$ astnoisechisel r.fits -h0 --tilesize=100,100 --erode=1
+@end example
+
+The @code{DETECTIONS} extension of @code{r_detected.fits} closely follows what the @code{DETECTION-FINAL} of the check image (looks good!).
+But if you go ahead to the @code{SKY} extension, you'll see the footprint of the galaxy again!
+It is MUCH better than before, but still problematic.
+
+The Sky is estimated over the same tiles that were used for quantile thresholding, but this time, we first look at what fraction of a tile has un-detected pixels: the tiles that are fully covered by a detection will have a sky (un-detected) fraction of 0, and if it has no detections within it, it will have a sky fraction of 1.
+You can define your acceptable sky fraction through the @code{--minskyfrac} option.
+Please run the previous command with @code{-P} to see its default value.
+Let's increase @code{--minskyfrac} to @code{0.8} to see how it looks:
+
+@example
+$ astnoisechisel r.fits -h0 --tilesize=100,100 --erode=1 \
+                 --minskyfrac=0.8
+@end example
+
+The M51 footprint on the @code{SKY} extension is now much less, which is good!
+But it is still present! This is happening because the wings are so diffuse and large.
+Look at the @code{DETECTIONS} again, you will see the right-ward edges of M51's detected pixels have many ``holes'' that are fully surrounded by signal (value of @code{1}) and the signal stretches out in the noise very thinly (the size of the holes increases as we go out).
+This suggests that there is still undetected signal that is causing that bias in the @code{SKY} extension.
 Therefore, we should dig deeper into the noise.
 
 With the @option{--detgrowquant} option, NoiseChisel will use the detections as seeds and grow them in to the noise.
 Its value is the ultimate limit of the growth in units of quantile (between 0 and 1).
-Therefore @option{--detgrowquant=1} means no growth and @option{--detgrowquant=0.5} means an ultimate limit of the Sky level (which is usually too much!).
-Try running the previous command with various values (from 0.6 to higher values) to see this option's effect.
-For this particularly huge galaxy (with signal that extends very gradually into the noise), we'll set it to @option{0.65}:
+Therefore @option{--detgrowquant=1} means no growth and @option{--detgrowquant=0.5} means an ultimate limit of the Sky level (which is usually too much and will cover the whole image!).
+See Figure 2 of arXiv:@url{https://arxiv.org/pdf/1909.11230.pdf,1909.11230} for more on this option.
+Try running the previous command with various values (from 0.6 to higher values) to see this option's effect on this dataset.
+For this particularly huge galaxy (with signal that extends very gradually into the noise), we'll set it to @option{0.7}:
 
 @example
-$ astnoisechisel r.fits -h0 --tilesize=75,75 --meanmedqdiff=0.001 \
-                 --interpnumngb=6 --snquant=0.95 --detgrowquant=0.65
+$ astnoisechisel r.fits -h0 --tilesize=100,100 --erode=1 \
+                 --minskyfrac=0.8 --detgrowquant=0.8
 @end example
 
 Beyond this level (smaller @option{--detgrowquant} values), you see the smaller background galaxies starting to create thin spider-leg-like features, showing that we are following correlated noise for too much.
+Please try it for your self by changing it to @code{0.6} for example.
 
-Now, when you look at the @code{DETECTIONS} extension, you see the wings of the galaxy being detected much farther out, But you also see many holes which are clearly just caused by noise.
+When you look at the @code{DETECTIONS} extension of the command shown above, you see the wings of the galaxy being detected much farther out, But you also see many holes which are clearly just caused by noise.
 After growing the objects, NoiseChisel also allows you to fill such holes when they are smaller than a certain size through the @option{--detgrowmaxholesize} option.
 In this case, a maximum area/size of 10,000 pixels seems to be good:
 
 @example
-$ astnoisechisel r.fits -h0 --tilesize=75,75 --meanmedqdiff=0.001    \
-                 --interpnumngb=6 --snquant=0.95 --detgrowquant=0.65 \
+$ astnoisechisel r.fits -h0 --tilesize=100,100 --erode=1 \
+                 --minskyfrac=0.8 --detgrowquant=0.8 \
                  --detgrowmaxholesize=10000
 @end example
 
-The detection looks good now, but when you look in to the @code{SKY} extension, you still clearly still see a footprint of the galaxy.
-We'll leave it as an exercise for you to play with NoiseChisel further and improve the detected pixels.
-
-So, we'll just stop with one last tool NoiseChisel gives you to get a slightly better estimation of the Sky: @option{--minskyfrac}.
-On each tile, NoiseChisel will only measure the Sky-level if the fraction of undetected pixels is larger than the value given to this option.
-To avoid the edges of the galaxy, we'll set it to @option{0.9}.
-Therefore, tiles that are covered by detected pixels for more than @mymath{10\%} of their area are ignored.
-
-@example
-$ astnoisechisel r.fits -h0 --tilesize=75,75 --meanmedqdiff=0.001    \
-                 --interpnumngb=6 --snquant=0.95 --detgrowquant=0.65 \
-                 --detgrowmaxholesize=10000 --minskyfrac=0.9
-@end example
-
-The footprint of the galaxy still exists in the @code{SKY} extension, but it has decreased in significance now.
+The footprint of the galaxy has almost disappeared (the maximum value is now outside the galaxy) but still exists in the @code{SKY} extension.
 Let's calculate the significance of the undetected gradient, in units of noise.
 Since the gradient is roughly along the horizontal axis, we'll collapse the image along the second (vertical) FITS dimension to have a 1D array (a table column, see its values with the second command).
 
@@ -4139,28 +4161,29 @@ $ echo $std
 $ astarithmetic -q $grad $std /
 @end example
 
-The undetected gradient (@code{grad} above) is thus roughly a quarter of the noise.
+The undetected gradient (@code{grad} above) is thus almost 1/10th of the noise-level (which is good).
 But don't forget that this is per-pixel: individually its small, but it extends over millions of pixels, so the total flux may still be relevant.
 
 When looking at the raw input shallow image, you don't see anything so far out of the galaxy.
 You might just think that ``this is all noise, I have just dug too deep and I'm following systematics''! If you feel like this, have a look at the deep images of this system in @url{https://arxiv.org/abs/1501.04599, Watkins et al. [2015]}, or a 12 hour deep image of this system (with a 12-inch telescope): @url{https://i.redd.it/jfqgpqg0hfk11.jpg}@footnote{The image is taken from this Reddit discussion: @url{https://www.reddit.com/r/Astronomy/comments/9d6x0q/12_hours_of_exposure_on_the_whirlpool_galaxy/}}.
-In these deeper images you see that the outer edges of the M51 group clearly follow this exact structure, below in @ref{Achieved surface brightness level}, we'll measure the exact level.
+In these deeper images you clearly see how the outer edges of the M51 group follow this exact structure, below in @ref{Achieved surface brightness level}, we'll measure the exact level.
 
 As the gradient in the @code{SKY} extension shows, and the deep images cited above confirm, the galaxy's signal extends even beyond this.
 But this is already far deeper than what most (if not all) other tools can detect.
 Therefore, we'll stop configuring NoiseChisel at this point in the tutorial and let you play with it a little more while reading more about it in @ref{NoiseChisel}.
 
-After finishing this tutorial please go through the NoiseChisel paper and its options and play with them to further decrease the gradient.
+After finishing this tutorial please go through the NoiseChisel paper and its options and play with them to see if you can further decrease the gradient.
 This will greatly help you get a good feeling of the options.
-When you do find a better configuration, please send it to us and we'll mention your name here with your suggested configuration.
+When you do find a better configuration feel free to contact us for feedback.
 Don't forget that good data analysis is an art, so like a sculptor, master your chisel for a good result.
 
 @cartouche
 @noindent
-@strong{This NoiseChisel configuration is NOT GENERIC:} Don't use this configuration blindly on another image.
+@strong{This NoiseChisel configuration is NOT GENERIC:} Don't use the configuration derived above, on another image blindly.
+If you are unsure, just use the default values.
 As you saw above, the reason we chose this particular configuration for NoiseChisel to detect the wings of the M51 group was strongly influenced by the noise properties of this particular image.
 So as long as your image noise has similar properties (from the same data-reduction step of the same database), you can use this configuration on any image.
-For images from other instruments, or higher-level/reduced SDSS products, please follow a similar logic to what was presented here and find the best configuration yourself.
+But for images from other instruments, or higher-level/reduced SDSS products, please follow a similar logic to what was presented here and find the best configuration yourself.
 @end cartouche
 
 @cartouche
@@ -4187,13 +4210,27 @@ $ astarithmetic $det 2 connected-components -olabeled.fits
 @end example
 
 You can find the label of the main galaxy visually (by opening the image and hovering your mouse over the M51 group's label).
-But to have a little more fun, lets do this automatically.
-The M51 group detection is by far the largest detection in this image, this allows us to find the ID/label that corresponds to it.
-We'll first run MakeCatalog to find the area of all the detections, then we'll use AWK to find the ID of the largest object and keep it as a shell variable (@code{id}):
+But to have a little more fun, let's do this automatically (which is necessary in a general scenario).
+The M51 group detection is by far the largest detection in this image, this allows us to find its ID/label easily.
+We'll first run MakeCatalog to find the area of all the labels, then we'll use Table to find the ID of the largest object and keep it as a shell variable (@code{id}):
 
 @example
-$ astmkcatalog labeled.fits --ids --geoarea -h1 -ocat.txt
-$ id=$(awk '!/^#/@{if($2>max) @{id=$1; max=$2@}@} END@{print id@}' cat.txt)
+# Run MakeCatalog to find the area of each label.
+$ astmkcatalog labeled.fits --ids --geoarea -h1 -ocat.fits
+
+## Sort the table by the area column.
+$ asttable cat.fits --sort=AREA_FULL
+
+## The largest object, is the last one, so we'll use '--tail'.
+$ asttable cat.fits --sort=AREA_FULL --tail=1
+
+## We only want the ID, so let's only ask for that column:
+$ asttable cat.fits --sort=AREA_FULL --tail=1 --column=OBJ_ID
+
+## Now, let's put this result in a variable (instead of printing)
+$ id=$(asttable cat.fits --sort=AREA_FULL --tail=1 --column=OBJ_ID)
+
+## Just to confirm everything is fine.
 $ echo $id
 @end example
 
@@ -4248,14 +4285,23 @@ $ astarithmetic $skysub $skystd / $edge not nan where       \
 @end example
 
 @cindex Surface brightness
-We have thus detected the wings of the M51 group down to roughly 1/4th of the noise level in this image! But the signal-to-noise ratio is a relative measurement.
+We have thus detected the wings of the M51 group down to roughly 1/3rd of the noise level in this image! But the signal-to-noise ratio is a relative measurement.
 Let's also measure the depth of our detection in absolute surface brightness units; or magnitudes per square arcseconds.
 To find out, we'll first need to calculate how many pixels of this image are in one arcsecond-squared.
-Fortunately the world coordinate system (or WCS) meta data of Gnuastro's output FITS files (in particular the @code{CDELT} keywords) give us this information.
+Gnuastro Fits program has the @option{--pixelscale} option for this job:
 
 @example
-$ pixscale=$(astfits r_detected.fits -h1                           \
-                    | awk '/CDELT1/ @{p=1/($3*3600); print p*p@}')
+## Get the image pixel scale:
+$ astfits r.fits -h0 --pixelscale
+
+## Avoid all the human-friendly text (just print numbers):
+$ astfits r.fits -h0 --pixelscale --quiet
+
+## Take the first value, and convert it to arcseconds.
+$ pixscale=$(astfits r.fits -h0 --pixelscale --quiet \
+                     | awk '@{print $1*3600@}')
+
+## For a check:
 $ echo $pixscale
 @end example
 
@@ -4271,15 +4317,15 @@ $ echo $f
 
 @noindent
 We can just multiply the two to get the average flux on this border in one arcsecond squared.
-We also have the r-band SDSS zeropoint magnitude@footnote{From @url{http://classic.sdss.org/dr7/algorithms/fluxcal.html}} to be 24.80.
+The pixel values are calibrated to be in units of ``nanomaggy'', so the zeropoint magnitude is 22.5@footnote{From @url{https://www.sdss.org/dr12/algorithms/magnitudes}}.
 Therefore we can get the surface brightness of the outer edge (in magnitudes per arcsecond squared) using the following command.
 Just note that @code{log} in AWK is in base-2 (not 10), and that AWK doesn't have a @code{log10} operator.
 So we'll do an extra division by @code{log(10)} to correct for this.
 
 @example
-$ z=24.80
+$ z=22.5
 $ echo "$pixscale $f $z" | awk '@{print -2.5*log($1*$2)/log(10)+$3@}'
---> 28.2989
+--> 28.6269
 @end example
 
 On a single-exposure SDSS image, we have reached a surface brightness limit fainter than 28 magnitudes per arcseconds squared!

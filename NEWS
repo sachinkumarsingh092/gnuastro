@@ -7,6 +7,10 @@ See the end of the file for license conditions.
 
 ** New features
 
+  Book:
+   - Tutorial on "Detecting large extended targets" improved with better
+     NoiseChisel configuration, and more clear description.
+
   New program:
    - Query ('astquery') is a new program to allow easy submission of
      queries to extenral datasets and retrieve the result as a FITS file,
