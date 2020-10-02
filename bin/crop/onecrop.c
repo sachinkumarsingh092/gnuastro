@@ -654,13 +654,14 @@ onecrop_make_array(struct onecropparams *crp, long *fpixel_i,
    'FLEN_KEYWORD' (which is 75 characters). To avoid compiler warnings, we
    are just removing a few characters ('FLEN_KEYWORD-5') to allow the
    suffix and remove the warnings. */
-void
+int
 onecrop(struct onecropparams *crp)
 {
   struct cropparams *p=crp->p;
   struct inputimgs *img=&p->imgs[crp->in_ind];
 
   void *array;
+  int returnvalue=1;
   int status=0, anynul=0;
   fitsfile *ifp=crp->infits, *ofp;
   char basekeyname[FLEN_KEYWORD-5];     /* '-5': avoid gcc 8.1+ warnings! */
@@ -763,11 +764,14 @@ onecrop(struct onecropparams *crp)
       free(array);
     }
   else
-    if(p->polygon && p->polygonout==0 && p->mode==IMGCROP_MODE_WCS)
-      free(crp->ipolygon);
+    {
+      returnvalue=0;
+      if(p->polygon && p->polygonout==0 && p->mode==IMGCROP_MODE_WCS)
+        free(crp->ipolygon);
+    }
 
   /* The crop is complete. */
-  return;
+  return returnvalue;
 }
 
 

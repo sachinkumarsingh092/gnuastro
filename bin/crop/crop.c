@@ -313,9 +313,11 @@ crop_mode_wcs(void *inparam)
 
             /* Increment the number of images used (necessary for the
                header keywords that are written in 'onecrop'). Then do the
-               crop. */
+               crop. However, the previously WCS-based overlap can be
+               slightly different from the final overlap, so if we finally
+               don't find any overlap we'll decrement the 'numimg'. */
             ++crp->numimg;
-            onecrop(crp);
+            if( onecrop(crp)==0 ) --crp->numimg;
 
             /* Close the file. */
             status=0;

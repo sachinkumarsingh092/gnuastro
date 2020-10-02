@@ -62,7 +62,7 @@ struct onecropparams
 void
 onecrop_name(struct onecropparams *crp);
 
-void
+int
 onecrop(struct onecropparams *crp);
 
 int
