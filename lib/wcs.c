@@ -1443,7 +1443,7 @@ gal_wcs_coverage(char *filename, char *hdu, size_t *ondim,
   char *name=NULL, *unit=NULL;
   gal_data_t *tmp, *coords=NULL;
   size_t i, ndim, *dsize=NULL, numrows;
-  double *x, *y, *z, *min, *max, *center, *width;
+  double *x=NULL, *y=NULL, *z=NULL, *min, *max, *center, *width;
 
   /* Read the desired WCS. */
   wcs=gal_wcs_read(filename, hdu, 0, 0, &nwcs);

@@ -594,11 +594,11 @@ parse_objects(struct mkcatalog_passparams *pp)
                     { minima_v[0] = *V; minima_c[0] = c[ ndim-1 ]; }
                   if( oif[ OCOL_MAXVX ] && *V>maxima_v[0] )
                     { maxima_v[0] = *V; maxima_c[0] = c[ ndim-1 ]; }
-                  if( oif[ OCOL_MINVY ] && *V<minima_v[2] )
+                  if( oif[ OCOL_MINVY ] && *V<minima_v[1] )
                     { minima_v[1] = *V; minima_c[1] = c[ ndim-2 ]; }
                   if( oif[ OCOL_MAXVY ] && *V>maxima_v[1] )
                     { maxima_v[1] = *V; maxima_c[1] = c[ ndim-2 ]; }
-                  if( oif[ OCOL_MINVZ ] && *V<minima_v[3] )
+                  if( oif[ OCOL_MINVZ ] && *V<minima_v[2] )
                     { minima_v[2] = *V; minima_c[2] = c[ ndim-3 ]; }
                   if( oif[ OCOL_MAXVZ ] && *V>maxima_v[2] )
                     { maxima_v[2] = *V; maxima_c[2] = c[ ndim-3 ]; }
@@ -983,7 +983,7 @@ parse_clumps(struct mkcatalog_passparams *pp)
                       if( cif[ CCOL_MINVZ ] && *V<minima_v[ cind*ndim+2 ] )
                         { minima_v[ cind*ndim+2 ] = *V;
                           minima_c[ cind*ndim+2 ] = c[ ndim-3 ]; }
-                      if( cif[ CCOL_MAXVZ ] && *V>maxima_v[ cind*ndim+0 ] )
+                      if( cif[ CCOL_MAXVZ ] && *V>maxima_v[ cind*ndim+2 ] )
                         { maxima_v[ cind*ndim+2 ] = *V;
                           maxima_c[ cind*ndim+2 ] = c[ ndim-3 ]; }
 
