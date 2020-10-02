@@ -15649,7 +15649,10 @@ The second main function (@code{columns_fill}) writes the final value into the a
 As you can see in the many existing examples, you can define your processing on the raw/internal calculations here and save them in the output.
 
 @item mkcatalog.c
-As described before, this file contains the two main MakeCatalog work-horses: @code{mkcatalog_first_pass} and @code{mkcatalog_second_pass}, their names are descriptive enough and their internals are also clear and heavily commented.
+This file contains the low-level parsing functions.
+To be optimized, the parsing is done in parallel through the @code{mkcatalog_single_object} function.
+This function initializes the necessary arrays and calls the lower-level @code{parse_objects} and @code{parse_clumps} for actually going over the pixels.
+They are all heavily commented, so you should be able to follow where to add your necessary low-level calculations.
 
 @item doc/gnuastro.texi
 Update this manual and add a description for the new column.
@@ -15998,6 +16001,24 @@ The geometric center of all objects and clumps along the second FITS axis axis, 
 
 @item --geoz
 The geometric center of all objects and clumps along the third FITS axis axis, see @option{--geox}.
+
+@item --minvx
+Position of pixel with minimum value in objects and clumps, along the first FITS axis.
+
+@item --maxvx
+Position of pixel with minimum value in objects and clumps, along the first FITS axis.
+
+@item --minvy
+Position of pixel with minimum value in objects and clumps, along the first FITS axis.
+
+@item --maxvy
+Position of pixel with minimum value in objects and clumps, along the first FITS axis.
+
+@item --minvz
+Position of pixel with minimum value in objects and clumps, along the first FITS axis.
+
+@item --maxvz
+Position of pixel with minimum value in objects and clumps, along the first FITS axis.
 
 @item --minx
 The minimum position of all objects and clumps along the first FITS axis.

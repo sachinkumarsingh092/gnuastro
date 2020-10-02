@@ -675,6 +675,84 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_precision = 3;
           oiflag[ OCOL_C_GZ ] = 1;
 
+        case UI_KEY_MINVX:
+          name           = "MIN_V_X";
+          unit           = "pixel";
+          ocomment       = "Minimum value's X pixel position.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_UINT32;
+          ctype          = GAL_TYPE_UINT32;
+          disp_fmt       = 0;
+          disp_width     = 10;
+          disp_precision = 0;
+          oiflag[ OCOL_MINVX ] = ciflag[ CCOL_MINVX ] = 1;
+          break;
+
+        case UI_KEY_MAXVX:
+          name           = "MAX_V_X";
+          unit           = "pixel";
+          ocomment       = "Maximum value's X pixel position.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_UINT32;
+          ctype          = GAL_TYPE_UINT32;
+          disp_fmt       = 0;
+          disp_width     = 10;
+          disp_precision = 0;
+          oiflag[ OCOL_MAXVX ] = ciflag[ CCOL_MAXVX ] = 1;
+          break;
+
+        case UI_KEY_MINVY:
+          name           = "MIN_V_Y";
+          unit           = "pixel";
+          ocomment       = "Minimum value's Y pixel position.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_UINT32;
+          ctype          = GAL_TYPE_UINT32;
+          disp_fmt       = 0;
+          disp_width     = 10;
+          disp_precision = 0;
+          oiflag[ OCOL_MINVY ] = ciflag[ CCOL_MINVY ] = 1;
+          break;
+
+        case UI_KEY_MAXVY:
+          name           = "MAX_V_Y";
+          unit           = "pixel";
+          ocomment       = "Maximum value's Y pixel position.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_UINT32;
+          ctype          = GAL_TYPE_UINT32;
+          disp_fmt       = 0;
+          disp_width     = 10;
+          disp_precision = 0;
+          oiflag[ OCOL_MAXVY ] = ciflag[ CCOL_MAXVY ] = 1;
+          break;
+
+        case UI_KEY_MINVZ:
+          name           = "MIN_V_Z";
+          unit           = "pixel";
+          ocomment       = "Minimum value's Z pixel position.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_UINT32;
+          ctype          = GAL_TYPE_UINT32;
+          disp_fmt       = 0;
+          disp_width     = 10;
+          disp_precision = 0;
+          oiflag[ OCOL_MINVZ ] = ciflag[ CCOL_MINVZ ] = 1;
+          break;
+
+        case UI_KEY_MAXVZ:
+          name           = "MAX_V_Z";
+          unit           = "pixel";
+          ocomment       = "Maximum value's Z pixel position.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_UINT32;
+          ctype          = GAL_TYPE_UINT32;
+          disp_fmt       = 0;
+          disp_width     = 10;
+          disp_precision = 0;
+          oiflag[ OCOL_MAXVZ ] = ciflag[ CCOL_MAXVZ ] = 1;
+          break;
+
         case UI_KEY_MINX:
           name           = "MIN_X";
           unit           = "pixel";
@@ -1811,7 +1889,8 @@ columns_clump_brightness(double *ci)
 
 /* Measure the minimum and maximum positions. */
 static uint32_t
-columns_xy_extrema(struct mkcatalog_passparams *pp, double *oi, size_t *coord, int key)
+columns_xy_extrema(struct mkcatalog_passparams *pp, double *oi,
+                   size_t *coord, int key)
 {
   size_t ndim=pp->tile->ndim;
   gal_data_t *tile=pp->tile, *block=tile->block;
@@ -2031,6 +2110,13 @@ columns_fill(struct mkcatalog_passparams *pp)
         case UI_KEY_CLUMPSGEOZ:
           ((float *)colarr)[oind] = MKC_RATIO( oi[OCOL_C_GZ],
                                                oi[OCOL_C_NUMALL] );
+
+        case UI_KEY_MINVX: ((uint32_t *)colarr)[oind] = oi[OCOL_MINVX]; break;
+        case UI_KEY_MAXVX: ((uint32_t *)colarr)[oind] = oi[OCOL_MAXVX]; break;
+        case UI_KEY_MINVY: ((uint32_t *)colarr)[oind] = oi[OCOL_MINVY]; break;
+        case UI_KEY_MAXVY: ((uint32_t *)colarr)[oind] = oi[OCOL_MAXVY]; break;
+        case UI_KEY_MINVZ: ((uint32_t *)colarr)[oind] = oi[OCOL_MINVZ]; break;
+        case UI_KEY_MAXVZ: ((uint32_t *)colarr)[oind] = oi[OCOL_MAXVZ]; break;
 
         case UI_KEY_MINX:
         case UI_KEY_MAXX:
@@ -2301,29 +2387,18 @@ columns_fill(struct mkcatalog_passparams *pp)
             ((float *)colarr)[cind] = MKC_RATIO( ci[CCOL_GZ],
                                                  ci[CCOL_NUMALL] );
 
-          case UI_KEY_MINX:
-            ((uint32_t *)colarr)[cind] = ci[CCOL_MINX];
-            break;
-
-          case UI_KEY_MAXX:
-            ((uint32_t *)colarr)[cind] = ci[CCOL_MAXX];
-            break;
-
-          case UI_KEY_MINY:
-            ((uint32_t *)colarr)[cind] = ci[CCOL_MINY];
-            break;
-
-          case UI_KEY_MAXY:
-            ((uint32_t *)colarr)[cind] = ci[CCOL_MAXY];
-            break;
-
-          case UI_KEY_MINZ:
-            ((uint32_t *)colarr)[cind] = ci[CCOL_MINZ];
-            break;
-
-          case UI_KEY_MAXZ:
-            ((uint32_t *)colarr)[cind] = ci[CCOL_MAXZ];
-            break;
+          case UI_KEY_MINX:  ((uint32_t *)colarr)[cind] = ci[CCOL_MINX];  break;
+          case UI_KEY_MAXX:  ((uint32_t *)colarr)[cind] = ci[CCOL_MAXX];  break;
+          case UI_KEY_MINY:  ((uint32_t *)colarr)[cind] = ci[CCOL_MINY];  break;
+          case UI_KEY_MAXY:  ((uint32_t *)colarr)[cind] = ci[CCOL_MAXY];  break;
+          case UI_KEY_MINZ:  ((uint32_t *)colarr)[cind] = ci[CCOL_MINZ];  break;
+          case UI_KEY_MAXZ:  ((uint32_t *)colarr)[cind] = ci[CCOL_MAXZ];  break;
+          case UI_KEY_MINVX: ((uint32_t *)colarr)[cind] = ci[CCOL_MINVX]; break;
+          case UI_KEY_MAXVX: ((uint32_t *)colarr)[cind] = ci[CCOL_MAXVX]; break;
+          case UI_KEY_MINVY: ((uint32_t *)colarr)[cind] = ci[CCOL_MINVY]; break;
+          case UI_KEY_MAXVY: ((uint32_t *)colarr)[cind] = ci[CCOL_MAXVY]; break;
+          case UI_KEY_MINVZ: ((uint32_t *)colarr)[cind] = ci[CCOL_MINVZ]; break;
+          case UI_KEY_MAXVZ: ((uint32_t *)colarr)[cind] = ci[CCOL_MAXVZ]; break;
 
           case UI_KEY_W1:
           case UI_KEY_W2:

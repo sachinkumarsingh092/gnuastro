@@ -440,12 +440,16 @@ parse_objects(struct mkcatalog_passparams *pp)
 
   double *oi=pp->oi;
   gal_data_t *xybin=NULL;
+  size_t maxima_c[3]={0,0,0};
   size_t *tsize=pp->tile->dsize;
   uint8_t *u, *uf, goodvalue, *xybinarr=NULL;
   size_t d, pind=0, increment=0, num_increment=1;
+  double minima_v[3]={ FLT_MAX,  FLT_MAX,  FLT_MAX};
+  double maxima_v[3]={-FLT_MAX, -FLT_MAX, -FLT_MAX};
   int32_t *O, *OO, *C=NULL, *objarr=p->objects->array;
   float var, sval, varval, skyval, *V=NULL, *SK=NULL, *ST=NULL;
   float *std=p->std?p->std->array:NULL, *sky=p->sky?p->sky->array:NULL;
+  size_t minima_c[3]={GAL_BLANK_SIZE_T, GAL_BLANK_SIZE_T, GAL_BLANK_SIZE_T};
 
   /* If tile processing isn't necessary, set 'tid' to a blank value. */
   size_t tid = ( ( (p->sky     && p->sky->size>1 && pp->st_sky == NULL )
@@ -461,15 +465,21 @@ parse_objects(struct mkcatalog_passparams *pp)
   /* If any coordinate columns are requested. */
   size_t *c = (
                /* Coordinate-related columns. */
-               ( oif[    OCOL_GX   ]
-                 || oif[ OCOL_GY   ]
-                 || oif[ OCOL_GZ   ]
-                 || oif[ OCOL_VX   ]
-                 || oif[ OCOL_VY   ]
-                 || oif[ OCOL_VZ   ]
-                 || oif[ OCOL_C_GX ]
-                 || oif[ OCOL_C_GY ]
-                 || oif[ OCOL_C_GZ ]
+               ( oif[    OCOL_GX    ]
+                 || oif[ OCOL_GY    ]
+                 || oif[ OCOL_GZ    ]
+                 || oif[ OCOL_VX    ]
+                 || oif[ OCOL_VY    ]
+                 || oif[ OCOL_VZ    ]
+                 || oif[ OCOL_C_GX  ]
+                 || oif[ OCOL_C_GY  ]
+                 || oif[ OCOL_C_GZ  ]
+                 || oif[ OCOL_MINVX ]
+                 || oif[ OCOL_MAXVX ]
+                 || oif[ OCOL_MINVY ]
+                 || oif[ OCOL_MAXVY ]
+                 || oif[ OCOL_MINVZ ]
+                 || oif[ OCOL_MAXVZ ]
                  || sc
                  /* When the sky and its STD are tiles, we'll also need
                     the coordinate to find which tile a pixel belongs
@@ -477,7 +487,6 @@ parse_objects(struct mkcatalog_passparams *pp)
                  || tid==GAL_BLANK_SIZE_T )
                ? gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__, "c")
                : NULL );
-
 
   /* If an XY projection area is necessary, we'll need to allocate an array
      to keep the projected space. */
@@ -490,7 +499,6 @@ parse_objects(struct mkcatalog_passparams *pp)
                            NULL, NULL, NULL);
       xybinarr=xybin->array;
     }
-
 
   /* Parse each contiguous patch of memory covered by this object. */
   while( pp->start_end_inc[0] + increment <= pp->start_end_inc[1] )
@@ -571,8 +579,8 @@ parse_objects(struct mkcatalog_passparams *pp)
 
                   /* General flux summations. */
                   if(xybin) xybinarr[ pind ]=2;
-                  if(oif[ OCOL_NUM    ]) oi[ OCOL_NUM     ]++;
-                  if(oif[ OCOL_SUM    ]) oi[ OCOL_SUM     ] += *V;
+                  if(oif[ OCOL_NUM ]) oi[ OCOL_NUM ]++;
+                  if(oif[ OCOL_SUM ]) oi[ OCOL_SUM ] += *V;
 
                   /* Get the necessary clump information. */
                   if(p->clumps && *C>0)
@@ -580,6 +588,20 @@ parse_objects(struct mkcatalog_passparams *pp)
                       if(oif[ OCOL_C_NUM ]) oi[ OCOL_C_NUM ]++;
                       if(oif[ OCOL_C_SUM ]) oi[ OCOL_C_SUM ] += *V;
                     }
+
+                  /* Get the extrema of the values. */
+                  if( oif[ OCOL_MINVX ] && *V<minima_v[0] )
+                    { minima_v[0] = *V; minima_c[0] = c[ ndim-1 ]; }
+                  if( oif[ OCOL_MAXVX ] && *V>maxima_v[0] )
+                    { maxima_v[0] = *V; maxima_c[0] = c[ ndim-1 ]; }
+                  if( oif[ OCOL_MINVY ] && *V<minima_v[2] )
+                    { minima_v[1] = *V; minima_c[1] = c[ ndim-2 ]; }
+                  if( oif[ OCOL_MAXVY ] && *V>maxima_v[1] )
+                    { maxima_v[1] = *V; maxima_c[1] = c[ ndim-2 ]; }
+                  if( oif[ OCOL_MINVZ ] && *V<minima_v[3] )
+                    { minima_v[2] = *V; minima_c[2] = c[ ndim-3 ]; }
+                  if( oif[ OCOL_MAXVZ ] && *V>maxima_v[2] )
+                    { maxima_v[2] = *V; maxima_c[2] = c[ ndim-3 ]; }
 
                   /* For flux weighted centers, we can only use positive
                      values, so do those measurements here. */
@@ -674,6 +696,14 @@ parse_objects(struct mkcatalog_passparams *pp)
         pind=0;
     }
 
+  /* Write the extrema. */
+  if( oif[ OCOL_MINVX ] ) oi[ OCOL_MINVX ] = minima_c[0] + 1;
+  if( oif[ OCOL_MAXVX ] ) oi[ OCOL_MAXVX ] = maxima_c[0] + 1;
+  if( oif[ OCOL_MINVY ] ) oi[ OCOL_MINVY ] = minima_c[1] + 1;
+  if( oif[ OCOL_MAXVY ] ) oi[ OCOL_MAXVY ] = maxima_c[1] + 1;
+  if( oif[ OCOL_MINVZ ] ) oi[ OCOL_MINVZ ] = minima_c[2] + 1;
+  if( oif[ OCOL_MAXVZ ] ) oi[ OCOL_MAXVZ ] = maxima_c[2] + 1;
+
   /* Write the projected area columns. */
   if(xybin)
     {
@@ -710,6 +740,43 @@ parse_objects(struct mkcatalog_passparams *pp)
 
 
 
+/* To keep the main function easier to read. */
+static void *
+parse_init_extrema(uint8_t *cif, uint8_t type, size_t num, int max1min0)
+{
+  void *out;
+  double *out_d;
+  size_t i, *out_s;
+
+  /* Allocate the array. */
+  out=gal_pointer_allocate(type, num, 0, __func__, "out");
+
+  /* Initialize the array. */
+  switch(type)
+    {
+    case GAL_TYPE_FLOAT64:
+      out_d=out;
+      for(i=0;i<num;++i) out_d[i]= max1min0 ? -FLT_MAX : FLT_MAX;
+      break;
+    case GAL_TYPE_SIZE_T:
+      out_s=out;
+      for(i=0;i<num;++i) out_s[i]= max1min0 ? 0 : GAL_BLANK_SIZE_T;
+      break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
+            "the problem. Type code %d isn't recognized", __func__,
+            PACKAGE_BUGREPORT, type);
+    }
+
+  /* Return the allocated array. */
+  return out;
+}
+
+
+
+
+
+
 /* Macro to help in finding the minimum and maximum coordinates. */
 #define CMIN(COL, DIM) ( ci[ CCOL_NUMALL ]==1.0f                        \
                          ? (c[ DIM ]+1)                                 \
@@ -720,9 +787,6 @@ parse_objects(struct mkcatalog_passparams *pp)
                          : ( (c[ DIM ]+1) > ci[ COL ]                   \
                              ? (c[ DIM ]+1) : ci[ COL ] ) )
 
-
-
-
 /* Parse over the clumps within an object.  */
 void
 parse_clumps(struct mkcatalog_passparams *pp)
@@ -732,8 +796,10 @@ parse_clumps(struct mkcatalog_passparams *pp)
 
   double *ci, *cir;
   gal_data_t *xybin=NULL;
-  size_t *tsize=pp->tile->dsize;
   int32_t *O, *OO, *C=NULL, nlab;
+  size_t cind, *tsize=pp->tile->dsize;
+  size_t *minima_c=NULL, *maxima_c=NULL;
+  double *minima_v=NULL, *maxima_v=NULL;
   uint8_t *u, *uf, goodvalue, *cif=p->ciflag;
   size_t nngb=gal_dimension_num_neighbors(ndim);
   size_t i, ii, d, pind=0, increment=0, num_increment=1;
@@ -753,18 +819,24 @@ parse_clumps(struct mkcatalog_passparams *pp)
                  : NULL );
 
   /* If any coordinate columns are requested. */
-  size_t *c = ( ( cif[    CCOL_GX ]
-                  || cif[ CCOL_GY ]
-                  || cif[ CCOL_GZ ]
-                  || cif[ CCOL_VX ]
-                  || cif[ CCOL_VY ]
-                  || cif[ CCOL_VZ ]
-                  || cif[ CCOL_MINX ]
-                  || cif[ CCOL_MAXX ]
-                  || cif[ CCOL_MINY ]
-                  || cif[ CCOL_MAXY ]
-                  || cif[ CCOL_MINZ ]
-                  || cif[ CCOL_MAXZ ]
+  size_t *c = ( ( cif[    CCOL_GX    ]
+                  || cif[ CCOL_GY    ]
+                  || cif[ CCOL_GZ    ]
+                  || cif[ CCOL_VX    ]
+                  || cif[ CCOL_VY    ]
+                  || cif[ CCOL_VZ    ]
+                  || cif[ CCOL_MINX  ]
+                  || cif[ CCOL_MAXX  ]
+                  || cif[ CCOL_MINY  ]
+                  || cif[ CCOL_MAXY  ]
+                  || cif[ CCOL_MINZ  ]
+                  || cif[ CCOL_MAXZ  ]
+                  || cif[ CCOL_MINVX ]
+                  || cif[ CCOL_MAXVX ]
+                  || cif[ CCOL_MINVY ]
+                  || cif[ CCOL_MAXVY ]
+                  || cif[ CCOL_MINVZ ]
+                  || cif[ CCOL_MAXVZ ]
                   || sc
                   || tid==GAL_BLANK_SIZE_T )
                 ? gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
@@ -792,6 +864,17 @@ parse_clumps(struct mkcatalog_passparams *pp)
                             NULL, NULL, NULL);
     }
 
+  /* For the extrema columns. */
+  if( cif[ CCOL_MINVX ] || cif[ CCOL_MINVX ] || cif[ CCOL_MINVZ ] )
+    {
+      minima_c=parse_init_extrema(cif, GAL_TYPE_SIZE_T,  ndim*pp->clumpsinobj, 0);
+      minima_v=parse_init_extrema(cif, GAL_TYPE_FLOAT64, ndim*pp->clumpsinobj, 0);
+    }
+  if( cif[ CCOL_MAXVX ] || cif[ CCOL_MAXVY ] || cif[ CCOL_MAXVZ ] )
+    {
+      maxima_c=parse_init_extrema(cif, GAL_TYPE_SIZE_T,  ndim*pp->clumpsinobj, 1);
+      maxima_v=parse_init_extrema(cif, GAL_TYPE_FLOAT64, ndim*pp->clumpsinobj, 1);
+    }
 
   /* Parse each contiguous patch of memory covered by this object. */
   while( pp->start_end_inc[0] + increment <= pp->start_end_inc[1] )
@@ -816,7 +899,8 @@ parse_clumps(struct mkcatalog_passparams *pp)
                 {
                   /* Pointer to make things easier. Note that the clump
                      labels start from 1, but the array indexs from 0.*/
-                  ci=&pp->ci[ (*C-1) * CCOL_NUMCOLS ];
+                  cind = *C-1;
+                  ci=&pp->ci[ cind * CCOL_NUMCOLS ];
 
                   /* Add to the area of this object. */
                   if( cif[ CCOL_NUMALL ]
@@ -825,7 +909,7 @@ parse_clumps(struct mkcatalog_passparams *pp)
                       || cif[ CCOL_MINZ ] || cif[ CCOL_MAXZ ] )
                     ci[ CCOL_NUMALL ]++;
                   if(cif[ CCOL_NUMALLXY ])
-                    ((uint8_t *)(xybin[*C-1].array))[ pind ] = 1;
+                    ((uint8_t *)(xybin[cind].array))[ pind ] = 1;
 
                   /* Raw-position related measurements. */
                   if(c)
@@ -881,7 +965,29 @@ parse_clumps(struct mkcatalog_passparams *pp)
                       if(cif[ CCOL_NUM   ]) ci[ CCOL_NUM ]++;
                       if(cif[ CCOL_SUM   ]) ci[ CCOL_SUM ] += *V;
                       if(cif[ CCOL_NUMXY ])
-                        ((uint8_t *)(xybin[*C-1].array))[ pind ] = 2;
+                        ((uint8_t *)(xybin[cind].array))[ pind ] = 2;
+
+                      /* Extrema columns. */
+                      if( cif[ CCOL_MINVX ] && *V<minima_v[ cind*ndim+0 ] )
+                        { minima_v[ cind*ndim+0 ] = *V;
+                          minima_c[ cind*ndim+0 ] = c[ ndim-1 ]; }
+                      if( cif[ CCOL_MAXVX ] && *V>maxima_v[ cind*ndim+0 ] )
+                        { maxima_v[ cind*ndim+0 ] = *V;
+                          maxima_c[ cind*ndim+0 ] = c[ ndim-1 ]; }
+                      if( cif[ CCOL_MINVY ] && *V<minima_v[ cind*ndim+1 ] )
+                        { minima_v[ cind*ndim+1 ] = *V;
+                          minima_c[ cind*ndim+1 ] = c[ ndim-2 ]; }
+                      if( cif[ CCOL_MAXVY ] && *V>maxima_v[ cind*ndim+1 ] )
+                        { maxima_v[ cind*ndim+1 ] = *V;
+                          maxima_c[ cind*ndim+1 ] = c[ ndim-2 ]; }
+                      if( cif[ CCOL_MINVZ ] && *V<minima_v[ cind*ndim+2 ] )
+                        { minima_v[ cind*ndim+2 ] = *V;
+                          minima_c[ cind*ndim+2 ] = c[ ndim-3 ]; }
+                      if( cif[ CCOL_MAXVZ ] && *V>maxima_v[ cind*ndim+0 ] )
+                        { maxima_v[ cind*ndim+2 ] = *V;
+                          maxima_c[ cind*ndim+2 ] = c[ ndim-3 ]; }
+
+                      /* Columns that need positive values. */
                       if( *V > 0.0f )
                         {
                           if(cif[ CCOL_NUMWHT ]) ci[ CCOL_NUMWHT ]++;
@@ -1025,28 +1131,39 @@ parse_clumps(struct mkcatalog_passparams *pp)
     }
 
 
-  /* Write the projected area columns. */
-  if(xybin)
-    for(i=0;i<pp->clumpsinobj;++i)
-      {
-        /* Pointer to make things easier. */
-        ci=&pp->ci[ i * CCOL_NUMCOLS ];
+  /* Write the higher-level columns. */
+  for(i=0;i<pp->clumpsinobj;++i)
+    {
+      /* Pointer to make things easier. */
+      ci=&pp->ci[ i * CCOL_NUMCOLS ];
 
-        /* Any non-zero pixel must be set for NUMALLXY. */
-        uf=(u=xybin[i].array)+xybin[i].size;
-        do
-          if(*u)
-            {
-              if(cif[ CCOL_NUMALLXY ]          ) ci[ CCOL_NUMALLXY ]++;
-              if(cif[ CCOL_NUMXY    ] && *u==2 ) ci[ CCOL_NUMXY    ]++;
-            }
-        while(++u<uf);
+      /* Write the XY projection columns. */
+      if(xybin)
+        {
+          /* Any non-zero pixel must be set for NUMALLXY. */
+          uf=(u=xybin[i].array)+xybin[i].size;
+          do
+            if(*u)
+              {
+                if(cif[ CCOL_NUMALLXY ]          ) ci[ CCOL_NUMALLXY ]++;
+                if(cif[ CCOL_NUMXY    ] && *u==2 ) ci[ CCOL_NUMXY    ]++;
+              }
+          while(++u<uf);
 
-        /* For a check on the projected 2D areas. */
-        if(xybin && pp->object==2)
-          gal_fits_img_write(&xybin[i], "xybin.fits", NULL, NULL);
+          /* For a check on the projected 2D areas. */
+          if(xybin && pp->object==2)
+            gal_fits_img_write(&xybin[i], "xybin.fits", NULL, NULL);
 
-      }
+        }
+
+      /* Write the position of the maximum values. */
+      if( cif[ CCOL_MINVX ] ) ci[ CCOL_MINVX ] = minima_c[ i*ndim + 0 ] + 1;
+      if( cif[ CCOL_MAXVX ] ) ci[ CCOL_MAXVX ] = maxima_c[ i*ndim + 0 ] + 1;
+      if( cif[ CCOL_MINVY ] ) ci[ CCOL_MINVY ] = minima_c[ i*ndim + 1 ] + 1;
+      if( cif[ CCOL_MAXVY ] ) ci[ CCOL_MAXVY ] = maxima_c[ i*ndim + 1 ] + 1;
+      if( cif[ CCOL_MINVZ ] ) ci[ CCOL_MINVZ ] = minima_c[ i*ndim + 2 ] + 1;
+      if( cif[ CCOL_MAXVZ ] ) ci[ CCOL_MAXVZ ] = maxima_c[ i*ndim + 2 ] + 1;
+    }
 
 
   /* Clean up. */
@@ -1054,6 +1171,10 @@ parse_clumps(struct mkcatalog_passparams *pp)
   if(sc)      free(sc);
   if(dinc)    free(dinc);
   if(ngblabs) free(ngblabs);
+  if(minima_v) free(minima_v);
+  if(minima_c) free(minima_c);
+  if(maxima_v) free(maxima_v);
+  if(maxima_c) free(maxima_c);
   if(xybin)   gal_data_array_free(xybin, pp->clumpsinobj, 1);
 }
 

@@ -87,6 +87,12 @@ enum objectcols
     OCOL_VXX,            /* Sum of (value-sky) * x * x.               */
     OCOL_VYY,            /* Sum of (value-sky) * y * y.               */
     OCOL_VXY,            /* Sum of (value-sky) * x * y.               */
+    OCOL_MINVX,          /* X of minimum pixel in values file.        */
+    OCOL_MAXVX,          /* X of maximum pixel in values file.        */
+    OCOL_MINVY,          /* Y of minimum pixel in values file.        */
+    OCOL_MAXVY,          /* Y of maximum pixel in values file.        */
+    OCOL_MINVZ,          /* Z of minimum pixel in values file.        */
+    OCOL_MAXVZ,          /* Z of maximum pixel in values file.        */
     OCOL_SUMSKY,         /* Sum of sky value on this object.          */
     OCOL_NUMSKY,         /* Number of sky value on this object.       */
     OCOL_SUMVAR,         /* Sum of sky variance value on this object. */
@@ -140,6 +146,12 @@ enum clumpcols
     CCOL_VXX,            /* Sum of flux*x*x of this clump.            */
     CCOL_VYY,            /* Sum of flux*y*y of this clump.            */
     CCOL_VXY,            /* Sum of flux*x*y of this clump.            */
+    CCOL_MINVX,          /* X of minimum pixel in values array.       */
+    CCOL_MAXVX,          /* X of maximum pixel in values array.       */
+    CCOL_MINVY,          /* Y of minimum pixel in values array.       */
+    CCOL_MAXVY,          /* Y of maximum pixel in values array.       */
+    CCOL_MINVZ,          /* Z of minimum pixel in values array.       */
+    CCOL_MAXVZ,          /* Z of maximum pixel in values array.       */
     CCOL_SUMSKY,         /* Sum of sky value on this clump.           */
     CCOL_NUMSKY,         /* Number of sky value on this clump.        */
     CCOL_SUMVAR,         /* Sum of sky variance value on this clump.  */

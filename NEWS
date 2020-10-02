@@ -41,6 +41,11 @@ See the end of the file for license conditions.
      'astquery' option, to easily search the contents of external databases
      within the image.
 
+  MakeCatalog:
+   - New columns to return the position of pixel with minimum or maximum
+     value: '--minvx', '--maxvx', '--minvy', '--maxvy', '--minvz',
+     '--maxvz'.
+
   Table:
    - New '--noblank' option will remove all rows in output table that have
      atleast one blank value in the specified columns. For example if
