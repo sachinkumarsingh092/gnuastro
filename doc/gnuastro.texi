@@ -16266,7 +16266,7 @@ datasets. When working with Integral Field Unit (IFU) datasets, this
 projection onto the first two dimensions would be a narrow-band image.
 
 @item --areahalfsum
-The number of pixels that contain half the object or clump's total sum of pixels (half the value in the @option{--brightness}) column.
+The number of pixels that contain half the object or clump's total sum of pixels (half the value in the @option{--brightness} column).
 To count this area, all the non-blank values associated with the given label (object or clump) will be sorted and summed in order (starting from the maximum), until the sum becomes larger than half the total sum of the label's pixels.
 
 This option is thus good for clumps (which are defined to have a single peak in their morphology), but for objects you should be careful because if they may have multiple peaks and the sorting by value doesn't include morphology.
