@@ -1182,6 +1182,35 @@ parse_clumps(struct mkcatalog_passparams *pp)
 
 
 
+size_t
+parse_area_of_half_sum(gal_data_t *values, double sum)
+{
+  size_t i;
+  gal_data_t *sorted_d;
+  double sumcheck=0.0f, *sorted;
+
+  /* Allocate the array to use. */
+  sorted_d = ( values->type==GAL_TYPE_FLOAT64
+                ? values
+                : gal_data_copy_to_new_type(values, GAL_TYPE_FLOAT64) );
+
+  /* Sort the desired labels and find the number of elements where we reach
+     half the total sum. */
+  gal_statistics_sort_decreasing(sorted_d);
+  sorted=sorted_d->array;
+  for(i=0;i<values->size;++i)
+    if( (sumcheck+=sorted[i]) > sum/2 )
+      break;
+
+  /* Clean up and return. */
+  if(sorted_d!=values) gal_data_free(sorted_d);
+  return i;
+}
+
+
+
+
+
 void
 parse_order_based(struct mkcatalog_passparams *pp)
 {
@@ -1203,6 +1232,7 @@ parse_order_based(struct mkcatalog_passparams *pp)
   if(tmpsize==0)
     {
       if(p->oiflag[ OCOL_MEDIAN        ]) pp->oi[ OCOL_MEDIAN       ] = NAN;
+      if(p->oiflag[ OCOL_NUMHALFSUM    ]) pp->oi[ OCOL_NUMHALFSUM   ] = 0;
       if(p->oiflag[ OCOL_SIGCLIPNUM    ]) pp->oi[ OCOL_SIGCLIPNUM   ] = 0;
       if(p->oiflag[ OCOL_SIGCLIPSTD    ]) pp->oi[ OCOL_SIGCLIPSTD   ] = 0;
       if(p->oiflag[ OCOL_SIGCLIPMEAN   ]) pp->oi[ OCOL_SIGCLIPMEAN  ] = NAN;
@@ -1212,6 +1242,7 @@ parse_order_based(struct mkcatalog_passparams *pp)
           {
             ci=&pp->ci[ i * CCOL_NUMCOLS ];
             if(p->ciflag[ CCOL_MEDIAN        ]) ci[ CCOL_MEDIAN      ] = NAN;
+            if(p->ciflag[ OCOL_NUMHALFSUM    ]) ci[ CCOL_NUMHALFSUM  ] = 0;
             if(p->ciflag[ CCOL_SIGCLIPNUM    ]) ci[ CCOL_SIGCLIPNUM  ] = 0;
             if(p->ciflag[ CCOL_SIGCLIPSTD    ]) ci[ CCOL_SIGCLIPSTD  ] = 0;
             if(p->ciflag[ CCOL_SIGCLIPMEAN   ]) ci[ CCOL_SIGCLIPMEAN ] = NAN;
@@ -1321,6 +1352,8 @@ parse_order_based(struct mkcatalog_passparams *pp)
       /* Clean up the sigma-clipped values. */
       gal_data_free(result);
     }
+  if(p->oiflag[ OCOL_NUMHALFSUM ])
+    pp->oi[OCOL_NUMHALFSUM]=parse_area_of_half_sum(objvals, pp->oi[OCOL_SUM]);
 
 
   /* Clean up the object values. */
@@ -1369,6 +1402,10 @@ parse_order_based(struct mkcatalog_passparams *pp)
               /* Clean up the sigma-clipped values. */
               gal_data_free(result);
             }
+
+          /* Estimate half of the total sum. */
+          if(p->ciflag[ CCOL_NUMHALFSUM ])
+            ci[CCOL_NUMHALFSUM]=parse_area_of_half_sum(clumpsvals[i], ci[CCOL_SUM]);
 
           /* Clean up this clump's values. */
           gal_data_free(clumpsvals[i]);

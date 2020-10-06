@@ -450,6 +450,21 @@ columns_define_alloc(struct mkcatalogparams *p)
           oiflag[ OCOL_NUMXY ] = ciflag[ CCOL_NUMXY ] = 1;
           break;
 
+        case UI_KEY_AREAHALFSUM:
+          name           = "AREA_HALF_SUM";
+          unit           = "counter";
+          ocomment       = "Number of brightest pixels containing half of total sum.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_INT32;
+          ctype          = GAL_TYPE_INT32;
+          disp_fmt       = 0;
+          disp_width     = 6;
+          disp_precision = 0;
+          oiflag[ OCOL_NUM        ] = ciflag[ CCOL_NUM        ] = 1;
+          oiflag[ OCOL_SUM        ] = ciflag[ CCOL_SUM        ] = 1;
+          oiflag[ OCOL_NUMHALFSUM ] = ciflag[ CCOL_NUMHALFSUM ] = 1;
+          break;
+
         case UI_KEY_CLUMPSAREA:
           name           = "AREA_CLUMPS";
           unit           = "counter";
@@ -2039,6 +2054,10 @@ columns_fill(struct mkcatalog_passparams *pp)
           ((int32_t *)colarr)[oind] = oi[OCOL_NUMXY];
           break;
 
+        case UI_KEY_AREAHALFSUM:
+          ((int32_t *)colarr)[oind] = oi[OCOL_NUMHALFSUM];
+          break;
+
         case UI_KEY_CLUMPSAREA:
           ((int32_t *)colarr)[oind] = oi[OCOL_C_NUM];
           break;
@@ -2344,6 +2363,10 @@ columns_fill(struct mkcatalog_passparams *pp)
 
           case UI_KEY_AREAXY:
             ((int32_t *)colarr)[cind]=ci[CCOL_NUMXY];
+            break;
+
+          case UI_KEY_AREAHALFSUM:
+            ((int32_t *)colarr)[cind]=ci[CCOL_NUMHALFSUM];
             break;
 
           case UI_KEY_WEIGHTAREA:

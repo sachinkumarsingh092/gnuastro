@@ -70,10 +70,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    the FITS standard (fastest dimension is first). */
 enum objectcols
   {
-    OCOL_NUMALL,         /* Number of all pixels with this label.     */
-    OCOL_NUMALLXY,       /* Number of all pixels in first two dims.   */
-    OCOL_NUM,            /* Number of values used in this object.     */
+    OCOL_NUMALL,         /* Area/number of all pixels with this label.*/
+    OCOL_NUMALLXY,       /* Area/Number in first two dimensions.      */
+    OCOL_NUM,            /* Area/Number of values used in this object.*/
     OCOL_NUMXY,          /* Number of values in the first two dims.   */
+    OCOL_NUMHALFSUM,     /* Area/Number containing half of total sum. */
     OCOL_SUM,            /* Sum of (value-sky) in object.             */
     OCOL_SUM_VAR,        /* Variance including values (not just sky). */
     OCOL_MEDIAN,         /* Median of value in object.                */
@@ -130,6 +131,7 @@ enum clumpcols
     CCOL_NUMALLXY,       /* Number of pixels in first two dims.       */
     CCOL_NUM,            /* Number of values used in clump.           */
     CCOL_NUMXY,          /* Number of values only in first two dims.  */
+    CCOL_NUMHALFSUM,     /* Area/Number containing half of total sum. */
     CCOL_SUM,            /* River subtracted brightness.              */
     CCOL_SUM_VAR,        /* Variance including values (not just sky). */
     CCOL_MEDIAN,         /* Median of values in clump.                */

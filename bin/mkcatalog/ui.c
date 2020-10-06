@@ -929,6 +929,7 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
         case OCOL_NUMALLXY:           /* Only object labels. */    break;
         case OCOL_NUM:                *values        = 1;          break;
         case OCOL_NUMXY:              *values        = 1;          break;
+        case CCOL_NUMHALFSUM:         *values        = 1;          break;
         case OCOL_SUM:                *values        = 1;          break;
         case OCOL_SUM_VAR:            *values = *std = 1;          break;
         case OCOL_MEDIAN:             *values        = 1;          break;
@@ -990,10 +991,11 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
           case CCOL_NUMALLXY:         /* Only clump labels. */     break;
           case CCOL_NUM:              *values        = 1;          break;
           case CCOL_NUMXY:            *values        = 1;          break;
+          case CCOL_NUMHALFSUM:       *values        = 1;          break;
           case CCOL_SUM:              *values        = 1;          break;
           case CCOL_SUM_VAR:          *values = *std = 1;          break;
           case CCOL_MEDIAN:           *values        = 1;          break;
-          case CCOL_SIGCLIPNUM:    *values        = 1;          break;
+          case CCOL_SIGCLIPNUM:       *values        = 1;          break;
           case CCOL_SIGCLIPMEDIAN:    *values        = 1;          break;
           case CCOL_SIGCLIPMEAN:      *values        = 1;          break;
           case CCOL_SIGCLIPSTD:       *values        = 1;          break;

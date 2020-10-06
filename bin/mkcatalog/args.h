@@ -1422,6 +1422,20 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
+      "areahalfsum",
+      UI_KEY_AREAHALFSUM,
+      0,
+      0,
+      "",
+      UI_GROUP_COLUMNS_MORPHOLOGY,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
       "clumpsarea",
       UI_KEY_CLUMPSAREA,
       0,

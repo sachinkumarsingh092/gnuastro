@@ -42,6 +42,7 @@ See the end of the file for license conditions.
      within the image.
 
   MakeCatalog:
+   --areahalfsum: area containing half the total flux of object or clump.
    - New columns to return the position of pixel with minimum or maximum
      value: '--minvx', '--maxvx', '--minvy', '--maxvy', '--minvz',
      '--maxvz'.
