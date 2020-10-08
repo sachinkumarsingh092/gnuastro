@@ -361,8 +361,10 @@ static void
 ui_read_check_only_options(struct mkcatalogparams *p)
 {
   float tmp;
-  size_t one=1;
+  double *darr;
   char *tailptr;
+  size_t i, one=1;
+  gal_list_i32_t *colcode;
 
   /* If an upper-limit check table is requested with a specific clump, but
      no clump catalog has been requested, then abort and inform the
@@ -406,6 +408,38 @@ ui_read_check_only_options(struct mkcatalogparams *p)
           /* Write the value inside it. */
           *((float *)(p->std->array))=tmp;
         }
+    }
+
+  /* Make sure that '--fracsum' is given if necessary and that the fracsum
+     values are less than one. */
+  for(colcode=p->columnids; colcode!=NULL; colcode=colcode->next)
+    if( (colcode->v==UI_KEY_FRACSUMAREA1 || colcode->v==UI_KEY_FRACSUMAREA2)
+        && p->fracsum==NULL )
+      error(EXIT_FAILURE, 0, "please specify your required fractions for "
+            "'--fracsumarea' using the '--fracsum' option (for example "
+            "'--fracsum=0.25,0.75' for two columns)");
+  if(p->fracsum)
+    {
+      /* Currently only 2 fracsums are accepted. */
+      if(p->fracsum->size>2)
+        error(EXIT_FAILURE, 0, "%zu values given to '--fracsum', only two "
+              "values are currently supported", p->fracsum->size);
+
+      /* Check the values. */
+      darr=p->fracsum->array;
+      for(i=0;i<p->fracsum->size;++i)
+        if(darr[i]<=0.0f || darr[i]>=1.0f)
+          error(EXIT_FAILURE, 0, "%g is not acceptable for '--fracsum', "
+                "values should be larger than 0 and less than 1", darr[i]);
+
+      /* If a second fracum column is necessary, make sure two values are
+         given to --fracsum. */
+      for(colcode=p->columnids; colcode!=NULL; colcode=colcode->next)
+        if(colcode->v==UI_KEY_FRACSUMAREA2 && p->fracsum->size==1)
+          error(EXIT_FAILURE, 0, "only one value given to '--fracsum', "
+                "but '--fracsumarea2' was requested! You need to give "
+                "the requested fraction as a second value to '--fracsum', "
+                "separated by a comma (,)");
     }
 }
 
@@ -929,7 +963,6 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
         case OCOL_NUMALLXY:           /* Only object labels. */    break;
         case OCOL_NUM:                *values        = 1;          break;
         case OCOL_NUMXY:              *values        = 1;          break;
-        case CCOL_NUMHALFSUM:         *values        = 1;          break;
         case OCOL_SUM:                *values        = 1;          break;
         case OCOL_SUM_VAR:            *values = *std = 1;          break;
         case OCOL_MEDIAN:             *values        = 1;          break;
@@ -963,6 +996,9 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
         case OCOL_UPPERLIMIT_S:       *values        = 1;          break;
         case OCOL_UPPERLIMIT_Q:       *values        = 1;          break;
         case OCOL_UPPERLIMIT_SKEW:    *values        = 1;          break;
+        case OCOL_NUMHALFSUM:         *values        = 1;          break;
+        case OCOL_NUMFRACSUM1:        *values        = 1;          break;
+        case OCOL_NUMFRACSUM2:        *values        = 1;          break;
         case OCOL_C_NUMALL:           /* Only clump labels.  */    break;
         case OCOL_C_NUM:              *values        = 1;          break;
         case OCOL_C_SUM:              *values        = 1;          break;
@@ -991,7 +1027,6 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
           case CCOL_NUMALLXY:         /* Only clump labels. */     break;
           case CCOL_NUM:              *values        = 1;          break;
           case CCOL_NUMXY:            *values        = 1;          break;
-          case CCOL_NUMHALFSUM:       *values        = 1;          break;
           case CCOL_SUM:              *values        = 1;          break;
           case CCOL_SUM_VAR:          *values = *std = 1;          break;
           case CCOL_MEDIAN:           *values        = 1;          break;
@@ -1034,6 +1069,9 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
           case CCOL_UPPERLIMIT_S:     *values        = 1;          break;
           case CCOL_UPPERLIMIT_Q:     *values        = 1;          break;
           case CCOL_UPPERLIMIT_SKEW:  *values        = 1;          break;
+          case CCOL_NUMHALFSUM:       *values        = 1;          break;
+          case CCOL_NUMFRACSUM1:      *values        = 1;          break;
+          case CCOL_NUMFRACSUM2:      *values        = 1;          break;
           default:
             error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
                   "fix the problem. The code %zu is not a recognized "

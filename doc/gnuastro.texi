@@ -15849,6 +15849,11 @@ This option takes two values: the first is the multiple of @mymath{\sigma}, and 
 If the latter is larger than 1, it is read as an integer number and will be the number of times to clip.
 If it is smaller than 1, it is interpreted as the tolerance level to stop clipping. See @ref{Sigma clipping} for a complete explanation.
 
+@item --fracsum=FLT[,FLT]
+The fractions of summed flux in objects or clumps to be used in the @option{--fracsumarea1} and @option{--fracsumarea2} columns, see @ref{MakeCatalog measurements}.
+The values must be larger than 0 and smaller than 1.
+When only @option{--fracsumarea1} is requested, one value must be given to this option, but if @option{--fracsumarea2} is also requested, two values must be given here.
+The values can be written as simple floating point numbers, or as fractions, for example @code{0.25,0.75} and @code{0.25,3/4} are the same.
 @end table
 
 
@@ -16265,13 +16270,49 @@ first two dimensions. This is only available for 3-dimensional
 datasets. When working with Integral Field Unit (IFU) datasets, this
 projection onto the first two dimensions would be a narrow-band image.
 
-@item --areahalfsum
+@item --halfsumarea
 The number of pixels that contain half the object or clump's total sum of pixels (half the value in the @option{--brightness} column).
 To count this area, all the non-blank values associated with the given label (object or clump) will be sorted and summed in order (starting from the maximum), until the sum becomes larger than half the total sum of the label's pixels.
 
 This option is thus good for clumps (which are defined to have a single peak in their morphology), but for objects you should be careful because if they may have multiple peaks and the sorting by value doesn't include morphology.
 So if the object includes multiple peaks/clumps at roughly the same level, then the area reported by this option will be distributed over all the peaks.
 
+@item --halfsumsb
+Surface brightness (dataset units per pixel) within the area that contains half the total sum of the label's pixels (object or clump).
+Effectively, this column is just half the value of the @option{--brightness} column, divided by the value of the @option{--halfsumarea} column.
+
+Therefore it is very important to understand the systematics of this column and potential biases, please see the description in @option{--halfsumarea}.
+
+@item --halfradiusobs
+Radius (in units of pixels) derived from the area that contains half the total sum of the label's pixels (value reported by @option{--halfsumarea}).
+If the area is @mymath{A_h} and the axis ratio is @mymath{q}, then the value returned in this column is @mymath{\sqrt{A_h/({\pi}q)}}.
+This option is a good measure of the concentration of the @emph{observed} (after PSF convolution and noisy) object or clump,
+But as described below it underestimates the effective radius.
+Also, it should be used in causion with objects, it reliable with clumps, see the note under @option{--halfradiusarea}.
+
+@cindex Ellipse area
+@cindex Area, ellipse
+Recall that in general, for an ellipse with semi-major axis @mymath{a}, semi-minor axis @mymath{b}, and axis ratio @mymath{q=b/a} the area (@mymath{A}) is @mymath{A={\pi}ab={\pi}qa^2}.
+For a circle (where @mymath{q=1}), this simplifies to the familiar @mymath{A={\pi}a^2}.
+
+@cindex S@'ersic profile
+@cindex Effective radius
+The suffix @code{obs} is added to the option name to avoid confusing this with a profile's effective radius for S@'ersic profiles, commonly written as @mymath{r_e}.
+For more on @mymath{r_e}, please see @ref{Galaxies}.
+Therefore, when @mymath{r_e} is meaningful for the target (the target is elliptically symmetric and can be parametrized as a S@'ersic profile), @mymath{r_e} should be derived from fitting the profile with a S@'ersic function which has been convolved with the PSF.
+But from the equation above, you see that this radius is derived from the raw image's labeled values (after convolution, with no parametric profile), so this column's value will generally be (much) smaller than @mymath{r_e}, depending on the PSF, depth of the dataset, the morphology, or if a fraction of the profile falls on the edge of the image.
+
+@item --fracsumarea1
+@itemx --fracsumarea2
+Similar to @option{--halfsumarea}, but for user-defined fractions of total sum.
+The fractions are given through the @option{--fracsum} option (that can take two values) and is described in @ref{MakeCatalog inputs and basic settings}.
+Recall that in @option{--halfsumarea}, the fraction is fixed to 0.5 so added with these two columns, you can sample three parts of the profile.
+
+@item --fracradiusobs1
+@itemx --fracradiusobs2
+Similar to @option{--halfradiusobs}, but for user-defined fractions of total sum.
+The fractions are given through the @option{--fracsum} option (that can take two values) and is described in @ref{MakeCatalog inputs and basic settings}.
+Recall that in @option{--halfradiusobs}, the fraction is fixed to 0.5 so added with these two columns, you can sample three parts of the profile.
 
 @item --clumpsarea
 [Objects] The total area of all the clumps in this object.
@@ -16970,7 +17011,7 @@ Today, most practitioners agree that the flux of galaxies can be modeled with on
 @cindex Radius, effective
 @cindex de Vaucouleur profile
 @cindex G@'erard de Vaucouleurs
-G@'erard de Vaucouleurs (1918-1995) was first to show in 1948 that this function best fits the galaxy light profiles, with the only difference that he held @mymath{n} fixed to a value of 4.
+G@'erard de Vaucouleurs (1918-1995) was first to show in 1948 that this function resembles the galaxy light profiles, with the only difference that he held @mymath{n} fixed to a value of 4.
 20 years later in 1968, J. L. S@'ersic showed that @mymath{n} can have a variety of values and does not necessarily need to be 4.
 This profile depends on the effective radius (@mymath{r_e}) which is defined as the radius which contains half of the profile brightness (see @ref{Profile magnitude}).
 @mymath{I_e} is the flux at the effective radius.

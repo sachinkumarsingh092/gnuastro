@@ -74,7 +74,6 @@ enum objectcols
     OCOL_NUMALLXY,       /* Area/Number in first two dimensions.      */
     OCOL_NUM,            /* Area/Number of values used in this object.*/
     OCOL_NUMXY,          /* Number of values in the first two dims.   */
-    OCOL_NUMHALFSUM,     /* Area/Number containing half of total sum. */
     OCOL_SUM,            /* Sum of (value-sky) in object.             */
     OCOL_SUM_VAR,        /* Variance including values (not just sky). */
     OCOL_MEDIAN,         /* Median of value in object.                */
@@ -110,6 +109,9 @@ enum objectcols
     OCOL_UPPERLIMIT_S,   /* Upper limit one-sigma value.              */
     OCOL_UPPERLIMIT_Q,   /* Quantile of object in random distribution.*/
     OCOL_UPPERLIMIT_SKEW,/* (Mean-Median)/STD of random distribution. */
+    OCOL_NUMHALFSUM,     /* Area/Number containing half of total sum. */
+    OCOL_NUMFRACSUM1,    /* Area/Number containing frac of total sum. */
+    OCOL_NUMFRACSUM2,    /* Area/Number containing frac of total sum. */
     OCOL_C_NUMALL,       /* Value independent no. of pixels in clumps.*/
     OCOL_C_NUM,          /* Area of clumps in this object.            */
     OCOL_C_SUM,          /* Brightness in object clumps.              */
@@ -131,7 +133,6 @@ enum clumpcols
     CCOL_NUMALLXY,       /* Number of pixels in first two dims.       */
     CCOL_NUM,            /* Number of values used in clump.           */
     CCOL_NUMXY,          /* Number of values only in first two dims.  */
-    CCOL_NUMHALFSUM,     /* Area/Number containing half of total sum. */
     CCOL_SUM,            /* River subtracted brightness.              */
     CCOL_SUM_VAR,        /* Variance including values (not just sky). */
     CCOL_MEDIAN,         /* Median of values in clump.                */
@@ -176,6 +177,11 @@ enum clumpcols
     CCOL_UPPERLIMIT_S,   /* Upper limit one-sigma value.              */
     CCOL_UPPERLIMIT_Q,   /* Quantile of object in random distribution.*/
     CCOL_UPPERLIMIT_SKEW,/* (Mean-Median)/STD of random distribution. */
+    CCOL_NUMHALFSUM,     /* Area/Number containing half of total sum. */
+    CCOL_NUMFRACSUM1,    /* Area/Number containing frac of total sum. */
+    CCOL_NUMFRACSUM2,    /* Area/Number containing frac of total sum. */
+    CCOL_FRACSUMAREA1,   /* Area/Number containing frac of total sum. */
+    CCOL_FRACSUMAREA2,   /* Area/Number containing frac of total sum. */
 
     CCOL_NUMCOLS,        /* SHOULD BE LAST: total number of columns.  */
   };
@@ -222,6 +228,8 @@ struct mkcatalogparams
   double       upsigmaclip[2];  /* Sigma clip to measure upper limit.   */
   float              upnsigma;  /* Multiple of sigma to define up-lim.  */
   int32_t       checkuplim[2];  /* Object & clump ID to check dist.     */
+
+  gal_data_t         *fracsum;  /* Fractions to use in --fracsumarea.   */
 
   /* Internal. */
   char           *relabclumps;  /* Name of new file for clump labels.   */

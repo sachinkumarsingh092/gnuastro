@@ -1182,12 +1182,36 @@ parse_clumps(struct mkcatalog_passparams *pp)
 
 
 
-size_t
-parse_area_of_half_sum(gal_data_t *values, double sum)
+static double
+parse_frac_sum_find(gal_data_t *sorted_d, double sum, double frac)
 {
   size_t i;
+  double sumcheck=0.0f;
+  double *sorted=sorted_d->array;
+
+  /* Parse over the sorted array and find the index. */
+  for(i=0;i<sorted_d->size;++i)
+    if( (sumcheck+=sorted[i]) > sum*frac ) break;
+
+  /* Return the final value. Note that if the index is zero, we should
+     actually return 1, because we are starting with the maximum. */
+  return i==0 ? 1 : i;
+}
+
+
+
+
+
+static void
+parse_area_of_frac_sum(struct mkcatalog_passparams *pp, gal_data_t *values,
+                       double *outarr, int o1c0)
+{
+  struct mkcatalogparams *p=pp->p;
+
   gal_data_t *sorted_d;
-  double sumcheck=0.0f, *sorted;
+  uint8_t *flag = o1c0 ? p->oiflag : p->ciflag;
+  double sum = o1c0 ? outarr[OCOL_SUM] : outarr[CCOL_SUM];
+  double *fracsum = p->fracsum ? p->fracsum->array : NULL;
 
   /* Allocate the array to use. */
   sorted_d = ( values->type==GAL_TYPE_FLOAT64
@@ -1197,14 +1221,28 @@ parse_area_of_half_sum(gal_data_t *values, double sum)
   /* Sort the desired labels and find the number of elements where we reach
      half the total sum. */
   gal_statistics_sort_decreasing(sorted_d);
-  sorted=sorted_d->array;
-  for(i=0;i<values->size;++i)
-    if( (sumcheck+=sorted[i]) > sum/2 )
-      break;
+
+  /* Set the required fractions. */
+  if(flag[ o1c0 ? OCOL_NUMHALFSUM : CCOL_NUMHALFSUM ])
+    outarr[ o1c0 ? OCOL_NUMHALFSUM : CCOL_NUMHALFSUM ]
+      = parse_frac_sum_find(sorted_d, sum, 0.5f);
+
+  if(flag[ o1c0 ? OCOL_NUMFRACSUM1 : CCOL_NUMFRACSUM1 ])
+    outarr[ o1c0 ? OCOL_NUMFRACSUM1 : CCOL_NUMFRACSUM1 ]
+      = parse_frac_sum_find(sorted_d, sum, fracsum[0]);
+
+  if(flag[ o1c0 ? OCOL_NUMFRACSUM2 : CCOL_NUMFRACSUM2 ])
+    outarr[ o1c0 ? OCOL_NUMFRACSUM2 : CCOL_NUMFRACSUM2 ]
+      = parse_frac_sum_find(sorted_d, sum, fracsum[1]);
+
+  /* For a check.
+  printf("%g, %g, %g\n", outarr[OCOL_NUMFRACSUM1], outarr[OCOL_NUMHALFSUM],
+         outarr[OCOL_NUMFRACSUM2]);
+  exit(1);
+  */
 
   /* Clean up and return. */
   if(sorted_d!=values) gal_data_free(sorted_d);
-  return i;
 }
 
 
@@ -1352,9 +1390,12 @@ parse_order_based(struct mkcatalog_passparams *pp)
       /* Clean up the sigma-clipped values. */
       gal_data_free(result);
     }
-  if(p->oiflag[ OCOL_NUMHALFSUM ])
-    pp->oi[OCOL_NUMHALFSUM]=parse_area_of_half_sum(objvals, pp->oi[OCOL_SUM]);
 
+  /* Fractional values. */
+  if( p->oiflag[    OCOL_NUMHALFSUM   ]
+      || p->oiflag[ OCOL_NUMFRACSUM1 ]
+      || p->oiflag[ OCOL_NUMFRACSUM2 ] )
+    parse_area_of_frac_sum(pp, objvals, pp->oi, 1);
 
   /* Clean up the object values. */
   gal_data_free(objvals);
@@ -1404,8 +1445,10 @@ parse_order_based(struct mkcatalog_passparams *pp)
             }
 
           /* Estimate half of the total sum. */
-          if(p->ciflag[ CCOL_NUMHALFSUM ])
-            ci[CCOL_NUMHALFSUM]=parse_area_of_half_sum(clumpsvals[i], ci[CCOL_SUM]);
+          if( p->ciflag[ CCOL_NUMHALFSUM ]
+              || p->ciflag[ CCOL_NUMFRACSUM1 ]
+              || p->ciflag[ CCOL_NUMFRACSUM2 ] )
+            parse_area_of_frac_sum(pp, clumpsvals[i], ci, 0);
 
           /* Clean up this clump's values. */
           gal_data_free(clumpsvals[i]);

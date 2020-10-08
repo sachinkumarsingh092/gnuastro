@@ -186,6 +186,8 @@ mkcatalog_single_object(void *in_prm)
           || p->oiflag[ OCOL_SIGCLIPNUM ]
           || p->oiflag[ OCOL_SIGCLIPSTD ]
           || p->oiflag[ OCOL_SIGCLIPMEAN ]
+          || p->oiflag[ OCOL_NUMFRACSUM1 ]
+          || p->oiflag[ OCOL_NUMFRACSUM2 ]
           || p->oiflag[ OCOL_SIGCLIPMEDIAN ])
         parse_order_based(&pp);
 

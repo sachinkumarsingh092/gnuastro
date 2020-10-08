@@ -42,7 +42,14 @@ See the end of the file for license conditions.
      within the image.
 
   MakeCatalog:
-   --areahalfsum: area containing half the total flux of object or clump.
+   --fracsum: fractions to use in '--fracsumarea1' or '--fracsumarea2'.
+   --fracsumarea1: area of given fraction of the summed object or clump values.
+   --fracsumarea2: area of given fraction of the summed object or clump values.
+   --halfsumsb: Surface brightness within area reported by '--halfsumarea'.
+   --halfsumarea: area containing half of the summed object or clump values.
+   --halfradiusobs: radius derived from '--halfsumarea', underestimates r_e.
+   --fracradiusobs1: similar to --halfradiusobs, but for custom fraction 1.
+   --fracradiusobs2: similar to --halfradiusobs, but for custom fraction 2.
    - New columns to return the position of pixel with minimum or maximum
      value: '--minvx', '--maxvx', '--minvy', '--maxvy', '--minvz',
      '--maxvz'.

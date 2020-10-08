@@ -318,6 +318,9 @@ columns_sanity_check(struct mkcatalogparams *p)
           case UI_KEY_GEOSEMIMAJOR:
           case UI_KEY_GEOSEMIMINOR:
           case UI_KEY_GEOAXISRATIO:
+          case UI_KEY_HALFRADIUSOBS:
+          case UI_KEY_FRACRADIUSOBS1:
+          case UI_KEY_FRACRADIUSOBS2:
           case UI_KEY_GEOPOSITIONANGLE:
             error(EXIT_FAILURE, 0, "columns requiring second moment "
                   "calculations (like semi-major, semi-minor, axis ratio "
@@ -448,21 +451,6 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_width     = 6;
           disp_precision = 0;
           oiflag[ OCOL_NUMXY ] = ciflag[ CCOL_NUMXY ] = 1;
-          break;
-
-        case UI_KEY_AREAHALFSUM:
-          name           = "AREA_HALF_SUM";
-          unit           = "counter";
-          ocomment       = "Number of brightest pixels containing half of total sum.";
-          ccomment       = ocomment;
-          otype          = GAL_TYPE_INT32;
-          ctype          = GAL_TYPE_INT32;
-          disp_fmt       = 0;
-          disp_width     = 6;
-          disp_precision = 0;
-          oiflag[ OCOL_NUM        ] = ciflag[ CCOL_NUM        ] = 1;
-          oiflag[ OCOL_SUM        ] = ciflag[ CCOL_SUM        ] = 1;
-          oiflag[ OCOL_NUMHALFSUM ] = ciflag[ CCOL_NUMHALFSUM ] = 1;
           break;
 
         case UI_KEY_CLUMPSAREA:
@@ -1639,6 +1627,99 @@ columns_define_alloc(struct mkcatalogparams *p)
           oiflag[ OCOL_GXY    ] = ciflag[ CCOL_GXY    ] = 1;
           break;
 
+        case UI_KEY_HALFSUMAREA:
+          name           = "HALF_SUM_AREA";
+          unit           = "counter";
+          ocomment       = "Number of brightest pixels containing half of total sum.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_INT32;
+          ctype          = GAL_TYPE_INT32;
+          disp_fmt       = 0;
+          disp_width     = 6;
+          disp_precision = 0;
+          oiflag[ OCOL_NUM        ] = ciflag[ CCOL_NUM        ] = 1;
+          oiflag[ OCOL_SUM        ] = ciflag[ CCOL_SUM        ] = 1;
+          oiflag[ OCOL_NUMHALFSUM ] = ciflag[ CCOL_NUMHALFSUM ] = 1;
+          break;
+
+        case UI_KEY_HALFSUMSB:
+          name           = "HALF_SUM_SB";
+          unit           = MKCATALOG_NO_UNIT;
+          ocomment       = "Surface brightness within area containing half total sum.";
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 10;
+          disp_precision = 5;
+          oiflag[ OCOL_NUM        ] = ciflag[ CCOL_NUM        ] = 1;
+          oiflag[ OCOL_SUM        ] = ciflag[ CCOL_SUM        ] = 1;
+          oiflag[ OCOL_NUMHALFSUM ] = ciflag[ CCOL_NUMHALFSUM ] = 1;
+          break;
+
+        case UI_KEY_FRACSUMAREA1:
+        case UI_KEY_FRACSUMAREA2:
+          name           = ( colcode->v==UI_KEY_FRACSUMAREA1
+                             ? "FRAC_SUM_AREA_1"
+                             : "FRAC_SUM_AREA_2" );
+          unit           = "counter";
+          ocomment       = "Number of brightest pixels containing given fraction of total sum.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_INT32;
+          ctype          = GAL_TYPE_INT32;
+          disp_fmt       = 0;
+          disp_width     = 6;
+          disp_precision = 0;
+          oiflag[ OCOL_NUM ] = ciflag[ CCOL_NUM ] = 1;
+          oiflag[ OCOL_SUM ] = ciflag[ CCOL_SUM ] = 1;
+          if(colcode->v==UI_KEY_FRACSUMAREA1)
+            oiflag[ OCOL_NUMFRACSUM1 ] = ciflag[ CCOL_NUMFRACSUM1 ] = 1;
+          else
+            oiflag[ OCOL_NUMFRACSUM2 ] = ciflag[ CCOL_NUMFRACSUM2 ] = 1;
+          break;
+
+        case UI_KEY_HALFRADIUSOBS:
+        case UI_KEY_FRACRADIUSOBS1:
+        case UI_KEY_FRACRADIUSOBS2:
+          unit           = "pixels";
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 10;
+          disp_precision = 3;
+          oiflag[ OCOL_NUM        ] = ciflag[ CCOL_NUM        ] = 1; /* halfsumarea */
+          oiflag[ OCOL_SUM        ] = ciflag[ CCOL_SUM        ] = 1;
+          oiflag[ OCOL_SUMWHT     ] = ciflag[ CCOL_SUMWHT     ] = 1; /* axisratio. */
+          oiflag[ OCOL_VX         ] = ciflag[ CCOL_VX         ] = 1;
+          oiflag[ OCOL_VY         ] = ciflag[ CCOL_VY         ] = 1;
+          oiflag[ OCOL_VXX        ] = ciflag[ CCOL_VXX        ] = 1;
+          oiflag[ OCOL_VYY        ] = ciflag[ CCOL_VYY        ] = 1;
+          oiflag[ OCOL_VXY        ] = ciflag[ CCOL_VXY        ] = 1;
+          oiflag[ OCOL_NUMALL     ] = ciflag[ CCOL_NUMALL     ] = 1;
+          oiflag[ OCOL_GX         ] = ciflag[ CCOL_GX         ] = 1;
+          oiflag[ OCOL_GY         ] = ciflag[ CCOL_GY         ] = 1;
+          oiflag[ OCOL_GXX        ] = ciflag[ CCOL_GXX        ] = 1;
+          oiflag[ OCOL_GYY        ] = ciflag[ CCOL_GYY        ] = 1;
+          oiflag[ OCOL_GXY        ] = ciflag[ CCOL_GXY        ] = 1;
+          switch(colcode->v)
+            {
+            case UI_KEY_HALFRADIUSOBS:
+              name="HALF_RADIUS_OBS";
+              oiflag[ OCOL_NUMHALFSUM  ] = ciflag[ CCOL_NUMHALFSUM  ] = 1;
+              ocomment = "Radius derived from area of half of total sum.";
+              break;
+            case UI_KEY_FRACRADIUSOBS1:
+              name="FRAC_RADIUS_OBS_1";
+              oiflag[ OCOL_NUMFRACSUM1 ] = ciflag[ CCOL_NUMFRACSUM1 ] = 1;
+              ocomment = "Radius derived from area of 1st fraction of total sum.";
+              break;
+            case UI_KEY_FRACRADIUSOBS2:
+              name="FRAC_RADIUS_OBS_2";
+              oiflag[ OCOL_NUMFRACSUM2 ] = ciflag[ CCOL_NUMFRACSUM2 ] = 1;
+              ocomment = "Radius derived from area of 2nd fraction of total sum.";
+              break;
+            }
+          break;
+
         default:
           error(EXIT_FAILURE, 0, "%s: a bug! please contact us at %s to fix "
                 "the problem. The code %d is not an internally recognized "
@@ -1646,7 +1727,7 @@ columns_define_alloc(struct mkcatalogparams *p)
         }
 
 
-      /* If this is an objects column, add it to the list of columns. We
+      /* If this is an object's column, add it to the list of columns. We
          will be using the 'status' element to keep the MakeCatalog code
          for the columns. */
       if(otype!=GAL_TYPE_INVALID)
@@ -2003,6 +2084,7 @@ columns_fill(struct mkcatalog_passparams *pp)
   int key;
   double tmp;
   void *colarr;
+  size_t tmpind;
   gal_data_t *column;
   double *ci, *oi=pp->oi;
   size_t coord[3]={GAL_BLANK_SIZE_T, GAL_BLANK_SIZE_T, GAL_BLANK_SIZE_T};
@@ -2052,10 +2134,6 @@ columns_fill(struct mkcatalog_passparams *pp)
 
         case UI_KEY_AREAXY:
           ((int32_t *)colarr)[oind] = oi[OCOL_NUMXY];
-          break;
-
-        case UI_KEY_AREAHALFSUM:
-          ((int32_t *)colarr)[oind] = oi[OCOL_NUMHALFSUM];
           break;
 
         case UI_KEY_CLUMPSAREA:
@@ -2323,6 +2401,38 @@ columns_fill(struct mkcatalog_passparams *pp)
           ((float *)colarr)[oind] = columns_second_order(pp, oi, key, 0);
           break;
 
+        case UI_KEY_HALFSUMAREA:
+          ((int32_t *)colarr)[oind] = oi[OCOL_NUMHALFSUM];
+          break;
+
+        case UI_KEY_FRACSUMAREA1:
+          ((int32_t *)colarr)[oind] = oi[OCOL_NUMFRACSUM1];
+          break;
+
+        case UI_KEY_FRACSUMAREA2:
+          ((int32_t *)colarr)[oind] = oi[OCOL_NUMFRACSUM2];
+          break;
+
+        case UI_KEY_HALFSUMSB:
+          ((float *)colarr)[oind] = oi[OCOL_SUM]/2.0f/oi[OCOL_NUMHALFSUM];
+          break;
+
+        case UI_KEY_HALFRADIUSOBS:
+        case UI_KEY_FRACRADIUSOBS1:
+        case UI_KEY_FRACRADIUSOBS2:
+          /* First derive the axis ratio (as 'tmp'), then use the
+             '--halfsumarea' to estimate the effective radius. */
+          tmp = ( columns_second_order(pp, oi, UI_KEY_SEMIMINOR, 0)
+                  / columns_second_order(pp, oi, UI_KEY_SEMIMAJOR, 0) );
+          tmpind = ( key==UI_KEY_HALFRADIUSOBS
+                     ? OCOL_NUMHALFSUM
+                     : ( key==UI_KEY_FRACRADIUSOBS1
+                         ? OCOL_NUMFRACSUM1
+                         : OCOL_NUMFRACSUM2 ) );
+          tmp = sqrt( oi[tmpind]/(tmp*M_PI) );
+          ((float *)colarr)[oind] = tmp<1e-6 ? NAN : tmp;
+          break;
+
         default:
           error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
                 "solve the problem. the output column code %d not recognized "
@@ -2363,10 +2473,6 @@ columns_fill(struct mkcatalog_passparams *pp)
 
           case UI_KEY_AREAXY:
             ((int32_t *)colarr)[cind]=ci[CCOL_NUMXY];
-            break;
-
-          case UI_KEY_AREAHALFSUM:
-            ((int32_t *)colarr)[cind]=ci[CCOL_NUMHALFSUM];
             break;
 
           case UI_KEY_WEIGHTAREA:
@@ -2579,6 +2685,36 @@ columns_fill(struct mkcatalog_passparams *pp)
 
           case UI_KEY_GEOPOSITIONANGLE:
             ((float *)colarr)[cind] = columns_second_order(pp, ci, key, 1);
+            break;
+
+          case UI_KEY_HALFSUMAREA:
+            ((int32_t *)colarr)[cind] = ci[CCOL_NUMHALFSUM];
+            break;
+
+          case UI_KEY_FRACSUMAREA1:
+            ((int32_t *)colarr)[cind] = ci[CCOL_NUMFRACSUM1];
+            break;
+
+          case UI_KEY_FRACSUMAREA2:
+            ((int32_t *)colarr)[cind] = ci[CCOL_NUMFRACSUM2];
+            break;
+
+          case UI_KEY_HALFSUMSB:
+            ((float *)colarr)[cind] = ci[CCOL_SUM]/2.0f/ci[CCOL_NUMHALFSUM];
+            break;
+
+          case UI_KEY_HALFRADIUSOBS:
+          case UI_KEY_FRACRADIUSOBS1:
+          case UI_KEY_FRACRADIUSOBS2:
+            tmp = ( columns_second_order(  pp, ci, UI_KEY_SEMIMINOR, 1)
+                    / columns_second_order(pp, ci, UI_KEY_SEMIMAJOR, 1) );
+            tmpind = ( key==UI_KEY_HALFRADIUSOBS
+                       ? CCOL_NUMHALFSUM
+                       : ( key==UI_KEY_FRACRADIUSOBS1
+                           ? CCOL_NUMFRACSUM1
+                           : CCOL_NUMFRACSUM2 ) );
+            tmp = sqrt( ci[tmpind]/(tmp*M_PI) );
+            ((float *)colarr)[cind] = tmp<1e-6 ? NAN : tmp;
             break;
 
           default:

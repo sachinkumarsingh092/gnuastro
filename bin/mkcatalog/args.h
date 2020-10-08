@@ -287,6 +287,8 @@ struct argp_option program_options[] =
 
 
 
+
+
     /* Upper limit magnitude configurations. */
     {
       0, 0, 0, 0,
@@ -399,6 +401,31 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
       ui_check_upperlimit
+    },
+
+
+
+
+
+    /* Other column configurations. */
+    {
+      0, 0, 0, 0,
+      "Settings for other columns:",
+      UI_GROUP_OTHERSETTINGS
+    },
+    {
+      "fracsum",
+      UI_KEY_FRACSUM,
+      "FLT[,FLT]",
+      0,
+      "Fraction(s) in --fracsumarea1 or --fracsumarea2.",
+      UI_GROUP_OTHERSETTINGS,
+      &p->fracsum,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      gal_options_parse_csv_float64
     },
 
 
@@ -1422,20 +1449,6 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
-      "areahalfsum",
-      UI_KEY_AREAHALFSUM,
-      0,
-      0,
-      "",
-      UI_GROUP_COLUMNS_MORPHOLOGY,
-      0,
-      GAL_TYPE_INVALID,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET,
-      ui_column_codes_ll
-    },
-    {
       "clumpsarea",
       UI_KEY_CLUMPSAREA,
       0,
@@ -1603,6 +1616,107 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET,
       ui_column_codes_ll
     },
+    {
+      "halfsumarea",
+      UI_KEY_HALFSUMAREA,
+      0,
+      0,
+      "Area containing half of --brightness.",
+      UI_GROUP_COLUMNS_MORPHOLOGY,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "halfsumsb",
+      UI_KEY_HALFSUMSB,
+      0,
+      0,
+      "Surface brightness within --halfsumarea.",
+      UI_GROUP_COLUMNS_MORPHOLOGY,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "halfradiusobs",
+      UI_KEY_HALFRADIUSOBS,
+      0,
+      0,
+      "Radius calculated from --halfsumarea.",
+      UI_GROUP_COLUMNS_MORPHOLOGY,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "fracsumarea1",
+      UI_KEY_FRACSUMAREA1,
+      0,
+      0,
+      "Area of 1st --fracsum of --brightness.",
+      UI_GROUP_COLUMNS_MORPHOLOGY,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "fracsumarea2",
+      UI_KEY_FRACSUMAREA2,
+      0,
+      0,
+      "Area of 2nd --fracsum of --brightness.",
+      UI_GROUP_COLUMNS_MORPHOLOGY,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "fracradiusobs1",
+      UI_KEY_FRACRADIUSOBS1,
+      0,
+      0,
+      "Radius calculated from --fracsumarea1.",
+      UI_GROUP_COLUMNS_MORPHOLOGY,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "fracradiusobs2",
+      UI_KEY_FRACRADIUSOBS2,
+      0,
+      0,
+      "Radius calculated from --fracsumarea2.",
+      UI_GROUP_COLUMNS_MORPHOLOGY,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+
+
+
 
 
     {0}
