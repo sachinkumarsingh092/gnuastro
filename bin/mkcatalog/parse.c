@@ -1183,15 +1183,18 @@ parse_clumps(struct mkcatalog_passparams *pp)
 
 
 static double
-parse_frac_sum_find(gal_data_t *sorted_d, double sum, double frac)
+parse_frac_find(gal_data_t *sorted_d, double value, double frac, int dosum)
 {
   size_t i;
-  double sumcheck=0.0f;
+  double check=0.0f;
   double *sorted=sorted_d->array;
 
   /* Parse over the sorted array and find the index. */
   for(i=0;i<sorted_d->size;++i)
-    if( (sumcheck+=sorted[i]) > sum*frac ) break;
+    if(dosum)
+      { if( (check+=sorted[i]) > value*frac ) break; }
+    else
+      { if(         sorted[i]  < value*frac ) break; }
 
   /* Return the final value. Note that if the index is zero, we should
      actually return 1, because we are starting with the maximum. */
@@ -1208,6 +1211,7 @@ parse_area_of_frac_sum(struct mkcatalog_passparams *pp, gal_data_t *values,
 {
   struct mkcatalogparams *p=pp->p;
 
+  double max, *sorted;
   gal_data_t *sorted_d;
   uint8_t *flag = o1c0 ? p->oiflag : p->ciflag;
   double sum = o1c0 ? outarr[OCOL_SUM] : outarr[CCOL_SUM];
@@ -1225,15 +1229,28 @@ parse_area_of_frac_sum(struct mkcatalog_passparams *pp, gal_data_t *values,
   /* Set the required fractions. */
   if(flag[ o1c0 ? OCOL_NUMHALFSUM : CCOL_NUMHALFSUM ])
     outarr[ o1c0 ? OCOL_NUMHALFSUM : CCOL_NUMHALFSUM ]
-      = parse_frac_sum_find(sorted_d, sum, 0.5f);
+      = parse_frac_find(sorted_d, sum, 0.5f, 1);
 
   if(flag[ o1c0 ? OCOL_NUMFRACSUM1 : CCOL_NUMFRACSUM1 ])
     outarr[ o1c0 ? OCOL_NUMFRACSUM1 : CCOL_NUMFRACSUM1 ]
-      = parse_frac_sum_find(sorted_d, sum, fracsum[0]);
+      = parse_frac_find(sorted_d, sum, fracsum[0], 1);
 
   if(flag[ o1c0 ? OCOL_NUMFRACSUM2 : CCOL_NUMFRACSUM2 ])
     outarr[ o1c0 ? OCOL_NUMFRACSUM2 : CCOL_NUMFRACSUM2 ]
-      = parse_frac_sum_find(sorted_d, sum, fracsum[1]);
+      = parse_frac_find(sorted_d, sum, fracsum[1], 1);
+
+  /* For the FWHM, we'll use the median of the top three pixels for the
+     maximum (to avoid noise). */
+  if(flag[ o1c0 ? OCOL_NUMHALFMAX : CCOL_NUMHALFMAX ])
+    {
+      sorted=sorted_d->array;
+      max = ( sorted_d->size>3
+              ? (sorted[0]+sorted[1]+sorted[2])/3
+              : sorted[0] );
+      outarr[ o1c0 ? OCOL_NUMHALFMAX : CCOL_NUMHALFMAX ]
+        = parse_frac_find(sorted_d, max, 0.5f, 0);
+      printf("area: %f (%f)\n", max, outarr[OCOL_NUMHALFMAX]);
+    }
 
   /* For a check.
   printf("%g, %g, %g\n", outarr[OCOL_NUMFRACSUM1], outarr[OCOL_NUMHALFSUM],
@@ -1270,7 +1287,10 @@ parse_order_based(struct mkcatalog_passparams *pp)
   if(tmpsize==0)
     {
       if(p->oiflag[ OCOL_MEDIAN        ]) pp->oi[ OCOL_MEDIAN       ] = NAN;
+      if(p->oiflag[ OCOL_NUMHALFMAX    ]) pp->oi[ OCOL_NUMHALFMAX   ] = 0;
       if(p->oiflag[ OCOL_NUMHALFSUM    ]) pp->oi[ OCOL_NUMHALFSUM   ] = 0;
+      if(p->oiflag[ OCOL_NUMFRACSUM1   ]) pp->oi[ OCOL_NUMFRACSUM1  ] = 0;
+      if(p->oiflag[ OCOL_NUMFRACSUM2   ]) pp->oi[ OCOL_NUMFRACSUM2  ] = 0;
       if(p->oiflag[ OCOL_SIGCLIPNUM    ]) pp->oi[ OCOL_SIGCLIPNUM   ] = 0;
       if(p->oiflag[ OCOL_SIGCLIPSTD    ]) pp->oi[ OCOL_SIGCLIPSTD   ] = 0;
       if(p->oiflag[ OCOL_SIGCLIPMEAN   ]) pp->oi[ OCOL_SIGCLIPMEAN  ] = NAN;
@@ -1280,7 +1300,10 @@ parse_order_based(struct mkcatalog_passparams *pp)
           {
             ci=&pp->ci[ i * CCOL_NUMCOLS ];
             if(p->ciflag[ CCOL_MEDIAN        ]) ci[ CCOL_MEDIAN      ] = NAN;
+            if(p->oiflag[ OCOL_NUMHALFMAX    ]) ci[ OCOL_NUMHALFMAX  ] = 0;
             if(p->ciflag[ OCOL_NUMHALFSUM    ]) ci[ CCOL_NUMHALFSUM  ] = 0;
+            if(p->oiflag[ OCOL_NUMFRACSUM1   ]) ci[ OCOL_NUMFRACSUM1 ] = 0;
+            if(p->oiflag[ OCOL_NUMFRACSUM2   ]) ci[ OCOL_NUMFRACSUM2 ] = 0;
             if(p->ciflag[ CCOL_SIGCLIPNUM    ]) ci[ CCOL_SIGCLIPNUM  ] = 0;
             if(p->ciflag[ CCOL_SIGCLIPSTD    ]) ci[ CCOL_SIGCLIPSTD  ] = 0;
             if(p->ciflag[ CCOL_SIGCLIPMEAN   ]) ci[ CCOL_SIGCLIPMEAN ] = NAN;
@@ -1392,7 +1415,8 @@ parse_order_based(struct mkcatalog_passparams *pp)
     }
 
   /* Fractional values. */
-  if( p->oiflag[    OCOL_NUMHALFSUM   ]
+  if( p->oiflag[    OCOL_NUMHALFMAX  ]
+      || p->oiflag[ OCOL_NUMHALFSUM  ]
       || p->oiflag[ OCOL_NUMFRACSUM1 ]
       || p->oiflag[ OCOL_NUMFRACSUM2 ] )
     parse_area_of_frac_sum(pp, objvals, pp->oi, 1);
@@ -1445,7 +1469,8 @@ parse_order_based(struct mkcatalog_passparams *pp)
             }
 
           /* Estimate half of the total sum. */
-          if( p->ciflag[ CCOL_NUMHALFSUM ]
+          if( p->ciflag[    CCOL_NUMHALFMAX ]
+              || p->ciflag[ CCOL_NUMHALFSUM ]
               || p->ciflag[ CCOL_NUMFRACSUM1 ]
               || p->ciflag[ CCOL_NUMFRACSUM2 ] )
             parse_area_of_frac_sum(pp, clumpsvals[i], ci, 0);

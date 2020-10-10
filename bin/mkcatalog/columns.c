@@ -1677,6 +1677,7 @@ columns_define_alloc(struct mkcatalogparams *p)
             oiflag[ OCOL_NUMFRACSUM2 ] = ciflag[ CCOL_NUMFRACSUM2 ] = 1;
           break;
 
+        case UI_KEY_FWHMOBS:
         case UI_KEY_HALFRADIUSOBS:
         case UI_KEY_FRACRADIUSOBS1:
         case UI_KEY_FRACRADIUSOBS2:
@@ -1702,6 +1703,11 @@ columns_define_alloc(struct mkcatalogparams *p)
           oiflag[ OCOL_GXY        ] = ciflag[ CCOL_GXY        ] = 1;
           switch(colcode->v)
             {
+            case UI_KEY_FWHMOBS:
+              name="FWHM_OBS";
+              oiflag[ OCOL_NUMHALFMAX  ] = ciflag[ CCOL_NUMHALFMAX  ] = 1;
+              ocomment = "Full width at half maximum (accounting for ellipticity).";
+              break;
             case UI_KEY_HALFRADIUSOBS:
               name="HALF_RADIUS_OBS";
               oiflag[ OCOL_NUMHALFSUM  ] = ciflag[ CCOL_NUMHALFSUM  ] = 1;
@@ -2084,9 +2090,9 @@ columns_fill(struct mkcatalog_passparams *pp)
   int key;
   double tmp;
   void *colarr;
-  size_t tmpind;
   gal_data_t *column;
   double *ci, *oi=pp->oi;
+  size_t tmpind=GAL_BLANK_SIZE_T;
   size_t coord[3]={GAL_BLANK_SIZE_T, GAL_BLANK_SIZE_T, GAL_BLANK_SIZE_T};
 
   size_t i, cind, coind, sr=pp->clumpstartindex, oind=GAL_BLANK_SIZE_T;
@@ -2414,23 +2420,34 @@ columns_fill(struct mkcatalog_passparams *pp)
           break;
 
         case UI_KEY_HALFSUMSB:
-          ((float *)colarr)[oind] = oi[OCOL_SUM]/2.0f/oi[OCOL_NUMHALFSUM];
-          break;
-
-        case UI_KEY_HALFRADIUSOBS:
-        case UI_KEY_FRACRADIUSOBS1:
-        case UI_KEY_FRACRADIUSOBS2:
-          /* First derive the axis ratio (as 'tmp'), then use the
-             '--halfsumarea' to estimate the effective radius. */
-          tmp = ( columns_second_order(pp, oi, UI_KEY_SEMIMINOR, 0)
-                  / columns_second_order(pp, oi, UI_KEY_SEMIMAJOR, 0) );
           tmpind = ( key==UI_KEY_HALFRADIUSOBS
                      ? OCOL_NUMHALFSUM
                      : ( key==UI_KEY_FRACRADIUSOBS1
                          ? OCOL_NUMFRACSUM1
                          : OCOL_NUMFRACSUM2 ) );
+          ((float *)colarr)[oind] = oi[OCOL_SUM]/2.0f/oi[OCOL_NUMHALFSUM];
+          break;
+
+        case UI_KEY_FWHMOBS:
+        case UI_KEY_HALFRADIUSOBS:
+        case UI_KEY_FRACRADIUSOBS1:
+        case UI_KEY_FRACRADIUSOBS2:
+          /* First derive the axis ratio (as 'tmp'), then set the index to
+             use and calculate the radius from the area and axis ratio. */
+          tmp = ( columns_second_order(pp, oi, UI_KEY_SEMIMINOR, 0)
+                  / columns_second_order(pp, oi, UI_KEY_SEMIMAJOR, 0) );
+          switch(key)
+            {
+            case UI_KEY_FWHMOBS:        tmpind=OCOL_NUMHALFMAX;  break;
+            case UI_KEY_HALFRADIUSOBS:  tmpind=OCOL_NUMHALFSUM;  break;
+            case UI_KEY_FRACRADIUSOBS1: tmpind=OCOL_NUMFRACSUM1; break;
+            case UI_KEY_FRACRADIUSOBS2: tmpind=OCOL_NUMFRACSUM2; break;
+            }
           tmp = sqrt( oi[tmpind]/(tmp*M_PI) );
-          ((float *)colarr)[oind] = tmp<1e-6 ? NAN : tmp;
+          if(key==UI_KEY_FWHMOBS)
+            ((float *)colarr)[oind] = (tmp<1e-6 ? NAN : tmp)*2;
+          else
+            ((float *)colarr)[oind] = tmp<1e-6 ? NAN : tmp;
           break;
 
         default:
@@ -2703,16 +2720,19 @@ columns_fill(struct mkcatalog_passparams *pp)
             ((float *)colarr)[cind] = ci[CCOL_SUM]/2.0f/ci[CCOL_NUMHALFSUM];
             break;
 
+          case UI_KEY_FWHMOBS:
           case UI_KEY_HALFRADIUSOBS:
           case UI_KEY_FRACRADIUSOBS1:
           case UI_KEY_FRACRADIUSOBS2:
             tmp = ( columns_second_order(  pp, ci, UI_KEY_SEMIMINOR, 1)
                     / columns_second_order(pp, ci, UI_KEY_SEMIMAJOR, 1) );
-            tmpind = ( key==UI_KEY_HALFRADIUSOBS
-                       ? CCOL_NUMHALFSUM
-                       : ( key==UI_KEY_FRACRADIUSOBS1
-                           ? CCOL_NUMFRACSUM1
-                           : CCOL_NUMFRACSUM2 ) );
+            switch(key)
+              {
+              case UI_KEY_FWHMOBS:        tmpind=CCOL_NUMHALFMAX;  break;
+              case UI_KEY_HALFRADIUSOBS:  tmpind=CCOL_NUMHALFSUM;  break;
+              case UI_KEY_FRACRADIUSOBS1: tmpind=CCOL_NUMFRACSUM1; break;
+              case UI_KEY_FRACRADIUSOBS2: tmpind=CCOL_NUMFRACSUM2; break;
+              }
             tmp = sqrt( ci[tmpind]/(tmp*M_PI) );
             ((float *)colarr)[cind] = tmp<1e-6 ? NAN : tmp;
             break;

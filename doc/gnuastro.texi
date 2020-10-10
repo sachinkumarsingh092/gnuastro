@@ -16270,6 +16270,16 @@ first two dimensions. This is only available for 3-dimensional
 datasets. When working with Integral Field Unit (IFU) datasets, this
 projection onto the first two dimensions would be a narrow-band image.
 
+@item --fwhmobs
+@cindex FWHM
+The full width at half maximum (in units of pixels, along the semi-major axis) of the labeled region (object or clump).
+The maximum value is estimated from the mean of the top-three pixels with the highest values (to avoid noise fluctuations which can be large due to Poisson noise).
+The number of pixels that have half the value of that maximum are then found and a radius is estimated from the area.
+See the description under @option{--halfradiusobs} for more on converting area to radius along major axis.
+
+It is therefore important to highlight that this FWHM is not estimated from a parametric fit to the labeled region: it does not account for the PSF, and it will be strongly affected by noise.
+So when half the maximum value is too close to the noise level, the value returned by this function is meaningless (its just noise peaks which are randomly distributed over the area).
+
 @item --halfsumarea
 The number of pixels that contain half the object or clump's total sum of pixels (half the value in the @option{--brightness} column).
 To count this area, all the non-blank values associated with the given label (object or clump) will be sorted and summed in order (starting from the maximum), until the sum becomes larger than half the total sum of the label's pixels.

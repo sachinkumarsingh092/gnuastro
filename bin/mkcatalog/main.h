@@ -109,6 +109,7 @@ enum objectcols
     OCOL_UPPERLIMIT_S,   /* Upper limit one-sigma value.              */
     OCOL_UPPERLIMIT_Q,   /* Quantile of object in random distribution.*/
     OCOL_UPPERLIMIT_SKEW,/* (Mean-Median)/STD of random distribution. */
+    OCOL_NUMHALFMAX,     /* Area/Number of pixels above half of max.  */
     OCOL_NUMHALFSUM,     /* Area/Number containing half of total sum. */
     OCOL_NUMFRACSUM1,    /* Area/Number containing frac of total sum. */
     OCOL_NUMFRACSUM2,    /* Area/Number containing frac of total sum. */
@@ -177,6 +178,7 @@ enum clumpcols
     CCOL_UPPERLIMIT_S,   /* Upper limit one-sigma value.              */
     CCOL_UPPERLIMIT_Q,   /* Quantile of object in random distribution.*/
     CCOL_UPPERLIMIT_SKEW,/* (Mean-Median)/STD of random distribution. */
+    CCOL_NUMHALFMAX,     /* Area/Number of pixels above half of max.  */
     CCOL_NUMHALFSUM,     /* Area/Number containing half of total sum. */
     CCOL_NUMFRACSUM1,    /* Area/Number containing frac of total sum. */
     CCOL_NUMFRACSUM2,    /* Area/Number containing frac of total sum. */

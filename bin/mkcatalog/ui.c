@@ -996,6 +996,7 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
         case OCOL_UPPERLIMIT_S:       *values        = 1;          break;
         case OCOL_UPPERLIMIT_Q:       *values        = 1;          break;
         case OCOL_UPPERLIMIT_SKEW:    *values        = 1;          break;
+        case OCOL_NUMHALFMAX:         *values        = 1;          break;
         case OCOL_NUMHALFSUM:         *values        = 1;          break;
         case OCOL_NUMFRACSUM1:        *values        = 1;          break;
         case OCOL_NUMFRACSUM2:        *values        = 1;          break;
@@ -1069,6 +1070,7 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
           case CCOL_UPPERLIMIT_S:     *values        = 1;          break;
           case CCOL_UPPERLIMIT_Q:     *values        = 1;          break;
           case CCOL_UPPERLIMIT_SKEW:  *values        = 1;          break;
+          case CCOL_NUMHALFMAX:       *values        = 1;          break;
           case CCOL_NUMHALFSUM:       *values        = 1;          break;
           case CCOL_NUMFRACSUM1:      *values        = 1;          break;
           case CCOL_NUMFRACSUM2:      *values        = 1;          break;

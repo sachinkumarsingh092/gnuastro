@@ -1617,6 +1617,20 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
+      "fwhmobs",
+      UI_KEY_FWHMOBS,
+      0,
+      0,
+      "Full width at half max (non-parametric).",
+      UI_GROUP_COLUMNS_MORPHOLOGY,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
       "halfsumarea",
       UI_KEY_HALFSUMAREA,
       0,
