@@ -42,6 +42,7 @@ See the end of the file for license conditions.
      within the image.
 
   MakeCatalog:
+   --areaarcsec2: area of labeled region (clump/object) in arcsec^2.
    --fwhmobs: The observed FWHM in pixels, along the major axis.
    --fracsum: fractions to use in '--fracsumarea1' or '--fracsumarea2'.
    --fracsumarea1: area of given fraction of the summed object or clump values.

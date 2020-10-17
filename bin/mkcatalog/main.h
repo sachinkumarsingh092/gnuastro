@@ -268,6 +268,7 @@ struct mkcatalogparams
   size_t         *numclumps_c;  /* To sort the clumps table by Obj.ID.  */
   gal_data_t   *specsliceinfo;  /* Slice information for spectra.       */
   gal_data_t         *spectra;  /* Array of datasets containing spectra.*/
+  double            pixelarea;  /* Area of input's pixels.              */
 
   char        *usedvaluesfile;  /* Ptr to final name used for values.   */
   char        *usedclumpsfile;  /* Ptr to final name used for clumps.   */

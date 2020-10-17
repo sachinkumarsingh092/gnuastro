@@ -126,6 +126,7 @@ ui_initialize_options(struct mkcatalogparams *p,
   p->sfmagarea      = NAN;
   p->upnsigma       = NAN;
   p->zeropoint      = NAN;
+  p->pixelarea      = NAN;
   p->sigmaclip[0]   = NAN;
   p->sigmaclip[1]   = NAN;
   p->upsigmaclip[0] = NAN;

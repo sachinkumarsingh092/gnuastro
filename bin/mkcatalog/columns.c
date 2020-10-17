@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <pthread.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/pointer.h>
 
 #include <gnuastro-internal/checkset.h>
@@ -189,6 +190,7 @@ static void
 columns_wcs_preparation(struct mkcatalogparams *p)
 {
   size_t i;
+  double *pixscale;
   gal_list_i32_t *colcode;
   int continue_wcs_check=1;
 
@@ -202,6 +204,7 @@ columns_wcs_preparation(struct mkcatalogparams *p)
             /* High-level. */
             case UI_KEY_RA:
             case UI_KEY_DEC:
+            case UI_KEY_AREAARCSEC2:
 
             /* Low-level. */
             case UI_KEY_W1:
@@ -245,6 +248,13 @@ columns_wcs_preparation(struct mkcatalogparams *p)
           error(EXIT_FAILURE, 0, "%s (hdu: %s): %s not present in any of "
                 "the WCS axis types (CTYPE)", p->objectsfile, p->cp.hdu,
                 colcode->v==UI_KEY_RA ? "RA" : "DEC");
+        break;
+
+      /* Calculate the pixel area if necessary. */
+      case UI_KEY_AREAARCSEC2:
+        pixscale=gal_wcs_pixel_scale(p->objects->wcs);
+        p->pixelarea=pixscale[0]*pixscale[1];
+        free(pixscale);
         break;
       }
 }
@@ -434,6 +444,19 @@ columns_define_alloc(struct mkcatalogparams *p)
           ccomment       = ocomment;
           otype          = GAL_TYPE_INT32;
           ctype          = GAL_TYPE_INT32;
+          disp_fmt       = 0;
+          disp_width     = 6;
+          disp_precision = 0;
+          oiflag[ OCOL_NUM ] = ciflag[ CCOL_NUM ] = 1;
+          break;
+
+        case UI_KEY_AREAARCSEC2:
+          name           = "AREA_ARCSEC2";
+          unit           = "arcsec2";
+          ocomment       = "Number of non-blank pixels in arcsec^2";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
           disp_fmt       = 0;
           disp_width     = 6;
           disp_precision = 0;
@@ -2138,6 +2161,10 @@ columns_fill(struct mkcatalog_passparams *pp)
           ((int32_t *)colarr)[oind] = oi[OCOL_NUM];
           break;
 
+        case UI_KEY_AREAARCSEC2:
+          ((float *)colarr)[oind] = oi[OCOL_NUM]*p->pixelarea*(3600*3600);
+          break;
+
         case UI_KEY_AREAXY:
           ((int32_t *)colarr)[oind] = oi[OCOL_NUMXY];
           break;
@@ -2486,6 +2513,10 @@ columns_fill(struct mkcatalog_passparams *pp)
 
           case UI_KEY_AREA:
             ((int32_t *)colarr)[cind]=ci[CCOL_NUM];
+            break;
+
+          case UI_KEY_AREAARCSEC2:
+            ((float *)colarr)[cind]=ci[CCOL_NUM]*p->pixelarea*(3600*3600);
             break;
 
           case UI_KEY_AREAXY:

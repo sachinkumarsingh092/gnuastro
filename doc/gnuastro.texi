@@ -16262,6 +16262,11 @@ This is the square root of the mean variance under the object, or the root mean 
 @itemx --area
 The raw area (number of pixels/voxels) in any clump or object independent of what pixel it lies over (if it is NaN/blank or unused for example).
 
+@item --areaarcsec2
+The used (non-blank in values image) area of the labeled region in units of arcsec squared.
+This column is just the value of the @option{--area} column, multiplied by the area of each pixel in the input image (in units of arcsec^2).
+Similar to the @option{--ra} or @option{--dec} columns, for this option to work, the objects extension used has to have a WCS structure.
+
 @item --areaxy
 @cindex IFU: Integral Field Unit
 @cindex Integral Field Unit

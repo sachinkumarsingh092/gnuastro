@@ -105,6 +105,7 @@ enum option_keys_enum
   UI_KEY_CHECKUPLIM,
   UI_KEY_NOCLUMPSORT,
   UI_KEY_FRACSUM,
+  UI_KEY_AREAARCSEC2,
 
   UI_KEY_OBJID,                         /* Catalog columns. */
   UI_KEY_IDINHOSTOBJ,
