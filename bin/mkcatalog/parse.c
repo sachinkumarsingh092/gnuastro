@@ -1249,7 +1249,6 @@ parse_area_of_frac_sum(struct mkcatalog_passparams *pp, gal_data_t *values,
               : sorted[0] );
       outarr[ o1c0 ? OCOL_NUMHALFMAX : CCOL_NUMHALFMAX ]
         = parse_frac_find(sorted_d, max, 0.5f, 0);
-      printf("area: %f (%f)\n", max, outarr[OCOL_NUMHALFMAX]);
     }
 
   /* For a check.
