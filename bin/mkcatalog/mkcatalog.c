@@ -182,6 +182,9 @@ mkcatalog_single_object(void *in_prm)
       /* If an order-based calculation is requested, another pass is
          necessary. */
       if( p->oiflag[ OCOL_MEDIAN ]
+          || p->oiflag[ OCOL_MAXIMUM ]
+          || p->oiflag[ OCOL_SUMHALFMAX ]
+          || p->oiflag[ OCOL_NUMHALFMAX ]
           || p->oiflag[ OCOL_NUMHALFSUM ]
           || p->oiflag[ OCOL_SIGCLIPNUM ]
           || p->oiflag[ OCOL_SIGCLIPSTD ]

@@ -1202,6 +1202,20 @@ columns_define_alloc(struct mkcatalogparams *p)
                                    ciflag[ CCOL_RIV_SUM ] = 1;
           break;
 
+        case UI_KEY_MAXIMUM:
+          name           = "MAXIMUM";
+          unit           = MKCATALOG_NO_UNIT;
+          ocomment       = "Maximum of sky subtracted values.";
+          ccomment       = "Maximum of pixels subtracted by rivers.";
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
+          disp_width     = 10;
+          disp_precision = 5;
+          oiflag[ OCOL_NUM     ] = ciflag[ CCOL_NUM     ] = 1;
+          oiflag[ OCOL_MAXIMUM ] = ciflag[ CCOL_MAXIMUM ] = 1;
+          break;
+
         case UI_KEY_SIGCLIPNUMBER:
           name           = "SIGCLIP-NUMBER";
           unit           = "counter";
@@ -1665,10 +1679,53 @@ columns_define_alloc(struct mkcatalogparams *p)
           oiflag[ OCOL_NUMHALFSUM ] = ciflag[ CCOL_NUMHALFSUM ] = 1;
           break;
 
+        case UI_KEY_HALFMAXAREA:
+          name           = "HALF_MAX_AREA";
+          unit           = "counter";
+          ocomment       = "Number of pixels with a value larger than half the maximum.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_INT32;
+          ctype          = GAL_TYPE_INT32;
+          disp_fmt       = 0;
+          disp_width     = 6;
+          disp_precision = 0;
+          oiflag[ OCOL_NUM         ] = ciflag[ CCOL_NUM         ] = 1;
+          oiflag[ OCOL_NUMHALFMAX  ] = ciflag[ CCOL_NUMHALFMAX  ] = 1;
+          break;
+
+        case UI_KEY_HALFMAXSUM:
+          name           = "HALF_MAX_SUM";
+          unit           = MKCATALOG_NO_UNIT;
+          ocomment       = "Sum of pixels with a value larger than half the maximum.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = 0;
+          disp_width     = 6;
+          disp_precision = 0;
+          oiflag[ OCOL_NUM         ] = ciflag[ CCOL_NUM         ] = 1;
+          oiflag[ OCOL_SUMHALFMAX  ] = ciflag[ CCOL_SUMHALFMAX  ] = 1;
+          break;
+
+        case UI_KEY_HALFMAXSB:
+          name           = "HALF_MAX_SB";
+          unit           = MKCATALOG_NO_UNIT;
+          ocomment       = "Brightness within half the maximum, divided by its area.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = 0;
+          disp_width     = 6;
+          disp_precision = 0;
+          oiflag[ OCOL_NUM         ] = ciflag[ CCOL_NUM         ] = 1;
+          oiflag[ OCOL_NUMHALFMAX  ] = ciflag[ CCOL_NUMHALFMAX  ] = 1;
+          oiflag[ OCOL_SUMHALFMAX  ] = ciflag[ CCOL_SUMHALFMAX  ] = 1;
+          break;
+
         case UI_KEY_HALFSUMSB:
           name           = "HALF_SUM_SB";
           unit           = MKCATALOG_NO_UNIT;
-          ocomment       = "Surface brightness within area containing half total sum.";
+          ocomment       = "Half the brightness, divided by its area.";
           otype          = GAL_TYPE_FLOAT32;
           ctype          = GAL_TYPE_FLOAT32;
           disp_fmt       = GAL_TABLE_DISPLAY_FMT_GENERAL;
@@ -2329,6 +2386,10 @@ columns_fill(struct mkcatalog_passparams *pp)
                                       : NAN );
           break;
 
+        case UI_KEY_MAXIMUM:
+          ((float *)colarr)[oind] = oi[ OCOL_MAXIMUM ];
+          break;
+
         case UI_KEY_SIGCLIPNUMBER:
           ((int32_t *)colarr)[oind] = oi[ OCOL_SIGCLIPNUM ];
           break;
@@ -2438,6 +2499,18 @@ columns_fill(struct mkcatalog_passparams *pp)
           ((int32_t *)colarr)[oind] = oi[OCOL_NUMHALFSUM];
           break;
 
+        case UI_KEY_HALFMAXAREA:
+          ((int32_t *)colarr)[oind] = oi[OCOL_NUMHALFMAX];
+          break;
+
+        case UI_KEY_HALFMAXSUM:
+          ((float *)colarr)[oind] = oi[OCOL_SUMHALFMAX];
+          break;
+
+        case UI_KEY_HALFMAXSB:
+          ((float *)colarr)[oind] = oi[OCOL_SUMHALFMAX]/oi[OCOL_NUMHALFMAX];
+          break;
+
         case UI_KEY_FRACSUMAREA1:
           ((int32_t *)colarr)[oind] = oi[OCOL_NUMFRACSUM1];
           break;
@@ -2472,7 +2545,7 @@ columns_fill(struct mkcatalog_passparams *pp)
             }
           tmp = sqrt( oi[tmpind]/(tmp*M_PI) );
           if(key==UI_KEY_FWHMOBS)
-            ((float *)colarr)[oind] = (tmp<1e-6 ? NAN : tmp)*2;
+            ((float *)colarr)[oind] = tmp<1e-6 ? NAN : (tmp*2);
           else
             ((float *)colarr)[oind] = tmp<1e-6 ? NAN : tmp;
           break;
@@ -2623,6 +2696,10 @@ columns_fill(struct mkcatalog_passparams *pp)
                                         ? ci[ CCOL_MEDIAN ] : NAN );
             break;
 
+          case UI_KEY_MAXIMUM:
+            ((float *)colarr)[cind] = ci[ CCOL_MAXIMUM ];
+            break;
+
           case UI_KEY_SIGCLIPNUMBER:
             ((int32_t *)colarr)[cind] = ci[ CCOL_SIGCLIPNUM ];
             break;
@@ -2739,6 +2816,18 @@ columns_fill(struct mkcatalog_passparams *pp)
             ((int32_t *)colarr)[cind] = ci[CCOL_NUMHALFSUM];
             break;
 
+          case UI_KEY_HALFMAXAREA:
+            ((int32_t *)colarr)[cind] = ci[CCOL_NUMHALFMAX];
+            break;
+
+          case UI_KEY_HALFMAXSUM:
+            ((float *)colarr)[cind] = ci[CCOL_SUMHALFMAX];
+            break;
+
+          case UI_KEY_HALFMAXSB:
+            ((float *)colarr)[cind] = ci[CCOL_SUMHALFMAX]/ci[CCOL_NUMHALFMAX];
+            break;
+
           case UI_KEY_FRACSUMAREA1:
             ((int32_t *)colarr)[cind] = ci[CCOL_NUMFRACSUM1];
             break;
@@ -2765,7 +2854,10 @@ columns_fill(struct mkcatalog_passparams *pp)
               case UI_KEY_FRACRADIUSOBS2: tmpind=CCOL_NUMFRACSUM2; break;
               }
             tmp = sqrt( ci[tmpind]/(tmp*M_PI) );
-            ((float *)colarr)[cind] = tmp<1e-6 ? NAN : tmp;
+            if(key==UI_KEY_FWHMOBS)
+              ((float *)colarr)[cind] = tmp<1e-6 ? NAN : (tmp*2);
+            else
+              ((float *)colarr)[cind] = tmp<1e-6 ? NAN : tmp;
             break;
 
           default:

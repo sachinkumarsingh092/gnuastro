@@ -16163,6 +16163,12 @@ For clumps, the average river flux is subtracted from the sky subtracted mean.
 The median sky subtracted value of pixels within the object or clump.
 For clumps, the average river flux is subtracted from the sky subtracted median.
 
+@item --maximum
+The maximum value of pixels within the object or clump.
+When the label (object or clump) is larger than three pixels, the maximum is actually derived by the mean of the brightest three pixels, not the largest pixel value of the same label.
+This is because noise fluctuations can be very strong in the extreme values of the objects/clumps due to Poisson noise (which gets stronger as the mean gets higher).
+Simply using the maximum pixel value will create a strong scatter in results that depend on the maximum (for example the @option{--fwhmobs} option also uses this value internally).
+
 @item --sigclip-number
 The number of elements/pixels in the dataset after sigma-clipping the object or clump.
 The sigma-clipping parameters can be set with the @option{--sigmaclip} option described in @ref{MakeCatalog inputs and basic settings}.
@@ -16278,12 +16284,31 @@ projection onto the first two dimensions would be a narrow-band image.
 @item --fwhmobs
 @cindex FWHM
 The full width at half maximum (in units of pixels, along the semi-major axis) of the labeled region (object or clump).
-The maximum value is estimated from the mean of the top-three pixels with the highest values (to avoid noise fluctuations which can be large due to Poisson noise).
-The number of pixels that have half the value of that maximum are then found and a radius is estimated from the area.
+The maximum value is estimated from the mean of the top-three pixels with the highest values, see the description under @option{--maximum}.
+The number of pixels that have half the value of that maximum are then found (value in the @option{--halfmaxarea} column) and a radius is estimated from the area.
 See the description under @option{--halfradiusobs} for more on converting area to radius along major axis.
 
-It is therefore important to highlight that this FWHM is not estimated from a parametric fit to the labeled region: it does not account for the PSF, and it will be strongly affected by noise.
-So when half the maximum value is too close to the noise level, the value returned by this function is meaningless (its just noise peaks which are randomly distributed over the area).
+Because of its non-parametric nature, this column is most reliable on clumps and should only be used in objects with great causion.
+This is because objects can have more than one clump (peak with true signal) and multiple peaks are not treated separately in objects, so the result of this column will be biased.
+
+Also, because of its non-parametric nature, this FWHM it does not account for the PSF, and it will be strongly affected by noise if the object is faint.
+So when half the maximum value (which can be requested using the @option{--maximum} column) is too close to the local noise level (which can be requested using the @option{--std} column), the value returned in this column is meaningless (its just noise peaks which are randomly distributed over the area).
+You can therefore use the @option{--maximum} and @option{--std} columns to remove unreliable FWHMs.
+For example if a labeled region's maximum is less than 2 times the sky standard deviation, the value will certainly be unreliable (half of that is @mymath{1\sigma}!).
+For a more reliable value, this fraction should be around 4 (so half the maximum is 2@mymath{\sigma}).
+
+@item --halfmaxarea
+The number of pixels containing half the maximum flux within the labeled region.
+This option is used to estimate @option{--fwhmobs}, so please read the notes there for the cavaeats and necessary precautions.
+
+@item --halfmaxsum
+The sum of the pixel values containing half the maximum flux within the labeled region (or those that are counted in @option{--halfmaxarea}).
+This option uses the pixels within @option{--fwhmobs}, so please read the notes there for the cavaeats and necessary precautions.
+
+@item --halfmaxsb
+The surface brightness within the region that contains half the maximum value of the labeled region.
+This column is just the division of the @option{--halfmaxsum} column by @option{--halfmaxarea} column.
+So please see their documentation for the caveats and necessary precautions.
 
 @item --halfsumarea
 The number of pixels that contain half the object or clump's total sum of pixels (half the value in the @option{--brightness} column).

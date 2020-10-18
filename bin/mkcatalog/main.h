@@ -76,7 +76,8 @@ enum objectcols
     OCOL_NUMXY,          /* Number of values in the first two dims.   */
     OCOL_SUM,            /* Sum of (value-sky) in object.             */
     OCOL_SUM_VAR,        /* Variance including values (not just sky). */
-    OCOL_MEDIAN,         /* Median of value in object.                */
+    OCOL_MEDIAN,         /* Median of values in object.               */
+    OCOL_MAXIMUM,        /* Maximum value in object.                  */
     OCOL_SIGCLIPNUM,     /* Sigma-clipped mean of this object.        */
     OCOL_SIGCLIPSTD,     /* Sigma-clipped mean of this object.        */
     OCOL_SIGCLIPMEAN,    /* Sigma-clipped mean of this object.        */
@@ -110,6 +111,7 @@ enum objectcols
     OCOL_UPPERLIMIT_Q,   /* Quantile of object in random distribution.*/
     OCOL_UPPERLIMIT_SKEW,/* (Mean-Median)/STD of random distribution. */
     OCOL_NUMHALFMAX,     /* Area/Number of pixels above half of max.  */
+    OCOL_SUMHALFMAX,     /* Sum of pixels above half of max.          */
     OCOL_NUMHALFSUM,     /* Area/Number containing half of total sum. */
     OCOL_NUMFRACSUM1,    /* Area/Number containing frac of total sum. */
     OCOL_NUMFRACSUM2,    /* Area/Number containing frac of total sum. */
@@ -137,6 +139,7 @@ enum clumpcols
     CCOL_SUM,            /* River subtracted brightness.              */
     CCOL_SUM_VAR,        /* Variance including values (not just sky). */
     CCOL_MEDIAN,         /* Median of values in clump.                */
+    CCOL_MAXIMUM,        /* Maximum value in clump.                   */
     CCOL_SIGCLIPNUM,     /* Sigma-clipped mean of this clump.         */
     CCOL_SIGCLIPSTD,     /* Sigma-clipped mean of this clump.         */
     CCOL_SIGCLIPMEAN,    /* Sigma-clipped mean of this clump.         */
@@ -179,6 +182,7 @@ enum clumpcols
     CCOL_UPPERLIMIT_Q,   /* Quantile of object in random distribution.*/
     CCOL_UPPERLIMIT_SKEW,/* (Mean-Median)/STD of random distribution. */
     CCOL_NUMHALFMAX,     /* Area/Number of pixels above half of max.  */
+    CCOL_SUMHALFMAX,     /* Sum of pixels above half of max.          */
     CCOL_NUMHALFSUM,     /* Area/Number containing half of total sum. */
     CCOL_NUMFRACSUM1,    /* Area/Number containing frac of total sum. */
     CCOL_NUMFRACSUM2,    /* Area/Number containing frac of total sum. */
