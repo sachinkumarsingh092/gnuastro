@@ -538,7 +538,7 @@ MakeProfiles
 
 * Modeling basics::             Astronomical modeling basics.
 * If convolving afterwards::    Considerations for convolving later.
-* Flux Brightness and magnitude::  About these measures of energy.
+* Brightness flux magnitude::   About these measures of energy.
 * Profile magnitude::           Definition of total profile magnitude.
 * Invoking astmkprof::          Inputs and Options for MakeProfiles.
 
@@ -1671,7 +1671,7 @@ $ cat cat.txt
 @end example
 
 @noindent
-The zero-point magnitude for his observation was 18.
+The zero point magnitude for his observation was 18.
 Now he has all the necessary parameters and runs MakeProfiles with the following command:
 
 @example
@@ -1802,7 +1802,7 @@ This is the same dimensions as Sufi had desired in the beginning.
 All this trouble was certainly worth it because now there is no dimming on the edges of the image and the profile centers are more accurately sampled.
 
 The final step to simulate a real observation would be to add noise to the image.
-Sufi set the zeropoint magnitude to the same value that he set when making the mock profiles and looking again at his observation log, he had measured the background flux near the nebula had a magnitude of 7 that night.
+Sufi set the zero point magnitude to the same value that he set when making the mock profiles and looking again at his observation log, he had measured the background flux near the nebula had a magnitude of 7 that night.
 So using these values he ran MakeNoise:
 
 @example
@@ -1903,7 +1903,7 @@ Until now he was using the graphical user interface which doesn't have such a fa
 So he left to go and try scripting on his own computer.
 
 Sufi could now get back to his own work and see if the simulated nebula which resembled the one in the Andromeda constellation could be detected or not.
-Although it was extremely faint@footnote{The brightness of a diffuse object is added over all its pixels to give its final magnitude, see @ref{Flux Brightness and magnitude}.
+Although it was extremely faint@footnote{The brightness of a diffuse object is added over all its pixels to give its final magnitude, see @ref{Brightness flux magnitude}.
 So although the magnitude 3.44 (of the mock nebula) is orders of magnitude brighter than 6 (of the stars), the central galaxy is much fainter.
 Put another way, the brightness is distributed over a large area in the case of a nebula.}, fortunately it passed his detection tests and he wrote it in the draft manuscript that would later become ``Book of fixed stars''.
 He still had to check the other nebula he saw from Yemen and several other such objects, but they could wait until tomorrow (thanks to the shell script, he only has to define a new catalog).
@@ -3053,7 +3053,7 @@ You can do this with MakeCatalog and is one of the reasons that NoiseChisel or S
 The F160W image is deeper, thus providing better detection/segmentation, and redder, thus observing smaller/older stars and representing more of the mass in the galaxies.
 We will thus use the F160W filter as a reference and use its segment labels to identify which pixels to use for which objects/clumps.
 But we will do the measurements on the sky-subtracted F105W and F125W images (using MakeCatalog's @option{--valuesfile} option) as shown below:
-Notice how the major difference between this call to MakeCatalog and the call to generate the F160W catalog (excluding the zeropoint and the output name) is the @option{--valuesfile}.
+Notice how the major difference between this call to MakeCatalog and the call to generate the F160W catalog (excluding the zero point and the output name) is the @option{--valuesfile}.
 
 @example
 $ astmkcatalog seg/xdf-f160w.fits --ids --ra --dec --magnitude --sn \
@@ -3375,7 +3375,7 @@ $ astmkcatalog apertures.fits -h1 --zeropoint=26.27 \
 This catalog has the same number of rows as the catalog produced from clumps in @ref{Working with catalogs estimating colors}.
 Therefore similar to how we found colors, you can compare the aperture and clump magnitudes for example.
 
-You can also change the filter name and zeropoint magnitudes and run this command again to have the fixed aperture magnitude in the F160W filter and measure colors on apertures.
+You can also change the filter name and zero point magnitudes and run this command again to have the fixed aperture magnitude in the F160W filter and measure colors on apertures.
 
 
 
@@ -4317,7 +4317,7 @@ $ echo $f
 
 @noindent
 We can just multiply the two to get the average flux on this border in one arcsecond squared.
-The pixel values are calibrated to be in units of ``nanomaggy'', so the zeropoint magnitude is 22.5@footnote{From @url{https://www.sdss.org/dr12/algorithms/magnitudes}}.
+The pixel values are calibrated to be in units of ``nanomaggy'', so the zero point magnitude is 22.5@footnote{From @url{https://www.sdss.org/dr12/algorithms/magnitudes}}.
 Therefore we can get the surface brightness of the outer edge (in magnitudes per arcsecond squared) using the following command.
 Just note that @code{log} in AWK is in base-2 (not 10), and that AWK doesn't have a @code{log10} operator.
 So we'll do an extra division by @code{log(10)} to correct for this.
@@ -11686,7 +11686,7 @@ Technically speaking, only if the kernel is flipped the process is known @emph{C
 If it isn't it is known as @emph{Correlation}.
 
 To be a weighted average, the sum of the weights (the pixels in the kernel) have to be unity.
-This will have the consequence that the convolved image of an object and unconvolved object will have the same brightness (see @ref{Flux Brightness and magnitude}), which is natural, because convolution should not eat up the object photons, it only disperses them.
+This will have the consequence that the convolved image of an object and unconvolved object will have the same brightness (see @ref{Brightness flux magnitude}), which is natural, because convolution should not eat up the object photons, it only disperses them.
 
 
 
@@ -11700,7 +11700,7 @@ Here we will explain the problem in the spatial domain.
 For a discussion of this problem from the frequency domain perspective, see @ref{Edges in the frequency domain}.
 The problem originates from the fact that on the edges, in practice@footnote{Because we assumed the overlapping pixels outside the input image have a value of zero.}, the sum of the weights we use on the actual image pixels is not unity.
 For example, as discussed above, a profile in the center of an image will have the same brightness before and after convolution.
-However, for partially imaged profile on the edge of the image, the brightness (sum of its pixel fluxes within the image, see @ref{Flux Brightness and magnitude}) will not be equal, some of the flux is going to be `eaten' by the edges.
+However, for partially imaged profile on the edge of the image, the brightness (sum of its pixel fluxes within the image, see @ref{Brightness flux magnitude}) will not be equal, some of the flux is going to be `eaten' by the edges.
 
 If you ran @command{$ make check} on the source files of Gnuastro, you can see the this effect by comparing the @file{convolve_frequency.fits} with @file{convolve_spatial.fits} in the @file{./tests/} directory.
 In the spatial domain, by default, no assumption will be made about pixels outside of the image or any blank pixels in the image.
@@ -12851,7 +12851,7 @@ This technique requires no functions, it is thus non-parametric.
 It is also the closest we can get (make least assumptions) to what actually happens on the detector pixels.
 The basic idea is that you reverse-transform each output pixel to find which pixels of the input image it covers and what fraction of the area of the input pixels are covered.
 To find the output pixel value, you simply sum the value of each input pixel weighted by the overlapfraction (between 0 to 1) of the output pixel and that input pixel.
-Through this process, pixels are treated as an area not as a point (which is how detectors create the image), also the brightness (see @ref{Flux Brightness and magnitude}) of an object will be left completely unchanged.
+Through this process, pixels are treated as an area not as a point (which is how detectors create the image), also the brightness (see @ref{Brightness flux magnitude}) of an object will be left completely unchanged.
 
 If there are very high spatial-frequency signals in the image (for example fringes) which vary on a scale smaller than your output image pixel size, pixel mixing can cause ailiasing@footnote{@url{http://en.wikipedia.org/wiki/Aliasing}}.
 So if the input image has fringes, they have to be calculated and removed separately (which would naturally be done in any astronomical  application).
@@ -13301,7 +13301,7 @@ A more crude (but simpler method) that is usable in such situations is discussed
 
 @cindex Sky value
 This analysis is taken from @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa (2015)}.
-Let's assume that all instrument defects -- bias, dark and flat -- have been corrected and the brightness (see @ref{Flux Brightness and magnitude}) of a detected object, @mymath{O}, is desired.
+Let's assume that all instrument defects -- bias, dark and flat -- have been corrected and the brightness (see @ref{Brightness flux magnitude}) of a detected object, @mymath{O}, is desired.
 The sources of flux on pixel@footnote{For this analysis the dimension of the data (image) is irrelevant.
 So if the data is an image (2D) with width of @mymath{w} pixels, then a pixel located on column @mymath{x} and row @mymath{y} (where all counting starts from zero and (0, 0) is located on the bottom left corner of the image), would have an index: @mymath{i=x+y\times{}w}.} @mymath{i} of the image can be written as follows:
 
@@ -15050,7 +15050,7 @@ The full distribution of clump signal-to-noise ratios over the undetected areas 
 @item -v
 @itemx --keepmaxnearriver
 Keep a clump whose maximum (minimum if @option{--minima} is called) flux is 8-connected to a river pixel.
-By default such clumps over detections are considered to be noise and are removed irrespective of their brightness (see @ref{Flux Brightness and magnitude}).
+By default such clumps over detections are considered to be noise and are removed irrespective of their brightness (see @ref{Brightness flux magnitude}).
 Over large profiles, that sink into the noise very slowly, noise can cause part of the profile (which was flat without noise) to become a very large and with a very high Signal to noise ratio.
 In such cases, the pixel with the maximum flux in the clump will be immediately touching a river pixel.
 
@@ -15314,7 +15314,7 @@ Hence, quantifying the detection and measurement limitations with a particular d
 
 Here, we'll review some of the most general limits that are important in any astronomical data analysis and how MakeCatalog makes it easy to find them.
 Depending on the higher-level analysis, there are more tests that must be done, but these are relatively low-level and usually necessary in most cases.
-In astronomy, it is common to use the magnitude (a unit-less scale) and physical units, see @ref{Flux Brightness and magnitude}.
+In astronomy, it is common to use the magnitude (a unit-less scale) and physical units, see @ref{Brightness flux magnitude}.
 Therefore the measurements discussed here are commonly used in units of magnitudes.
 
 @table @asis
@@ -15342,7 +15342,7 @@ Let's take @mymath{\sigma_m} as the median @mymath{\sigma} over the successful m
 On different instruments, pixels have different physical sizes (for example in micro-meters, or spatial angle over the sky).
 Nevertheless, a pixel is our unit of data collection.
 In other words, while quantifying the noise, the physical or projected size of the pixels is irrelevant.
-We thus define the Surface brightness limit or @emph{depth}, in units of magnitude/pixel, of a data-set, with zeropoint magnitude @mymath{z}, with the @mymath{n}th multiple of @mymath{\sigma_m} as (see @ref{Flux Brightness and magnitude}):
+We thus define the Surface brightness limit or @emph{depth}, in units of magnitude/pixel, of a data-set, with zeropoint magnitude @mymath{z}, with the @mymath{n}th multiple of @mymath{\sigma_m} as (see @ref{Brightness flux magnitude}):
 
 @dispmath{SB_{\rm Pixel}=-2.5\times\log_{10}{(n\sigma_m)}+z}
 
@@ -15418,7 +15418,7 @@ However in such a study we must be really careful to choose model profiles as si
 @item Magnitude measurement error (of each detection)
 Any measurement has an error and this includes the derived magnitude for an object.
 Note that this value is only meaningful when the object's magnitude is brighter than the upper-limit magnitude (see the next items in this list).
-As discussed in @ref{Flux Brightness and magnitude}, the magnitude (@mymath{M}) of an object with brightness @mymath{B} and Zeropoint magnitude @mymath{z} can be written as:
+As discussed in @ref{Brightness flux magnitude}, the magnitude (@mymath{M}) of an object with brightness @mymath{B} and zero point magnitude @mymath{z} can be written as:
 
 @dispmath{M=-2.5\log_{10}(B)+z}
 
@@ -15840,7 +15840,7 @@ This is because some of the output catalog's metadata may need it, for example t
 
 @item -z FLT
 @itemx --zeropoint=FLT
-The zero point magnitude for the input image, see @ref{Flux Brightness and magnitude}.
+The zero point magnitude for the input image, see @ref{Brightness flux magnitude}.
 
 @item --sigmaclip FLT,FLT
 The sigma-clipping parameters when any of the sigma-clipping related columns are requested (for example @option{--sigclip-median} or @option{--sigclip-number}).
@@ -16134,7 +16134,7 @@ integral field unit data cubes.
 
 @item -b
 @itemx --brightness
-The brightness (sum of all pixel values), see @ref{Flux Brightness and magnitude}.
+The brightness (sum of all pixel values), see @ref{Brightness flux magnitude}.
 For clumps, the ambient brightness (flux of river pixels around the clump multiplied by the area of the clump) is removed, see @option{--riverave}.
 So the sum of all the clumps brightness in the clump catalog will be smaller than the total clump brightness in the @option{--clumpbrightness} column of the objects catalog.
 
@@ -16273,6 +16273,10 @@ The used (non-blank in values image) area of the labeled region in units of arcs
 This column is just the value of the @option{--area} column, multiplied by the area of each pixel in the input image (in units of arcsec^2).
 Similar to the @option{--ra} or @option{--dec} columns, for this option to work, the objects extension used has to have a WCS structure.
 
+@item --surfacebrightness
+The surface brightness (in units of mag/arcsec@mymath{^2}) of the labeled region (objects or clumps).
+For more on the definition of the surface brightness, see @ref{Brightness flux magnitude}.
+
 @item --areaxy
 @cindex IFU: Integral Field Unit
 @cindex Integral Field Unit
@@ -16306,9 +16310,8 @@ The sum of the pixel values containing half the maximum flux within the labeled 
 This option uses the pixels within @option{--fwhmobs}, so please read the notes there for the cavaeats and necessary precautions.
 
 @item --halfmaxsb
-The surface brightness within the region that contains half the maximum value of the labeled region.
-This column is just the division of the @option{--halfmaxsum} column by @option{--halfmaxarea} column.
-So please see their documentation for the caveats and necessary precautions.
+The surface brightness (in units of mag/arcsec@mymath{^2}) within the region that contains half the maximum value of the labeled region.
+For more on the definition of the surface brightness, see @ref{Brightness flux magnitude}.
 
 @item --halfsumarea
 The number of pixels that contain half the object or clump's total sum of pixels (half the value in the @option{--brightness} column).
@@ -16318,10 +16321,11 @@ This option is thus good for clumps (which are defined to have a single peak in 
 So if the object includes multiple peaks/clumps at roughly the same level, then the area reported by this option will be distributed over all the peaks.
 
 @item --halfsumsb
-Surface brightness (dataset units per pixel) within the area that contains half the total sum of the label's pixels (object or clump).
-Effectively, this column is just half the value of the @option{--brightness} column, divided by the value of the @option{--halfsumarea} column.
+Surface brightness (in units of mag/arcsec@mymath{^2}) within the area that contains half the total sum of the label's pixels (object or clump).
+For more on the definition of the surface brightness, see @ref{Brightness flux magnitude}.
 
-Therefore it is very important to understand the systematics of this column and potential biases, please see the description in @option{--halfsumarea}.
+This column just plugs in the values of half the value of the @option{--brightness} column and the @option{--halfsumarea} column, into the surface brightness equation.
+Therefore please see the description in @option{--halfsumarea} to understand the systematics of this column and potential biases.
 
 @item --halfradiusobs
 Radius (in units of pixels) derived from the area that contains half the total sum of the label's pixels (value reported by @option{--halfsumarea}).
@@ -16826,7 +16830,7 @@ After all the transformations are applied, using the WCS information in each ind
 @menu
 * Modeling basics::             Astronomical modeling basics.
 * If convolving afterwards::    Considerations for convolving later.
-* Flux Brightness and magnitude::  About these measures of energy.
+* Brightness flux magnitude::   About these measures of energy.
 * Profile magnitude::           Definition of total profile magnitude.
 * Invoking astmkprof::          Inputs and Options for MakeProfiles.
 @end menu
@@ -16941,7 +16945,7 @@ For example, the simple fact that we are sampling in a discrete space, namely th
 @cindex Image blurring
 @cindex PSF image size
 Convolution is the mathematical process by which we can apply a `spread' to an image, or in other words blur the image, see @ref{Convolution process}.
-The Brightness of an object should remain unchanged after convolution, see @ref{Flux Brightness and magnitude}.
+The Brightness of an object should remain unchanged after convolution, see @ref{Brightness flux magnitude}.
 Therefore, it is important that the sum of all the pixels of the PSF be unity.
 The PSF image also has to have an odd number of pixels on its sides so one pixel can be defined as the center.
 In MakeProfiles, the PSF can be set by the two methods explained below.
@@ -17141,7 +17145,7 @@ This is because unlike the PSF, the noise occurs in each output pixel, not on a 
 
 
 
-@node If convolving afterwards, Flux Brightness and magnitude, Modeling basics, MakeProfiles
+@node If convolving afterwards, Brightness flux magnitude, Modeling basics, MakeProfiles
 @subsection If convolving afterwards
 
 In case you want to convolve the image later with a given point spread function, make sure to use a larger image size.
@@ -17157,8 +17161,8 @@ To facilitate this shift, MakeProfiles has the options @option{--xshift}, @optio
 
 
 
-@node Flux Brightness and magnitude, Profile magnitude, If convolving afterwards, MakeProfiles
-@subsection Flux Brightness and magnitude
+@node Brightness flux magnitude, Profile magnitude, If convolving afterwards, MakeProfiles
+@subsection Brightness, Flux, Magnitude and Surface brightness
 
 @cindex ADU
 @cindex Gain
@@ -17172,44 +17176,64 @@ We will continue the discussion assuming the pixels are in units of energy/time.
 @cindex Luminosity
 @cindex Brightness
 The @emph{brightness} of an object is defined as its total detected energy per time.
-This is simply the sum of the pixels that are associated with that detection by our detection tool for example @ref{NoiseChisel}@footnote{If further processing is done, for example the Kron or Petrosian radii are calculated, then the detected area is not sufficient and the total area that was within the respective radius must be used.}.
-The @emph{flux} of an object is in units of energy/time/area and for a detected object, it is defined as its brightness divided by the area used to collect the light from the source or the telescope aperture (for example in @mymath{cm^2})@footnote{For a full object that spans over several pixels, the telescope area should be used to find the flux.
-However, sometimes, only the brightness per pixel is desired.
-In such cases this book also @emph{loosely} uses the term flux.
-This is only approximately accurate however, since while all the pixels have a fixed area, the pixel size can vary with camera on the telescope.}.
-Knowing the flux (@mymath{f}) and distance to the object (@mymath{r}), we can calculate its @emph{luminosity}: @mymath{L=4{\pi}r^2f}.
-Therefore, flux and luminosity are intrinsic properties of the object, while brightness depends on our detecting tools (hardware and software).
-Here we will not be discussing luminosity, but brightness.
-However, since luminosity is the astrophysically interesting quantity, we also defined it here to avoid possible confusion between these two terms because they both have the same units.
+In the case of an imaged source, this is simply the sum of the pixels that are associated with that detection by our detection tool (for example @ref{NoiseChisel}@footnote{If further processing is done, for example the Kron or Petrosian radii are calculated, then the detected area is not sufficient and the total area that was within the respective radius must be used.}).
+The @emph{flux} of an object is defined in units of energy/time/collecting-area.
+For an astronomical target, the flux is therefore defined as its brightness divided by the area used to collect the light from the source: or the telescope aperture (for example in units of @mymath{cm^2}).
+Knowing the flux (@mymath{f}) and distance to the object (@mymath{r}), we can define its @emph{luminosity}: @mymath{L=4{\pi}r^2f}.
 
-@cindex Magnitude zero-point
+Therefore, while flux and luminosity are intrinsic properties of the object, brightness depends on our detecting tools (hardware and software).
+In low-level observational astronomy data analysis, we are usually more concerned with measuring the brightness, because it is the thing we directly measure from the image pixels and create in catalogs.
+On the other hand, luminosity is used in higher-level analysis (after image contents are measured as catalogs to deduce physical interpretations).
+It is just important avoid possible confusion between luminosity and brightness because both have the same units of energy per seconds.
+
 @cindex Magnitudes from flux
 @cindex Flux to magnitude conversion
 @cindex Astronomical Magnitude system
 Images of astronomical objects span over a very large range of brightness.
-With the Sun (as the brightest object) being roughly @mymath{2.5^{60}=10^{24}} times brighter than the faintest galaxies we can currently detect.
-Therefore discussing brightness will be very hard, and astronomers have chosen to use a logarithmic scale to talk about the brightness of astronomical objects.
-But the logarithm can only be usable with a unit-less and always positive value.
-Fortunately brightness is always positive and to remove the units we divide the brightness of the object (@mymath{B}) by a reference brightness (@mymath{B_r}).
-We then define the resulting logarithmic scale as @mymath{magnitude} through the following relation@footnote{The @mymath{-2.5} factor in the definition of magnitudes is a legacy of the our ancient colleagues and in particular Hipparchus of Nicaea (190-120 BC).}
+With the Sun (as the brightest object) being roughly @mymath{2.5^{60}=10^{24}} times brighter than the fainter galaxies we can currently detect in the deepest images.
+Therefore discussing brightness directly will involve a large range of values which is inconvenient.
+So astronomers have chosen to use a logarithmic scale to talk about the brightness of astronomical objects.
+
+@cindex Hipparchus of Nicaea
+But the logarithm can only be usable with a unit-less, and always positive value.
+Fortunately, in theory brightness is always positive.
+To remove the units, we divide the brightness of the object (@mymath{B}) by a reference brightness (@mymath{B_r}).
+We then define a logarithmic scale as @mymath{magnitude} through the relation below.
+The @mymath{-2.5} factor in the definition of magnitudes is a legacy of the our ancient colleagues and in particular Hipparchus of Nicaea (190-120 BC).
 
 @dispmath{m-m_r=-2.5\log_{10} \left( B \over B_r \right)}
 
-@cindex Zero-point magnitude
+@cindex Zero point magnitude
+@cindex Magnitude zero point
 @noindent
 @mymath{m} is defined as the magnitude of the object and @mymath{m_r} is the pre-defined magnitude of the reference brightness.
-One particularly easy condition is when @mymath{B_r=1}.
-This will allow us to summarize all the hardware specific parameters discussed above into one number as the reference magnitude which is commonly known as the Zero-point@footnote{When @mymath{B=Br=1}, the right side of the magnitude definition will be zero.
-Hence the name, ``zero-point''.} magnitude.
+One particularly easy condition is when the reference brightness is unity (@mymath{B_r=1}).
+This brightness will thus summarize all the hardware specific parameters discussed above into one number as the reference magnitude which is commonly known as the @emph{Zero point} magnitude (because when @mymath{B=Br=1}, the right side of the magnitude definition above will be zero).
+Using the zero point magnitude (@mymath{Z}), we can write the magnitude relation above in a more simpler format:
 
+@dispmath{m = -2.5\log_{10}(B) + Z}
 
-@node Profile magnitude, Invoking astmkprof, Flux Brightness and magnitude, MakeProfiles
+@cindex Surface brightness
+Another important concept is the distribution of brightness over the object's detected area.
+For this, we define the @emph{surface brightness} which is defined as the magnitude of an object's brightness divided by its angular-coverage (or ``area'' in the sky, usually in units of arcsec@mymath{^2}).
+A common mistake is to divide the magnitude by the area, but this is wrong because magnitudes don't have units.
+It is the brightness that should be divided by area, and the magnitude of that ratio is defined to be the surface brightness.
+For example when the brightness is measured over an area of A arcsec@mymath{^2}, then the surface brightness becomes:
+
+@dispmath{S = -2.5\log_{10}(B/A) + Z = -2.5\log_{10}(B) + 2.5\log_{10}(A) + Z}
+
+@noindent
+In other words, the surface brightness (in units of magnitude/arcsec@mymath{^2}) is related to the object's magnitude (@mymath{m}) and area (@mymath{A}, in units of arcsec@mymath{^2}) through this equation:
+
+@dispmath{S = m + 2.5\log_{10}(A)}
+
+@node Profile magnitude, Invoking astmkprof, Brightness flux magnitude, MakeProfiles
 @subsection Profile magnitude
 
 @cindex Brightness
 @cindex Truncation radius
 @cindex Sum for total flux
-To find the profile brightness or its magnitude, (see @ref{Flux Brightness and magnitude}), it is customary to use the 2D integration of the flux to infinity.
+To find the profile brightness or its magnitude, (see @ref{Brightness flux magnitude}), it is customary to use the 2D integration of the flux to infinity.
 However, in MakeProfiles we do not follow this idealistic approach and apply a more realistic method to find the total brightness or magnitude: the sum of all the pixels belonging to a profile within its predefined truncation radius.
 Note that if the truncation radius is not large enough, this can be significantly different from the total integrated light to infinity.
 
@@ -17338,7 +17362,7 @@ So by default, they will not be built in the output image but as separate files.
 The sum of pixels of these separate files will also be set to unity (1) so you are ready to convolve, see @ref{Convolution process}.
 As a summary, the position and magnitude of PSF profile will be ignored.
 This behavior can be disabled with the @option{--psfinimg} option.
-If you want to create all the profiles separately (with @option{--individual}) and you want the sum of the PSF profile pixels to be unity, you have to set their magnitudes in the catalog to the zero-point magnitude and be sure that the central positions of the profiles don't have any fractional part (the PSF center has to be in the center of the pixel).
+If you want to create all the profiles separately (with @option{--individual}) and you want the sum of the PSF profile pixels to be unity, you have to set their magnitudes in the catalog to the zero point magnitude and be sure that the central positions of the profiles don't have any fractional part (the PSF center has to be in the center of the pixel).
 
 The list of options directly related to the input catalog columns is shown below.
 
@@ -17490,7 +17514,7 @@ Otherwise all the profiles will be scaled up based on the oversampling scale in 
 
 @item --mcolisbrightness
 The value given in the ``magnitude column'' (specified by @option{--mcol}, see @ref{MakeProfiles catalog}) must be interpreted as brightness, not magnitude.
-The zeropoint magnitude (value to the @option{--zeropoint} option) is ignored and the given value must have the same units as the input dataset's pixels.
+The zero point magnitude (value to the @option{--zeropoint} option) is ignored and the given value must have the same units as the input dataset's pixels.
 
 Recall that the total profile magnitude or brightness that is specified with in the @option{--mcol} column of the input catalog is not an integration to infinity, but the actual sum of pixels in the profile (until the desired truncation radius).
 See @ref{Profile magnitude} for more on this point.
@@ -17530,7 +17554,8 @@ If a background image is specified, any possible value to this option is ignored
 
 @item -z FLT
 @itemx --zeropoint=FLT
-The zero-point magnitude of the image.
+The zero point magnitude of the input.
+For more on the zero point magnitude, see @ref{Brightness flux magnitude}.
 
 @item -w FLT
 @itemx --circumwidth=FLT
@@ -17851,7 +17876,7 @@ Then the flux after adding noise is a random value taken from a Gaussian distrib
 
 @dispmath{\mu=B+I_{nn}, \quad \sigma=\sqrt{B+I_{nn}}}
 
-Since this type of noise is inherent in the objects we study, it is usually measured on the same scale as the astronomical objects, namely the magnitude system, see @ref{Flux Brightness and magnitude}.
+Since this type of noise is inherent in the objects we study, it is usually measured on the same scale as the astronomical objects, namely the magnitude system, see @ref{Brightness flux magnitude}.
 It is then internally converted to the flux scale for further processing.
 
 @node Instrumental noise, Final noised pixel value, Photon counting noise, Noise basics
@@ -17876,7 +17901,7 @@ When only this source of noise is present, the noised pixel value would be a ran
 This type of noise is independent of the signal in the dataset, it is only determined by the instrument.
 So the flux scale (and not magnitude scale) is most commonly used for this type of noise.
 In practice, this value is usually reported in analog-to-digital units or ADUs, not flux or electron counts.
-The gain value of the device can be used to convert between these two, see @ref{Flux Brightness and magnitude}.
+The gain value of the device can be used to convert between these two, see @ref{Brightness flux magnitude}.
 
 @node Final noised pixel value, Generating random numbers, Instrumental noise, Noise basics
 @subsubsection Final noised pixel value
@@ -17990,7 +18015,7 @@ One line examples:
 $ astmknoise --sigma=100 image.fits
 
 ## Add noise to input image assuming a background magnitude (with
-## zeropoint magnitude of 0) and a certain instrumental noise:
+## zero point magnitude of 0) and a certain instrumental noise:
 $ astmknoise --background=-10 -z0 --instrumental=20 mockimage.fits
 @end example
 
@@ -18012,11 +18037,11 @@ Hence it is only useful if you are working on low surface brightness regions whe
 
 @item -b FLT
 @itemx --background=FLT
-The background pixel value for the image in units of magnitudes, see @ref{Photon counting noise} and @ref{Flux Brightness and magnitude}.
+The background pixel value for the image in units of magnitudes, see @ref{Photon counting noise} and @ref{Brightness flux magnitude}.
 
 @item -z FLT
 @itemx --zeropoint=FLT
-The zeropoint magnitude used to convert the value of @option{--background} (in units of magnitude) to flux, see @ref{Flux Brightness and magnitude}.
+The zero point magnitude used to convert the value of @option{--background} (in units of magnitude) to flux, see @ref{Brightness flux magnitude}.
 
 @item -i FLT
 @itemx --instrumental=FLT

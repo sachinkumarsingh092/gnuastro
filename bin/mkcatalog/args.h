@@ -1463,6 +1463,34 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
+      "areaarcsec2",
+      UI_KEY_AREAARCSEC2,
+      0,
+      0,
+      "Area of labeled region in arcsec^2.",
+      UI_GROUP_COLUMNS_MORPHOLOGY,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "surfacebrightness",
+      UI_KEY_SURFACEBRIGHTNESS,
+      0,
+      0,
+      "Surface brightness (mag/arcsec^2).",
+      UI_GROUP_COLUMNS_MORPHOLOGY,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
       "areaxy",
       UI_KEY_AREAXY,
       0,

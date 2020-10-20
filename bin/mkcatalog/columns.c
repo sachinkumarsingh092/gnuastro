@@ -204,7 +204,10 @@ columns_wcs_preparation(struct mkcatalogparams *p)
             /* High-level. */
             case UI_KEY_RA:
             case UI_KEY_DEC:
+            case UI_KEY_HALFMAXSB:
+            case UI_KEY_HALFSUMSB:
             case UI_KEY_AREAARCSEC2:
+            case UI_KEY_SURFACEBRIGHTNESS:
 
             /* Low-level. */
             case UI_KEY_W1:
@@ -251,9 +254,12 @@ columns_wcs_preparation(struct mkcatalogparams *p)
         break;
 
       /* Calculate the pixel area if necessary. */
+      case UI_KEY_HALFMAXSB:
+      case UI_KEY_HALFSUMSB:
       case UI_KEY_AREAARCSEC2:
+      case UI_KEY_SURFACEBRIGHTNESS:
         pixscale=gal_wcs_pixel_scale(p->objects->wcs);
-        p->pixelarea=pixscale[0]*pixscale[1];
+        p->pixelarcsecsq=pixscale[0]*pixscale[1]*3600.0f*3600.0f;
         free(pixscale);
         break;
       }
@@ -461,6 +467,20 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_width     = 6;
           disp_precision = 0;
           oiflag[ OCOL_NUM ] = ciflag[ CCOL_NUM ] = 1;
+          break;
+
+        case UI_KEY_SURFACEBRIGHTNESS:
+          name           = "SURFACE_BRIGHTNESS";
+          unit           = "mag/arcsec^2";
+          ocomment       = "Surface brightness (magnitude of brightness/area).";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
+          disp_fmt       = 0;
+          disp_width     = 6;
+          disp_precision = 0;
+          oiflag[ OCOL_NUM ] = ciflag[ CCOL_NUM ] = 1;
+          oiflag[ OCOL_SUM ] = ciflag[ CCOL_SUM ] = 1;
           break;
 
         case UI_KEY_AREAXY:
@@ -1709,7 +1729,7 @@ columns_define_alloc(struct mkcatalogparams *p)
 
         case UI_KEY_HALFMAXSB:
           name           = "HALF_MAX_SB";
-          unit           = MKCATALOG_NO_UNIT;
+          unit           = "mag/arcsec^2";
           ocomment       = "Brightness within half the maximum, divided by its area.";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT32;
@@ -1724,7 +1744,7 @@ columns_define_alloc(struct mkcatalogparams *p)
 
         case UI_KEY_HALFSUMSB:
           name           = "HALF_SUM_SB";
-          unit           = MKCATALOG_NO_UNIT;
+          unit           = "mag/arcsec^2";
           ocomment       = "Half the brightness, divided by its area.";
           otype          = GAL_TYPE_FLOAT32;
           ctype          = GAL_TYPE_FLOAT32;
@@ -1911,7 +1931,10 @@ columns_define_alloc(struct mkcatalogparams *p)
 /**********            Column calculation           ***************/
 /******************************************************************/
 #define MKC_RATIO(TOP,BOT) ( (BOT)!=0.0f ? (TOP)/(BOT) : NAN )
-#define MKC_MAG(B)         ( ((B)>0) ? -2.5f * log10(B) + p->zeropoint : NAN )
+#define MKC_MAG(B) ( ((B)>0) ? -2.5f * log10(B) + p->zeropoint : NAN )
+#define MKC_SB(B, A) ( ((B)>0 && (A)>0)                                 \
+                       ? MKC_MAG(B) + 2.5f * log10((A) * p->pixelarcsecsq) \
+                       : NAN )
 
 
 
@@ -2219,7 +2242,11 @@ columns_fill(struct mkcatalog_passparams *pp)
           break;
 
         case UI_KEY_AREAARCSEC2:
-          ((float *)colarr)[oind] = oi[OCOL_NUM]*p->pixelarea*(3600*3600);
+          ((float *)colarr)[oind] = oi[OCOL_NUM]*p->pixelarcsecsq;
+          break;
+
+        case UI_KEY_SURFACEBRIGHTNESS:
+          ((float *)colarr)[oind] = MKC_SB(oi[OCOL_SUM], oi[OCOL_NUM]);
           break;
 
         case UI_KEY_AREAXY:
@@ -2508,7 +2535,8 @@ columns_fill(struct mkcatalog_passparams *pp)
           break;
 
         case UI_KEY_HALFMAXSB:
-          ((float *)colarr)[oind] = oi[OCOL_SUMHALFMAX]/oi[OCOL_NUMHALFMAX];
+          ((float *)colarr)[oind] = MKC_SB( oi[OCOL_SUMHALFMAX],
+                                            oi[OCOL_NUMHALFMAX] );
           break;
 
         case UI_KEY_FRACSUMAREA1:
@@ -2525,7 +2553,8 @@ columns_fill(struct mkcatalog_passparams *pp)
                      : ( key==UI_KEY_FRACRADIUSOBS1
                          ? OCOL_NUMFRACSUM1
                          : OCOL_NUMFRACSUM2 ) );
-          ((float *)colarr)[oind] = oi[OCOL_SUM]/2.0f/oi[OCOL_NUMHALFSUM];
+          ((float *)colarr)[oind] = MKC_SB( oi[OCOL_SUM]/2.0f,
+                                            oi[OCOL_NUMHALFSUM] );
           break;
 
         case UI_KEY_FWHMOBS:
@@ -2589,7 +2618,11 @@ columns_fill(struct mkcatalog_passparams *pp)
             break;
 
           case UI_KEY_AREAARCSEC2:
-            ((float *)colarr)[cind]=ci[CCOL_NUM]*p->pixelarea*(3600*3600);
+            ((float *)colarr)[cind]=ci[CCOL_NUM]*p->pixelarcsecsq;
+            break;
+
+          case UI_KEY_SURFACEBRIGHTNESS:
+            ((float *)colarr)[cind]=MKC_SB(ci[CCOL_SUM], ci[CCOL_NUM]);
             break;
 
           case UI_KEY_AREAXY:
@@ -2825,7 +2858,8 @@ columns_fill(struct mkcatalog_passparams *pp)
             break;
 
           case UI_KEY_HALFMAXSB:
-            ((float *)colarr)[cind] = ci[CCOL_SUMHALFMAX]/ci[CCOL_NUMHALFMAX];
+            ((float *)colarr)[cind] = MKC_SB( ci[CCOL_SUMHALFMAX],
+                                              ci[CCOL_NUMHALFMAX] );
             break;
 
           case UI_KEY_FRACSUMAREA1:
@@ -2837,7 +2871,8 @@ columns_fill(struct mkcatalog_passparams *pp)
             break;
 
           case UI_KEY_HALFSUMSB:
-            ((float *)colarr)[cind] = ci[CCOL_SUM]/2.0f/ci[CCOL_NUMHALFSUM];
+            ((float *)colarr)[cind] = MKC_SB( ci[CCOL_SUM]/2.0f,
+                                              ci[CCOL_NUMHALFSUM] );
             break;
 
           case UI_KEY_FWHMOBS:

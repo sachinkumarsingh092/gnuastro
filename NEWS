@@ -44,10 +44,11 @@ See the end of the file for license conditions.
   MakeCatalog:
    --maximum: maximum value of labeled regions pixels (clump/object).
    --areaarcsec2: area of labeled region (clump/object) in arcsec^2.
+   --surfacebrightness: the surface brightness of the labeled region.
    --fwhmobs: observed FWHM in pixels, along the major axis.
    --halfmaxarea: number of pixels with a value larger than half the maximum.
    --halfmaxsum: sum of pixels with a value larger than half the maximum.
-   --halfmaxsb: surf. brightness within half max (--halfmaxsum/--halfmaxarea).
+   --halfmaxsb: surf. brightness within half of the maximum.
    --fracsum: fractions to use in '--fracsumarea1' or '--fracsumarea2'.
    --fracsumarea1: area of given fraction of the summed object or clump values.
    --fracsumarea2: area of given fraction of the summed object or clump values.
