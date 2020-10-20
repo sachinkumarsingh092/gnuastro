@@ -17216,6 +17216,7 @@ Using the zero point magnitude (@mymath{Z}), we can write the magnitude relation
 @cindex Surface brightness
 Another important concept is the distribution of brightness over the object's detected area.
 For this, we define the @emph{surface brightness} which is defined as the magnitude of an object's brightness divided by its angular-coverage (or ``area'' in the sky, usually in units of arcsec@mymath{^2}).
+Note that since this ``area'' is an angular measurement of the size of the astronomical object (projected on the celestial sphere), it is also unit less.
 A common mistake is to divide the magnitude by the area, but this is wrong because magnitudes don't have units.
 It is the brightness that should be divided by area, and the magnitude of that ratio is defined to be the surface brightness.
 For example when the brightness is measured over an area of A arcsec@mymath{^2}, then the surface brightness becomes:
