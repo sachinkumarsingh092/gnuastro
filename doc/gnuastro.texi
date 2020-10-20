@@ -17195,9 +17195,9 @@ Therefore discussing brightness directly will involve a large range of values wh
 So astronomers have chosen to use a logarithmic scale to talk about the brightness of astronomical objects.
 
 @cindex Hipparchus of Nicaea
-But the logarithm can only be usable with a unit-less, and always positive value.
-Fortunately, in theory brightness is always positive.
-To remove the units, we divide the brightness of the object (@mymath{B}) by a reference brightness (@mymath{B_r}).
+But the logarithm can only be usable with a dimensionless value that is always positive.
+Fortunately brightness is always positive (atleast in theory@footnote{In practice, for very faint objects, if the background brightness is over-subtracted, we may end up with a negative brightness in a real object.}).
+To remove the dimensions, we divide the brightness of the object (@mymath{B}) by a reference brightness (@mymath{B_r}).
 We then define a logarithmic scale as @mymath{magnitude} through the relation below.
 The @mymath{-2.5} factor in the definition of magnitudes is a legacy of the our ancient colleagues and in particular Hipparchus of Nicaea (190-120 BC).
 
@@ -17208,25 +17208,36 @@ The @mymath{-2.5} factor in the definition of magnitudes is a legacy of the our 
 @noindent
 @mymath{m} is defined as the magnitude of the object and @mymath{m_r} is the pre-defined magnitude of the reference brightness.
 One particularly easy condition is when the reference brightness is unity (@mymath{B_r=1}).
-This brightness will thus summarize all the hardware specific parameters discussed above into one number as the reference magnitude which is commonly known as the @emph{Zero point} magnitude (because when @mymath{B=Br=1}, the right side of the magnitude definition above will be zero).
+This brightness will thus summarize all the hardware-specific parameters discussed above (like the conversion of pixel values to physical units) into one number.
+That reference magnitude which is commonly known as the @emph{Zero point} magnitude (because when @mymath{B=Br=1}, the right side of the magnitude definition above will be zero).
 Using the zero point magnitude (@mymath{Z}), we can write the magnitude relation above in a more simpler format:
 
 @dispmath{m = -2.5\log_{10}(B) + Z}
 
+@cindex Steradian
+@cindex Angular coverage
+@cindex Celestial sphere
 @cindex Surface brightness
-Another important concept is the distribution of brightness over the object's detected area.
-For this, we define the @emph{surface brightness} which is defined as the magnitude of an object's brightness divided by its angular-coverage (or ``area'' in the sky, usually in units of arcsec@mymath{^2}).
-Note that since this ``area'' is an angular measurement of the size of the astronomical object (projected on the celestial sphere), it is also unit less.
-A common mistake is to divide the magnitude by the area, but this is wrong because magnitudes don't have units.
-It is the brightness that should be divided by area, and the magnitude of that ratio is defined to be the surface brightness.
+@cindex SI (International System of Units)
+Another important concept is the distribution of brightness over its area.
+For this, we define the @emph{surface brightness} to be the magnitude of an object's brightness divided by its solid angle over the celestial sphere (or coverage in the sky, commonly in units of arcsec@mymath{^2}).
+The solid angle is expressed in units of arcsec@mymath{^2} because astronomical targets are usually much smaller than one steradian.
+Recall that the steradian is the dimension-less SI unit of a solid angle and 1 steradian covers @mymath{1/4\pi} (almost @mymath{8\%}) of the full celestial sphere.
+
+Surface brightness is therefore most commonly expressed in units of mag/arcsec@mymath{2}.
 For example when the brightness is measured over an area of A arcsec@mymath{^2}, then the surface brightness becomes:
 
 @dispmath{S = -2.5\log_{10}(B/A) + Z = -2.5\log_{10}(B) + 2.5\log_{10}(A) + Z}
 
 @noindent
-In other words, the surface brightness (in units of magnitude/arcsec@mymath{^2}) is related to the object's magnitude (@mymath{m}) and area (@mymath{A}, in units of arcsec@mymath{^2}) through this equation:
+In other words, the surface brightness (in units of mag/arcsec@mymath{^2}) is related to the object's magnitude (@mymath{m}) and area (@mymath{A}, in units of arcsec@mymath{^2}) through this equation:
 
 @dispmath{S = m + 2.5\log_{10}(A)}
+
+A common mistake is to follow the mag/arcsec@mymath{^2} unit literally, and divide the object's magnitude by its area.
+But this is wrong because magnitude is a logarithmic scale while area is linear.
+It is the brightness that should be divided by the solid angle because both have linear scales.
+The magnitude of that ratio is then defined to be the surface brightness.
 
 @node Profile magnitude, Invoking astmkprof, Brightness flux magnitude, MakeProfiles
 @subsection Profile magnitude
