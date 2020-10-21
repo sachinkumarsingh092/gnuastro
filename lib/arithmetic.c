@@ -1139,6 +1139,7 @@ struct multioperandparams
       }                                                                 \
                                                                         \
     /* Clean up. */                                                     \
+    free(pixs);                                                         \
     gal_data_free(cont);                                                \
   }
 
@@ -1195,6 +1196,7 @@ struct multioperandparams
       }                                                                 \
                                                                         \
     /* Clean up. */                                                     \
+    free(pixs);                                                         \
     gal_data_free(cont);                                                \
   }
 

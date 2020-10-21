@@ -155,8 +155,10 @@ gal_pointer_allocate_mmap(uint8_t type, size_t size, int clear,
 
   /* Inform the user. */
   if(!quietmmap)
-    error(EXIT_SUCCESS, 0, "%s: temporary %zu byte file (consider "
-          "'--minmapsize')", *filename, bsize);
+    error(EXIT_SUCCESS, 0, "%s: temporary memory-mapped file (%zu bytes) "
+          "for intermediate data that is not stored in RAM (see "
+          "the \"Memory management\" section of Gnuastro's manual)",
+          *filename, bsize);
 
 
   /* Write to the newly set file position so the space is allocated. To do

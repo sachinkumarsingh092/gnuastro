@@ -1,5 +1,6 @@
 Alphabetically ordered list to acknowledge in the next release.
 
+Martin Kuemmel
 Sebastian Luna Valero
 Samane Raji
 Joanna Sakowska

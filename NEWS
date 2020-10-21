@@ -10,6 +10,9 @@ See the end of the file for license conditions.
   Book:
    - Tutorial on "Detecting large extended targets" improved with better
      NoiseChisel configuration, and more clear description.
+   - New sub-section on "Memory management" in the "Common program
+     behavior" chapter. It fully describes how to optimally deal with large
+     datasets that may exceed your system's RAM.
 
   New program:
    - Query ('astquery') is a new program to allow easy submission of
@@ -78,6 +81,17 @@ See the end of the file for license conditions.
 ** Removed features
 
 ** Changed features
+
+  All programs:
+   - Memory management: Until now, an internal array was only allocated in
+     the RAM when its size was smaller (in bytes) than the value given to
+     the '--minmapsize' option. But this was annoying/buggy when the system
+     has enough RAM to keep large files. From this version, all Gnuastro
+     programs will first attempt to write the array in RAM, only when it
+     fails (there is no more RAM left), will they use a memory-mapped file
+     (which can dramatically slow down the program). Please see the newly
+     added "Memory management" section of the book for a complete
+     explanation of Gnuastro's new memory management strategy.
 
   Table:
    - Column arithmetic operators 'degree-to-ra' and 'degree-to-dec' will
