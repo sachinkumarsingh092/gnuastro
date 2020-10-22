@@ -11455,6 +11455,16 @@ For example, the following command will produce the size of the first extension/
 astarithmetic a.fits 2 size
 @end example
 
+@item makenew
+Create a new dataset that only has zero values.
+The number of dimensions is read as the first popped operand and the number of elements along each dimension are the next popped operand (in reverse of the popping order).
+The type of the new dataset is an unsigned 8-bit integer and all pixel values have a value of zero.
+For example, if you want to create a new 100 by 200 pixel image, you can run this command:
+
+@example
+astarithmetic 100 200 2 makenew
+@end example
+
 @item set-AAA
 Set the characters after the dash (@code{AAA} in the case shown here) as a name for the first popped operand on the stack.
 The named dataset will be freed from memory as soon as it is no longer needed, or if the name is reset to refer to another dataset later in the command.
@@ -23872,6 +23882,12 @@ in @ref{Arithmetic}. So in your programs, it might be preferable to
 directly use those functions.
 @end deffn
 
+@deffn  Macro GAL_ARITHMETIC_OP_MAKENEW
+Create a new, zero-valued dataset with an unsigned 8-bit data type.
+The length along each dimension of the dataset should be given as a single list of @code{gal_data_t}s.
+The number of dimensions is derived from the number of nodes in the list and the length along each dimension is the single-valued element within that list.
+Just note that the list should be in the reverse of the desired dimensions.
+@end deffn
 
 @deftypefun {gal_data_t *} gal_arithmetic (int @code{operator}, size_t @code{numthreads}, int @code{flags}, ...)
 Do the arithmetic operation of @code{operator} on the given operands (the

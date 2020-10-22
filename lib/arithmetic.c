@@ -1794,6 +1794,60 @@ arithmetic_binary_function_flt(int operator, int flags, gal_data_t *il,
 
 
 
+/* Make a new dataset. */
+gal_data_t *
+arithmetic_makenew(gal_data_t *sizes)
+{
+  gal_data_t *out, *tmp, *ttmp;
+  int quietmmap=sizes->quietmmap;
+  size_t minmapsize=sizes->minmapsize;
+  size_t i, *dsize, ndim=gal_list_data_number(sizes);
+
+  /* Make sure all the elements are a single, integer number. */
+  for(tmp=sizes; tmp!=NULL; tmp=tmp->next)
+    {
+      if(tmp->size!=1)
+        error(EXIT_FAILURE, 0, "%s: operands given to 'makenew' operator "
+              "should only be a single number. However, at least one of "
+              "the input operands has %zu elements", __func__, tmp->size);
+
+      if( tmp->type==GAL_TYPE_FLOAT32 || tmp->type==GAL_TYPE_FLOAT64)
+        error(EXIT_FAILURE, 0, "%s: operands given to 'makenew' operator "
+              "should have integer types. However, at least one of "
+              "the input operands is floating point", __func__);
+    }
+
+  /* Fill the 'dsize' array based on the given values. */
+  i=ndim-1;
+  tmp=sizes;
+  dsize=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 1, __func__, "dsize");
+  while(tmp!=NULL)
+    {
+      /* Set the next pointer and conver this one to size_t.  */
+      ttmp=tmp->next;
+      tmp=gal_data_copy_to_new_type_free(tmp, GAL_TYPE_SIZE_T);
+
+      /* Write the dimension's length into 'dsize'. */
+      dsize[i--] = ((size_t *)(tmp->array))[0];
+
+      /* Free 'tmp' and re-set it to the next element. */
+      free(tmp);
+      tmp=ttmp;
+    }
+
+  /* allocate the necessary dataset. */
+  out=gal_data_alloc(NULL, GAL_TYPE_UINT8, ndim, dsize, NULL, 1, minmapsize,
+                     quietmmap, "EMPTY", "NOT-SET",
+                     "Empty dataset created by arithmetic.");
+
+  /* Clean up and return. */
+  free(dsize);
+  return out;
+}
+
+
+
+
 
 
 
@@ -1956,6 +2010,10 @@ gal_arithmetic_set_operator(char *string, size_t *num_operands)
   else if (!strcmp(string, "float64"))
     { op=GAL_ARITHMETIC_OP_TO_FLOAT64;        *num_operands=1;  }
 
+  /* New dataset. */
+  else if (!strcmp(string, "makenew"))
+    { op=GAL_ARITHMETIC_OP_MAKENEW;           *num_operands=-1;  }
+
   /* Operator not defined. */
   else
     { op=GAL_ARITHMETIC_OP_INVALID; *num_operands=GAL_BLANK_INT; }
@@ -2041,6 +2099,8 @@ gal_arithmetic_operator_string(int operator)
     case GAL_ARITHMETIC_OP_TO_FLOAT32:      return "float32";
     case GAL_ARITHMETIC_OP_TO_FLOAT64:      return "float64";
 
+    case GAL_ARITHMETIC_OP_MAKENEW:         return "makenew";
+
     default:                                return NULL;
     }
   return NULL;
@@ -2062,7 +2122,6 @@ gal_arithmetic(int operator, size_t numthreads, int flags, ...)
   /* Depending on the operator, do the job: */
   switch(operator)
     {
-
     /* Binary operators with any data type. */
     case GAL_ARITHMETIC_OP_PLUS:
     case GAL_ARITHMETIC_OP_MINUS:
@@ -2175,6 +2234,12 @@ gal_arithmetic(int operator, size_t numthreads, int flags, ...)
       out=arithmetic_bitwise_not(flags, d1);
       break;
 
+    /* Size operator */
+    case GAL_ARITHMETIC_OP_SIZE:
+      d1 = va_arg(va, gal_data_t *);
+      d2 = va_arg(va, gal_data_t *);
+      out=arithmetic_size(operator, flags, d1, d2);
+      break;
 
     /* Conversion operators. */
     case GAL_ARITHMETIC_OP_TO_UINT8:
@@ -2191,11 +2256,10 @@ gal_arithmetic(int operator, size_t numthreads, int flags, ...)
       out=arithmetic_change_type(d1, operator, flags);
       break;
 
-    /* Size operator */
-    case GAL_ARITHMETIC_OP_SIZE:
+    /* Build dataset from scratch. */
+    case GAL_ARITHMETIC_OP_MAKENEW:
       d1 = va_arg(va, gal_data_t *);
-      d2 = va_arg(va, gal_data_t *);
-      out=arithmetic_size(operator, flags, d1, d2);
+      out=arithmetic_makenew(d1);
       break;
 
     /* When the operator is not recognized. */

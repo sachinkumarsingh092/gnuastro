@@ -327,10 +327,10 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
               availableram=data_available_ram();
               bytesize=gal_type_sizeof(type)*data->size;
 
-              /* For a check: */
+              /* For a check:
               printf("check: %zu (data), %zu (ram)\n",
                      bytesize, availableram-nouseram);
-
+              */
               /* If the final size is larger than the user's maximum, or is
                  larger than the available memory minus 500Mb (to leave the
                  system some breathing space!), then read the array into

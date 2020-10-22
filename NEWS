@@ -37,6 +37,11 @@ See the end of the file for license conditions.
          echo "113.64812416667 31.88732" \
               | asttable -c'arith $1 degree-to-ra $2 degree-to-dec'
 
+  Arithmetic:
+   - New operator:
+     - 'makenew': new operator to create an empty (zero-valued) new dataset
+       with given dimension and size (given as operands).
+
   Fits:
    - New '--skycoverage' option will report the area of the input image in
      RA/Dec, both in units of center/width, and box minimum/maximum
@@ -73,6 +78,7 @@ See the end of the file for license conditions.
      removed.
 
   Library:
+   - GAL_ARITHMETIC_OP_MAKENEW: new 'makenew' operator.
    - gal_blank_flag_remove: Remove all flagged elements in a dataset.
    - gal_blank_remove_rows: remove all rows that have atleast one blank.
    - gal_wcs_coverage: Return the sky coverage of given image HDU.

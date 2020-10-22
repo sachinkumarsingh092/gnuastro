@@ -1241,7 +1241,14 @@ reversepolish(struct arithmeticparams *p)
           || operands_is_name(p, token->v) )
         operands_add(p, token->v, NULL);
       else if( (data=gal_data_copy_string_to_number(token->v)) )
-        operands_add(p, NULL, data);
+        {
+          /* The 'minmapsize' and 'quietmmap' parameters should be passed
+             onto the library within numbers also (since they are the
+             only things that go in the library sometimes). */
+          data->quietmmap=p->cp.quietmmap;
+          data->minmapsize=p->cp.minmapsize;
+          operands_add(p, NULL, data);
+        }
       /* Last option is an operator: the program will abort if the token
          isn't an operator. */
       else

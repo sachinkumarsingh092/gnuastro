@@ -145,6 +145,8 @@ enum gal_arithmetic_operators
   GAL_ARITHMETIC_OP_TO_FLOAT32,   /* Convert to float32.                   */
   GAL_ARITHMETIC_OP_TO_FLOAT64,   /* Convert to float64.                   */
 
+  GAL_ARITHMETIC_OP_MAKENEW,      /* Build a new dataset, containing zeros.*/
+
   GAL_ARITHMETIC_OP_LAST_CODE,    /* Last code of the library operands.    */
 };
 

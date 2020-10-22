@@ -332,6 +332,15 @@ ui_check_options_and_arguments(struct arithmeticparams *p)
         }
     }
 
+  /* In case no output name has been given (can happen with operators like
+     'makenew' when the user doesn't set an output name explicity), use a
+     default name. */
+  if(p->cp.output==NULL)
+    {
+      gal_checkset_allocate_copy("arithmetic.fits", &p->cp.output);
+      gal_checkset_writable_remove(p->cp.output, cp->keep, cp->dontdelete);
+    }
+
   /* Count the number of HDU values (if globalhdu isn't given) and check if
      its not less than the number of input FITS images. */
   if(p->globalhdu)
