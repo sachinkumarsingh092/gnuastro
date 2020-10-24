@@ -69,6 +69,11 @@ See the end of the file for license conditions.
      value: '--minvx', '--maxvx', '--minvy', '--maxvy', '--minvz',
      '--maxvz'.
 
+  MakeNoise:
+   --bgisbrightness: new option to say that the value of '--background'
+     (used to simulate Poisson noise) should be interpretted as brightness,
+     not magnitude.
+
   Table:
    - New '--noblank' option will remove all rows in output table that have
      atleast one blank value in the specified columns. For example if

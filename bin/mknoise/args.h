@@ -83,6 +83,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+    {
+      "bgisbrightness",
+      UI_KEY_BGISBRIGHTNESS,
+      0,
+      0,
+      "Background is brightness, not magnitude.",
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      &p->bgisbrightness,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 

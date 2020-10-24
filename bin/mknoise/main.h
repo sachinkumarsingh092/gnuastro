@@ -48,6 +48,7 @@ struct mknoiseparams
   double    instrumental;    /* Standard deviation constants.            */
   double       zeropoint;    /* Zeropoint magnitude of image.            */
   double  background_mag;    /* Background in magnitudes.                */
+  uint8_t bgisbrightness;    /* Background is brightness, not magnitude. */
   uint8_t        envseed;    /* ==1, generate a random seed.             */
 
   /* Internal */

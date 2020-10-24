@@ -33,16 +33,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Available letters for short options:
 
    a c d f g j k l m n p r t u v w x y
-   A B C E G H J L O Q R W X Y
+   A C E G H J L O Q R W X Y
 */
 enum option_keys_enum
 {
   /* With short-option version. */
-  UI_KEY_SIGMA        = 's',
-  UI_KEY_INSTRUMENTAL = 'i',
-  UI_KEY_BACKGROUND   = 'b',
-  UI_KEY_ZEROPOINT    = 'z',
-  UI_KEY_ENVSEED      = 'e',
+  UI_KEY_SIGMA          = 's',
+  UI_KEY_INSTRUMENTAL   = 'i',
+  UI_KEY_BACKGROUND     = 'b',
+  UI_KEY_ZEROPOINT      = 'z',
+  UI_KEY_ENVSEED        = 'e',
+  UI_KEY_BGISBRIGHTNESS = 'B',
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */

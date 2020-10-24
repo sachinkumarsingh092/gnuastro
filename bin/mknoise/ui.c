@@ -227,13 +227,15 @@ ui_read_check_only_options(struct mknoiseparams *p)
           "must be given to identify the noise level");
 
 
-  /* If a background magnitude is given (and the user hasn't given a
-     '--sigma'), the zeropoint is necessary. */
-  if( isnan(p->sigma) && !isnan(p->background_mag) && isnan(p->zeropoint) )
+  /* If a background magnitude is given ('--bgbrightness' hasn't been
+     called), the zeropoint is necessary. */
+  if( !isnan(p->background_mag) && p->bgisbrightness==0 && isnan(p->zeropoint) )
     error(EXIT_FAILURE, 0, "no zeropoint magnitude given. When the noise is "
           "identified by the background magnitude, a zeropoint magnitude "
           "is mandatory. Please use the '--zeropoint' option to specify "
-          "a zeropoint magnitude");
+          "a zeropoint magnitude. Alternatively, if your background value "
+          "is in units of brightness (which doesn't need a zeropoint), "
+          "please use '--bgisbrightness'");
 }
 
 
@@ -312,7 +314,9 @@ ui_preparations(struct mknoiseparams *p)
      pixels independently, brightness and flux are the same (flux is
      multiplied by the area of one pixel (=1) to give brightness).*/
   if( !isnan(p->background_mag) )
-    p->background=pow(10, (p->zeropoint-p->background_mag)/2.5f);
+    p->background = ( p->bgisbrightness
+                      ? p->background_mag
+                      : pow(10, (p->zeropoint-p->background_mag)/2.5f) );
 
 
   /* Allocate the random number generator: */

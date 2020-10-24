@@ -18155,7 +18155,8 @@ $ astmknoise [OPTION ...] InputImage.fits
 One line examples:
 
 @example
-## Add noise with a standard deviation of 100 to image:
+## Add noise with a standard deviation of 100 to image.
+## (this is independent of the pixel value: not Poission noise)
 $ astmknoise --sigma=100 image.fits
 
 ## Add noise to input image assuming a background magnitude (with
@@ -18172,16 +18173,20 @@ This is done for future reproducibility.
 
 @table @option
 
-@item -s FLT
-@item --sigma=FLT
-The total noise sigma in the same units as the pixel values.
-With this option, the @option{--background}, @option{--zeropoint} and @option{--instrumental} will be ignored.
-With this option, the noise will be independent of the pixel values (which is not realistic, see @ref{Photon counting noise}).
-Hence it is only useful if you are working on low surface brightness regions where the change in pixel value (and thus real noise) is insignificant.
-
 @item -b FLT
 @itemx --background=FLT
-The background pixel value for the image in units of magnitudes, see @ref{Photon counting noise} and @ref{Brightness flux magnitude}.
+The background value (per pixel) that will be added to each pixel value (internally) to estimate Poisson noise, see @ref{Photon counting noise}.
+By default the units of this value are assumed to be in magnitudes, hence a @option{--zeropoint} is also necessary.
+But if the background is in units of brightness, you need add @option{--bgisbrightness}, see @ref{Brightness flux magnitude}
+
+Internally, the value given to this option will be converted to brightness (@mymath{b}, when @option{--bgisbrightness} is called, the value will be used directly).
+Assuming the pixel value is @mymath{p}, the random value for that pixel will be taken from a Gaussian distribution with mean of @mymath{p+b} and standard deviation of @mymath{\sqrt{p+b}}.
+With this option, the noise will therefore be dependent on the pixel values: according to the Poission noise model, as the pixel value becomes larger, its noise will also become larger.
+This is thus a realistic way to model noise, see @ref{Photon counting noise}.
+
+@item -B
+@itemx --bgisbrightness
+The value given to @option{--background} should be interpretted as brightness, not as a magnitude.
 
 @item -z FLT
 @itemx --zeropoint=FLT
@@ -18190,6 +18195,17 @@ The zero point magnitude used to convert the value of @option{--background} (in 
 @item -i FLT
 @itemx --instrumental=FLT
 The instrumental noise which is in units of flux, see @ref{Instrumental noise}.
+
+@item -s FLT
+@item --sigma=FLT
+The total noise sigma in the same units as the pixel values.
+With this option, the @option{--background}, @option{--zeropoint} and @option{--instrumental} will be ignored.
+With this option, the noise will be independent of the pixel values (which is not realistic, see @ref{Photon counting noise}).
+Hence it is only useful if you are working on low surface brightness regions where the change in pixel value (and thus real noise) is insignificant.
+
+Generally, @strong{usage of this option is discouraged} unless you understand the risks of not simulating real noise.
+This is because with this option, you will not get Poisson noise (the common noise model for astronomical imaging), where the noise varies based on pixel value.
+Use @option{--background} for adding Poission noise.
 
 @item -e
 @itemx --envseed
