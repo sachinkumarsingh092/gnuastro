@@ -63,5 +63,6 @@ if [ ! -f $img2     ]; then echo "$img2 does not exist.";    exit 77; fi
 # debugging when the developer doesn't have access to the user's system.
 export GSL_RNG_SEED=1
 export GSL_RNG_TYPE=ranlxs2
-$check_with_program $execname --envseed $img1
-$check_with_program $execname --envseed $img2
+options="--background=-10 --zeropoint=0 --envseed"
+$check_with_program $execname $img1 $options
+$check_with_program $execname $img2 $options

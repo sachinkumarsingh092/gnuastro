@@ -116,7 +116,8 @@ ui_initialize_options(struct mknoiseparams *p,
   /* Initialize options for this program. */
   p->sigma               = NAN;
   p->zeropoint           = NAN;
-  p->background_mag      = NAN;
+  p->background          = NAN;
+  p->instrumental        = NAN;
 
 
   /* Modify common options. */
@@ -222,20 +223,41 @@ static void
 ui_read_check_only_options(struct mknoiseparams *p)
 {
   /* At leaset one of '--sigma' or '--background' are necessary. */
-  if( isnan(p->sigma) && isnan(p->background_mag) )
-    error(EXIT_FAILURE, 0, "at least one of '--sigma' or '--background' "
-          "must be given to identify the noise level");
+  if( isnan(p->sigma) && isnan(p->background) )
+    error(EXIT_FAILURE, 0, "noise not defined: please define the noise "
+          "level with either '--sigma' (for a fixed noise STD for all "
+          "the pixels, irrespective of their value) or '--background' "
+          "(to use in a Poisson noise model, where the noise will differ "
+          "based on pixel value)");
 
 
   /* If a background magnitude is given ('--bgbrightness' hasn't been
      called), the zeropoint is necessary. */
-  if( !isnan(p->background_mag) && p->bgisbrightness==0 && isnan(p->zeropoint) )
-    error(EXIT_FAILURE, 0, "no zeropoint magnitude given. When the noise is "
-          "identified by the background magnitude, a zeropoint magnitude "
-          "is mandatory. Please use the '--zeropoint' option to specify "
-          "a zeropoint magnitude. Alternatively, if your background value "
-          "is in units of brightness (which doesn't need a zeropoint), "
-          "please use '--bgisbrightness'");
+  if( !isnan(p->background) )
+    {
+      /* Make sure that the background can be interpretted properly. */
+      if( p->bgisbrightness==0 && isnan(p->zeropoint) )
+        error(EXIT_FAILURE, 0, "missing background information. When the "
+              "noise is identified by the background, a zeropoint magnitude "
+              "is mandatory. Please use the '--zeropoint' option to specify "
+              "a zeropoint magnitude. Alternatively, if your background value "
+              "is brightness (which is in linear scale and doesn't need a "
+              "zeropoint), please use '--bgisbrightness'");
+
+      /* If the background is in units of magnitudes, convert it to
+         brightness. */
+      if( p->bgisbrightness==0 )
+        p->background = pow(10, (p->zeropoint-p->background)/2.5f);
+
+      /* Make sure that the background is larger than 1 (where Poisson
+         noise is actually defined). */
+      if( p->background < 1 )
+        error(EXIT_FAILURE, 0, "backgroud value is smaller than 1. "
+              "Poisson noise is only defined on a positive distribution "
+              "with values larger than 1. You can use the '--sigma' "
+              "option to add a fixed noise level (with any positive value) "
+              "to any pixel.");
+    }
 }
 
 
@@ -306,18 +328,6 @@ ui_preparations(struct mknoiseparams *p)
   else
     p->cp.output=gal_checkset_automatic_output(&p->cp, p->inputname,
                                                "_noised.fits");
-
-
-  /* Convert the background value from magnitudes to flux. Note that
-     magnitudes are actually calculated from the ratio of brightness, not
-     flux. But in the context of MakeNoise where everything is done on
-     pixels independently, brightness and flux are the same (flux is
-     multiplied by the area of one pixel (=1) to give brightness).*/
-  if( !isnan(p->background_mag) )
-    p->background = ( p->bgisbrightness
-                      ? p->background_mag
-                      : pow(10, (p->zeropoint-p->background_mag)/2.5f) );
-
 
   /* Allocate the random number generator: */
   p->rng=gal_checkset_gsl_rng(p->envseed, &p->rng_name, &p->rng_seed);

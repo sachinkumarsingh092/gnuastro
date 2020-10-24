@@ -64,7 +64,7 @@ struct argp_option program_options[] =
       0,
       "Fixed background magnitude for whole input.",
       GAL_OPTIONS_GROUP_INPUT,
-      &p->background_mag,
+      &p->background,
       GAL_TYPE_FLOAT64,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,

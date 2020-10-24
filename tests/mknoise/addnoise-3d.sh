@@ -56,4 +56,5 @@ if [ ! -f $img      ]; then echo "$img does not exist.";     exit 77; fi
 # ==================
 export GSL_RNG_SEED=1
 export GSL_RNG_TYPE=ranlxs2
-$execname --envseed $img
+options="--background=-10 --zeropoint=0 --envseed"
+$check_with_program $execname $img $options
