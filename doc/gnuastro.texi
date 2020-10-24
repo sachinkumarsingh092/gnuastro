@@ -8456,9 +8456,17 @@ For a complete list of basic meta-data on the extensions in a FITS file, don't u
 For more, see @ref{Invoking astfits}.
 
 @item --pixelscale
-Print the HDU's pixel-scale (change in world coordinate for one pixel along each dimension).
-Without the @option{--quiet} option, the output of @option{--pixelscale} is more human-friendly by printing the file/HDU name, number of dimensions, and the units of each number along with the actual pixel scales.
+Print the HDU's pixel-scale (change in world coordinate for one pixel along each dimension) and pixel area or voxel volume.
+Without the @option{--quiet} option, the output of @option{--pixelscale} has multiple lines and explanations, thus being more human-friendly.
+It prints the file/HDU name, number of dimensions, and the units along with the actual pixel scales.
+Also, when any of the units are in degrees, the pixel scales and area/volume are also printed in units of arcsecs.
+For 3D datasets, the pixel area (on each 2D slice of the 3D cube) is printed as well as the voxel volume.
+
 However, in scripts (that are to be run automatically), this human-friendly format is annoying, so when called with the @option{--quiet} option, only the pixel-scale value(s) along each dimension is(are) printed in one line.
+These numbers are followed by the pixel area (in the raw WCS units).
+For 3D datasets, this will be area on each 2D slice.
+Finally, for 3D datasets, a final number (the voxel volume) is printed.
+As a summary, in @option{--quiet} mode, for 2D datasets three numbers are printed and for 3D datasets, 5 numbers are printed.
 
 @item --skycoverage
 @cindex Image's sky coverage

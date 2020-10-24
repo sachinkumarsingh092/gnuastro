@@ -99,6 +99,11 @@ See the end of the file for license conditions.
      added "Memory management" section of the book for a complete
      explanation of Gnuastro's new memory management strategy.
 
+  Fits:
+   - The '--pixelscale' option also prints the pixel area (for 2D inputs,
+     or 2D slices of 3D inputs) and the voxel volume (for 3D inputs). Until
+     now, it would only print the pixel scale along each dimension.
+
   Table:
    - Column arithmetic operators 'degree-to-ra' and 'degree-to-dec' will
      return the sexagesimal format of '_h_m_s' and '_d_m_s'

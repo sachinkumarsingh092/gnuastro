@@ -308,8 +308,8 @@ fits_pixelscale(struct fitsparams *p)
 {
   int nwcs=0;
   size_t i, ndim=0;
-  double *pixelscale;
   struct wcsprm *wcs;
+  double multip, *pixelscale;
 
   /* Read the desired WCS. */
   wcs=gal_wcs_read(p->filename, p->cp.hdu, 0, 0, &nwcs);
@@ -334,15 +334,74 @@ fits_pixelscale(struct fitsparams *p)
              "with '--quiet' or '-q')\n");
       printf("  Input: %s (hdu %s) has %zu dimensions.\n", p->filename,
              p->cp.hdu, ndim);
-      printf("  Pixel scale in each dimension:\n");
+      printf("  Pixel scale in each FITS dimension:\n");
       for(i=0;i<ndim;++i)
-        printf("    %zu: %g (%s/pixel)\n", i+1, pixelscale[i], wcs->cunit[i]);
+        {
+          if( !strcmp(wcs->cunit[i], "deg") )
+            printf("    %zu: %g (%s/pixel) = %g (arcsec/pixel)\n", i+1,
+                   pixelscale[i], wcs->cunit[i], pixelscale[i]*3600);
+          else
+            printf("    %zu: %g (%s/slice)\n", i+1,
+                   pixelscale[i], wcs->cunit[i]);
+        }
+
+      /* Pixel area/volume. */
+      if(ndim>=2)
+        {
+          /* Multiply the values in each dimension. */
+          multip=pixelscale[0]*pixelscale[1];
+
+          /* Pixel scale (applicable to 2 or 3 dimensions). */
+          printf("  Pixel area%s:\n", ndim==2?"":" (on each 2D slice) ");
+          if( strcmp(wcs->cunit[0], wcs->cunit[1]) )
+            printf("    %g (%s*%s)\n", multip, wcs->cunit[0],
+                   wcs->cunit[1]);
+          else
+            if( strcmp(wcs->cunit[0], "deg") )
+              printf("    %g (%s^2)\n", multip, wcs->cunit[0]);
+            else
+              printf("    %g (deg^2) = %g (arcsec^2)\n",
+                     multip, multip*3600*3600 );
+
+          /* For a 3 dimensional dataset, we need need extra info. */
+          if(ndim>=3)
+            {
+              multip*=pixelscale[2];
+              printf("  Voxel volume:\n");
+              if( strcmp(wcs->cunit[0], wcs->cunit[1]) )
+                printf("    %g (%s*%s*%s)\n", multip, wcs->cunit[0],
+                       wcs->cunit[1], wcs->cunit[2]);
+              else
+                if( strcmp(wcs->cunit[0], "deg") )
+                  printf("    %g (%s^2*%s)\n", multip, wcs->cunit[0],
+                         wcs->cunit[2]);
+                else
+                  {
+                    if( strcmp(wcs->cunit[2], "m") )
+                      printf("    %g (deg^2*%s) = %g (arcsec^2*%s)\n",
+                             multip, wcs->cunit[2], multip*3600*3600,
+                             wcs->cunit[2]);
+                    else
+                      printf("    %g (deg^2*m) = %g (arcsec^2*m) = "
+                             "%g (arcsec^2*A)\n", multip, multip*3600*3600,
+                             multip*3600*3600*1e10);
+                  }
+            }
+        }
     }
   else
     {
-      for(i=0;i<ndim-1;++i)
-        printf("%g ", pixelscale[i]);
-      printf("%g\n", pixelscale[ndim-1]);
+      multip=1;
+      for(i=0;i<ndim;++i)
+        {
+          multip*=pixelscale[i];
+          printf("%g ", pixelscale[i]);
+        }
+      switch(ndim)
+        {
+        case 2: printf("%g\n", multip); break;
+        case 3: printf("%g %g\n", pixelscale[0]*pixelscale[1], multip); break;
+        }
     }
 
   /* Clean up. */
