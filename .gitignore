@@ -85,6 +85,7 @@ stamp-h1
 Makefile
 asttable
 astmatch
+astquery
 ltmain.sh
 .dirstamp
 configure

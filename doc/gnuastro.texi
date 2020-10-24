@@ -1618,8 +1618,8 @@ $ astmkprof -P
 [[[ ... Truncated lines ... ]]]
 
 # Columns, by info (see `--searchin'), or number (starting from 1):
- ccol         2           # Center along first FITS axis (horizontal).
- ccol         3           # Center along second FITS axis (vertical).
+ ccol         2           # Coordinate columns (one call for each dimension).
+ ccol         3           # Coordinate columns (one call for each dimension).
  fcol         4           # sersic (1), moffat (2), gaussian (3),
                           # point (4), flat (5), circumference (6).
  rcol         5           # Effective radius or FWHM in pixels.
@@ -1723,7 +1723,7 @@ So Sufi convolved the image with this command:
 
 @example
 $ astconvolve --kernel=0_cat.fits cat.fits
-Convolve started on Mon Apr  6 16:35:32 953
+Convolve started on Sat Oct  6 16:35:32 953
   - Using 8 CPU threads.
   - Input: cat.fits (hdu: 1)
   - Kernel: 0_cat.fits (hdu: 1)
@@ -1748,7 +1748,7 @@ Sufi explained the basic concepts of warping the image to his student and ran Wa
 
 @example
 $ astwarp --scale=1/5 --centeroncorner cat_convolved.fits
-Warp started on Mon Apr  6 16:51:59 953
+Warp started on Sat Oct  6 16:51:59 953
  Using 8 CPU threads.
  Input: cat_convolved.fits (hdu: 1)
  matrix:
@@ -1809,7 +1809,7 @@ So using these values he ran MakeNoise:
 @example
 $ astmknoise --zeropoint=18 --background=7 --output=out.fits    \
              cat_convolved_scaled_cropped.fits
-MakeNoise started on Mon Apr  6 17:05:06 953
+MakeNoise started on Sat Oct  6 17:05:06 953
   - Generator type: ranlxs1
   - Generator seed: 1428318100
 MakeNoise finished in:  0.033491 (seconds)
