@@ -702,6 +702,133 @@ arithmetic_invert(struct arithmeticparams *p, char *token)
 
 
 
+#define INTERPOLATE_REGION(TYPE,OP,FUNC) {                              \
+    TYPE mm, *a=in->array, *m=minmax->array;                            \
+    FUNC(in->type, &mm);                                                \
+    for(i=0;i<minmax->size;++i) m[i]=mm;                                \
+    for(i=0;i<in->size;++i)                                             \
+      {                                                                 \
+        if( l[i]>0 )                                                    \
+          GAL_DIMENSION_NEIGHBOR_OP(i, in->ndim, in->dsize, in->ndim,   \
+                  dinc, { if( a[nind] OP m[l[i]] ) m[l[i]]=a[nind]; }); \
+      }                                                                 \
+    for(i=0;i<in->size;++i) if( l[i]>0 ) { a[i]=m[l[i]]; }              \
+}
+#define INTERPOLATE_REGION_OP(TYPE) {                                   \
+    switch(operator)                                                    \
+      {                                                                 \
+      case ARITHMETIC_OP_INTERPOLATE_MINOFREGION:                       \
+        INTERPOLATE_REGION(TYPE,<,gal_type_max); break;                 \
+      case ARITHMETIC_OP_INTERPOLATE_MAXOFREGION:                       \
+        INTERPOLATE_REGION(TYPE,>,gal_type_min); break;                 \
+      default:                                                          \
+        error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to " \
+              "fix the problem. The operator code %d isn't recognized", \
+              __func__, PACKAGE_BUGREPORT, operator);                   \
+      }                                                                 \
+  }
+static void
+arithmetic_interpolate_region(struct arithmeticparams *p,
+                              int operator, char *token)
+{
+  /* Pop the dataset to interpolate. */
+  int32_t *l;
+  gal_data_t *minmax;
+  gal_data_t *lab=NULL, *flag;
+  size_t i, *con, *dinc, numlabs;
+
+  /* First pop the number of nearby neighbors.*/
+  gal_data_t *connectivity = operands_pop(p, token);
+
+  /* Then pop the actual dataset to interpolate. */
+  gal_data_t *in = operands_pop(p, token);
+
+  /* Do proper sanity checks on 'con'. */
+  if(connectivity->size!=1)
+    error(EXIT_FAILURE, 0, "the first popped operand to the "
+          "'interpolate-XXXofregion' operators must be a single number. "
+          "However, it has %zu elements", connectivity->size);
+  if( connectivity->type==GAL_TYPE_FLOAT32
+      || connectivity->type==GAL_TYPE_FLOAT64)
+    error(EXIT_FAILURE, 0, "the first popped operand to "
+          "'interpolate-XXXofregion' operators is the connectivity to "
+          "define connected blank regions (a counter, an integer, with "
+          "a maximum of the number of dimensions of the input). It must "
+          "NOT be a floating point.\n\n"
+          "If its already an integer, but in a floating point container, "
+          "you can use the 'int32' operator to convert it to a 32-bit "
+          "integer for example");
+
+  /* Convert connectivity to an integer type and make sure its not larger
+     than dimensions of the input. */
+  connectivity=gal_data_copy_to_new_type_free(connectivity,
+                                              GAL_TYPE_SIZE_T);
+  con=connectivity->array;
+  if(con[0]>in->ndim)
+    error(EXIT_FAILURE, 0, "the first popped operand to "
+          "'interpolate-XXXofregion' operators must not be larger than "
+          "the number of dimensions of the input. The connectivity is "
+          "used to define connected blank regions. For example in a "
+          "2D dataset, a connectivity of 1 corresponds to 4-connected "
+          "neighbors and connectivity 2 corresponds to 8-connected "
+          "neighbors");
+
+  /* First make sure the input has blank values. If it doesn't, don't waste
+     time, just return it. */
+  if( gal_blank_present(in, 1)==0 )
+    { operands_add(p, NULL, in); return; }
+
+  /* Build a binary image with the blank regions masked and label them,
+     then free the flagged array. */
+  flag=gal_blank_flag(in);
+  numlabs=gal_binary_connected_components(flag, &lab, con[0]);
+  gal_data_free(flag);
+
+  /* Allocate array to keep maximum values for each region. Just note that
+     because we count the regions from 1, but the indexs from 0, we'll
+     allocate one extra point. */
+  ++numlabs;
+  minmax=gal_data_alloc(NULL, in->type, 1, &numlabs, NULL, 0, in->minmapsize,
+                        in->quietmmap, NULL, NULL, NULL);
+
+  /* Parse the dataset elements for NaNs. */
+  l=lab->array;
+  dinc=gal_dimension_increment(in->ndim, in->dsize);
+  switch(in->type)
+    {
+    case GAL_TYPE_UINT8:   INTERPOLATE_REGION_OP(uint8_t);  break;
+    case GAL_TYPE_INT8:    INTERPOLATE_REGION_OP(int8_t);   break;
+    case GAL_TYPE_UINT16:  INTERPOLATE_REGION_OP(uint16_t); break;
+    case GAL_TYPE_INT16:   INTERPOLATE_REGION_OP(int16_t);  break;
+    case GAL_TYPE_UINT32:  INTERPOLATE_REGION_OP(uint32_t); break;
+    case GAL_TYPE_INT32:   INTERPOLATE_REGION_OP(int32_t);  break;
+    case GAL_TYPE_FLOAT32: INTERPOLATE_REGION_OP(float);    break;
+    case GAL_TYPE_FLOAT64: INTERPOLATE_REGION_OP(double);   break;
+    default:
+      error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
+            "fix the problem. The code %d is not a recognized data "
+            "type", __func__, PACKAGE_BUGREPORT, in->type);
+    }
+
+  /* For tests.
+  gal_fits_img_write(lab, "test-out.fits", NULL, NULL);
+  gal_fits_img_write(in, "test-out.fits", NULL, NULL);
+  printf("\n...%s...\n", __func__); exit(0);
+  */
+
+  /* Clean up. */
+  gal_data_free(lab);
+  gal_data_free(minmax);
+  gal_data_free(connectivity);
+
+  /* Push the interpolated dataset onto the stack. */
+  operands_add(p, NULL, in);
+}
+
+
+
+
+
 static void
 arithmetic_interpolate(struct arithmeticparams *p, int operator, char *token)
 {
@@ -717,12 +844,13 @@ arithmetic_interpolate(struct arithmeticparams *p, int operator, char *token)
   /* Do proper sanity checks on 'num'. */
   if(num->size!=1)
     error(EXIT_FAILURE, 0, "the first popped operand to "
-          "'interpolate-medianngb' must be a single number. However, "
-          "it has %zu elements", num->size);
+          "'interpolate-XXXXXngb' operators must be a single number. "
+          "However, it has %zu elements", num->size);
   if(num->type==GAL_TYPE_FLOAT32 || num->type==GAL_TYPE_FLOAT64)
     error(EXIT_FAILURE, 0, "the first popped operand to "
-          "'interpolate-medianngb' is the number of nearby neighbors (a "
-          "counter, an integer). It must NOT be a floating point.\n\n"
+          "'interpolate-XXXXXngb' operators is the number of nearby "
+          "neighbors (a counter, an integer). It must NOT be a floating "
+          "point.\n\n"
           "If its already an integer, but in a floating point container, "
           "you can use the 'int32' operator to convert it to a 32-bit "
           "integer for example");
@@ -1043,6 +1171,10 @@ arithmetic_set_operator(char *string, size_t *num_operands)
         { op=ARITHMETIC_OP_INTERPOLATE_MAXNGB;    *num_operands=0; }
       else if (!strcmp(string, "interpolate-medianngb"))
         { op=ARITHMETIC_OP_INTERPOLATE_MEDIANNGB; *num_operands=0; }
+      else if (!strcmp(string, "interpolate-minofregion"))
+        { op=ARITHMETIC_OP_INTERPOLATE_MINOFREGION; *num_operands=0; }
+      else if (!strcmp(string, "interpolate-maxofregion"))
+        { op=ARITHMETIC_OP_INTERPOLATE_MAXOFREGION; *num_operands=0; }
       else if (!strcmp(string, "collapse-sum"))
         { op=ARITHMETIC_OP_COLLAPSE_SUM;          *num_operands=0; }
       else if (!strcmp(string, "collapse-min"))
@@ -1168,6 +1300,11 @@ arithmetic_operator_run(struct arithmeticparams *p, int operator,
         case ARITHMETIC_OP_INTERPOLATE_MAXNGB:
         case ARITHMETIC_OP_INTERPOLATE_MEDIANNGB:
           arithmetic_interpolate(p, operator, operator_string);
+          break;
+
+        case ARITHMETIC_OP_INTERPOLATE_MINOFREGION:
+        case ARITHMETIC_OP_INTERPOLATE_MAXOFREGION:
+          arithmetic_interpolate_region(p, operator, operator_string);
           break;
 
         case ARITHMETIC_OP_COLLAPSE_SUM:

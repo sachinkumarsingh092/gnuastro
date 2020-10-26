@@ -11178,6 +11178,27 @@ Similar to @code{interpolate-medianngb}, but will fill the blank values of the d
 Similar to @code{interpolate-medianngb}, but will fill the blank values of the dataset with the maximum value of the nearest neighbors.
 One useful implementation of this operator is to fill the saturated pixels of stars in images.
 
+@item interpolate-minofregion
+Interpolate all blank regions (consisting of many blank pixels that are touching) in the second popped operand with the minimum value of the pixels that are immediately bordering that region (a single value).
+The first popped operand is the connectivity (see description in @command{connected-components}).
+
+For example with the command below all the connected blank regions of @file{image.fits} will be filled.
+Its an image (2D dataset), so a 2 connectivity means that the independent blank regions are defined by 8-connected neighbors.
+If connectivity was 1, the regions would be defined by 4-connectivity: blank regions that may only be touching on the corner of one pixel would be identified as separate regions.
+
+@example
+$ astarithmetic image.fits 2 interpolate-minofregion
+@end example
+
+@item interpolate-maxofregion
+@cindex Saturated pixels
+Similar to @code{interpolate-minofregion}, but the maximum is used to fill the blank regions.
+
+This operator can be useful in filling saturated pixels in stars for example.
+Recall that the @option{interpolate-maxngb} operator looks for the maximum value with a given number of neighboring pixels and is more useful in small noisy regions.
+Therefore as the blank regions become larger, @option{interpolate-maxngb} can cause a fragmentation in the connected blank region because the nearest neighbor to one part of the blank region, may not fall within the pixels searched for the other regions.
+With this option, the size of the blank region is irrelevant: all the pixels bordering the blank region are parsed and their maximum value is used for the whole region.
+
 @item collapse-sum
 Collapse the given dataset (second popped operand), by summing all elements along the first popped operand (a dimension in FITS standard: counting from one, from fastest dimension).
 The returned dataset has one dimension less compared to the input.

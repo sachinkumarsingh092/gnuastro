@@ -38,7 +38,12 @@ See the end of the file for license conditions.
               | asttable -c'arith $1 degree-to-ra $2 degree-to-dec'
 
   Arithmetic:
-   - New operator:
+   - New operators:
+     - 'interpolate-maxofregion': interpolate connected blank regions with
+       the maximum value that is immediately touching it. This can be used
+       to fill the blank centers of saturated stars for example.
+     - 'interpolate-minofregion': similar to 'interpolate-maxofregion', but
+       for the minimum.
      - 'makenew': new operator to create an empty (zero-valued) new dataset
        with given dimension and size (given as operands).
 
