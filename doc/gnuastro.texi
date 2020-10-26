@@ -16426,6 +16426,12 @@ The used (non-blank in values image) area of the labeled region in units of arcs
 This column is just the value of the @option{--area} column, multiplied by the area of each pixel in the input image (in units of arcsec^2).
 Similar to the @option{--ra} or @option{--dec} columns, for this option to work, the objects extension used has to have a WCS structure.
 
+@item --areaminv
+The number of pixels that are equal to the minimum value of the labeled region (clump or object).
+
+@item --areamaxv
+The number of pixels that are equal to the maximum value of the labeled region (clump or object).
+
 @item --surfacebrightness
 The surface brightness (in units of mag/arcsec@mymath{^2}) of the labeled region (objects or clumps).
 For more on the definition of the surface brightness, see @ref{Brightness flux magnitude}.

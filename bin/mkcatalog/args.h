@@ -1477,6 +1477,34 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
+      "areaminv",
+      UI_KEY_MINVNUM,
+      0,
+      0,
+      "Number of pixels with minimum value.",
+      UI_GROUP_COLUMNS_POSITION_PIXEL,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "areamaxv",
+      UI_KEY_MAXVNUM,
+      0,
+      0,
+      "Number of pixels with maximum value.",
+      UI_GROUP_COLUMNS_POSITION_PIXEL,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
       "surfacebrightness",
       UI_KEY_SURFACEBRIGHTNESS,
       0,

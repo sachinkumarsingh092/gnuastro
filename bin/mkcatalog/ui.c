@@ -984,6 +984,8 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
         case OCOL_MAXVY:              *values        = 1;          break;
         case OCOL_MINVZ:              *values        = 1;          break;
         case OCOL_MAXVZ:              *values        = 1;          break;
+        case OCOL_MINVNUM:            *values        = 1;          break;
+        case OCOL_MAXVNUM:            *values        = 1;          break;
         case OCOL_SUMSKY:             *sky           = 1;          break;
         case OCOL_SUMVAR:             *std           = 1;          break;
         case OCOL_SUMWHT:             *values        = 1;          break;
@@ -1054,6 +1056,8 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
           case CCOL_MAXVX:            *values        = 1;          break;
           case CCOL_MAXVY:            *values        = 1;          break;
           case CCOL_MAXVZ:            *values        = 1;          break;
+          case CCOL_MINVNUM:          *values        = 1;          break;
+          case CCOL_MAXVNUM:          *values        = 1;          break;
           case CCOL_SUMSKY:           *sky           = 1;          break;
           case CCOL_SUMVAR:           *std           = 1;          break;
           case CCOL_SUMWHT:           *values        = 1;          break;

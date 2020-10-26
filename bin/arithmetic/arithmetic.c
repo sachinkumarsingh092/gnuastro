@@ -703,14 +703,21 @@ arithmetic_invert(struct arithmeticparams *p, char *token)
 
 
 #define INTERPOLATE_REGION(TYPE,OP,FUNC) {                              \
-    TYPE mm, *a=in->array, *m=minmax->array;                            \
+    TYPE mm, b, *a=in->array, *m=minmax->array;                         \
     FUNC(in->type, &mm);                                                \
+    gal_blank_write(&b, in->type);                                      \
     for(i=0;i<minmax->size;++i) m[i]=mm;                                \
     for(i=0;i<in->size;++i)                                             \
       {                                                                 \
         if( l[i]>0 )                                                    \
           GAL_DIMENSION_NEIGHBOR_OP(i, in->ndim, in->dsize, in->ndim,   \
-                  dinc, { if( a[nind] OP m[l[i]] ) m[l[i]]=a[nind]; }); \
+                                    dinc,                               \
+            {                                                           \
+              if(in->type==GAL_TYPE_FLOAT32 || in->type==GAL_TYPE_FLOAT64) \
+                { if( a[nind] OP m[l[i]] ) m[l[i]]=a[nind]; }           \
+              else                                                      \
+                { if( a[nind]!=b && a[nind] OP m[l[i]] ) m[l[i]]=a[nind]; } \
+            });                                                         \
       }                                                                 \
     for(i=0;i<in->size;++i) if( l[i]>0 ) { a[i]=m[l[i]]; }              \
 }

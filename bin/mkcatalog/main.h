@@ -94,6 +94,8 @@ enum objectcols
     OCOL_MAXVY,          /* Y of maximum pixel in values file.        */
     OCOL_MINVZ,          /* Z of minimum pixel in values file.        */
     OCOL_MAXVZ,          /* Z of maximum pixel in values file.        */
+    OCOL_MINVNUM,        /* Number of pixels with minimum value.      */
+    OCOL_MAXVNUM,        /* Number of pixels with maximum value.      */
     OCOL_SUMSKY,         /* Sum of sky value on this object.          */
     OCOL_NUMSKY,         /* Number of sky value on this object.       */
     OCOL_SUMVAR,         /* Sum of sky variance value on this object. */
@@ -159,6 +161,8 @@ enum clumpcols
     CCOL_MAXVY,          /* Y of maximum pixel in values array.       */
     CCOL_MINVZ,          /* Z of minimum pixel in values array.       */
     CCOL_MAXVZ,          /* Z of maximum pixel in values array.       */
+    CCOL_MINVNUM,        /* Number of pixels with minimum value.      */
+    CCOL_MAXVNUM,        /* Number of pixels with maximum value.      */
     CCOL_SUMSKY,         /* Sum of sky value on this clump.           */
     CCOL_NUMSKY,         /* Number of sky value on this clump.        */
     CCOL_SUMVAR,         /* Sum of sky variance value on this clump.  */

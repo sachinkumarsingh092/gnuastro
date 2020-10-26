@@ -440,16 +440,13 @@ parse_objects(struct mkcatalog_passparams *pp)
 
   double *oi=pp->oi;
   gal_data_t *xybin=NULL;
-  size_t maxima_c[3]={0,0,0};
   size_t *tsize=pp->tile->dsize;
   uint8_t *u, *uf, goodvalue, *xybinarr=NULL;
+  double minima_v=FLT_MAX, maxima_v=-FLT_MAX;
   size_t d, pind=0, increment=0, num_increment=1;
-  double minima_v[3]={ FLT_MAX,  FLT_MAX,  FLT_MAX};
-  double maxima_v[3]={-FLT_MAX, -FLT_MAX, -FLT_MAX};
   int32_t *O, *OO, *C=NULL, *objarr=p->objects->array;
   float var, sval, varval, skyval, *V=NULL, *SK=NULL, *ST=NULL;
   float *std=p->std?p->std->array:NULL, *sky=p->sky?p->sky->array:NULL;
-  size_t minima_c[3]={GAL_BLANK_SIZE_T, GAL_BLANK_SIZE_T, GAL_BLANK_SIZE_T};
 
   /* If tile processing isn't necessary, set 'tid' to a blank value. */
   size_t tid = ( ( (p->sky     && p->sky->size>1 && pp->st_sky == NULL )
@@ -480,6 +477,8 @@ parse_objects(struct mkcatalog_passparams *pp)
                  || oif[ OCOL_MAXVY ]
                  || oif[ OCOL_MINVZ ]
                  || oif[ OCOL_MAXVZ ]
+                 || oif[ OCOL_MINVNUM ]
+                 || oif[ OCOL_MAXVNUM ]
                  || sc
                  /* When the sky and its STD are tiles, we'll also need
                     the coordinate to find which tile a pixel belongs
@@ -589,19 +588,49 @@ parse_objects(struct mkcatalog_passparams *pp)
                       if(oif[ OCOL_C_SUM ]) oi[ OCOL_C_SUM ] += *V;
                     }
 
-                  /* Get the extrema of the values. */
-                  if( oif[ OCOL_MINVX ] && *V<minima_v[0] )
-                    { minima_v[0] = *V; minima_c[0] = c[ ndim-1 ]; }
-                  if( oif[ OCOL_MAXVX ] && *V>maxima_v[0] )
-                    { maxima_v[0] = *V; maxima_c[0] = c[ ndim-1 ]; }
-                  if( oif[ OCOL_MINVY ] && *V<minima_v[1] )
-                    { minima_v[1] = *V; minima_c[1] = c[ ndim-2 ]; }
-                  if( oif[ OCOL_MAXVY ] && *V>maxima_v[1] )
-                    { maxima_v[1] = *V; maxima_c[1] = c[ ndim-2 ]; }
-                  if( oif[ OCOL_MINVZ ] && *V<minima_v[2] )
-                    { minima_v[2] = *V; minima_c[2] = c[ ndim-3 ]; }
-                  if( oif[ OCOL_MAXVZ ] && *V>maxima_v[2] )
-                    { maxima_v[2] = *V; maxima_c[2] = c[ ndim-3 ]; }
+                  /* Get the extrema of the values. Note that if the minima
+                     or maxima value's coordinates are requested in any
+                     dimension, then 'OCOL_MINVNUM' or 'OCOL_MAXVNUM' will
+                     be activated). */
+                  if( oif[ OCOL_MINVNUM ] && *V<=minima_v )
+                    {
+                      /* If the value is smaller than the smallest found so
+                         far, reset the counter to one, and reset the sum
+                         of positions this one's position. */
+                      if( *V<minima_v )
+                        {
+                          minima_v = *V;
+                          oi[ OCOL_MINVNUM ]=1;
+                          if(oif[OCOL_MINVX]) oi[ OCOL_MINVX ] = c[ ndim-1 ]+1;
+                          if(oif[OCOL_MINVY]) oi[ OCOL_MINVY ] = c[ ndim-2 ]+1;
+                          if(oif[OCOL_MINVZ]) oi[ OCOL_MINVZ ] = c[ ndim-3 ]+1;
+                        }
+                      else
+                        {
+                          oi[ OCOL_MINVNUM ]++;
+                          if(oif[OCOL_MINVX]) oi[ OCOL_MINVX ] += c[ ndim-1 ]+1;
+                          if(oif[OCOL_MINVY]) oi[ OCOL_MINVY ] += c[ ndim-2 ]+1;
+                          if(oif[OCOL_MINVZ]) oi[ OCOL_MINVZ ] += c[ ndim-3 ]+1;
+                        }
+                    }
+                  if( oif[ OCOL_MAXVNUM ] && *V>=maxima_v )
+                    {
+                      if( *V>maxima_v )
+                        {
+                          maxima_v = *V;
+                          oi[ OCOL_MAXVNUM ]=1;
+                          if(oif[OCOL_MAXVX]) oi[ OCOL_MAXVX ] = c[ ndim-1 ]+1;
+                          if(oif[OCOL_MAXVY]) oi[ OCOL_MAXVY ] = c[ ndim-2 ]+1;
+                          if(oif[OCOL_MAXVZ]) oi[ OCOL_MAXVZ ] = c[ ndim-3 ]+1;
+                        }
+                      else
+                        {
+                          oi[ OCOL_MAXVNUM ]++;
+                          if(oif[OCOL_MAXVX]) oi[ OCOL_MAXVX ] += c[ ndim-1 ]+1;
+                          if(oif[OCOL_MAXVY]) oi[ OCOL_MAXVY ] += c[ ndim-2 ]+1;
+                          if(oif[OCOL_MAXVZ]) oi[ OCOL_MAXVZ ] += c[ ndim-3 ]+1;
+                        }
+                    }
 
                   /* For flux weighted centers, we can only use positive
                      values, so do those measurements here. */
@@ -695,14 +724,6 @@ parse_objects(struct mkcatalog_passparams *pp)
       if(xybin && (num_increment-1)%tsize[1]==0 )
         pind=0;
     }
-
-  /* Write the extrema. */
-  if( oif[ OCOL_MINVX ] ) oi[ OCOL_MINVX ] = minima_c[0] + 1;
-  if( oif[ OCOL_MAXVX ] ) oi[ OCOL_MAXVX ] = maxima_c[0] + 1;
-  if( oif[ OCOL_MINVY ] ) oi[ OCOL_MINVY ] = minima_c[1] + 1;
-  if( oif[ OCOL_MAXVY ] ) oi[ OCOL_MAXVY ] = maxima_c[1] + 1;
-  if( oif[ OCOL_MINVZ ] ) oi[ OCOL_MINVZ ] = minima_c[2] + 1;
-  if( oif[ OCOL_MAXVZ ] ) oi[ OCOL_MAXVZ ] = maxima_c[2] + 1;
 
   /* Write the projected area columns. */
   if(xybin)
@@ -798,7 +819,6 @@ parse_clumps(struct mkcatalog_passparams *pp)
   gal_data_t *xybin=NULL;
   int32_t *O, *OO, *C=NULL, nlab;
   size_t cind, *tsize=pp->tile->dsize;
-  size_t *minima_c=NULL, *maxima_c=NULL;
   double *minima_v=NULL, *maxima_v=NULL;
   uint8_t *u, *uf, goodvalue, *cif=p->ciflag;
   size_t nngb=gal_dimension_num_neighbors(ndim);
@@ -837,6 +857,8 @@ parse_clumps(struct mkcatalog_passparams *pp)
                   || cif[ CCOL_MAXVY ]
                   || cif[ CCOL_MINVZ ]
                   || cif[ CCOL_MAXVZ ]
+                  || cif[ CCOL_MINVNUM ]
+                  || cif[ CCOL_MAXVNUM ]
                   || sc
                   || tid==GAL_BLANK_SIZE_T )
                 ? gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
@@ -865,16 +887,12 @@ parse_clumps(struct mkcatalog_passparams *pp)
     }
 
   /* For the extrema columns. */
-  if( cif[ CCOL_MINVX ] || cif[ CCOL_MINVX ] || cif[ CCOL_MINVZ ] )
-    {
-      minima_c=parse_init_extrema(cif, GAL_TYPE_SIZE_T,  ndim*pp->clumpsinobj, 0);
-      minima_v=parse_init_extrema(cif, GAL_TYPE_FLOAT64, ndim*pp->clumpsinobj, 0);
-    }
-  if( cif[ CCOL_MAXVX ] || cif[ CCOL_MAXVY ] || cif[ CCOL_MAXVZ ] )
-    {
-      maxima_c=parse_init_extrema(cif, GAL_TYPE_SIZE_T,  ndim*pp->clumpsinobj, 1);
-      maxima_v=parse_init_extrema(cif, GAL_TYPE_FLOAT64, ndim*pp->clumpsinobj, 1);
-    }
+  if( cif[    CCOL_MINVNUM ] || cif[ CCOL_MINVX ]
+      || cif[ CCOL_MINVX   ] || cif[ CCOL_MINVZ ] )
+    minima_v=parse_init_extrema(cif, GAL_TYPE_FLOAT64, pp->clumpsinobj, 0);
+  if( cif[    CCOL_MAXVNUM ] || cif[ CCOL_MAXVX ]
+      || cif[ CCOL_MAXVY   ] || cif[ CCOL_MAXVZ ] )
+    maxima_v=parse_init_extrema(cif, GAL_TYPE_FLOAT64, pp->clumpsinobj, 1);
 
   /* Parse each contiguous patch of memory covered by this object. */
   while( pp->start_end_inc[0] + increment <= pp->start_end_inc[1] )
@@ -967,25 +985,43 @@ parse_clumps(struct mkcatalog_passparams *pp)
                       if(cif[ CCOL_NUMXY ])
                         ((uint8_t *)(xybin[cind].array))[ pind ] = 2;
 
-                      /* Extrema columns. */
-                      if( cif[ CCOL_MINVX ] && *V<minima_v[ cind*ndim+0 ] )
-                        { minima_v[ cind*ndim+0 ] = *V;
-                          minima_c[ cind*ndim+0 ] = c[ ndim-1 ]; }
-                      if( cif[ CCOL_MAXVX ] && *V>maxima_v[ cind*ndim+0 ] )
-                        { maxima_v[ cind*ndim+0 ] = *V;
-                          maxima_c[ cind*ndim+0 ] = c[ ndim-1 ]; }
-                      if( cif[ CCOL_MINVY ] && *V<minima_v[ cind*ndim+1 ] )
-                        { minima_v[ cind*ndim+1 ] = *V;
-                          minima_c[ cind*ndim+1 ] = c[ ndim-2 ]; }
-                      if( cif[ CCOL_MAXVY ] && *V>maxima_v[ cind*ndim+1 ] )
-                        { maxima_v[ cind*ndim+1 ] = *V;
-                          maxima_c[ cind*ndim+1 ] = c[ ndim-2 ]; }
-                      if( cif[ CCOL_MINVZ ] && *V<minima_v[ cind*ndim+2 ] )
-                        { minima_v[ cind*ndim+2 ] = *V;
-                          minima_c[ cind*ndim+2 ] = c[ ndim-3 ]; }
-                      if( cif[ CCOL_MAXVZ ] && *V>maxima_v[ cind*ndim+2 ] )
-                        { maxima_v[ cind*ndim+2 ] = *V;
-                          maxima_c[ cind*ndim+2 ] = c[ ndim-3 ]; }
+                      /* Minimum/maximum pixel positions. */
+                      if( cif[ CCOL_MINVNUM ] && *V<=minima_v[cind] )
+                        {
+                          if( *V<minima_v[cind] )
+                            {
+                              minima_v[cind] = *V;
+                              ci[ CCOL_MINVNUM ]=1;
+                              if(cif[CCOL_MINVX]) ci[ CCOL_MINVX ] = c[ ndim-1 ]+1;
+                              if(cif[CCOL_MINVY]) ci[ CCOL_MINVY ] = c[ ndim-2 ]+1;
+                              if(cif[CCOL_MINVZ]) ci[ CCOL_MINVZ ] = c[ ndim-3 ]+1;
+                            }
+                          else
+                            {
+                              ci[ CCOL_MINVNUM ]++;
+                              if(cif[CCOL_MINVX]) ci[ CCOL_MINVX ] += c[ ndim-1 ]+1;
+                              if(cif[CCOL_MINVY]) ci[ CCOL_MINVY ] += c[ ndim-2 ]+1;
+                              if(cif[CCOL_MINVZ]) ci[ CCOL_MINVZ ] += c[ ndim-3 ]+1;
+                            }
+                        }
+                      if( cif[ CCOL_MAXVNUM ] && *V>=maxima_v[cind] )
+                        {
+                          if( *V>maxima_v[cind] )
+                            {
+                              maxima_v[cind] = *V;
+                              ci[ CCOL_MAXVNUM ]=1;
+                              if(cif[CCOL_MAXVX]) ci[ CCOL_MAXVX ] = c[ ndim-1 ]+1;
+                              if(cif[CCOL_MAXVY]) ci[ CCOL_MAXVY ] = c[ ndim-2 ]+1;
+                              if(cif[CCOL_MAXVZ]) ci[ CCOL_MAXVZ ] = c[ ndim-3 ]+1;
+                            }
+                          else
+                            {
+                              ci[ CCOL_MAXVNUM ]++;
+                              if(cif[CCOL_MAXVX]) ci[ CCOL_MAXVX ] += c[ ndim-1 ]+1;
+                              if(cif[CCOL_MAXVY]) ci[ CCOL_MAXVY ] += c[ ndim-2 ]+1;
+                              if(cif[CCOL_MAXVZ]) ci[ CCOL_MAXVZ ] += c[ ndim-3 ]+1;
+                            }
+                        }
 
                       /* Columns that need positive values. */
                       if( *V > 0.0f )
@@ -1155,27 +1191,17 @@ parse_clumps(struct mkcatalog_passparams *pp)
             gal_fits_img_write(&xybin[i], "xybin.fits", NULL, NULL);
 
         }
-
-      /* Write the position of the maximum values. */
-      if( cif[ CCOL_MINVX ] ) ci[ CCOL_MINVX ] = minima_c[ i*ndim + 0 ] + 1;
-      if( cif[ CCOL_MAXVX ] ) ci[ CCOL_MAXVX ] = maxima_c[ i*ndim + 0 ] + 1;
-      if( cif[ CCOL_MINVY ] ) ci[ CCOL_MINVY ] = minima_c[ i*ndim + 1 ] + 1;
-      if( cif[ CCOL_MAXVY ] ) ci[ CCOL_MAXVY ] = maxima_c[ i*ndim + 1 ] + 1;
-      if( cif[ CCOL_MINVZ ] ) ci[ CCOL_MINVZ ] = minima_c[ i*ndim + 2 ] + 1;
-      if( cif[ CCOL_MAXVZ ] ) ci[ CCOL_MAXVZ ] = maxima_c[ i*ndim + 2 ] + 1;
     }
 
 
   /* Clean up. */
-  if(c)       free(c);
-  if(sc)      free(sc);
-  if(dinc)    free(dinc);
+  if(c) free(c);
+  if(sc) free(sc);
+  if(dinc) free(dinc);
   if(ngblabs) free(ngblabs);
   if(minima_v) free(minima_v);
-  if(minima_c) free(minima_c);
   if(maxima_v) free(maxima_v);
-  if(maxima_c) free(maxima_c);
-  if(xybin)   gal_data_array_free(xybin, pp->clumpsinobj, 1);
+  if(xybin) gal_data_array_free(xybin, pp->clumpsinobj, 1);
 }
 
 
