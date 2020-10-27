@@ -150,7 +150,7 @@ mkcatalog_single_object(void *in_prm)
          the array positions start from 0. */
       pp.ci       = NULL;
       pp.object   = ( p->outlabs
-                      ? p->outlabs[tprm->indexs[i]]
+                      ? p->outlabs[ tprm->indexs[i] ]
                       : tprm->indexs[i] + 1 );
       pp.tile     = &p->tiles[   tprm->indexs[i] ];
       pp.spectrum = &p->spectra[ tprm->indexs[i] ];
@@ -621,7 +621,9 @@ sort_clumps_by_objid(struct mkcatalogparams *p)
   i=0;
   while(i<p->numclumps)
     {
-      o=p->hostobjid_c[i]-1;
+      o = ( p->outlabsinv
+            ? (p->outlabsinv[ p->hostobjid_c[i] ] + 1)
+            : p->hostobjid_c[i] ) - 1;
       for(j=0; j<p->numclumps_c[o]; ++j)
         permute[i++] = rowstart[o] + j;
     }

@@ -253,6 +253,7 @@ struct mkcatalogparams
   float                medstd;  /* Median standard deviation value.     */
   float               cpscorr;  /* Counts-per-second correction.        */
   int32_t            *outlabs;  /* Labels in output catalog (when necessary) */
+  int32_t         *outlabsinv;  /* Inverse of the 'outlabs' array.      */
   size_t           numobjects;  /* Number of object labels in image.    */
   float               clumpsn;  /* Clump S/N threshold.                 */
   size_t            numclumps;  /* Number of clumps in image.           */

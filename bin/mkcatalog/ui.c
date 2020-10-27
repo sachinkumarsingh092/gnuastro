@@ -572,6 +572,7 @@ ui_wcs_info(struct mkcatalogparams *p)
 static size_t
 ui_num_clumps(struct mkcatalogparams *p)
 {
+  int32_t olab;
   char *basename;
   int keepinputdir;
   size_t i, counter, numclumps=0;
@@ -593,13 +594,14 @@ ui_num_clumps(struct mkcatalogparams *p)
       if(*o>0 && *c>0)
         {
           /* See if the label has already been found. */
-          for(tmp=labsinobj[*o];tmp!=NULL;tmp=tmp->next) if(tmp->v==*c) break;
+          olab = p->outlabsinv ? p->outlabsinv[*o] : *o;
+          for(tmp=labsinobj[olab];tmp!=NULL;tmp=tmp->next) if(tmp->v==*c) break;
 
           /* When it wasn't found, 'tmp==NULL'. */
           if(tmp==NULL)
             {
               ++numclumps;
-              gal_list_i32_add(&labsinobj[*o], *c);
+              gal_list_i32_add(&labsinobj[olab], *c);
             }
         }
 
@@ -618,7 +620,8 @@ ui_num_clumps(struct mkcatalogparams *p)
       if(*o>0 && *c>0)
         {
           counter=0;
-          for(tmp=labsinobj[*o];tmp!=NULL;tmp=tmp->next)
+          olab = p->outlabsinv ? p->outlabsinv[*o] : *o;
+          for(tmp=labsinobj[olab];tmp!=NULL;tmp=tmp->next)
             { counter++; if(tmp->v==*c) {*c=counter; break;} }
         }
 
@@ -763,9 +766,25 @@ ui_one_tile_per_object_correct_numobjects(struct mkcatalogparams *p)
                                       "p->outlabs");
       for(i=0;i<p->numobjects;++i) if(rarray[i]==0) p->outlabs[j++]=i+1;
 
+      /* Allocate an array for easy finding of the proper label and fill it
+         with the new labels. This array should have an element for each of
+         the original labels (that are not contiguous). */
+      if(p->clumpscat)
+        {
+          p->outlabsinv=gal_pointer_allocate(GAL_TYPE_UINT32,
+                                             p->numobjects+1, 1,
+                                             __func__, "p->outlabsinv");
+          for(i=0;i<no;++i) p->outlabsinv[ p->outlabs[i] ] = i;
+        }
+
       /* Correct numobjects and clean up. */
       p->numobjects=no;
       gal_data_free(rowsremove);
+
+      /* For a check:
+      for(i=0;i<p->numobjects;++i)
+        printf("outlabs[%zu]: %d\n", i, p->outlabs[i]);
+      */
     }
 
   /* For a check.
@@ -821,6 +840,7 @@ ui_read_labels(struct mkcatalogparams *p)
           "is currently only defined on 3D datasets", p->objectsfile,
           p->cp.hdu, p->objects->ndim);
 
+
   /* See if the total number of objects is given in the header keywords. */
   keys[0].name="NUMLABS";
   keys[0].type=GAL_TYPE_SIZE_T;
@@ -832,6 +852,7 @@ ui_read_labels(struct mkcatalogparams *p)
       p->numobjects=*((int32_t *)(tmp->array)); /*numobjects is in int32_t.*/
       gal_data_free(tmp);
     }
+
 
   /* If there were no objects in the input, then inform the user with an
      error (it is pointless to build a catalog). */
@@ -1985,6 +2006,7 @@ ui_free_report(struct mkcatalogparams *p, struct timeval *t1)
   gal_list_data_free(p->clumpcols);
   gal_list_data_free(p->objectcols);
   gal_list_data_free(p->specsliceinfo);
+  if(p->outlabsinv) free(p->outlabsinv);
   if(p->upcheckout) free(p->upcheckout);
   gal_data_array_free(p->tiles, p->numobjects, 0);
 
