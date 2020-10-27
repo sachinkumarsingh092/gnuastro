@@ -7992,7 +7992,7 @@ Conversely if integer types are important for you, you have to manually set them
 At the lowest level, the only defining aspect of a column in a table is its number, or position.
 But selecting columns purely by number is not very convenient and, especially when the tables are large it can be very frustrating and prone to errors.
 Hence, table file formats (for example see @ref{Recognized table formats}) have ways to store additional information about the columns (meta-data).
-Some of the most common pieces of information about each column are its @emph{name}, the @emph{units} of data in the it, and a @emph{comment} for longer/informal description of the column's data.
+Some of the most common pieces of information about each column are its @emph{name}, the @emph{units} of data in it, and a @emph{comment} for longer/informal description of the column's data.
 
 To facilitate research with Gnuastro, you can select columns by matching, or searching in these three fields, besides the low-level column number.
 To view the full list of information on the columns in the table, you can use the Table program (see @ref{Table}) with the command below (replace @file{table-file} with the filename of your table, if its FITS, you might also need to specify the HDU/extension which contains the table):
@@ -8017,7 +8017,7 @@ The matching will be done following this convention:
 @itemize
 @item
 If the value is enclosed in two slashes (for example @command{-x/RA_/}, or @option{--coordcol=/RA_/}, see @ref{Crop options}), then it is assumed to be a regular expression with the same convention as GNU AWK.
-GNU AWK has a very well written @url{https://www.gnu.org/software/gawk/manual/html_node/Regexp.html, chapter} describing regular expressions, so we we will not continue discussing them here.
+GNU AWK has a very well written @url{https://www.gnu.org/software/gawk/manual/html_node/Regexp.html, chapter} describing regular expressions, so we will not continue discussing them here.
 Regular expressions are a very powerful tool in matching text and useful in many contexts.
 We thus strongly encourage reviewing this chapter for greatly improving the quality of your work in many cases, not just for searching column meta-data in Gnuastro.
 
@@ -11170,6 +11170,12 @@ This operator and its necessary operands are almost identical to @code{filter-si
 Interpolate all the blank elements of the second popped operand with the median of its nearest non-blank neighbors.
 The number of the nearest non-blank neighbors used to calculate the median is given by the first popped operand.
 Note that the distance of the nearest non-blank neighbors is irrelevant in this interpolation.
+
+For example the line below calculates the median using 4 pixels.
+
+@example
+$ astarithmetic image.fits 4 interpolate-medianngb
+@end example
 
 @item interpolate-minngb
 Similar to @code{interpolate-medianngb}, but will fill the blank values of the dataset with the minimum value of the nearest neighbors.
