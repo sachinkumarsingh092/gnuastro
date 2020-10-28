@@ -11167,15 +11167,21 @@ Apply a @mymath{\sigma}-clipped median filtering onto the input dataset.
 This operator and its necessary operands are almost identical to @code{filter-sigclip-mean}, except that after @mymath{\sigma}-clipping, the median value (which is less affected by outliers than the mean) is added back to the stack.
 
 @item interpolate-medianngb
-Interpolate all the blank elements of the second popped operand with the median of its nearest non-blank neighbors.
+Interpolate the blank elements of the second popped operand with the median of nearest non-blank neighbors to each.
 The number of the nearest non-blank neighbors used to calculate the median is given by the first popped operand.
-Note that the distance of the nearest non-blank neighbors is irrelevant in this interpolation.
 
-For example the line below calculates the median using 4 pixels.
+The distance of the nearest non-blank neighbors is irrelevant in this interpolation.
+The neighbors of each blank pixel will be parsed in expanding circluar rings (for 2D images) or spherical surfaces (for 3D cube) and each non-blank element over them is stored in memory.
+When the requested number of non-blank neighbors have been found, their median is used to replace that blank element.
+For example the line below replaces each blank element with the the median of the nearest 5 pixels.
 
 @example
-$ astarithmetic image.fits 4 interpolate-medianngb
+$ astarithmetic image.fits 5 interpolate-medianngb
 @end example
+
+When you want to interpolate blank regions and you want each blank region to have a fixed value (for example the centers of saturated stars) this operator is not good.
+Because the pixels used to interpolate various parts of the region differ.
+For such scenarios, you may use @code{interpolate-maxofregion} or @code{interpolate-inofregion} (described below).
 
 @item interpolate-minngb
 Similar to @code{interpolate-medianngb}, but will fill the blank values of the dataset with the minimum value of the nearest neighbors.
