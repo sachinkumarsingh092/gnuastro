@@ -231,7 +231,7 @@ static void
 ui_check_options_and_arguments(struct matchparams *p)
 {
   /* When '--coord' is given, there should be no second catalog
-     (argument). */
+     (argument), except when `--kdtree` is given. */
   if(p->coord)
     {
       /* Make sure no second argument is given. */
@@ -248,7 +248,7 @@ ui_check_options_and_arguments(struct matchparams *p)
   else
     {
       /* Without 'coord' atleast one input is necessary. */
-      if(p->input1name==NULL)
+      if(p->input1name==NULL && p->kdtree==NULL)
         error(EXIT_FAILURE, 0, "no inputs!\n\n"
               "Two inputs are necessary. The first can be a file, or from "
               "the standard input (e.g., a pipe). The second can be a "
@@ -257,7 +257,7 @@ ui_check_options_and_arguments(struct matchparams *p)
 
       /* If the first input should be read from the standard input, the
          contents of 'input1name' actually belong to 'input2name'. */
-      if(p->input2name==NULL)
+      if(p->input2name==NULL && p->kdtree==NULL)
         {
           p->input2name=p->input1name;
           p->input1name=NULL;
@@ -316,10 +316,15 @@ ui_set_mode(struct matchparams *p)
      'NULL'), then we go into catalog mode because currently we assume
      standard input is only for plain text and WCS matching is not defined
      on plain text. */
-  if( p->input1name && gal_fits_name_is_fits(p->input1name) )
+  if( p->input1name && gal_fits_name_is_fits(p->input1name) && !p->kdtree)
     {
       tin1=gal_fits_hdu_format(p->input1name, p->cp.hdu);
       p->mode = (tin1 == IMAGE_HDU) ? MATCH_MODE_WCS : MATCH_MODE_CATALOG;
+    }
+  else if(p->input1name && gal_fits_name_is_fits(p->input1name) && p->kdtree )
+    {
+      tin1=BINARY_TBL;
+      p->mode=MATCH_MODE_KDTREE;
     }
   else
     {
@@ -583,7 +588,7 @@ ui_set_columns_sanity_check_read_aperture(struct matchparams *p)
   size_t ccol1n, ccol2n;
 
   /* Make sure the columns to read are given. */
-  if(p->coord)
+  if(p->coord || p->kdtree)
     {
       if(p->ccol1==NULL)
         error(EXIT_FAILURE, 0, "no value given to '--ccol1' (necessary with "
@@ -598,15 +603,18 @@ ui_set_columns_sanity_check_read_aperture(struct matchparams *p)
 
   /* Make sure the same number of columns is given to both. */
   ccol1n = p->ccol1->size;
-  ccol2n = p->coord ? p->coord->size : p->ccol2->size;
-  if(ccol1n!=ccol2n)
-    error(EXIT_FAILURE, 0, "number of coordinates given to '--ccol1' "
-          "(%zu) and '--%s' (%zu) must be equal.\n\n"
-          "If you didn't call these options, run with '--checkconfig' to "
-          "see which configuration file is responsible. You can always "
-          "override the configuration file values by calling the option "
-          "manually on the command-line",
-          ccol1n, p->coord ? "coord" : "ccol2", ccol2n);
+  if(!p->kdtree)
+    {
+      ccol2n = p->coord ? p->coord->size : p->ccol2->size;
+      if(ccol1n!=ccol2n)
+        error(EXIT_FAILURE, 0, "number of coordinates given to '--ccol1' "
+              "(%zu) and '--%s' (%zu) must be equal.\n\n"
+              "If you didn't call these options, run with '--checkconfig' to "
+              "see which configuration file is responsible. You can always "
+              "override the configuration file values by calling the option "
+              "manually on the command-line",
+              ccol1n, p->coord ? "coord" : "ccol2", ccol2n);
+    }
 
   /* Read/check the aperture values. */
   if(p->aperture)
@@ -744,7 +752,7 @@ ui_read_columns(struct matchparams *p)
   /* Convert the array of strings to a list of strings for the column
      names. */
   strarr1=p->ccol1->array;
-  strarr2=p->coord?NULL:p->ccol2->array;
+  strarr2=(p->coord || p->kdtree)?NULL:p->ccol2->array;
   for(i=0;i<ndim;++i)
     {
       gal_list_str_add(&cols1, strarr1[i], 1);
@@ -756,14 +764,23 @@ ui_read_columns(struct matchparams *p)
   /* Read-in the columns. */
   p->cols1=ui_read_columns_to_double(p, p->input1name, p->cp.hdu,
                                      cols1, ndim);
-  p->cols2=( p->coord
-             ? ui_set_columns_from_coord(p)
-             : ui_read_columns_to_double(p, p->input2name, p->hdu2,
-                                         cols2, ndim) );
+
+  if(p->kdtree)
+    p->cols2=NULL;
+
+  else
+    p->cols2=( p->coord
+              ? ui_set_columns_from_coord(p)
+              : ui_read_columns_to_double(p, p->input2name, p->hdu2,
+                                          cols2, ndim) );
 
   /* Free the extra spaces. */
   gal_list_str_free(cols1, 1);
-  gal_list_str_free(cols2, 1);
+
+  if(!p->kdtree)
+    gal_list_str_free(cols2, 1);
+  
+
 }
 
 

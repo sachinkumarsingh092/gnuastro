@@ -71,7 +71,7 @@
 # space characters in them, quote the full value
 numjobs=8
 builddir=build
-outdir=
+outdir=../during-dev-out
 
 
 
@@ -82,9 +82,9 @@ outdir=
 # script, and once for the utility. In such cases it might be easier to
 # just add the argument/option to the final script that runs the utility
 # rather than these variables.
-utilname=
-arguments=
-options=
+utilname=match  
+arguments="~/gnuastro_dev/task-match-fits-nohealpix/input/1881731715-x-y.fits --ccol1=X,Y --kdtree=build --aperture=0.5"
+options=""
 
 
 

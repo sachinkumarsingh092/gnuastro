@@ -39,6 +39,7 @@ enum match_modes
 {
   MATCH_MODE_INVALID,           /* ==0 by default. */
   MATCH_MODE_WCS,
+  MATCH_MODE_KDTREE,
   MATCH_MODE_CATALOG,
 };
 
@@ -53,6 +54,7 @@ struct matchparams
   char            *input1name;  /* First input filename.                */
   char            *input2name;  /* Second input filename.               */
   char                  *hdu2;  /* Second input's HDU.                  */
+  char                *kdtree;  /* Build options for KD-tree.           */
   gal_data_t           *ccol1;  /* Array of first input column names.   */
   gal_data_t           *ccol2;  /* Array of second input column names.  */
   gal_data_t           *coord;  /* Array of manual coordinate values.   */

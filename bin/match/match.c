@@ -452,6 +452,16 @@ match_catalog(struct matchparams *p)
 
 
 
+static void
+match_kdtree(struct matchparams *p)
+{
+  /*TODO*/
+  printf("%s the kdtree.\n", p->kdtree);
+}
+
+
+
+
 
 
 
@@ -477,6 +487,7 @@ match(struct matchparams *p)
   switch(p->mode)
     {
     case MATCH_MODE_CATALOG: match_catalog(p); break;
+    case MATCH_MODE_KDTREE : match_kdtree(p); break;
     case MATCH_MODE_WCS:
       error(EXIT_FAILURE, 0, "matching by WCS is not yet supported");
     default:

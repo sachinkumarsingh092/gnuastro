@@ -40,7 +40,7 @@ enum program_args_groups
 
 /* Available letters for short options:
 
-   b e f g i j k m n p r s t u v w x y z
+   b e f g i j m n p r s t u v w x y z
    A B E G J L O Q R W X Y
 */
 enum option_keys_enum
@@ -52,6 +52,8 @@ enum option_keys_enum
   UI_KEY_CCOL1           = 'c',
   UI_KEY_CCOL2           = 'C',
   UI_KEY_COORD           = 'd',
+  UI_KEY_KDTREE          = 'k',
+
 
   /* Only with long version (start with a value 1000, the rest will be set
      automatically). */
