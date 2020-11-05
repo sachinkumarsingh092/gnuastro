@@ -112,11 +112,13 @@ enum objectcols
     OCOL_UPPERLIMIT_S,   /* Upper limit one-sigma value.              */
     OCOL_UPPERLIMIT_Q,   /* Quantile of object in random distribution.*/
     OCOL_UPPERLIMIT_SKEW,/* (Mean-Median)/STD of random distribution. */
-    OCOL_NUMHALFMAX,     /* Area/Number of pixels above half of max.  */
-    OCOL_SUMHALFMAX,     /* Sum of pixels above half of max.          */
-    OCOL_NUMHALFSUM,     /* Area/Number containing half of total sum. */
-    OCOL_NUMFRACSUM1,    /* Area/Number containing frac of total sum. */
-    OCOL_NUMFRACSUM2,    /* Area/Number containing frac of total sum. */
+    OCOL_HALFMAXNUM,     /* Area/Number of pixels above half of max.  */
+    OCOL_HALFMAXSUM,     /* Sum of pixels above half of max.          */
+    OCOL_HALFSUMNUM,     /* Area/Number containing half of total sum. */
+    OCOL_FRACMAX1NUM,    /* Area/Number containing frac of maximum.   */
+    OCOL_FRACMAX1SUM,    /* Sum containing frac of maximum.           */
+    OCOL_FRACMAX2NUM,    /* Area/Number containing frac of maximum.   */
+    OCOL_FRACMAX2SUM,    /* Sum containing frac of maximum.           */
     OCOL_C_NUMALL,       /* Value independent no. of pixels in clumps.*/
     OCOL_C_NUM,          /* Area of clumps in this object.            */
     OCOL_C_SUM,          /* Brightness in object clumps.              */
@@ -185,13 +187,13 @@ enum clumpcols
     CCOL_UPPERLIMIT_S,   /* Upper limit one-sigma value.              */
     CCOL_UPPERLIMIT_Q,   /* Quantile of object in random distribution.*/
     CCOL_UPPERLIMIT_SKEW,/* (Mean-Median)/STD of random distribution. */
-    CCOL_NUMHALFMAX,     /* Area/Number of pixels above half of max.  */
-    CCOL_SUMHALFMAX,     /* Sum of pixels above half of max.          */
-    CCOL_NUMHALFSUM,     /* Area/Number containing half of total sum. */
-    CCOL_NUMFRACSUM1,    /* Area/Number containing frac of total sum. */
-    CCOL_NUMFRACSUM2,    /* Area/Number containing frac of total sum. */
-    CCOL_FRACSUMAREA1,   /* Area/Number containing frac of total sum. */
-    CCOL_FRACSUMAREA2,   /* Area/Number containing frac of total sum. */
+    CCOL_HALFMAXNUM,     /* Area/Number of pixels above half of max.  */
+    CCOL_HALFMAXSUM,     /* Sum of pixels above half of max.          */
+    CCOL_HALFSUMNUM,     /* Area/Number containing half of total sum. */
+    CCOL_FRACMAX1NUM,    /* Area/Number containing frac of maximum.   */
+    CCOL_FRACMAX1SUM,    /* Sum containing frac of maximum.           */
+    CCOL_FRACMAX2NUM,    /* Area/Number containing frac of maximum.   */
+    CCOL_FRACMAX2SUM,    /* Sum containing frac of maximum.           */
 
     CCOL_NUMCOLS,        /* SHOULD BE LAST: total number of columns.  */
   };
@@ -239,7 +241,7 @@ struct mkcatalogparams
   float              upnsigma;  /* Multiple of sigma to define up-lim.  */
   int32_t       checkuplim[2];  /* Object & clump ID to check dist.     */
 
-  gal_data_t         *fracsum;  /* Fractions to use in --fracsumarea.   */
+  gal_data_t         *fracmax;  /* Fractions to use in --fracsumarea.   */
 
   /* Internal. */
   char           *relabclumps;  /* Name of new file for clump labels.   */

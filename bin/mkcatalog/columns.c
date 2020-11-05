@@ -335,8 +335,8 @@ columns_sanity_check(struct mkcatalogparams *p)
           case UI_KEY_GEOSEMIMINOR:
           case UI_KEY_GEOAXISRATIO:
           case UI_KEY_HALFRADIUSOBS:
-          case UI_KEY_FRACRADIUSOBS1:
-          case UI_KEY_FRACRADIUSOBS2:
+          case UI_KEY_FRACMAXRADIUS1:
+          case UI_KEY_FRACMAXRADIUS2:
           case UI_KEY_GEOPOSITIONANGLE:
             error(EXIT_FAILURE, 0, "columns requiring second moment "
                   "calculations (like semi-major, semi-minor, axis ratio "
@@ -1728,7 +1728,7 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_precision = 0;
           oiflag[ OCOL_NUM        ] = ciflag[ CCOL_NUM        ] = 1;
           oiflag[ OCOL_SUM        ] = ciflag[ CCOL_SUM        ] = 1;
-          oiflag[ OCOL_NUMHALFSUM ] = ciflag[ CCOL_NUMHALFSUM ] = 1;
+          oiflag[ OCOL_HALFSUMNUM ] = ciflag[ CCOL_HALFSUMNUM ] = 1;
           break;
 
         case UI_KEY_HALFMAXAREA:
@@ -1742,7 +1742,7 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_width     = 6;
           disp_precision = 0;
           oiflag[ OCOL_NUM         ] = ciflag[ CCOL_NUM         ] = 1;
-          oiflag[ OCOL_NUMHALFMAX  ] = ciflag[ CCOL_NUMHALFMAX  ] = 1;
+          oiflag[ OCOL_HALFMAXNUM  ] = ciflag[ CCOL_HALFMAXNUM  ] = 1;
           break;
 
         case UI_KEY_HALFMAXSUM:
@@ -1755,8 +1755,8 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_fmt       = 0;
           disp_width     = 6;
           disp_precision = 0;
-          oiflag[ OCOL_NUM         ] = ciflag[ CCOL_NUM         ] = 1;
-          oiflag[ OCOL_SUMHALFMAX  ] = ciflag[ CCOL_SUMHALFMAX  ] = 1;
+          oiflag[ OCOL_NUM        ] = ciflag[ CCOL_NUM        ] = 1;
+          oiflag[ OCOL_HALFMAXSUM ] = ciflag[ CCOL_HALFMAXSUM ] = 1;
           break;
 
         case UI_KEY_HALFMAXSB:
@@ -1769,9 +1769,9 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_fmt       = 0;
           disp_width     = 6;
           disp_precision = 0;
-          oiflag[ OCOL_NUM         ] = ciflag[ CCOL_NUM         ] = 1;
-          oiflag[ OCOL_NUMHALFMAX  ] = ciflag[ CCOL_NUMHALFMAX  ] = 1;
-          oiflag[ OCOL_SUMHALFMAX  ] = ciflag[ CCOL_SUMHALFMAX  ] = 1;
+          oiflag[ OCOL_NUM        ] = ciflag[ CCOL_NUM        ] = 1;
+          oiflag[ OCOL_HALFMAXNUM ] = ciflag[ CCOL_HALFMAXNUM ] = 1;
+          oiflag[ OCOL_HALFMAXSUM ] = ciflag[ CCOL_HALFMAXSUM ] = 1;
           break;
 
         case UI_KEY_HALFSUMSB:
@@ -1785,16 +1785,16 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_precision = 5;
           oiflag[ OCOL_NUM        ] = ciflag[ CCOL_NUM        ] = 1;
           oiflag[ OCOL_SUM        ] = ciflag[ CCOL_SUM        ] = 1;
-          oiflag[ OCOL_NUMHALFSUM ] = ciflag[ CCOL_NUMHALFSUM ] = 1;
+          oiflag[ OCOL_HALFSUMNUM ] = ciflag[ CCOL_HALFSUMNUM ] = 1;
           break;
 
-        case UI_KEY_FRACSUMAREA1:
-        case UI_KEY_FRACSUMAREA2:
-          name           = ( colcode->v==UI_KEY_FRACSUMAREA1
-                             ? "FRAC_SUM_AREA_1"
-                             : "FRAC_SUM_AREA_2" );
+        case UI_KEY_FRACMAXSUM1:
+        case UI_KEY_FRACMAXSUM2:
+          name           = ( colcode->v==UI_KEY_FRACMAXSUM1
+                             ? "FRAC_MAX_SUM_1"
+                             : "FRAC_MAX_SUM_2" );
           unit           = "counter";
-          ocomment       = "Number of brightest pixels containing given fraction of total sum.";
+          ocomment       = "Sum of pixels brighter than given fraction of maximum value.";
           ccomment       = ocomment;
           otype          = GAL_TYPE_INT32;
           ctype          = GAL_TYPE_INT32;
@@ -1803,16 +1803,37 @@ columns_define_alloc(struct mkcatalogparams *p)
           disp_precision = 0;
           oiflag[ OCOL_NUM ] = ciflag[ CCOL_NUM ] = 1;
           oiflag[ OCOL_SUM ] = ciflag[ CCOL_SUM ] = 1;
-          if(colcode->v==UI_KEY_FRACSUMAREA1)
-            oiflag[ OCOL_NUMFRACSUM1 ] = ciflag[ CCOL_NUMFRACSUM1 ] = 1;
+          if(colcode->v==UI_KEY_FRACMAXSUM1)
+            oiflag[ OCOL_FRACMAX1SUM ] = ciflag[ CCOL_FRACMAX1SUM ] = 1;
           else
-            oiflag[ OCOL_NUMFRACSUM2 ] = ciflag[ CCOL_NUMFRACSUM2 ] = 1;
+            oiflag[ OCOL_FRACMAX2SUM ] = ciflag[ CCOL_FRACMAX2SUM ] = 1;
+          break;
+
+        case UI_KEY_FRACMAXAREA1:
+        case UI_KEY_FRACMAXAREA2:
+          name           = ( colcode->v==UI_KEY_FRACMAXAREA1
+                             ? "FRAC_MAX_AREA_1"
+                             : "FRAC_MAX_AREA_2" );
+          unit           = "counter";
+          ocomment       = "Number of pixels brighter than given fraction of maximum value.";
+          ccomment       = ocomment;
+          otype          = GAL_TYPE_INT32;
+          ctype          = GAL_TYPE_INT32;
+          disp_fmt       = 0;
+          disp_width     = 6;
+          disp_precision = 0;
+          oiflag[ OCOL_NUM ] = ciflag[ CCOL_NUM ] = 1;
+          oiflag[ OCOL_SUM ] = ciflag[ CCOL_SUM ] = 1;
+          if(colcode->v==UI_KEY_FRACMAXAREA1)
+            oiflag[ OCOL_FRACMAX1NUM ] = ciflag[ CCOL_FRACMAX1NUM ] = 1;
+          else
+            oiflag[ OCOL_FRACMAX2NUM ] = ciflag[ CCOL_FRACMAX2NUM ] = 1;
           break;
 
         case UI_KEY_FWHMOBS:
         case UI_KEY_HALFRADIUSOBS:
-        case UI_KEY_FRACRADIUSOBS1:
-        case UI_KEY_FRACRADIUSOBS2:
+        case UI_KEY_FRACMAXRADIUS1:
+        case UI_KEY_FRACMAXRADIUS2:
           unit           = "pixels";
           otype          = GAL_TYPE_FLOAT32;
           ctype          = GAL_TYPE_FLOAT32;
@@ -1837,23 +1858,23 @@ columns_define_alloc(struct mkcatalogparams *p)
             {
             case UI_KEY_FWHMOBS:
               name="FWHM_OBS";
-              oiflag[ OCOL_NUMHALFMAX  ] = ciflag[ CCOL_NUMHALFMAX  ] = 1;
+              oiflag[ OCOL_HALFMAXNUM  ] = ciflag[ CCOL_HALFMAXNUM  ] = 1;
               ocomment = "Full width at half maximum (accounting for ellipticity).";
               break;
             case UI_KEY_HALFRADIUSOBS:
               name="HALF_RADIUS_OBS";
-              oiflag[ OCOL_NUMHALFSUM  ] = ciflag[ CCOL_NUMHALFSUM  ] = 1;
+              oiflag[ OCOL_HALFSUMNUM  ] = ciflag[ CCOL_HALFSUMNUM  ] = 1;
               ocomment = "Radius derived from area of half of total sum.";
               break;
-            case UI_KEY_FRACRADIUSOBS1:
-              name="FRAC_RADIUS_OBS_1";
-              oiflag[ OCOL_NUMFRACSUM1 ] = ciflag[ CCOL_NUMFRACSUM1 ] = 1;
-              ocomment = "Radius derived from area of 1st fraction of total sum.";
+            case UI_KEY_FRACMAXRADIUS1:
+              name="FRAC_MAX_RADIUS_1";
+              oiflag[ OCOL_FRACMAX1NUM ] = ciflag[ CCOL_FRACMAX1NUM ] = 1;
+              ocomment = "Radius derived from area of 1st fraction of maximum.";
               break;
-            case UI_KEY_FRACRADIUSOBS2:
-              name="FRAC_RADIUS_OBS_2";
-              oiflag[ OCOL_NUMFRACSUM2 ] = ciflag[ CCOL_NUMFRACSUM2 ] = 1;
-              ocomment = "Radius derived from area of 2nd fraction of total sum.";
+            case UI_KEY_FRACMAXRADIUS2:
+              name="FRAC_MAX_RADIUS_2";
+              oiflag[ OCOL_FRACMAX2NUM ] = ciflag[ CCOL_FRACMAX2NUM ] = 1;
+              ocomment = "Radius derived from area of 2nd fraction of maximum.";
               break;
             }
           break;
@@ -2580,54 +2601,57 @@ columns_fill(struct mkcatalog_passparams *pp)
           break;
 
         case UI_KEY_HALFSUMAREA:
-          ((int32_t *)colarr)[oind] = oi[OCOL_NUMHALFSUM];
+          ((int32_t *)colarr)[oind] = oi[OCOL_HALFSUMNUM];
           break;
 
         case UI_KEY_HALFMAXAREA:
-          ((int32_t *)colarr)[oind] = oi[OCOL_NUMHALFMAX];
+          ((int32_t *)colarr)[oind] = oi[OCOL_HALFMAXNUM];
           break;
 
         case UI_KEY_HALFMAXSUM:
-          ((float *)colarr)[oind] = oi[OCOL_SUMHALFMAX];
+          ((float *)colarr)[oind] = oi[OCOL_HALFMAXNUM];
           break;
 
         case UI_KEY_HALFMAXSB:
-          ((float *)colarr)[oind] = MKC_SB( oi[OCOL_SUMHALFMAX],
-                                            oi[OCOL_NUMHALFMAX] );
+          ((float *)colarr)[oind] = MKC_SB( oi[OCOL_HALFMAXSUM],
+                                            oi[OCOL_HALFMAXNUM] );
           break;
 
-        case UI_KEY_FRACSUMAREA1:
-          ((int32_t *)colarr)[oind] = oi[OCOL_NUMFRACSUM1];
+        case UI_KEY_FRACMAXSUM1:
+          ((int32_t *)colarr)[oind] = oi[OCOL_FRACMAX1SUM];
           break;
 
-        case UI_KEY_FRACSUMAREA2:
-          ((int32_t *)colarr)[oind] = oi[OCOL_NUMFRACSUM2];
+        case UI_KEY_FRACMAXSUM2:
+          ((int32_t *)colarr)[oind] = oi[OCOL_FRACMAX2SUM];
+          break;
+
+        case UI_KEY_FRACMAXAREA1:
+          ((int32_t *)colarr)[oind] = oi[OCOL_FRACMAX1NUM];
+          break;
+
+        case UI_KEY_FRACMAXAREA2:
+          ((int32_t *)colarr)[oind] = oi[OCOL_FRACMAX2NUM];
           break;
 
         case UI_KEY_HALFSUMSB:
-          tmpind = ( key==UI_KEY_HALFRADIUSOBS
-                     ? OCOL_NUMHALFSUM
-                     : ( key==UI_KEY_FRACRADIUSOBS1
-                         ? OCOL_NUMFRACSUM1
-                         : OCOL_NUMFRACSUM2 ) );
           ((float *)colarr)[oind] = MKC_SB( oi[OCOL_SUM]/2.0f,
-                                            oi[OCOL_NUMHALFSUM] );
+                                            oi[OCOL_HALFSUMNUM] );
           break;
 
         case UI_KEY_FWHMOBS:
         case UI_KEY_HALFRADIUSOBS:
-        case UI_KEY_FRACRADIUSOBS1:
-        case UI_KEY_FRACRADIUSOBS2:
+        case UI_KEY_FRACMAXRADIUS1:
+        case UI_KEY_FRACMAXRADIUS2:
           /* First derive the axis ratio (as 'tmp'), then set the index to
              use and calculate the radius from the area and axis ratio. */
           tmp = ( columns_second_order(pp, oi, UI_KEY_SEMIMINOR, 0)
                   / columns_second_order(pp, oi, UI_KEY_SEMIMAJOR, 0) );
           switch(key)
             {
-            case UI_KEY_FWHMOBS:        tmpind=OCOL_NUMHALFMAX;  break;
-            case UI_KEY_HALFRADIUSOBS:  tmpind=OCOL_NUMHALFSUM;  break;
-            case UI_KEY_FRACRADIUSOBS1: tmpind=OCOL_NUMFRACSUM1; break;
-            case UI_KEY_FRACRADIUSOBS2: tmpind=OCOL_NUMFRACSUM2; break;
+            case UI_KEY_FWHMOBS:        tmpind=OCOL_HALFMAXNUM;  break;
+            case UI_KEY_HALFRADIUSOBS:  tmpind=OCOL_HALFSUMNUM;  break;
+            case UI_KEY_FRACMAXRADIUS1: tmpind=OCOL_FRACMAX1NUM; break;
+            case UI_KEY_FRACMAXRADIUS2: tmpind=OCOL_FRACMAX2NUM; break;
             }
           tmp = sqrt( oi[tmpind]/(tmp*M_PI) );
           if(key==UI_KEY_FWHMOBS)
@@ -2929,47 +2953,55 @@ columns_fill(struct mkcatalog_passparams *pp)
             break;
 
           case UI_KEY_HALFSUMAREA:
-            ((int32_t *)colarr)[cind] = ci[CCOL_NUMHALFSUM];
+            ((int32_t *)colarr)[cind] = ci[CCOL_HALFSUMNUM];
             break;
 
           case UI_KEY_HALFMAXAREA:
-            ((int32_t *)colarr)[cind] = ci[CCOL_NUMHALFMAX];
+            ((int32_t *)colarr)[cind] = ci[CCOL_HALFMAXNUM];
             break;
 
           case UI_KEY_HALFMAXSUM:
-            ((float *)colarr)[cind] = ci[CCOL_SUMHALFMAX];
+            ((float *)colarr)[cind] = ci[CCOL_HALFMAXSUM];
             break;
 
           case UI_KEY_HALFMAXSB:
-            ((float *)colarr)[cind] = MKC_SB( ci[CCOL_SUMHALFMAX],
-                                              ci[CCOL_NUMHALFMAX] );
+            ((float *)colarr)[cind] = MKC_SB( ci[CCOL_HALFMAXSUM],
+                                              ci[CCOL_HALFMAXNUM] );
             break;
 
-          case UI_KEY_FRACSUMAREA1:
-            ((int32_t *)colarr)[cind] = ci[CCOL_NUMFRACSUM1];
+          case UI_KEY_FRACMAXSUM1:
+            ((int32_t *)colarr)[cind] = ci[CCOL_FRACMAX1SUM];
             break;
 
-          case UI_KEY_FRACSUMAREA2:
-            ((int32_t *)colarr)[cind] = ci[CCOL_NUMFRACSUM2];
+          case UI_KEY_FRACMAXSUM2:
+            ((int32_t *)colarr)[cind] = ci[CCOL_FRACMAX2SUM];
+            break;
+
+          case UI_KEY_FRACMAXAREA1:
+            ((int32_t *)colarr)[cind] = ci[CCOL_FRACMAX1NUM];
+            break;
+
+          case UI_KEY_FRACMAXAREA2:
+            ((int32_t *)colarr)[cind] = ci[CCOL_FRACMAX2NUM];
             break;
 
           case UI_KEY_HALFSUMSB:
             ((float *)colarr)[cind] = MKC_SB( ci[CCOL_SUM]/2.0f,
-                                              ci[CCOL_NUMHALFSUM] );
+                                              ci[CCOL_HALFSUMNUM] );
             break;
 
           case UI_KEY_FWHMOBS:
           case UI_KEY_HALFRADIUSOBS:
-          case UI_KEY_FRACRADIUSOBS1:
-          case UI_KEY_FRACRADIUSOBS2:
+          case UI_KEY_FRACMAXRADIUS1:
+          case UI_KEY_FRACMAXRADIUS2:
             tmp = ( columns_second_order(  pp, ci, UI_KEY_SEMIMINOR, 1)
                     / columns_second_order(pp, ci, UI_KEY_SEMIMAJOR, 1) );
             switch(key)
               {
-              case UI_KEY_FWHMOBS:        tmpind=CCOL_NUMHALFMAX;  break;
-              case UI_KEY_HALFRADIUSOBS:  tmpind=CCOL_NUMHALFSUM;  break;
-              case UI_KEY_FRACRADIUSOBS1: tmpind=CCOL_NUMFRACSUM1; break;
-              case UI_KEY_FRACRADIUSOBS2: tmpind=CCOL_NUMFRACSUM2; break;
+              case UI_KEY_FWHMOBS:        tmpind=CCOL_HALFMAXNUM;  break;
+              case UI_KEY_HALFRADIUSOBS:  tmpind=CCOL_HALFSUMNUM;  break;
+              case UI_KEY_FRACMAXRADIUS1: tmpind=CCOL_FRACMAX1NUM; break;
+              case UI_KEY_FRACMAXRADIUS2: tmpind=CCOL_FRACMAX2NUM; break;
               }
             tmp = sqrt( ci[tmpind]/(tmp*M_PI) );
             if(key==UI_KEY_FWHMOBS)

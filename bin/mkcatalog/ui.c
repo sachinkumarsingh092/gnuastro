@@ -411,35 +411,35 @@ ui_read_check_only_options(struct mkcatalogparams *p)
         }
     }
 
-  /* Make sure that '--fracsum' is given if necessary and that the fracsum
+  /* Make sure that '--fracmax' is given if necessary and that the fracsum
      values are less than one. */
   for(colcode=p->columnids; colcode!=NULL; colcode=colcode->next)
-    if( (colcode->v==UI_KEY_FRACSUMAREA1 || colcode->v==UI_KEY_FRACSUMAREA2)
-        && p->fracsum==NULL )
+    if( (colcode->v==UI_KEY_FRACMAXAREA1 || colcode->v==UI_KEY_FRACMAXAREA2)
+        && p->fracmax==NULL )
       error(EXIT_FAILURE, 0, "please specify your required fractions for "
-            "'--fracsumarea' using the '--fracsum' option (for example "
-            "'--fracsum=0.25,0.75' for two columns)");
-  if(p->fracsum)
+            "'--fracmaxarea' using the '--fracmax' option (for example "
+            "'--fracmax=0.25,0.75' for two columns)");
+  if(p->fracmax)
     {
       /* Currently only 2 fracsums are accepted. */
-      if(p->fracsum->size>2)
-        error(EXIT_FAILURE, 0, "%zu values given to '--fracsum', only two "
-              "values are currently supported", p->fracsum->size);
+      if(p->fracmax->size>2)
+        error(EXIT_FAILURE, 0, "%zu values given to '--fracmax', only two "
+              "values are currently supported", p->fracmax->size);
 
       /* Check the values. */
-      darr=p->fracsum->array;
-      for(i=0;i<p->fracsum->size;++i)
+      darr=p->fracmax->array;
+      for(i=0;i<p->fracmax->size;++i)
         if(darr[i]<=0.0f || darr[i]>=1.0f)
-          error(EXIT_FAILURE, 0, "%g is not acceptable for '--fracsum', "
+          error(EXIT_FAILURE, 0, "%g is not acceptable for '--fracmax', "
                 "values should be larger than 0 and less than 1", darr[i]);
 
       /* If a second fracum column is necessary, make sure two values are
-         given to --fracsum. */
+         given to --fracmax. */
       for(colcode=p->columnids; colcode!=NULL; colcode=colcode->next)
-        if(colcode->v==UI_KEY_FRACSUMAREA2 && p->fracsum->size==1)
-          error(EXIT_FAILURE, 0, "only one value given to '--fracsum', "
-                "but '--fracsumarea2' was requested! You need to give "
-                "the requested fraction as a second value to '--fracsum', "
+        if(colcode->v==UI_KEY_FRACMAXAREA2 && p->fracmax->size==1)
+          error(EXIT_FAILURE, 0, "only one value given to '--fracmax', "
+                "but '--fracmaxarea2' was requested! You need to give "
+                "the requested fraction as a second value to '--fracmax', "
                 "separated by a comma (,)");
     }
 }
@@ -1021,11 +1021,13 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
         case OCOL_UPPERLIMIT_S:       *values        = 1;          break;
         case OCOL_UPPERLIMIT_Q:       *values        = 1;          break;
         case OCOL_UPPERLIMIT_SKEW:    *values        = 1;          break;
-        case OCOL_NUMHALFMAX:         *values        = 1;          break;
-        case OCOL_SUMHALFMAX:         *values        = 1;          break;
-        case OCOL_NUMHALFSUM:         *values        = 1;          break;
-        case OCOL_NUMFRACSUM1:        *values        = 1;          break;
-        case OCOL_NUMFRACSUM2:        *values        = 1;          break;
+        case OCOL_HALFMAXNUM:         *values        = 1;          break;
+        case OCOL_HALFMAXSUM:         *values        = 1;          break;
+        case OCOL_HALFSUMNUM:         *values        = 1;          break;
+        case OCOL_FRACMAX1NUM:        *values        = 1;          break;
+        case OCOL_FRACMAX1SUM:        *values        = 1;          break;
+        case OCOL_FRACMAX2NUM:        *values        = 1;          break;
+        case OCOL_FRACMAX2SUM:        *values        = 1;          break;
         case OCOL_C_NUMALL:           /* Only clump labels.  */    break;
         case OCOL_C_NUM:              *values        = 1;          break;
         case OCOL_C_SUM:              *values        = 1;          break;
@@ -1099,11 +1101,13 @@ ui_necessary_inputs(struct mkcatalogparams *p, int *values, int *sky,
           case CCOL_UPPERLIMIT_S:     *values        = 1;          break;
           case CCOL_UPPERLIMIT_Q:     *values        = 1;          break;
           case CCOL_UPPERLIMIT_SKEW:  *values        = 1;          break;
-          case CCOL_NUMHALFMAX:       *values        = 1;          break;
-          case CCOL_SUMHALFMAX:       *values        = 1;          break;
-          case CCOL_NUMHALFSUM:       *values        = 1;          break;
-          case CCOL_NUMFRACSUM1:      *values        = 1;          break;
-          case CCOL_NUMFRACSUM2:      *values        = 1;          break;
+          case CCOL_HALFMAXNUM:       *values        = 1;          break;
+          case CCOL_HALFMAXSUM:       *values        = 1;          break;
+          case CCOL_HALFSUMNUM:       *values        = 1;          break;
+          case CCOL_FRACMAX1NUM:      *values        = 1;          break;
+          case CCOL_FRACMAX1SUM:      *values        = 1;          break;
+          case CCOL_FRACMAX2NUM:      *values        = 1;          break;
+          case CCOL_FRACMAX2SUM:      *values        = 1;          break;
           default:
             error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
                   "fix the problem. The code %zu is not a recognized "

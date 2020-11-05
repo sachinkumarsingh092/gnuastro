@@ -183,14 +183,14 @@ mkcatalog_single_object(void *in_prm)
          necessary. */
       if( p->oiflag[ OCOL_MEDIAN ]
           || p->oiflag[ OCOL_MAXIMUM ]
-          || p->oiflag[ OCOL_SUMHALFMAX ]
-          || p->oiflag[ OCOL_NUMHALFMAX ]
-          || p->oiflag[ OCOL_NUMHALFSUM ]
+          || p->oiflag[ OCOL_HALFMAXSUM ]
+          || p->oiflag[ OCOL_HALFMAXNUM ]
+          || p->oiflag[ OCOL_HALFSUMNUM ]
           || p->oiflag[ OCOL_SIGCLIPNUM ]
           || p->oiflag[ OCOL_SIGCLIPSTD ]
           || p->oiflag[ OCOL_SIGCLIPMEAN ]
-          || p->oiflag[ OCOL_NUMFRACSUM1 ]
-          || p->oiflag[ OCOL_NUMFRACSUM2 ]
+          || p->oiflag[ OCOL_FRACMAX1NUM ]
+          || p->oiflag[ OCOL_FRACMAX2NUM ]
           || p->oiflag[ OCOL_SIGCLIPMEDIAN ])
         parse_order_based(&pp);
 

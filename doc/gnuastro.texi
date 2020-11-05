@@ -16014,10 +16014,11 @@ This option takes two values: the first is the multiple of @mymath{\sigma}, and 
 If the latter is larger than 1, it is read as an integer number and will be the number of times to clip.
 If it is smaller than 1, it is interpreted as the tolerance level to stop clipping. See @ref{Sigma clipping} for a complete explanation.
 
-@item --fracsum=FLT[,FLT]
-The fractions of summed flux in objects or clumps to be used in the @option{--fracsumarea1} and @option{--fracsumarea2} columns, see @ref{MakeCatalog measurements}.
-The values must be larger than 0 and smaller than 1.
-When only @option{--fracsumarea1} is requested, one value must be given to this option, but if @option{--fracsumarea2} is also requested, two values must be given here.
+@item --fracmax=FLT[,FLT]
+The fractions (one or two) of maximum value in objects or clumps to be used in the related columns, for example @option{--fracmaxarea1}, @option{--fracmaxsum1} or @option{--fracmaxradius1}, see @ref{MakeCatalog measurements}.
+For the maximum value, see the description of @option{--maximum} column below.
+The value(s) of this option must be larger than 0 and smaller than 1 (they are a fraction).
+When only @option{--fracmaxarea1} or @option{--fracmaxsum1} is requested, one value must be given to this option, but if @option{--fracmaxarea2} or @option{--fracmaxsum2} are also requested, two values must be given to this option.
 The values can be written as simple floating point numbers, or as fractions, for example @code{0.25,0.75} and @code{0.25,3/4} are the same.
 @end table
 
@@ -16517,17 +16518,29 @@ For more on @mymath{r_e}, please see @ref{Galaxies}.
 Therefore, when @mymath{r_e} is meaningful for the target (the target is elliptically symmetric and can be parametrized as a S@'ersic profile), @mymath{r_e} should be derived from fitting the profile with a S@'ersic function which has been convolved with the PSF.
 But from the equation above, you see that this radius is derived from the raw image's labeled values (after convolution, with no parametric profile), so this column's value will generally be (much) smaller than @mymath{r_e}, depending on the PSF, depth of the dataset, the morphology, or if a fraction of the profile falls on the edge of the image.
 
-@item --fracsumarea1
-@itemx --fracsumarea2
-Similar to @option{--halfsumarea}, but for user-defined fractions of total sum.
-The fractions are given through the @option{--fracsum} option (that can take two values) and is described in @ref{MakeCatalog inputs and basic settings}.
-Recall that in @option{--halfsumarea}, the fraction is fixed to 0.5 so added with these two columns, you can sample three parts of the profile.
+@item --fracmaxarea1
+@itemx --fracmaxarea2
+Number of pixels brighter than the given fraction(s) of the maximum pixel value.
+For the maximum value, see the description of @option{--maximum} column.
+The fraction(s) are given through the @option{--fracmax} option (that can take two values) and is described in @ref{MakeCatalog inputs and basic settings}.
+Recall that in @option{--halfmaxarea}, the fraction is fixed to 0.5.
+Hence, added with these two columns, you can sample three parts of the profile area.
 
-@item --fracradiusobs1
-@itemx --fracradiusobs2
-Similar to @option{--halfradiusobs}, but for user-defined fractions of total sum.
-The fractions are given through the @option{--fracsum} option (that can take two values) and is described in @ref{MakeCatalog inputs and basic settings}.
-Recall that in @option{--halfradiusobs}, the fraction is fixed to 0.5 so added with these two columns, you can sample three parts of the profile.
+@item --fracmaxsum1
+@itemx --fracmaxsum2
+Sum of pixels brighter than the given fraction(s) of the maximum pixel value.
+For the maximum value, see the description of @option{--maximum} column below.
+The fraction(s) are given through the @option{--fracmax} option (that can take two values) and is described in @ref{MakeCatalog inputs and basic settings}.
+Recall that in @option{--halfmaxsum}, the fraction is fixed to 0.5.
+Hence, added with these two columns, you can sample three parts of the profile's sum of pixels.
+
+@item --fracmaxradius1
+@itemx --fracmaxradius2
+Radius (in units of pixels) derived from the area that contains the given fractions of the maximum valued pixel(s) of the label's pixels (value reported by @option{--fracmaxarea1} or @option{--fracmaxarea2}).
+For the maximum value, see the description of @option{--maximum} column below.
+The fractions are given through the @option{--fracmax} option (that can take two values) and is described in @ref{MakeCatalog inputs and basic settings}.
+Recall that in @option{--fwhmobs}, the fraction is fixed to 0.5.
+Hence, added with these two columns, you can sample three parts of the profile's radius.
 
 @item --clumpsarea
 [Objects] The total area of all the clumps in this object.
