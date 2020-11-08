@@ -25061,10 +25061,10 @@ main (void)
                        GAL_TABLE_SEARCH_NAME, 0, -1, 0, NULL);
 
   /* Construct a k-d tree. The index of root is stored in `root` */
-  kdtree=gal_kdtree_create(coords_raw, &root);
+  kdtree=gal_kdtree_create(input, &root);
 
   /* Write output to a file. */
-  gal_table_write(kdtree, NULL, GAL_TABLE_FORMAT_BFITS,
+  gal_table_write(kdtree, NULL, NULL, GAL_TABLE_FORMAT_BFITS,
                   kdtreefile, "kdtree", 0);
 
   /* Report k-d tree root. */
@@ -25094,6 +25094,7 @@ For example the function below reads the input, and the k-d tree file created in
 int
 main (void)
 @{
+  double least_dist;
   size_t root=KDTREE_ROOT;
   gal_data_t *input, *kdtree;
   char kdtreefile[]="kd-tree.txt";    /* Inputs and outputs can */
@@ -25113,7 +25114,7 @@ main (void)
 
   /* Find the nearest neighbour of the point. */
   nearest_index=gal_kdtree_nearest_neighbour(input, kdtree, root,
-                                             point);
+                                             point, &least_dist);
 
   /* Clean up and return. */
   gal_list_data_free(input);
