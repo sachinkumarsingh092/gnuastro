@@ -100,10 +100,13 @@ astmknoise
 config.sub
 install-sh
 aclocal.m4
+confdefs.h
+conftest.c
 astconvertt
 astconvolve
 test-driver
 config.h.in
+conftest.err
 lib/config.h
 astcosmiccal
 astmkcatalog
