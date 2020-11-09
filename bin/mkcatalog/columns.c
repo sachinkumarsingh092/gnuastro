@@ -1793,20 +1793,25 @@ columns_define_alloc(struct mkcatalogparams *p)
           name           = ( colcode->v==UI_KEY_FRACMAXSUM1
                              ? "FRAC_MAX_SUM_1"
                              : "FRAC_MAX_SUM_2" );
-          unit           = "counter";
-          ocomment       = "Sum of pixels brighter than given fraction of maximum value.";
+          unit           = MKCATALOG_NO_UNIT;
           ccomment       = ocomment;
-          otype          = GAL_TYPE_INT32;
-          ctype          = GAL_TYPE_INT32;
+          otype          = GAL_TYPE_FLOAT32;
+          ctype          = GAL_TYPE_FLOAT32;
           disp_fmt       = 0;
           disp_width     = 6;
           disp_precision = 0;
           oiflag[ OCOL_NUM ] = ciflag[ CCOL_NUM ] = 1;
           oiflag[ OCOL_SUM ] = ciflag[ CCOL_SUM ] = 1;
           if(colcode->v==UI_KEY_FRACMAXSUM1)
-            oiflag[ OCOL_FRACMAX1SUM ] = ciflag[ CCOL_FRACMAX1SUM ] = 1;
+            {
+              ocomment = "Sum of pixels brighter than 1st fraction of maximum.";
+              oiflag[ OCOL_FRACMAX1SUM ] = ciflag[ CCOL_FRACMAX1SUM ] = 1;
+            }
           else
-            oiflag[ OCOL_FRACMAX2SUM ] = ciflag[ CCOL_FRACMAX2SUM ] = 1;
+            {
+              ocomment = "Sum of pixels brighter than 2nd fraction of maximum.";
+              oiflag[ OCOL_FRACMAX2SUM ] = ciflag[ CCOL_FRACMAX2SUM ] = 1;
+            }
           break;
 
         case UI_KEY_FRACMAXAREA1:
@@ -2618,11 +2623,11 @@ columns_fill(struct mkcatalog_passparams *pp)
           break;
 
         case UI_KEY_FRACMAXSUM1:
-          ((int32_t *)colarr)[oind] = oi[OCOL_FRACMAX1SUM];
+          ((float *)colarr)[oind] = oi[OCOL_FRACMAX1SUM];
           break;
 
         case UI_KEY_FRACMAXSUM2:
-          ((int32_t *)colarr)[oind] = oi[OCOL_FRACMAX2SUM];
+          ((float *)colarr)[oind] = oi[OCOL_FRACMAX2SUM];
           break;
 
         case UI_KEY_FRACMAXAREA1:
