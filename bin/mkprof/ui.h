@@ -93,6 +93,8 @@ enum option_keys_enum
   UI_KEY_PC,
   UI_KEY_CUNIT,
   UI_KEY_CTYPE,
+  UI_KEY_CUSTOMTABLE,
+  UI_KEY_CUSTOMTABLEHDU,
 };
 
 

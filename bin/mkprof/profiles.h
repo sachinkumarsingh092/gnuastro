@@ -27,6 +27,9 @@ double
 profiles_radial_distance(struct mkonthread *mkp);
 
 double
+profiles_custom_table(struct mkonthread *mkp);
+
+double
 profiles_gaussian_total(double q);
 
 double

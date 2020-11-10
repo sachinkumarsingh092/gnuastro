@@ -83,6 +83,32 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET,
       ui_parse_kernel
     },
+    {
+      "customtable",
+      UI_KEY_CUSTOMTABLE,
+      "STR",
+      0,
+      "File for 'custom' profile.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->customname,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "customtablehdu",
+      UI_KEY_CUSTOMTABLEHDU,
+      "INT/STR",
+      0,
+      "HDU of table given to '--customtable'.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->customhdu,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
 
 
 
@@ -364,7 +390,8 @@ struct argp_option program_options[] =
       "STR/INT",
       0,
       "sersic (1), moffat (2), gaussian (3), point (4), "
-      "flat (5), circumference (6), distance (7).",
+      "flat (5), circumference (6), distance (7),"
+      "radial-table (8)",
       UI_GROUP_CATALOG,
       &p->fcol,
       GAL_TYPE_STRING,

@@ -17607,6 +17607,10 @@ For this profile, the value in the magnitude column (@option{--mcol}) will be ig
 
 You can use this for checks or as a first approximation to define your own higher-level radial function.
 In the latter case, just note that the central values are going to be incorrect (see @ref{Sampling from a function}).
+
+@item
+Custom profile with `@code{custom}' or `@code{8}'.
+The values to use for each radial interval should be in the table given to @option{--customtable}. For more, see @ref{MakeProfiles profile settings}.
 @end itemize
 
 @item --rcol=STR/INT
@@ -17733,6 +17737,55 @@ Unless you have de-convolved your data, your images are convolved with the instr
 Particularly in sharper profiles, the flux in the peak pixel is strongly decreased after convolution.
 Also note that in such cases, besides de-convolution, you will have to set @option{--oversample=1} otherwise after resampling your profile with Warp (see @ref{Warp}), the peak flux will be different.
 @end cartouche
+
+@item --customtable STR
+The filename of the table to use in the custom profiles (see description of @option{--fcol} in @ref{MakeProfiles catalog}.
+This can be a plain-text table, or FITS table, see @ref{Tables}, if its a FITS table, you can use @option{--customtablehdu} to specify which HDU should be used (described below).
+
+A custom profile can have any value you want for a given radial profile.
+Each interval is defined by its minimum (inclusive) and maximum (exclusive) radius, when a pixel falls within this radius the value specified for that interval will be used.
+If a pixel is not in the given intervals, a value of 0 will be used for it.
+
+The table should have 3 columns as shown below.
+If the intervals are contiguous (the maximum value of the previous interval is equal to the minimum value of an interval) and the intervals all have the same size (difference between minimum and maximum values) the creation of these profiles will be fast.
+However, if the intervals are not sorted and contiguous, Makeprofiles will parse the intervals from the top of the table and use the first interval that contains the pixel center.
+
+@table @asis
+@item Column 1:
+The interval's minimum radius.
+@item Column 2:
+The interval's maximum radius.
+@item Column 3:
+The value to be used for pixels within the given interval.
+@end table
+
+For example let's assume you have the radial profile below in a file called @file{radial.txt}.
+The first column is the larger interval radius and the second column is the value in that interval:
+
+@example
+1    100
+2    90
+3    50
+4    10
+5    2
+6    0.1
+7    0.05
+@end example
+
+@noindent
+You can construct the table to give to @option{--customtable} with either of the commands below: the first one with Gnuastro's @ref{Column arithmetic} which can also work on FITS tables, and the second one with an AWK command that only works on plain-text tables..
+
+@example
+asttable radial.fits -c'arith $1 1 -' -c1,2 -ocustom.fits
+awk '@{print $1-1, $1, $2@}' radial.txt > custom.txt
+@end example
+
+@noindent
+In case the intervals are different from 1 (for example 0.5), change them respectively: for Gnuastro's table change @code{$1 1 -} to @code{$1 0.5 -} and for AWK change  @code{$1-1} to @code{$1-0.5}.
+
+
+@item --customtablehdu INT/STR
+The HDU/extension in the FITS file given to @option{--customtable}.
 
 @item -X INT,INT
 @itemx --shift=INT,INT

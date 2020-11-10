@@ -694,6 +694,14 @@ oneprofile_set_prof_params(struct mkonthread *mkp)
 
 
 
+    case PROFILE_CUSTOM:
+      mkp->profile          = profiles_custom_table;
+      mkp->truncr           = tp ? p->t[id] : p->t[id]*p->r[id];
+      mkp->correction       = 0;
+      break;
+
+
+
     default:
       error(EXIT_FAILURE, 0, "%s: a bug! Please contact us so we can "
             "correct this problem. The profile code %u is not recognized.",

@@ -83,6 +83,13 @@ See the end of the file for license conditions.
      (used to simulate Poisson noise) should be interpretted as brightness,
      not magnitude.
 
+  MakeProfiles:
+   - It is now possible to make any custom radial profile with the 'custom'
+     profile (with code '8'). A table should be given to the new
+     '--customtable' option which will define each radial interval and the
+     value to use for that radial interval. See the description of
+     '--customtable' for more.
+
   Table:
    - New '--noblank' option will remove all rows in output table that have
      atleast one blank value in the specified columns. For example if

@@ -124,6 +124,9 @@ ui_profile_name_read(char *string, size_t row)
   else if ( !strcmp("distance", string) )
     return PROFILE_DISTANCE;
 
+  else if ( !strcmp("custom", string) )
+    return PROFILE_CUSTOM;
+
   else if ( !strcmp(GAL_BLANK_STRING, string) )
     error(EXIT_FAILURE, 0, "atleast one profile function is blank");
 
@@ -186,6 +189,9 @@ ui_initialize_options(struct mkprofparams *p,
   cp->poptions           = program_options;
   cp->numthreads         = gal_threads_number();
   cp->coptions           = gal_commonopts_options;
+
+  p->customregular[0]    = NAN;
+  p->customregular[1]    = NAN;
 
   /* Default program parameters. */
   p->zeropoint           = NAN;
@@ -1093,6 +1099,7 @@ ui_read_cols_3d(struct mkprofparams *p)
 static void
 ui_prepare_columns(struct mkprofparams *p)
 {
+  size_t i;
   double *karr;
   float r, n, t, q2;
 
@@ -1191,6 +1198,21 @@ ui_prepare_columns(struct mkprofparams *p)
                 __func__, PACKAGE_BUGREPORT, p->ndim);
         }
     }
+
+  /* If a custom profile is requested, make sure that a custom file is
+     given. */
+  for(i=0;i<p->num;++i)
+    if(p->f[i]==PROFILE_CUSTOM)
+      {
+        if(p->customname==NULL)
+          error(EXIT_FAILURE, 0, "at least one custom profile requested "
+                "(first occurance in row %zu), but no file/table was given "
+                "to the '--customtable' option. See the description of "
+                "this '--customtable' for more information on the "
+                "desired format", i+1);
+        break;
+      }
+
 }
 
 
@@ -1637,6 +1659,83 @@ ui_make_log(struct mkprofparams *p)
 
 
 
+/* Read the input radial table. */
+static void
+ui_read_custom_table(struct mkprofparams *p)
+{
+  size_t i;
+  double diff;
+  int isregular;
+  gal_data_t *cols;
+  double *min, *max;
+
+  /* Read the input radial table. */
+  cols=gal_table_read(p->customname, p->customhdu,
+                      NULL, NULL, p->cp.searchin, p->cp.ignorecase,
+                      p->cp.minmapsize, p->cp.quietmmap, NULL);
+
+  /* Make sure the table only has three columns. */
+  if(gal_list_data_number(cols) != 3 )
+    error(EXIT_FAILURE, 0, "%s: has %zu columns, but it should only have "
+          "three columns. Column1: the radial interval's lower value. "
+          "Column 2: the radial interval's higher value. Column 3: the value "
+          "to use for pixels within that radius interval",
+          gal_fits_name_save_as_string(p->customname, p->customhdu),
+          gal_list_data_number(cols));
+
+  /* Make sure none of the three columns are string type. */
+  if( cols->type==GAL_TYPE_STRING
+      || cols->next->type==GAL_TYPE_STRING
+      || cols->next->next->type==GAL_TYPE_STRING )
+    error(EXIT_FAILURE, 0, "%s: the columns should only have numeric "
+          "data types", gal_fits_name_save_as_string(p->customname,
+                                                     p->customhdu));
+
+  /* Fill the final table as a double type. */
+  p->custom=gal_data_copy_to_new_type(cols, GAL_TYPE_FLOAT64);
+  p->custom->next=gal_data_copy_to_new_type(cols->next,
+                                                 GAL_TYPE_FLOAT64);
+  p->custom->next->next=gal_data_copy_to_new_type(cols->next->next,
+                                                       GAL_TYPE_FLOAT64);
+
+  /* Make sure the first column values are smaller than the second column's
+     values. */
+  min=p->custom->array;
+  max=p->custom->next->array;
+  for(i=0;i<p->custom->size;++i)
+    if(min[i]>=max[i])
+      error(EXIT_FAILURE, 0, "%s: the first column of row %zu (with value "
+            "%g) is larger or equal to the second column (with value %g). "
+            "However, the first column is the lower-limit of the radial "
+            "interval and the second column is the upper-limit. So the "
+            "first column must have a lower value",
+            gal_fits_name_save_as_string(p->customname,
+                                         p->customhdu), i+1,
+            min[i], max[i]);
+
+  /* Check if the input table is regular and sorted (which can greatly
+     speed up its usage). */
+  isregular=1;
+  diff=max[0]-min[0];
+  for(i=1;i<p->custom->size;++i)
+    if( min[i]<min[i-1]
+        || min[i] != max[i-1]
+        || max[i]-min[i] != diff )
+      isregular=0;
+  if(isregular)
+    {
+      p->customregular[0]=min[0];
+      p->customregular[1]=diff;
+    }
+
+  /* Clean up. */
+  gal_list_data_free(cols);
+}
+
+
+
+
+
 static void
 ui_read_ndim(struct mkprofparams *p)
 {
@@ -1720,6 +1819,9 @@ ui_preparations(struct mkprofparams *p)
   /* Read in all the columns (necessary for '--prepforconf' when we want to
      build the profiles). */
   ui_prepare_columns(p);
+
+  /* Read the radial table. */
+  if(p->customname) ui_read_custom_table(p);
 
   /* If the kernel option was given, some parameters need to be
      over-written: */

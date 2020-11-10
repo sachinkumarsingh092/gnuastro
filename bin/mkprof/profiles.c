@@ -41,11 +41,47 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /****************************************************************
  *****************         Profiles:         ********************
  ****************************************************************/
-/* The Gaussian function at a point. */
+/* The distance of this pixel. */
 double
 profiles_radial_distance(struct mkonthread *mkp)
 {
   return mkp->r;
+}
+
+
+
+
+
+/* Read the values based on the distance from a table. */
+double
+profiles_custom_table(struct mkonthread *mkp)
+{
+  double out;
+  long i;  /* May become negative. */
+  double *reg=mkp->p->customregular;
+  double *min=mkp->p->custom->array;
+  double *max=mkp->p->custom->next->array;
+  double *value=mkp->p->custom->next->next->array;
+
+  /* If the table isn't regular ('reg[0]' isn't NaN), then we have to parse
+     over the whole table. However, if its regular, we can find the proper
+     value much more easily. */
+  if( isnan(reg[0]) )
+    {
+      out=0;
+      for(i=0;i<mkp->p->custom->size;++i)
+        if( mkp->r >= min[i] && mkp->r < max[i] )
+          { out=value[i]; break; }
+    }
+  else
+    {
+      i=(mkp->r - reg[0])/reg[1];
+      if(i<0 || i>mkp->p->custom->size) out=0;
+      else                                   out=value[i];
+    }
+
+  /* Return the output value. */
+  return isnan(out) ? 0 : out;
 }
 
 
