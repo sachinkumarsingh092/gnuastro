@@ -10949,63 +10949,172 @@ The conditional operators will return pixel, or numerical values of 0 (false) or
 
 @item +
 Addition, so ``@command{4 5 +}'' is equivalent to @mymath{4+5}.
+For example in the command below, the value 20000 is added to each pixel's value in @file{image.fits}:
+@example
+$ astarithmetic 20000 image.fits +
+@end example
+You can also use this operator is to sum the values of one pixel in two images (which have to be the same size).
+For example in the commands below (which are identical, see paragraph after the commands), each pixel of @file{sum.fits} is the sum of the same pixel's values in @file{a.fits} and @file{b.fits}.
+@example
+$ astarithmetic a.fits b.fits + -h1 -h1 --output=sum.fits
+$ astarithmetic a.fits b.fits + -g1     --output=sum.fits
+@end example
+The HDU/extension has to be specified for each image with @option{-h}.
+However, if the HDUs are the same in all inputs, you can use @option{-g} to only specify the HDU once
 
 @item -
 Subtraction, so ``@command{4 5 -}'' is equivalent to @mymath{4-5}.
+Usage of this operator is similar to @command{+} operator, for example:
+@example
+$ astarithmetic 20000 image.fits -
+$ astarithmetic a.fits b.fits - -g1 --output=sub.fits
+@end example
 
 @item x
 Multiplication, so ``@command{4 5 x}'' is equivalent to @mymath{4\times5}.
+For example in the command below, the value of each output pixel is 5 times its value in @file{image.fits}:
+@example
+$ astarithmetic image.fits 5 x
+@end example
+And you can multiply the value of each pixel in two images, like this:
+@example
+$ astarithmetic a.fits a.fits x -g1 –output=multip.fits
+@end example
 
 @item /
 Division, so ``@command{4 5 /}'' is equivalent to @mymath{4/5}.
+Like the multiplication, for example
+@example
+$ astarithmetic image.fits 5 -h1 /
+$ astarithmetic a.fits b.fits / -g1 –output=div.fits
+@end example
 
 @item %
 Modulo (remainder), so ``@command{3 2 %}'' is equivalent to @mymath{1}.
-Note that the modulo operator only works on integer types.
+Note that the modulo operator only works on integer types (see @ref{Numeric data types}).
+This operator is therefore not defined for most processed astronomical astronomical images that have floating-point value.
+However it is useful in labeled images, for example @ref{Segment output}).
+In such cases, each pixel is the integer label of the object it is associated with hence with the example command below, we can change the labels to only be between 1 and 4 and decrease all objects on the image to 4/5th (all objects with a label that is a multiple of 5 will be set to 0).
+@example
+$ astarithmetic label.fits 5 1 %
+@end example
 
 @item abs
 Absolute value of first operand, so ``@command{4 abs}'' is equivalent to @mymath{|4|}.
+For example the output of the command bellow will not have any negative pixels (all negative pixels will be multiplied by @mymath{-1} to become positive)
+@example
+$ astarithmetic image.fits abs
+@end example
+
 
 @item pow
 First operand to the power of the second, so ``@command{4.3 5 pow}'' is equivalent to @mymath{4.3^{5}}.
+For example with the command below all pixels will be squared
+@example
+$ astarithmetic image.fits 2 pow
+@end example
 
 @item sqrt
 The square root of the first operand, so ``@command{5 sqrt}'' is equivalent to @mymath{\sqrt{5}}.
+Since the square root is only defined for positive values, any negative-valued pixel will become NaN (blank).
 The output will have a floating point type, but its precision is determined from the input: if the input is a 64-bit floating point, the output will also be 64-bit.
 Otherwise, the output will be 32-bit floating point (see @ref{Numeric data types} for the respective precision).
 Therefore if you require 64-bit precision in estimating the square root, convert the input to 64-bit floating point first, for example with @code{5 float64 sqrt}.
+For example each pixel of the output of the command below will be the square root of that pixel in the input.
+@example
+$ astarithmetic image.fits sqrt
+@end example
+
+If you just want to scale an image with negative values using this operator (for better visual inspection, and the actual values don't matter for you), you can subtract the image from its minimum value, then take its square root:
+
+@example
+$ astarithmetic image.fits image.fits minvalue - sqrt -g1
+@end example
+
+Alternatively, to avoid reading the image into memory two times, you can use the @option{set-} operator to read it into the variable @option{i} and use @option{i} two times to speed up the operation (described below):
+
+@example
+$ astarithmetic image.fits set-i i i minvalue - sqrt
+@end example
 
 @item log
 Natural logarithm of first operand, so ``@command{4 log}'' is equivalent to @mymath{ln(4)}.
-The output type is determined from the input, see the explanation under @command{sqrt} for more.
+Negative pixels will become NaN, and the output type is determined from the input, see the explanation under @command{sqrt} for more on these features.
+For example the command below will take the natural logarithm of every pixel in the input.
+@example
+$ astarithmetic image.fits log --output=log.fits
+@end example
 
 @item log10
-Base-10 logarithm of first operand, so ``@command{4 log10}'' is equivalent to @mymath{\log(4)}.
-The output type is determined from the input, see the explanation under @command{sqrt} for more.
+Base-10 logarithm of first popped operand, so ``@command{4 log}'' is equivalent to @mymath{log_{10}(4)}.
+Negative pixels will become NaN, and the output type is determined from the input, see the explanation under @command{sqrt} for more on these features.
+For example the command below will take the base-10 logarithm of every pixel in the input.
+@example
+$ astarithmetic image.fits log10
+@end example
 
 @item minvalue
-Minimum (non-blank) value in the top operand on the stack, so ``@command{a.fits minvalue}'' will push the minimum pixel value in this image onto the stack.
-Therefore this operator is mainly intended for data (for example images), if the top operand is a number, this operator just returns it without any change.
-So note that when this operator acts on a single image, the output will no longer be an image, but a number.
+Minimum value in the first popped operand, so ``@command{a.fits minvalue}'' will push the minimum pixel value in this image onto the stack.
+When this operator acts on a single image, the output (operand that is put back on the stack) will no longer be an image, but a number.
 The output of this operand is in the same type as the input.
+This operator is mainly intended for multi-element datasets (for example images or data cubes), if the popped operand is a number, it will just return it without any change.
+
+Note that when the final remaining/output operand is a single number, it is printed onto the standard output.
+For example with the command below the minimum pixel value in @file{image.fits} will be printed in the terminal:
+@example
+$ astarithmetic image.fits minvalue
+@end example
+
+However, the output above also includes a lot of extra information that are not relevant in this context.
+If you just want the final number, run Arithmetic in quiet mode:
+@example
+$ astarithmetic image.fits minvalue -q
+@end example
+
+Also see the description of @option{sqrt} for other example usages of this operator.
 
 @item maxvalue
-Maximum (non-blank) value of first operand in the same type, similar to @command{minvalue}.
+Maximum value of first operand in the same type, similar to @command{minvalue}, see the description there for more.
+For example
+@example
+$ astarithmetic image.fits maxvalue -q
+@end example
 
 @item numbervalue
-Number of non-blank elements in first operand in the @code{uint64} type, similar to @command{minvalue}.
+Number of non-blank elements in first operand in the @code{uint64} type (since it is always a positive integer, see @ref{Numeric data types}).
+Its usage is similar to @command{minvalue}, for example
+@example
+$ astarithmetic image.fits numbervalue -q
+@end example
 
 @item sumvalue
-Sum of non-blank elements in first operand in the @code{float32} type, similar to @command{minvalue}.
+Sum of non-blank elements in first operand in the @code{float32} type.
+Its usage is similar to @command{minvalue}, for example
+@example
+$ astarithmetic image.fits sumvalue -q
+@end example
 
 @item meanvalue
-Mean value of non-blank elements in first operand in the @code{float32} type, similar to @command{minvalue}.
+Mean value of non-blank elements in first operand in the @code{float32} type.
+Its usage is similar to @command{minvalue}, for example
+@example
+$ astarithmetic image.fits meanvalue -q
+@end example
 
 @item stdvalue
-Standard deviation of non-blank elements in first operand in the @code{float32} type, similar to @command{minvalue}.
+Standard deviation of non-blank elements in first operand in the @code{float32} type.
+Its usage is similar to @command{minvalue}, for example
+@example
+$ astarithmetic image.fits stdvalue -q
+@end example
 
 @item medianvalue
-Median of non-blank elements in first operand with the same type, similar to @command{minvalue}.
+Median of non-blank elements in first operand with the same type.
+Its usage is similar to @command{minvalue}, for example
+@example
+$ astarithmetic image.fits medianvalue -q
+@end example
+
 
 @cindex NaN
 @item min
@@ -11040,31 +11149,59 @@ Therefore, if the input was an integer, C's internal type conversion will be use
 For each pixel, find the maximum value in all given datasets.
 The output will have the same type as the input.
 This operator is called similar to the @command{min} operator, please see there for more.
+For example
+@example
+$ astarithmetic a.fits b.fits c.fits 3 min -omax.fits
+@end example
+
 
 @item number
 For each pixel count the number of non-blank pixels in all given datasets.
 The output will be an unsigned 32-bit integer datatype (see @ref{Numeric data types}).
 This operator is called similar to the @command{min} operator, please see there for more.
+Note that some datasets may have blank values (which are also ignored in all similar operators like @command{min}, @command{sum}, @command{mean} or @command{median}).
+Hence final pixel values of this operator will not, in general, be equal to the number of inputs.
+For example
+@example
+$ astarithmetic a.fits b.fits c.fits 3 number -onum.fits
+@end example
 
 @item sum
 For each pixel, calculate the sum in all given datasets.
 The output will have the a single-precision (32-bit) floating point type.
 This operator is called similar to the @command{min} operator, please see there for more.
+For example
+@example
+$ astarithmetic a.fits b.fits c.fits 3 sum -ostack-sum.fits
+@end example
 
 @item mean
 For each pixel, calculate the mean in all given datasets.
 The output will have the a single-precision (32-bit) floating point type.
 This operator is called similar to the @command{min} operator, please see there for more.
+For example
+@example
+$ astarithmetic a.fits b.fits c.fits 3 mean -ocoadd-mean.fits
+@end example
 
 @item std
 For each pixel, find the standard deviation in all given datasets.
 The output will have the a single-precision (32-bit) floating point type.
 This operator is called similar to the @command{min} operator, please see there for more.
+For example
+@example
+$ astarithmetic a.fits b.fits c.fits 3 std -ostd.fits
+@end example
 
 @item median
 For each pixel, find the median in all given datasets.
 The output will have the a single-precision (32-bit) floating point type.
 This operator is called similar to the @command{min} operator, please see there for more.
+For example
+@example
+$ astarithmetic a.fits b.fits c.fits 3 mean \
+                --output=stack-median.fits
+@end example
 
 @item quantile
 For each pixel, find the quantile from all given datasets.
@@ -11101,16 +11238,28 @@ astarithmetic a.fits b.fits c.fits 3 5 0.2 sigclip-number
 For each pixel, find the sigma-clipped median in all given datasets.
 The output will have the a single-precision (32-bit) floating point type.
 This operator is called similar to the @command{sigclip-number} operator, please see there for more.
+For example
+@example
+astarithmetic a.fits b.fits c.fits 3 5 0.2 sigclip-median
+@end example
 
 @item sigclip-mean
 For each pixel, find the sigma-clipped mean in all given datasets.
 The output will have the a single-precision (32-bit) floating point type.
 This operator is called similar to the @command{sigclip-number} operator, please see there for more.
+For example
+@example
+astarithmetic a.fits b.fits c.fits 3 5 0.2 sigclip-mean
+@end example
 
 @item sigclip-std
 For each pixel, find the sigma-clipped standard deviation in all given datasets.
 The output will have the a single-precision (32-bit) floating point type.
 This operator is called similar to the @command{sigclip-number} operator, please see there for more.
+For example
+@example
+astarithmetic a.fits b.fits c.fits 3 5 0.2 sigclip-std
+@end example
 
 @item filter-mean
 Apply mean filtering (or @url{https://en.wikipedia.org/wiki/Moving_average, moving average}) on the input dataset.
@@ -11279,23 +11428,54 @@ The unique elements of the dataset will be stored in a single-dimensional datase
 Recall that by default, single-dimensional datasets are stored as a table column in the output.
 But you can use @option{--onedasimage} or @option{--onedonstdout} to respectively store them as a single-dimensional FITS array/image, or to print them on the standard output.
 
+Although you can use this operator on the floating point dataset, due to floating-point errors it may give non-reasonable values: because the tenth digit of the decimal point is also considered although it may be statistically meaningless, see @ref{Numeric data types}.
+It is therefore better/recommended to use it on the integer dataset like the labeled images of @ref{Segment output} where each pixel has the integer label of the object/clump it is associated with.
+For example let's assume you have cropped a region of a larger labeled image and want to find the labels/objects that are within the crop.
+With this operator, this job is trivial:
+@example
+$ astarithmetic seg-crop.fits unique
+@end example
+
 @item erode
 @cindex Erosion
 Erode the foreground pixels (with value @code{1}) of the input dataset (second popped operand).
 The first popped operand is the connectivity (see description in @command{connected-components}).
 Erosion is simply a flipping of all foreground pixels (with value @code{1}) to background (with value @code{0}) that are ``touching'' background pixels.
 ``Touching'' is defined by the connectivity.
-In effect, this carves off the outer borders of the foreground, making them thinner.
-This operator assumes a binary dataset (all pixels are @code{0} and @code{1}).
+
+In effect, this operator ``carves off'' the outer borders of the foreground, making them thinner.
+This operator assumes a binary dataset (all pixels are @code{0} or @code{1}).
+For example, imagine that you have an astronomical image with a mean/sky value of 0 units and a standard deviation (@mymath{\sigma}) of 100 units and many galaxies in it.
+With the first command below, you can apply a threshold of @mymath{2\sigma} on the image (by only keeping pixels that are greater than 200 using the @command{gt} operator).
+The output of thresholding the image is a binary image (each pixel is either smaller or equal to the threshold or larger than it).
+You can then erode the binary image with the second command below to remove very small false positives  (one or two pixel peaks).
+@example
+$ astarithmetic image.fits 100 gt -obinary.fits
+$ astarithmetic binary.fits 2 erode -oout.fits
+@end example
+
+Infact, you can merge these operations into one command thanks to the reverse polish notation (see @ref{Reverse polish notation}):
+@example
+$ astarithmetic image.fits 100 gt 2 erode -oout.fits
+@end example
+
+To see the effect of connectivity, try this:
+@example
+$ astarithmetic image.fits 100 gt 1 erode -oout-con-1.fits
+@end example
 
 @item dilate
 @cindex Dilation
-Dilate the foreground pixels (with value @code{1}) of the input dataset (second popped operand).
+Dilate the foreground pixels (with value @code{1}) of the binary input dataset (second popped operand).
 The first popped operand is the connectivity (see description in @command{connected-components}).
 Dilation is simply a flipping of all background pixels (with value @code{0}) to foreground (with value @code{1}) that are ``touching'' foreground pixels.
 ``Touching'' is defined by the connectivity.
 In effect, this expands the outer borders of the foreground.
 This operator assumes a binary dataset (all pixels are @code{0} and @code{1}).
+The usage is similar to @code{erode}, for example:
+@example
+$ astarithmetic binary.fits 2 erode -oout.fits
+@end example
 
 @item connected-components
 @cindex Connected components
@@ -11322,56 +11502,113 @@ If your input dataset doesn't have a binary type, but you know all its values ar
 
 @item fill-holes
 Flip background (0) pixels surrounded by foreground (1) in a binary dataset.
-This operator takes two operands (similar to @code{connected-components}): the first popped operand is the connectivity (to define a hole) and the second is the binary (0 or 1 valued) dataset to fill holes in.
+This operator takes two operands (similar to @code{connected-components}): the second is the binary (0 or 1 valued) dataset to fill holes in and the first popped operand is the connectivity (to define a hole).
+Imagine that in your dataset there are some holes with zero value inside the objects with one value (for example the output of the thresholding example of @command{erode}) and you want to fill the holes:
+@example
+$ astarithmetic binary.fits 2 fill-holes
+@end example
 
 @item invert
-Invert an unsigned integer dataset.
+Invert an unsigned integer dataset (won't work on other data types, see @ref{Numeric data types}).
 This is the only operator that ignores blank values (which are set to be the maximum values in the unsigned integer types).
 
 This is useful in cases where the target(s) has(have) been imaged in absorption as raw formats (which are unsigned integer types).
 With this option, the maximum value for the given type will be subtracted from each pixel value, thus ``inverting'' the image, so the target(s) can be treated as emission.
 This can be useful when the higher-level analysis methods/tools only work on emission (positive skew in the noise, not negative).
+@example
+$ astarithmetic image.fits invert
+@end example
 
 @item lt
-Less than: If the second popped (or left operand in infix notation, see @ref{Reverse polish notation}) value is smaller than the first popped operand, then this function will return a value of 1, otherwise it will return a value of 0.
+Less than: creates a binary output (values either 0 or 1) where each pixel will be 1 if the second popped operand is smaller than the first popped operand and 0 otherwise.
 If both operands are images, then all the pixels will be compared with their counterparts in the other image.
+For example:
+@example
+$ astarithmetic image1.fits image2.fits -g1 lt
+@end example
 If only one operand is an image, then all the pixels will be compared with the single value (number) of the other operand.
+For example:
+@example
+$ astaithmetic image1.fits 1000 lt
+@end example
 Finally if both are numbers, then the output is also just one number (0 or 1).
-When the output is not a single number, it will be stored as an @code{unsigned char} type.
+@example
+$ astarithmetic 4 5 lt
+@end example
+
 
 @item le
 Less or equal: similar to @code{lt} (`less than' operator), but returning 1 when the second popped operand is smaller or equal to the first.
+For example
+@example
+$ astaithmetic image1.fits 1000 le
+@end example
 
 @item gt
 Greater than: similar to @code{lt} (`less than' operator), but returning 1 when the second popped operand is greater than the first.
+For example
+@example
+$ astaithmetic image1.fits 1000 gt
+@end example
 
 @item ge
 Greater or equal: similar to @code{lt} (`less than' operator), but returning 1 when the second popped operand is larger or equal to the first.
+For example
+@example
+$ astaithmetic image1.fits 1000 ge
+@end example
 
 @item eq
-Equality: similar to @code{lt} (`less than' operator), but returning 1 when the two popped operands are equal (to double precision floating point
-accuracy).
+Equality: similar to @code{lt} (`less than' operator), but returning 1 when the two popped operands are equal (to double precision floating point accuracy).
+@example
+$ astaithmetic image1.fits 1000 eq
+@end example
 
 @item ne
 Non-Equality: similar to @code{lt} (`less than' operator), but returning 1 when the two popped operands are @emph{not} equal (to double precision floating point accuracy).
+@example
+$ astaithmetic image1.fits 1000 ne
+@end example
 
 @item and
 Logical AND: returns 1 if both operands have a non-zero value and 0 if both are zero.
-Both operands have to be the same kind: either both images or both numbers.
+Both operands have to be the same kind: either both images or both numbers and it mostly makes meaningful values when the inputs are binary (with pixel values of 0 or 1).
+@example
+$ astarithmetic image1.fits image2.fits -g1 and
+@end example
+
+For example if you only want to see which pixels in an image have a value @emph{between} 50 (greater equal, or inclusive) and 200 (less than, or exclusive), you can use this command:
+@example
+$ astarithmetic image.fits set-i i 50 ge i 200 lt and
+@end example
 
 @item or
 Logical OR: returns 1 if either one of the operands is non-zero and 0 only when both operators are zero.
 Both operands have to be the same kind: either both images or both numbers.
+The usage is similar to @code{and}.
+
+For example if you only want to see which pixels in an image have a value @emph{outside of} -100 (greater equal, or inclusive) and 200 (less than, or excuslive), you can use this command:
+@example
+$ astarithmetic image.fits set-i i -100 lt i 200 ge or
+@end example
 
 @item not
-Logical NOT: returns 1 when the operand is zero and 0 when the operand is non-zero.
+Logical NOT: returns 1 when the operand is 0 and 0 when the operand is non-zero.
 The operand can be an image or number, for an image, it is applied to each pixel separately.
+For example if you want to know which pixels are not blank, you can use not on the output of the @command{isblank} operator described below:
+@example
+$ astarithmetic image.fits isblank not
+@end example
 
 @cindex Blank pixel
 @item isblank
 Test for a blank value (see @ref{Blank pixels}).
 In essence, this is very similar to the conditional operators: the output is either 1 or 0 (see the `less than' operator above).
 The difference is that it only needs one operand.
+For example:
+@example
+$ astarithmetic image.fits isblank
+@end example
 Because of the definition of a blank pixel, a blank value is not even equal to itself, so you cannot use the equal operator above to select blank pixels.
 See the ``Blank pixels'' box below for more on Blank pixels in Arithmetic.
 
