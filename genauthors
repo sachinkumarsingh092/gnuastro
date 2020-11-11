@@ -84,7 +84,7 @@ fi
 if [ -f "$1/.version" ]; then
     gnuastroversion="Gnuastro "$(cat "$1/.version")
 else
-    gnuastroversion=$(git --git-dir=$1/.git describe)
+    gnuastroversion=$(git --git-dir=$1/.git describe --always)
 fi
 
 

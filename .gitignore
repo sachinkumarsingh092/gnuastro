@@ -102,6 +102,7 @@ install-sh
 aclocal.m4
 confdefs.h
 conftest.c
+.bootstrap*
 astconvertt
 astconvolve
 test-driver
