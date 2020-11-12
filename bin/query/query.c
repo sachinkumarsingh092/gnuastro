@@ -62,7 +62,7 @@ query_check_download(struct queryparams *p)
       /* Rename the output file to the logname file and let the user
          know. */
       rename(p->cp.output, logname);
-      error(EXIT_FAILURE, 0, "the requested dataset could not be retreived! "
+      error(EXIT_FAILURE, 0, "the requested dataset could not be retrieved! "
             "For more, please see '%s'", logname);
     }
 }

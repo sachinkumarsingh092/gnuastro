@@ -1733,7 +1733,7 @@ struct argp_option program_options[] =
       UI_KEY_HALFMAXSUM,
       0,
       0,
-      "Sum of pixels above half the maxium.",
+      "Sum of pixels above half the maximum.",
       UI_GROUP_COLUMNS_MORPHOLOGY,
       0,
       GAL_TYPE_INVALID,

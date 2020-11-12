@@ -13,10 +13,12 @@ See the end of the file for license conditions.
    - New sub-section on "Memory management" in the "Common program
      behavior" chapter. It fully describes how to optimally deal with large
      datasets that may exceed your system's RAM.
+   - Examples and better description added to many operators in the
+     "Arithmetic operators" subsection of the Arithmetic program's section.
 
   New program:
    - Query ('astquery') is a new program to allow easy submission of
-     queries to extenral datasets and retrieve the result as a FITS file,
+     queries to external datasets and retrieve the result as a FITS file,
      directly on the command-line. You can either directly write the
      database's query statement yourself, or use Query's high-level
      interface to avoid having to learn it.
@@ -80,7 +82,7 @@ See the end of the file for license conditions.
 
   MakeNoise:
    --bgisbrightness: new option to say that the value of '--background'
-     (used to simulate Poisson noise) should be interpretted as brightness,
+     (used to simulate Poisson noise) should be interpreted as brightness,
      not magnitude.
 
   MakeProfiles:
@@ -92,7 +94,7 @@ See the end of the file for license conditions.
 
   Table:
    - New '--noblank' option will remove all rows in output table that have
-     atleast one blank value in the specified columns. For example if
+     at least one blank value in the specified columns. For example if
      'table.fits' has blank values (NaN in floating point types) in the
      'magnitude' and 'sn' columns, with '--noblank=magnitude,sn', you can
      be sure that all rows with blank values in these columns have been
@@ -101,7 +103,7 @@ See the end of the file for license conditions.
   Library:
    - GAL_ARITHMETIC_OP_MAKENEW: new 'makenew' operator.
    - gal_blank_flag_remove: Remove all flagged elements in a dataset.
-   - gal_blank_remove_rows: remove all rows that have atleast one blank.
+   - gal_blank_remove_rows: remove all rows that have at least one blank.
    - gal_wcs_coverage: Return the sky coverage of given image HDU.
    - gal_wcs_dimension_name: return the name of the requested WCS dim.
 

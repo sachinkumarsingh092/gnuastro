@@ -252,7 +252,7 @@ ui_read_check_only_options(struct mknoiseparams *p)
       /* Make sure that the background is larger than 1 (where Poisson
          noise is actually defined). */
       if( p->background < 1 )
-        error(EXIT_FAILURE, 0, "backgroud value is smaller than 1. "
+        error(EXIT_FAILURE, 0, "background value is smaller than 1. "
               "Poisson noise is only defined on a positive distribution "
               "with values larger than 1. You can use the '--sigma' "
               "option to add a fixed noise level (with any positive value) "

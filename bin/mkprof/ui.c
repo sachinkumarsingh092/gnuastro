@@ -1206,7 +1206,7 @@ ui_prepare_columns(struct mkprofparams *p)
       {
         if(p->customname==NULL)
           error(EXIT_FAILURE, 0, "at least one custom profile requested "
-                "(first occurance in row %zu), but no file/table was given "
+                "(first occurrence in row %zu), but no file/table was given "
                 "to the '--customtable' option. See the description of "
                 "this '--customtable' for more information on the "
                 "desired format", i+1);
