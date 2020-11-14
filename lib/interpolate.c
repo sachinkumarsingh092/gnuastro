@@ -459,7 +459,8 @@ gal_interpolate_neighbors(gal_data_t *input,
 
   /* Spin off the threads. */
   gal_threads_spin_off(interpolate_neighbors_on_thread, &prm,
-                       input->size, numthreads);
+                       input->size, numthreads, input->minmapsize,
+                       input->quietmmap);
 
 
   /* If the values were permuted for the interpolation, then re-order the

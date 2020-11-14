@@ -85,6 +85,196 @@ gal_checkset_gsl_rng(uint8_t envseed_bool, const char **name,
 
 
 
+/* On the Linux kernel, due to "overcommitting" (which is activated by
+   default), malloc will not return NULL when we allocate more memory than
+   the physically available memory. It is possible to disable overcommiting
+   with root permissions, but I have not been able to find any way to do
+   this as a normal user. So the only way is to look into the
+   '/proc/meminfo' file (constantly filled by the Linux kernel) and read
+   the available memory from that.
+
+   Note that this overcommiting apparently only occurs on Linux. From what
+   I have read, other kernels are much more strict and 'malloc' will indeed
+   return NULL if there isn't any physical RAM to support it. So if the
+   '/proc/meminfo' doesn't exist, we can assume that 'malloc' works as
+   expected, until its inverse is proven. */
+size_t
+gal_checkset_ram_available(int quietmmap)
+{
+  FILE *file;
+  int keyfound=0;
+  size_t *freemem=NULL;
+  size_t linelen=80, out=GAL_BLANK_SIZE_T;
+  char *token, *line, *linecp, *saveptr, delimiters[] = " ";
+  char *meminfo="/proc/meminfo", *keyname="MemAvailable", *units="kB";
+
+  /* If /proc/meminfo exists, read it. Otherwise, don't bother doing
+     anything. */
+  if ((file = fopen(meminfo, "r")))
+    {
+      /* Allocate space to read the line. */
+      errno=0;
+      line=malloc(linelen*sizeof *line);
+      if(line==NULL)
+        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for line",
+              __func__, linelen*sizeof *line);
+
+      /* Read it line-by-line until you find 'MemAvailable'.  */
+      while( getline(&line, &linelen, file) != -1 )
+        if( !strncmp(line, keyname, 12) )
+          {
+            /* Necessary for final check: */
+            keyfound=1;
+
+            /* We need to work on a copied line to avoid messing up the
+               contents of the actual line. */
+            gal_checkset_allocate_copy(line, &linecp);
+
+            /* The first token (which we don't need). */
+            token=strtok_r(linecp, delimiters, &saveptr);
+
+            /* The second token (which is the actual number we want). */
+            token=strtok_r(NULL, delimiters, &saveptr);
+            if(token)
+              {
+                /* Read the token as a number. */
+                if( gal_type_from_string((void **)(&freemem), token,
+                                         GAL_TYPE_SIZE_T) )
+                  error(EXIT_SUCCESS, 0, "WARNING: %s: value of '%s' "
+                        "keyword couldn't be read as an integer. Hence "
+                        "the amount of available RAM couldn't be "
+                        "determined. If a large volume of data is "
+                        "provided, the program may crash. Please contact "
+                        "us at '%s' to fix the problem",
+                        meminfo, keyname, PACKAGE_BUGREPORT);
+                else
+                  {
+                    /* The third token should be the units ('kB'). If it
+                       isn't, there should be an error because we currently
+                       assume kilobytes. */
+                    token=strtok_r(NULL, delimiters, &saveptr);
+                    if(token)
+                      {
+                        /* The units should be 'kB' (for kilobytes). */
+                        if( !strncmp(token, units, 2) )
+                          out=freemem[0]*1000;
+                        else
+                          error(EXIT_SUCCESS, 0, "WARNING: %s: the units of "
+                                "the value of '%s' keyword is (usually 'kB') "
+                                "isn't recognized. Hence the amount of "
+                                "available RAM couldn't be determined. If a "
+                                "large volume of data is provided, the "
+                                "program may crash. Please contact us at "
+                                "'%s' to fix the problem", meminfo, keyname,
+                                PACKAGE_BUGREPORT);
+                      }
+                    else
+                      error(EXIT_SUCCESS, 0, "WARNING: %s: the units of the "
+                            "value of '%s' keyword (usually 'kB') couldn't "
+                            "be read as an integer. Hence the amount of "
+                            "available RAM couldn't be determined. If a "
+                            "large volume of data is provided, the program "
+                            "may crash. Please contact us at '%s' to fix "
+                            "the problem", meminfo, keyname, PACKAGE_BUGREPORT);
+                  }
+
+                /* Clean up. */
+                if(freemem) free(freemem);
+              }
+            else
+              error(EXIT_SUCCESS, 0, "WARNING: %s: line with the '%s' "
+                    "keyword didn't have a value. Hence the amount of "
+                    "available RAM couldn't be determined. If a large "
+                    "volume of data is provided, the program may crash. "
+                    "Please contact us at '%s' to fix the problem",
+                    meminfo, keyname, PACKAGE_BUGREPORT);
+
+            /* Clean up. */
+            free(linecp);
+          }
+
+      /* The file existed but a keyname couldn't be found. In this case we
+         should inform the user to be aware that we can't automatically
+         determine the available memory.*/
+      if(keyfound==0 && quietmmap==0)
+        error(EXIT_FAILURE, 0, "WARNING: %s: didn't contain a '%s' keyword "
+              "hence the amount of available RAM couldn't be determined. "
+              "If a large volume of data is provided, the program may "
+              "crash. Please contact us at '%s' to fix the problem",
+              meminfo, keyname, PACKAGE_BUGREPORT);
+
+      /* Close the opened file and free the line. */
+      free(line);
+      fclose(file);
+    }
+
+  /* Return the final value. */
+  return out;
+}
+
+
+
+
+
+int
+gal_checkset_need_mmap(size_t bytesize, size_t minmapsize, int quietmmap)
+{
+  int needmmap=0;
+  size_t availableram;
+  size_t minimumtommap=10000000;
+  size_t mustremainfree=750000000;
+
+  /* In case the given minmapsize is smaller than the default value of
+     'minimumtomap', then correct 'minimumtomap' to be the same as
+     'minmapsize' (the user has to have full control to over-write the
+     default value, but let them know in a warning that this is not
+     good). */
+  if(minmapsize < minimumtommap)
+    {
+      /* Let the user know that this is not a good choice and can cause
+         other problems. */
+      if(!quietmmap)
+        error(EXIT_SUCCESS, 0, "it is recommended that minmapsize have "
+              "a value larger than %zu (it is currently %zu), see "
+              "\"Memory management\" section in the Gnuastro book for "
+              "more. To disable this warning, please use the option "
+              "'--quiet-mmap'", minimumtommap, minmapsize);
+
+      /* Set the variable. */
+      minimumtommap=minmapsize;
+    }
+
+  /* Memory mapping is only relevant here if the byte-size of the dataset
+     is larger than 'minimumtommap'. This is primarily because checking the
+     available memory can be expensive. */
+  if( bytesize >= minimumtommap )
+    {
+      /* Find the available RAM space (only relevant for Linux). */
+      availableram=gal_checkset_ram_available(quietmmap);
+
+      /* For a check:
+      printf("check: %zu (bs), %zu (ar), %zu (nu)\n",
+             bytesize, availableram, mustremainfree);
+      */
+
+      /* If the final size is larger than the user's maximum,
+         or is larger than the available memory minus 500Mb (to
+         leave the system some breathing space!), then read the
+         array into disk using memory-mapping (HDD/SSD). */
+      if( bytesize >= minmapsize
+          || availableram < mustremainfree
+          || bytesize > (availableram-mustremainfree) )
+        needmmap=1;
+    }
+
+  /* Return the final choice. */
+  return needmmap;
+}
+
+
+
+
+
 
 
 

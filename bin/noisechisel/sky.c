@@ -207,7 +207,8 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
 
   /* Find the Sky and its STD on proper tiles. */
   gal_threads_spin_off(sky_mean_std_undetected, p, tl->tottiles,
-                       cp->numthreads);
+                       cp->numthreads, p->cp.minmapsize,
+                       p->cp.quietmmap);
   if(checkname)
     {
       p->sky->name="SKY";

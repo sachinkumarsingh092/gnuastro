@@ -796,7 +796,8 @@ mkcatalog(struct mkcatalogparams *p)
 
   /* Do the processing on each thread. */
   gal_threads_spin_off(mkcatalog_single_object, p, p->numobjects,
-                       p->cp.numthreads);
+                       p->cp.numthreads, p->cp.minmapsize,
+                       p->cp.quietmmap);
 
   /* Post-thread processing, for example to convert image coordinates to RA
      and Dec. */

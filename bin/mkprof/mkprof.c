@@ -747,12 +747,12 @@ mkprof_write(struct mkprofparams *p)
 void
 mkprof(struct mkprofparams *p)
 {
-  char *tmp;
   pthread_t t;            /* Thread id not used, all are saved here. */
   pthread_attr_t attr;
   pthread_barrier_t b;
   size_t numforprint=50;
   struct mkonthread *mkp;
+  char *tmp, *mmapname=NULL;
   gal_list_str_t *comments=NULL;
   int err, origquiet=p->cp.quiet;
   size_t i, fi, *indexs, thrdcols;
@@ -772,7 +772,9 @@ mkprof(struct mkprofparams *p)
   /* Distribute the different profiles for different threads. Note
      that one thread is left out for writing, while nt-1 are left
      for building. */
-  gal_threads_dist_in_threads(p->num, nt, &indexs, &thrdcols);
+  mmapname=gal_threads_dist_in_threads(p->num, nt,
+                                       p->cp.minmapsize, p->cp.quietmmap,
+                                       &indexs, &thrdcols);
 
 
   /* 'onaxes' are size of the merged output image without over-sampling or
@@ -885,7 +887,8 @@ mkprof(struct mkprofparams *p)
     printf("  -- Output: %s\n", p->mergedimgname);
 
   /* Clean up. */
-  free(mkp);
-  free(indexs);
+  if(mmapname) gal_pointer_mmap_free(&mmapname, p->cp.quietmmap);
+  else         free(indexs);
   if(onaxes) free(onaxes);
+  free(mkp);
 }

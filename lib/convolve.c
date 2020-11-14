@@ -549,7 +549,8 @@ gal_convolve_spatial_general(gal_data_t *tiles, gal_data_t *kernel,
 
   /* Do the spatial convolution on threads. */
   gal_threads_spin_off(convolve_spatial_on_thread, &params,
-                       gal_list_data_number(tiles), numthreads);
+                       gal_list_data_number(tiles), numthreads,
+                       tiles->minmapsize, tiles->quietmmap);
 
 
   /* Clean up and return the output array. */

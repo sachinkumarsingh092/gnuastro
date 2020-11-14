@@ -562,7 +562,8 @@ gal_tile_block_blank_flag(gal_data_t *tile_ll, size_t numthreads)
 {
   /* Go over all the tiles and update their blank flag. */
   gal_threads_spin_off(tile_block_blank_flag, tile_ll,
-                       gal_list_data_number(tile_ll), numthreads);
+                       gal_list_data_number(tile_ll), numthreads,
+                       tile_ll->minmapsize, tile_ll->quietmmap);
 }
 
 

@@ -105,7 +105,7 @@ gal_pointer_allocate(uint8_t type, size_t size, int clear,
 
 
 void *
-gal_pointer_allocate_mmap(uint8_t type, size_t size, int clear,
+gal_pointer_mmap_allocate(uint8_t type, size_t size, int clear,
                           char **filename, int quietmmap)
 {
   void *out;
@@ -156,8 +156,10 @@ gal_pointer_allocate_mmap(uint8_t type, size_t size, int clear,
   /* Inform the user. */
   if(!quietmmap)
     error(EXIT_SUCCESS, 0, "%s: temporary memory-mapped file (%zu bytes) "
-          "for intermediate data that is not stored in RAM (see "
-          "the \"Memory management\" section of Gnuastro's manual)",
+          "created for intermediate data that is not stored in RAM (see "
+          "the \"Memory management\" section of Gnuastro's manual for "
+          "optimizing your project's memory management, and thus speed). "
+          "To disable this warning, please use the option '--quiet-mmap'",
           *filename, bsize);
 
 
@@ -196,5 +198,72 @@ gal_pointer_allocate_mmap(uint8_t type, size_t size, int clear,
 
 
   /* Return the mmap'd pointer and save the file name. */
+  return out;
+}
+
+
+
+
+
+void
+gal_pointer_mmap_free(char **mmapname, int quietmmap)
+{
+  /* Delete the file keeping the array. */
+  remove(*mmapname);
+
+  /* Inform the user. */
+  if(!quietmmap)
+    error(EXIT_SUCCESS, 0, "%s: deleted", *mmapname);
+
+  /* Free the file name space. */
+  free(*mmapname);
+
+  /* Set the name pointer to NULL since it has been freed. */
+  *mmapname=NULL;
+}
+
+
+
+
+
+void *
+gal_pointer_allocate_ram_or_mmap(uint8_t type, size_t size, int clear,
+                                 size_t minmapsize, char **mmapname,
+                                 int quietmmap, const char *funcname,
+                                 const char *varname)
+{
+  void *out;
+  size_t bytesize=gal_type_sizeof(type)*size;
+
+  /* See if the requested size is larger than 1MB (otherwise,
+     its not worth checking RAM, which involves reading a text
+     file, we won't try memory-mapping anyway). */
+
+  /* If it is decided to do memory-mapping, then do it. */
+  if( gal_checkset_need_mmap(bytesize, minmapsize, quietmmap) )
+    out=gal_pointer_mmap_allocate(type, size, clear, mmapname,
+                                  quietmmap);
+  else
+    {
+      /* Allocate the necessary space in the RAM. */
+      errno=0;
+      out = ( clear
+              ? calloc( size,  gal_type_sizeof(type) )
+              : malloc( size * gal_type_sizeof(type) ) );
+
+      /* If the array is NULL (there was no RAM left: on
+         systems other than Linux, 'malloc' will actually
+         return NULL, Linux doesn't do this unfortunately so we
+         need to read the available RAM). */
+      if(out==NULL)
+        out=gal_pointer_mmap_allocate(type, size, clear,
+                                      mmapname, quietmmap);
+
+      /* The 'errno' is re-set to zero just incase 'malloc'
+         changed it, which may cause problems later. */
+      errno=0;
+    }
+
+  /* Return the allocated dataset. */
   return out;
 }

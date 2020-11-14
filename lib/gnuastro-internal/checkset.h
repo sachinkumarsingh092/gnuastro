@@ -57,6 +57,13 @@ gsl_rng *
 gal_checkset_gsl_rng(uint8_t envseed_bool, const char **name,
                      unsigned long int *seed);
 
+size_t
+gal_checkset_ram_available(int quietmmap);
+
+int
+gal_checkset_need_mmap(size_t bytesize, size_t minmapsize, int quietmmap);
+
+
 
 
 /**************************************************************/

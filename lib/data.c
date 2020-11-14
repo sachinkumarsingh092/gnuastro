@@ -92,137 +92,6 @@ gal_data_alloc(void *array, uint8_t type, size_t ndim, size_t *dsize,
 
 
 
-/* On the Linux kernel, due to "overcommitting" (which is activated by
-   default), malloc will not return NULL when we allocate more memory than
-   the physically available memory. It is possible to disable overcommiting
-   with root permissions, but I have not been able to find any way to do
-   this as a normal user. So the only way is to look into the
-   '/proc/meminfo' file (constantly filled by the Linux kernel) and read
-   the available memory from that.
-
-   Note that this overcommiting apparently only occurs on Linux. From what
-   I have read, other kernels are much more strict and 'malloc' will indeed
-   return NULL if there isn't any physical RAM to support it. So if the
-   '/proc/meminfo' doesn't exist, we can assume that 'malloc' works as
-   expected, until its inverse is proven. */
-static size_t
-data_available_ram()
-{
-  FILE *file;
-  int keyfound=0;
-  size_t *freemem=NULL;
-  size_t linelen=80, out=GAL_BLANK_SIZE_T;
-  char *token, *line, *linecp, *saveptr, delimiters[] = " ";
-  char *meminfo="/proc/meminfo", *keyname="MemAvailable", *units="kB";
-
-  /* If /proc/meminfo exists, read it. Otherwise, don't bother doing
-     anything. */
-  if ((file = fopen(meminfo, "r")))
-    {
-      /* Allocate space to read the line. */
-      errno=0;
-      line=malloc(linelen*sizeof *line);
-      if(line==NULL)
-        error(EXIT_FAILURE, errno, "%s: allocating %zu bytes for line",
-              __func__, linelen*sizeof *line);
-
-      /* Read it line-by-line until you find 'MemAvailable'.  */
-      while( getline(&line, &linelen, file) != -1 )
-        if( !strncmp(line, keyname, 12) )
-          {
-            /* Necessary for final check: */
-            keyfound=1;
-
-            /* We need to work on a copied file to avoid messing up the
-               contents of the actual line. */
-            gal_checkset_allocate_copy(line, &linecp);
-
-            /* The first token (which we don't need). */
-            token=strtok_r(linecp, delimiters, &saveptr);
-
-            /* The second token (which is the actual number we want). */
-            token=strtok_r(NULL, delimiters, &saveptr);
-            if(token)
-              {
-                /* Read the token as a number. */
-                if( gal_type_from_string((void **)(&freemem), token,
-                                         GAL_TYPE_SIZE_T) )
-                  error(EXIT_SUCCESS, 0, "WARNING: %s: value of '%s' "
-                        "keyword couldn't be read as an integer. Hence "
-                        "the amount of available RAM couldn't be "
-                        "determined. If a large volume of data is "
-                        "provided, the program may crash. Please contact "
-                        "us at '%s' to fix the problem",
-                        meminfo, keyname, PACKAGE_BUGREPORT);
-                else
-                  {
-                    /* The third token should be the units ('kB'). If it
-                       isn't, there should be an error because we currently
-                       assume kilobytes. */
-                    token=strtok_r(NULL, delimiters, &saveptr);
-                    if(token)
-                      {
-                        /* The units should be 'kB' (for kilobytes). */
-                        if( !strncmp(token, units, 2) )
-                          out=freemem[0]*1000;
-                        else
-                          error(EXIT_SUCCESS, 0, "WARNING: %s: the units of "
-                                "the value of '%s' keyword is (usually 'kB') "
-                                "isn't recognized. Hence the amount of "
-                                "available RAM couldn't be determined. If a "
-                                "large volume of data is provided, the "
-                                "program may crash. Please contact us at "
-                                "'%s' to fix the problem", meminfo, keyname,
-                                PACKAGE_BUGREPORT);
-                      }
-                    else
-                      error(EXIT_SUCCESS, 0, "WARNING: %s: the units of the "
-                            "value of '%s' keyword (usually 'kB') couldn't "
-                            "be read as an integer. Hence the amount of "
-                            "available RAM couldn't be determined. If a "
-                            "large volume of data is provided, the program "
-                            "may crash. Please contact us at '%s' to fix "
-                            "the problem", meminfo, keyname, PACKAGE_BUGREPORT);
-                  }
-
-                /* Clean up. */
-                if(freemem) free(freemem);
-              }
-            else
-              error(EXIT_SUCCESS, 0, "WARNING: %s: line with the '%s' "
-                    "keyword didn't have a value. Hence the amount of "
-                    "available RAM couldn't be determined. If a large "
-                    "volume of data is provided, the program may crash. "
-                    "Please contact us at '%s' to fix the problem",
-                    meminfo, keyname, PACKAGE_BUGREPORT);
-
-            /* Clean up. */
-            free(linecp);
-          }
-
-      /* The file existed but a keyname couldn't be found. In this case we
-         should inform the user to be aware that we can't automatically
-         determine the available memory.*/
-      if(keyfound==0)
-        error(EXIT_FAILURE, 0, "WARNING: %s: didn't contain a '%s' keyword "
-              "hence the amount of available RAM couldn't be determined. "
-              "If a large volume of data is provided, the program may "
-              "crash. Please contact us at '%s' to fix the problem",
-              meminfo, keyname, PACKAGE_BUGREPORT);
-
-      /* Close the opened file and free the line. */
-      free(line);
-      fclose(file);
-    }
-
-  /* Return the final value. */
-  return out;
-}
-
-
-
-
-
 /* Initialize the data structure.
 
    Some notes:
@@ -246,8 +115,7 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
                     int clear, size_t minmapsize, int quietmmap,
                     char *name, char *unit, char *comment)
 {
-  size_t nouseram=1500000000;
-  size_t i, bytesize, availableram;
+  size_t i;
   size_t data_size_limit = (size_t)(-1);
 
   /* Do the simple copying cases. For the display elements, set them all to
@@ -322,46 +190,9 @@ gal_data_initialize(gal_data_t *data, void *array, uint8_t type,
         {
           /* If a size wasn't given, just set a NULL pointer. */
           if(data->size)
-            {
-              /* Find the available RAM space (only relevant for Linux). */
-              availableram=data_available_ram();
-              bytesize=gal_type_sizeof(type)*data->size;
-
-              /* For a check:
-              printf("check: %zu (data), %zu (ram)\n",
-                     bytesize, availableram-nouseram);
-              */
-              /* If the final size is larger than the user's maximum, or is
-                 larger than the available memory minus 500Mb (to leave the
-                 system some breathing space!), then read the array into
-                 disk using memory-mapping (HDD/SSD). */
-              if( bytesize > 1000000
-                  && ( bytesize > minmapsize
-                       || availableram < nouseram
-                       || bytesize > (availableram-nouseram) ) )
-                data->array=gal_pointer_allocate_mmap(data->type, data->size,
-                                                      clear, &data->mmapname,
-                                                      quietmmap);
-              else
-                {
-                  /* Allocate the necessary space in the RAM. */
-                  data->array = ( clear
-                        ? calloc( data->size,  gal_type_sizeof(data->type) )
-                        : malloc( data->size * gal_type_sizeof(data->type) ) );
-
-                  /* If the array is NULL. */
-                  if(data->array==NULL)
-                    data->array=gal_pointer_allocate_mmap(data->type,
-                                                          data->size,
-                                                          clear,
-                                                          &data->mmapname,
-                                                          quietmmap);
-
-                  /* The 'errno' is re-set to zero just incase 'malloc'
-                     changed it, which may cause problems later. */
-                  errno=0;
-                }
-            }
+            data->array=gal_pointer_allocate_ram_or_mmap(data->type,
+                                 data->size, clear, minmapsize,
+                                 &data->mmapname, quietmmap, __func__, "");
           else data->array=NULL; /* The given size was zero! */
         }
     }
@@ -418,24 +249,14 @@ gal_data_free_contents(gal_data_t *data)
       for(i=0;i<data->size;++i) if(strarr[i]) free(strarr[i]);
     }
 
-  /* Free the array. */
-  if(data->mmapname)
+  /* Free the array (if it was separately allocated: not part of a block),
+     then set the 'array' to NULL. */
+  if(data->array && data->block==NULL)
     {
-      /* Delete the file keeping the array. */
-      remove(data->mmapname);
-
-      /* Inform the user. */
-      if(!data->quietmmap)
-        error(EXIT_SUCCESS, 0, "%s: deleted", data->mmapname);
-
-      /* Free the file name space. */
-      free(data->mmapname);
-
-      /* Set the name pointer to NULL since it has been freed. */
-      data->mmapname=NULL;
+      if(data->mmapname)
+        gal_pointer_mmap_free(&data->mmapname, data->quietmmap);
+      else free(data->array);
     }
-  else
-    if(data->array && data->block==NULL) free(data->array);
   data->array=NULL;
 }
 

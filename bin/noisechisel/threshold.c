@@ -162,8 +162,9 @@ threshold_apply(struct noisechiselparams *p, float *value1,
                 float *value2, int kind)
 {
   struct threshold_apply_p taprm={value1, value2, kind, p};
-  gal_threads_spin_off(threshold_apply_on_thread, &taprm, p->cp.tl.tottiles,
-                       p->cp.numthreads);
+  gal_threads_spin_off(threshold_apply_on_thread, &taprm,
+                       p->cp.tl.tottiles, p->cp.numthreads,
+                       p->cp.minmapsize, p->cp.quietmmap);
 }
 
 
@@ -631,7 +632,9 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
      elements, it is only necessary to check one (with the 'updateflag'
      value set to 1), then update the next. */
   qprm.p=p;
-  gal_threads_spin_off(qthresh_on_tile, &qprm, tl->tottiles, cp->numthreads);
+  gal_threads_spin_off(qthresh_on_tile, &qprm, tl->tottiles,
+                       cp->numthreads, cp->minmapsize,
+                       cp->quietmmap);
   free(qprm.usage);
   if( gal_blank_present(qprm.erode_th, 1) )
     {

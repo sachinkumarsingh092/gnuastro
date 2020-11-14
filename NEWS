@@ -106,6 +106,9 @@ See the end of the file for license conditions.
    - gal_blank_remove_rows: remove all rows that have at least one blank.
    - gal_fits_hdu_datasum: calculate DATASUM of given HDU in given FITS file.
    - gal_fits_hdu_datasum_ptr: calculate DATASUM of opened FITS file pointer.
+   - gal_pointer_allocate_ram_or_mmap: allocate space either in RAM or as a
+     memory-mapped file.
+   - gal_pointer_mmap_free: "free" (actually delete) the memory-mapped file.
    - gal_wcs_coverage: Return the sky coverage of given image HDU.
    - gal_wcs_dimension_name: return the name of the requested WCS dim.
 
@@ -136,6 +139,10 @@ See the end of the file for license conditions.
      delimiters ('_:_:_').
 
   Library:
+   - gal_pointer_mmap_allocate: new name for 'gal_pointer_allocate_mmap'.
+   - gal_threads_dist_in_threads: now accounts for billions of threads,
+     thus includes memory management options.
+   - gal_threads_spin_off: now accounts for memory management.
    - gal_units_degree_to_ra: new 'usecolon' argument to optionally format
      output string with colons as delimiters ('_:_:_'). When this option is
      zero, the string will be in the '_h_m_s' format.

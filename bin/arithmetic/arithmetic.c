@@ -512,7 +512,8 @@ wrapper_for_filter(struct arithmeticparams *p, char *token, int operator)
 
       /* Spin off threads for each pixel. */
       gal_threads_spin_off(arithmetic_filter, &afp, afp.input->size,
-                           p->cp.numthreads);
+                           p->cp.numthreads, p->cp.minmapsize,
+                           p->cp.quietmmap);
     }
 
 

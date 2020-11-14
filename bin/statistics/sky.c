@@ -190,7 +190,8 @@ sky(struct statisticsparams *p)
 
   /* Find the Sky and Sky standard deviation on the tiles. */
   if(!cp->quiet) gettimeofday(&t1, NULL);
-  gal_threads_spin_off(sky_on_thread, p, tl->tottiles, cp->numthreads);
+  gal_threads_spin_off(sky_on_thread, p, tl->tottiles, cp->numthreads,
+                       cp->minmapsize, cp->quietmmap);
   if(!cp->quiet)
     {
       num=gal_statistics_number(p->sky_t);

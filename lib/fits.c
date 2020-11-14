@@ -2170,10 +2170,12 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
   if( gal_fits_name_is_fits(filename)==0 )
     error(EXIT_FAILURE, 0, "%s: not a FITS suffix", filename);
 
+
   /* If the input is a tile (isn't a contiguous region of memory), then
      copy it into a contiguous region. */
   towrite = input==block ? input : gal_data_copy(input);
   hasblank=gal_blank_present(towrite, 0);
+
 
   /* Allocate the naxis area. */
   naxes=gal_pointer_allocate( ( sizeof(long)==8
@@ -2219,7 +2221,6 @@ gal_fits_img_write_to_ptr(gal_data_t *input, char *filename)
       datatype=TLONGLONG;
       fits_create_img(fptr, LONGLONG_IMG, ndim, naxes, &status);
       gal_fits_io_error(status, NULL);
-
 
       /* Write the image into the file. */
       fits_write_img(fptr, datatype, fpixel, i64data->size, i64data->array,

@@ -7653,60 +7653,64 @@ If you are writing your own program, you can use the @code{gal_data_copy_to_new_
 @cindex Memory management
 @cindex Non-volatile memory
 @cindex Memory, non-volatile
-In this section we'll review how Gnuastro manages your input data in the available memory of your system.
-But before that, let's have a short basic introduction to the types of memory most relevant to this discussion.
+In this section we'll review how Gnuastro manages your input data in your system's memory.
+Knowing this can help you optimize your usage (in speed and memory consumption) when the data volume ls large and approaches, or exceeds, your available RAM (usually in various calls to multiple programs simultaneously).
+But before diving into the details, let's have a short basic introduction to memory in general and in particular the types of memory most relevant to this discussion.
 
 Input datasets (that are later fed into programs for analysis) are commonly first stored in @emph{non-volatile memory}.
-This is a type of memory that doesn't need any constant power to keep the data, like HDDs or SSDs and is primarily aimed for long-term storage.
+This is a type of memory that doesn't need a constant power supply to keep the data and is therefore primarily aimed for long-term storage, like HDDs or SSDs.
 So data in this type of storage is preserved when you turn off your computer.
-But non-volatile memory is much slower in reading or writing than the speeds that CPUs can process the data.
+But by its nature, non-volatile memory is much slower, in reading or writing, than the speeds that CPUs can process the data.
 Thus relying on this type of memory alone would create a bad bottleneck in the input/output (I/O) phase of any processing.
 
 @cindex RAM
 @cindex Volatile memory
 @cindex Memory, volatile
-The first step to decrease this bottleneck is to have a faster storage space, but with more limited volume.
+The first step to decrease this bottleneck is to have a faster storage space, but with a much limited storage volume.
 For this type of storage, computers have a Random Access Memory (or RAM).
-RAM is classified as a @emph{volatile memory} because it needs a constant power source to keep the information.
-In other words, the moment power is cut-off, all the stored information in it is gone (hence the 'volatile' name).
-By assuming that sufficient power is always available, volatile memory is much faster than non-volatile memory.
+RAM is classified as a @emph{volatile memory} because it needs a constant flow of electricity to keep the information.
+In other words, the moment power is cut-off, all the stored information in your RAM is gone (hence the 'volatile' name).
+But thanks to that constant supply of power, it can access any random address with equal (and very high!) speed.
 
-Hence, the general/simplistic way that programs deal with memory is the following (this is general to all programs, not just Gnuastro's):
+Hence, the general/simplistic way that programs deal with memory is the following (this is general to almost all programs, not just Gnuastro's):
 1) Load/copy the input data from the non-volatile memory into RAM.
-2) Use the copy in RAM as input for all the internal processing as well as the intermediatea data that is necessary during the processing.
-3) Finally, when the analyis is complete, write the final output data back into non-volatile memory, and delete all the used space in the RAM (the initial copy and all the intermediate data).
-The RAM is most important for the data of the intermediate steps (that you never see as a user of a program!).
+2) Use the copy of the data in RAM as input for all the internal processing as well as the intermediate data that is necessary during the processing.
+3) Finally, when the analyis is complete, write the final output data back into non-volatile memory, and free/delete all the used space in the RAM (the initial copy and all the intermediate data).
+Usually the RAM is most important for the data of the intermediate steps (that you never see as a user of a program!).
 
-When the datasets are small (compared to the available space in your system's RAM when they are run) the steps above are roughly accurate in Gnuastro's programs and libraries.
+When the input dataset(s) to a program are small (compared to the available space in your system's RAM at the moment it is run) Gnuastro's programs and libraries follow the standard series of steps above.
 The only exception is that deleting the intermediate data is not only done at the end of the program.
-As soon as an intermediate dataset is no longer necessary for the next internal steps, it is deleted.
-This allows Gnuastro programs to minimize their usage of your system's RAM.
+As soon as an intermediate dataset is no longer necessary for the next internal steps, the space it occupied is deleted/freed.
+This allows Gnuastro programs to minimize their usage of your system's RAM over the full running time.
 
-The situation gets complicated when the datasets are large (compared to your available RAM when they are run).
-For example if a dataset if half the size of your system's available RAM, and the program's analysis needs three or more intermediately processed versions of it in a certain phase of its analysis, there won't be enough RAM to keep those higher-level versions.
+The situation gets complicated when the datasets are large (compared to your available RAM when the program is run).
+For example if a dataset if half the size of your system's available RAM, and the program's internal analysis needs three or more intermediately processed copies of it at one moment in its analysis.
+There won't be enough RAM to keep those higher-level intermediate data.
 In such cases, programs that don't do any memory management will crash.
 But fortunately Gnuastro's programs do have a memory management plans for such situations.
 
 @cindex Memory-mapped file
-When the necessary amount of space for an intermediate dataset cannot be allocated in the RAM, instead of crashing, Gnuastro's programs will not use the RAM at all.
-They will use the ``memory-mapped file'' concept in modern operating systems to create a randomly-named file in your non-volatile memory and use that instead.
+When the necessary amount of space for an intermediate dataset cannot be allocated in the RAM, Gnuastro's programs will not use the RAM at all.
+They will use the ``memory-mapped file'' concept in modern operating systems to create a randomly-named file in your non-volatile memory and use that instead of the RAM.
 That file will have the exact size (in bytes) of that intermediate dataset.
 Any time the program needs that intermediate dataset, the operating system will directly go to that file, and bypass your RAM.
 As soon as that file is no longer necessary for the analysis, it will be deleted.
 But as mentioned above, non-volatile memory has much slower I/O speed than the RAM.
-Hence in such situations, the programs will become noticably slower.
+Hence in such situations, the programs will become noticably slower (sometimes by factors of 10 times slower, depending on your non-volatile memory speeds).
 
-By default, Gnuastro's programs and libraries will notify you with a statement like below, the moment that an intermediate dataset is memory-mapped (can happen in any phase of their analysis).
-It shows the location of the memory-mapped file and its size, complemented with a small description of the cause and a pointer to this section of the book for more information on how to deal with it (if necessary).
+Because of the drop in I/O speed (and thus the speed of your running program), the moment that any to-be-allocated dataset is memory-mapped, Gnuastro's programs and libraries will notify you with a descriptive statement like below (can happen in any phase of their analysis).
+It shows the location of the memory-mapped file, its size, complemented with a small description of the cause, a pointer to this section of the book for more information on how to deal with it (if necessary), and what to do to suppress it.
 
 @example
-astarithmetic: ./.gnuastro_mmap/B1QgVf: temporary memory-mapped file
-(XXXXX bytes) for intermediate data that is not stored in RAM (see
-the "Memory management" section of Gnuastro's manual)
+astarithmetic: ./.gnuastro_mmap/Fu7Dhs: temporary memory-mapped file
+(XXXXXXXXXXX bytes) created for intermediate data that is not stored
+in RAM (see the "Memory management" section of Gnuastro's manual for
+optimizing your project's memory management, and thus speed). To
+disable this warning, please use the option '--quiet-mmap'
 @end example
 
 @noindent
-Finally, when the intermediate dataset is no longer necessary, the program will automatically delete it and let you know with a statement like this:
+Finally, when the intermediate dataset is no longer necessary, the program will automatically delete it and notify you with a statement like this:
 
 @example
 astarithmetic: ./.gnuastro_mmap/B1QgVf: deleted
@@ -7716,54 +7720,57 @@ astarithmetic: ./.gnuastro_mmap/B1QgVf: deleted
 To disable these messages, you can run the program with @code{--quietmmap}, or set the @code{quietmmap} variable in the allocating library function to be non-zero.
 
 An important component of these messages is the name of the memory-mapped file.
-Knowing that the file has been deleted is important for the user if the program crashes for any reason: internal (for example a parameter is given wrongly) or (for example you mistakenly kill the running job) reason.
+Knowing that the file has been deleted is important for the user if the program crashes for any reason: internally (for example a parameter is given wrongly) or externally (for example you mistakenly kill the running job).
 In the event of a crash, the memory-mapped files will not be deleted and you have to manually delete them because they are usually large and they may soon fill your full storage if not deleted in a long time due to successive crashes.
 
-This brings us to managing the memory-mapped files in your non-volatile memory: knowing where they are saved, placing them in different places of your file system, or deleting them when necessary.
-As the examples above show, memory-mapped files are stored in a hidden sub-directory of the the running directory: @file{.gnuastro_mmap}.
-If this directory doesn't exist, Gnuastro will automatically create it if it needs to memory-map an internal dataset.
-However, If the @file{.gnuastro_mmap} sub-directory exists and isn't writable, or it can't be created, then the file will be created in the running directory with a @file{.gnuastro_mmap_} prefix.
+This brings us to managing the memory-mapped files in your non-volatile memory.
+In other words: knowing where they are saved, or intentionally placing them in different places of your file system, or deleting them when necessary.
+As the examples above show, memory-mapped files are stored in a hidden sub-directory of the the running directory called @file{.gnuastro_mmap}.
+If this directory doesn't exist, Gnuastro will automatically create it when memory mapping becomes necessary.
+Alternatively, it may happen that the @file{.gnuastro_mmap} sub-directory exists and isn't writable, or it can't be created.
+In such cases, the memory-mapped file for each dataset will be created in the running directory with a @file{.gnuastro_mmap_} prefix.
 
-Therefore one easy way to delete all memory-mapped files is to delete everything within this directory:
+Therefore one easy way to delete all memory-mapped files in case of a crash, is to delete everything within the sub-directory (first command below), or all files stating with this prefix:
 
 @example
 rm -f .gnuastro_mmap/*
+rm -f .gnuastro_mmap_*
 @end example
 
-A much more common issue when dealing with memory-mapped files is their location.
-For example you may be running a program in a partition that is hosted by a HDD.
+A much more common issue in dealing with memory-mapped files is their location.
+For example you may be running a program in a partition that is hosted by an HDD.
 But you also have another partition on an SSD (which has much faster I/O).
 So you want your memory-mapped files to be created in the SSD to speed up your processing.
-Another common scenario is this: you want your project source directory to only contain your plain-text scripts and you want your project's built products (even the temporary memory-mapped files) to be built in a different location because they are large and hard to maintain with the valuable scripts.
+In this scenario, you want your project source directory to only contain your plain-text scripts and you want your project's built products (even the temporary memory-mapped files) to be built in a different location because they are large; thus I/O speed becomes important.
 
-To do host the memory-mapped files in another location, you can set @file{.gnuastro_mmap} to be a symbolic link to that location.
+To host the memory-mapped files in another location, you can set the hidden subdirectory (@file{.gnuastro_mmap}) to be a symbolic link to the location with fast I/O.
 For example, let's assume you want your memory-mapped files to be stored in @file{/path/to/dir/for/mmap}.
-All you have to do is to run following command before your Gnuastro analysis command:
+All you have to do is to run the following command before your Gnuastro analysis command(s).
 
 @example
 ln -s /path/to/dir/for/mmap .gnuastro_mmap
 @end example
 
-The programs will delete the memory-mapped file when it is no longer needed, but they won't delete the @file{.gnuastro_mmap} directory that hosts them.
-So if your project involves many Gnuastro programs and you want your memory-mapped files to be in a different location, you just have to make the symbolic link above once.
+The programs will delete a memory-mapped file when it is no longer needed, but they won't delete the @file{.gnuastro_mmap} directory that hosts them.
+So if your project involves many Gnuastro programs (possibly called in parallel) and you want your memory-mapped files to be in a different location, you just have to make the symbolic link above once at the start, and all the programs will use it if necessary.
 
 Another memory-management scenario that may happen is this: you don't want a Gnuastro program to allocate internal datasets in the RAM at all.
-For example the speed of your Gnuastro-related project doesn't matter at that moment, and you have higher-priority jobs that are being run at the same time.
+For example the speed of your Gnuastro-related project doesn't matter at that moment, and you have higher-priority jobs that are being run at the same time which need to have RAM available.
 In such cases, you can use the @option{--minmapsize} option that is available in all Gnuastro programs (see @ref{Processing options}).
 Any intermediate dataset that has a size larger than the value of this option will be memory-mapped, even if there is space available in your RAM.
-For example if you want any intermediate dataset larger than 1 megabyte to be memory-mapped, use @option{--minmapsize=1000000}.
+For example if you want any dataset larger than 100 megabytes to be memory-mapped, use @option{--minmapsize=100000000} (8 zeros!).
 
 @cindex Linux kernel
 @cindex Kernel, Linux
-You shouldn't set the value of @option{--minmapsize} to be too small, otherwise even small intermediate values (that are very numerous) in the program will be memory-mapped.
+You shouldn't set the value of @option{--minmapsize} to be too small, otherwise even small intermediate values (that are usually very numerous) in the program will be memory-mapped.
 However the kernel can only host a limited number of memory-mapped files at every moment (by all running programs combined).
 For example in the default@footnote{If you need to host more memory-mapped files at one moment, you need to build your own customized Linux kernel.} Linux kernel on GNU/Linux operating systems this limit is roughly 64000.
 If the total number of memory-mapped files exceeds this number, all the programs using them will crash.
-Small/numerous intermediate values will rarely exceed a mega byte, so based on our experience, this is a good value in such scenarios.
+Gnuastro's programs will warn you if your given value is too small and may cause a problem later.
 
 Actually, the default behavior for Gnuastro's programs (to only use memory-mapped files when there isn't enough RAM) is a side-effect of @option{--minmapsize}.
 The pre-defined value to this option is an extremely large value in the lowest-level Gnuastro configuration file (the installed @file{gnuastro.conf} described in @ref{Configuration file precedence}).
-This value is larger than the largest available RAM.
+This value is larger than the largest possible available RAM.
 You can check by running any Gnuastro program with a @option{-P} option.
 Because no dataset will be larger than this, by default the programs will first attempt to use the RAM for temporary storage.
 But if writing in the RAM fails (for any reason, maily due to lack of available space), then a memory-mapped file will be created.
@@ -20162,31 +20169,20 @@ strange and apparently random errors that are extremely hard to debug.
 @subsubsection Gnuastro's thread related functions
 
 @cindex POSIX Threads
-The POSIX Threads functions offered in the C library are very low-level and
-offer a great range of control over the properties of the threads. So if
-you are interested in customizing your tools for complicated thread
-applications, it is strongly encouraged to get a nice familiarity with
-them. Some resources were introduced in @ref{Multithreaded
-programming}.
+The POSIX Threads functions offered in the C library are very low-level and offer a great range of control over the properties of the threads.
+So if you are interested in customizing your tools for complicated thread applications, it is strongly encouraged to get a nice familiarity with them.
+Some resources were introduced in @ref{Multithreaded programming}.
 
-However, in many cases used in astronomical data analysis, you don't need
-communication between threads and each target operation can be done
-independently. Since such operations are very common, Gnuastro provides the
-tools below to facilitate the creation and management of jobs without any
-particular knowledge of POSIX Threads for such operations. The most
-interesting high-level functions of this section are the
-@code{gal_threads_number} and @code{gal_threads_spin_off} that identify the
-number of threads on the system and spin-off threads. You can see a
-demonstration of using these functions in @ref{Library demo -
-multi-threaded operation}.
+However, in many cases used in astronomical data analysis, you don't need communication between threads and each target operation can be done independently.
+Since such operations are very common, Gnuastro provides the tools below to facilitate the creation and management of jobs without any particular knowledge of POSIX Threads for such operations.
+The most interesting high-level functions of this section are the @code{gal_threads_number} and @code{gal_threads_spin_off} that identify the number of threads on the system and spin-off threads.
+You can see a demonstration of using these functions in @ref{Library demo - multi-threaded operation}.
 
 @deftp {C @code{struct}} gal_threads_params
-Structure keeping the parameters of each thread. When each thread is
-created, a pointer to this structure is passed to it. The @code{params}
-element can be the pointer to a structure defined by the user which
-contains all the necessary parameters to pass onto the worker function. The
-rest of the elements within this structure are set internally by
-@code{gal_threads_spin_off} and are relevant to the worker function.
+Structure keeping the parameters of each thread.
+When each thread is created, a pointer to this structure is passed to it.
+The @code{params} element can be the pointer to a structure defined by the user which contains all the necessary parameters to pass onto the worker function.
+The rest of the elements within this structure are set internally by @code{gal_threads_spin_off} and are relevant to the worker function.
 @example
 struct gal_threads_params
 @{
@@ -20199,60 +20195,82 @@ struct gal_threads_params
 @end deftp
 
 @deftypefun size_t gal_threads_number ()
-Return the number of threads that the operating system has available for
-your program. This number is usually fixed for a single machine and doesn't
-change. So this function is useful when you want to run your program on
-different machines (with different CPUs).
+Return the number of threads that the operating system has available for your program.
+This number is usually fixed for a single machine and doesn't change.
+So this function is useful when you want to run your program on different machines (with different CPUs).
 @end deftypefun
 
-@deftypefun void gal_threads_spin_off (void @code{*(*worker)(void *)}, void @code{*caller_params}, size_t @code{numactions}, size_t @code{numthreads})
-Distribute @code{numactions} jobs between @code{numthreads} threads and
-spin-off each thread by calling the @code{worker} function. The
-@code{caller_params} pointer will also be passed to @code{worker} as part
-of the @code{gal_threads_params} structure. For a fully working example of
-this function, please see @ref{Library demo - multi-threaded operation}.
+@deftypefun void gal_threads_spin_off (void @code{*(*worker)(void *)}, void @code{*caller_params}, size_t @code{numactions}, size_t @code{numthreads}, size_t @code{minmapsize}, int @code{quietmmap})
+Distribute @code{numactions} jobs between @code{numthreads} threads and spin-off each thread by calling the @code{worker} function.
+The @code{caller_params} pointer will also be passed to @code{worker} as part of the @code{gal_threads_params} structure.
+For a fully working example of this function, please see @ref{Library demo - multi-threaded operation}.
+
+If there are many jobs (millions or billions) to organize, memory issues may become important.
+With @code{minmapsize} you can specify the minimum byte-size to allocate the necessary space in a memory-mapped file or alternatively in RAM.
+If @code{quietmmap} is non-zero, then a warning will be printed upon creating a memory-mapped file.
+For more on Gnuastro's memory management, see @ref{Memory management}.
 @end deftypefun
 
 @deftypefun void gal_threads_attr_barrier_init (pthread_attr_t @code{*attr}, pthread_barrier_t @code{*b}, size_t @code{limit})
 @cindex Detached threads
-This is a low-level function in case you don't want to use
-@code{gal_threads_spin_off}. It will initialize the general thread
-attribute @code{attr} and the barrier @code{b} with @code{limit} threads to
-wait behind the barrier. For maximum efficiency, the threads initialized
-with this function will be detached.  Therefore no communication is
-possible between these threads and in particular @code{pthread_join} won't
-work on these threads. You have to use the barrier constructs to wait for
-all threads to finish.
+This is a low-level function in case you don't want to use @code{gal_threads_spin_off}.
+It will initialize the general thread attribute @code{attr} and the barrier @code{b} with @code{limit} threads to wait behind the barrier.
+For maximum efficiency, the threads initialized with this function will be detached.
+Therefore no communication is possible between these threads and in particular @code{pthread_join} won't work on these threads.
+You have to use the barrier constructs to wait for all threads to finish.
 @end deftypefun
 
-@deftypefun void gal_threads_dist_in_threads (size_t @code{numactions}, size_t @code{numthreads}, size_t @code{**outthrds}, size_t @code{*outthrdcols})
-This is a low-level function in case you don't want to use
-@code{gal_threads_spin_off}. Identify the ``index''es (starting from 0) of
-the actions to be done on each thread in the @code{outthrds}
-array. @code{outthrds} is treated as a 2D array with @code{numthreads} rows
-and @code{outthrdcols} columns. The indexs in each row, identify the
-actions that should be done by one thread. Please see the explanation below
-to understand the purpose of this operation.
+@deftypefun {char *} gal_threads_dist_in_threads (size_t @code{numactions}, size_t @code{numthreads}, size_t @code{minmapsize}, int @code{quietmmap}, size_t @code{**indexs}, size_t @code{*icols})
+This is a low-level function in case you don't want to use @code{gal_threads_spin_off}.
+The job of this function is to distribute @code{numactions} jobs/actions in @code{numthreads} threads.
+To do this, it will assign each job an ID, ranging from 0 to @code{numactions}-1.
+The output is the allocated @code{*indexs} array and the @code{*icols} number.
+In memory, its just a simple 1D array that has @code{numthreads} @mymath{\times} @code{*icols} elements.
+But you can visualize it as a 2D array with @code{numthreads} rows and @code{*icols} columns.
+For more on the logic of the distribution, see below.
 
-Let's assume you have @mymath{A} actions (where there is only one function
-and the input values differ for each action) and @mymath{T} threads
-available to the system with @mymath{A>T} (common values for these two
-would be @mymath{A>1000} and @mymath{T<10}). Spinning off a thread is not a
-cheap job and requires a significant number of CPU cycles. Therefore,
-creating @mymath{A} threads is not the best way to address such a
-problem. The most efficient way to manage the actions is such that only
-@mymath{T} threads are created, and each thread works on a list of actions
-identified for it in series (one after the other). This way your CPU will
-get all the actions done with minimal overhead.
+@cindex RAM
+@cindex Memory management
+When you have millions/billions of jobs to distribute, @code{indexs} will become very large.
+For memory management (when to use a memory-mapped file, and when to use RAM), you need to specify the @code{minmapsize} and @code{quietmmap} arguments.
+For more on memory management, see @ref{Memory management}.
+In general, if your distributed jobs will not be on the scale of billions (and you want everything to always be written in RAM), just set @code{minmapsize=-1} and @code{quietmmap=1}.
 
-The purpose of this function is to do what we explained above: each row in
-the @code{outthrds} array contains the indexs of actions which must be done
-by one thread. @code{outthrds} contains @code{outthrdcols} columns. In
-using @code{outthrds}, you don't have to know the number of columns. The
-@code{GAL_BLANK_SIZE_T} macro has a role very similar to a
-string's @code{\0}: every row finishes with this macro, so can easily stop
-parsing the indexes in the row when you confront it. Please see the example
-program in @file{tests/lib/multithread.c} for a demonstration.
+When @code{indexs} is actually in a memory-mapped file, this function will return a string containing the name of the file (that you can later give to @code{gal_pointer_mmap_free} to free/delete).
+When @code{indexs} is in RAM, this function will return a @code{NULL} pointer.
+So after you are finished with @code{indexs}, you can free it like this:
+
+@example
+char *mmapname;
+int quietmmap=1;
+size_t *indexs, thrdcols;
+size_t numactions=5000, minmapsize=-1;
+size_t numthreads=gal_threads_number();
+
+/* Distribute the jobs. */
+mmapname=gal_threads_dist_in_threads(numactions, numthreads,
+                                     minmapsize, quietmmap,
+                                     &indexs, &thrdcols);
+
+/* Do any processing you want... */
+
+/* Free the 'indexs' array. */
+if(mmapname) gal_pointer_mmap_free(&mmapname, quietmmap);
+else         free(indexs);
+@end example
+
+Here is a brief description of the reasoning behind the @code{indexs} array and how the jobs are distributed.
+Let's assume you have @mymath{A} actions (where there is only one function and the input values differ for each action) and @mymath{T} threads available to the system with @mymath{A>T} (common values for these two would be @mymath{A>1000} and @mymath{T<10}).
+Spinning off a thread is not a cheap job and requires a significant number of CPU cycles.
+Therefore, creating @mymath{A} threads is not the best way to address such a problem.
+The most efficient way to manage the actions is such that only @mymath{T} threads are created, and each thread works on a list of actions identified for it in series (one after the other).
+This way your CPU will get all the actions done with minimal overhead.
+
+The purpose of this function is to do what we explained above: each row in the @code{indexs} array contains the indexs of actions which must be done by one thread (so it has @code{numthreads} rows with @code{*icols} columns).
+However, when using @code{indexs}, you don't have to know the number of columns.
+It is guaranteed that all the rows finish with @code{GAL_BLANK_SIZE_T} (see @ref{Library blank values}).
+The @code{GAL_BLANK_SIZE_T} macro plays a role very similar to a string's @code{\0}: every row finishes with this macro, so can easily stop parsing the indexes in the row as soon as you confront @code{GAL_BLANK_SIZE_T}.
+For some real examples, please see the example program in @file{tests/lib/multithread.c} for a demonstration.
 
 @end deftypefun
 
@@ -20594,48 +20612,50 @@ types}).
 @end deftypefun
 
 @deftypefun {void *} gal_pointer_allocate (uint8_t @code{type}, size_t @code{size}, int @code{clear}, const char @code{*funcname}, const char @code{*varname})
-Allocate an array of type @code{type} with @code{size} elements in RAM (for
-the type codes, see @ref{Library data types}). If @code{clear!=0}, then the
-allocated space is set to zero (cleared). This is effectively just a
-wrapper around C's @code{malloc} or @code{calloc} functions but takes
-Gnuastro's integer type codes and will also abort with a clear error if
-there the allocation was not successful.
+Allocate an array of type @code{type} with @code{size} elements in RAM (for the type codes, see @ref{Library data types}).
+If @code{clear!=0}, then the allocated space is set to zero (cleared).
+This is effectively just a wrapper around C's @code{malloc} or @code{calloc} functions but takes Gnuastro's integer type codes and will also abort with a clear error if there the allocation was not successful.
 
 @cindex C99
-When space cannot be allocated, this function will abort the program with a
-message containing the reason for the failure. @code{funcname} (name of the
-function calling this function) and @code{varname} (name of variable that
-needs this space) will be used in this error message if they are not
-@code{NULL}. In most modern compilers, you can use the generic
-@code{__func__} variable for @code{funcname}. In this way, you don't have
-to manually copy and paste the function name or worry about it changing
-later (@code{__func__} was standardized in C99).
+When space cannot be allocated, this function will abort the program with a message containing the reason for the failure.
+@code{funcname} (name of the function calling this function) and @code{varname} (name of variable that needs this space) will be used in this error message if they are not @code{NULL}.
+In most modern compilers, you can use the generic @code{__func__} variable for @code{funcname}.
+In this way, you don't have to manually copy and paste the function name or worry about it changing later (@code{__func__} was standardized in C99).
 @end deftypefun
 
-@deftypefun {void *} gal_pointer_allocate_mmap (size_t @code{size}, uint8_t @code{type}, int @code{clear}, char @code{**mmapname})
-Allocate the necessary space to keep @code{size} elements of type
-@code{type} in HDD/SSD (a file, not in RAM). for the type codes, see
-@ref{Library data types}. If @code{clear!=0}, then the allocated space will
-also be cleared. The allocation is done using C's @code{mmap} function. The
-name of the file containing the allocated space is an allocated string that
-will be put in @code{*mmapname}.
+@deftypefun {void *} gal_pointer_allocate_ram_or_mmap (uint8_t @code{type}, size_t @code{size}, int @code{clear}, size_t @code{minmapsize}, char @code{**mmapname}, int @code{quietmmap}, const char @code{*funcname}, const char @code{*varname})
+Allocate the given space either in RAM or in a memory-mapped file.
+This function is just a high-level wrapper to @code{gal_pointer_allocate} (to allocate in RAM) or @code{gal_pointer_mmap_allocate} (to use a memory-mapped file).
+For more on memory management in Gnuastro, please see @ref{Memory management}.
+The various arguments are more fully explained in the two functions above.
+@end deftypefun
 
-Note that the kernel doesn't allow an infinite number of memory mappings to
-files. So it is not recommended to use this function with every
-allocation. The best case scenario to use this function is for large arrays
-that are very large and can fill up the RAM. Keep the smaller arrays in
-RAM, which is faster and can have a (theoretically) unlimited number of
-allocations.
+@deftypefun {void *} gal_pointer_mmap_allocate (size_t @code{size}, uint8_t @code{type}, int @code{clear}, char @code{**mmapname})
+Allocate the necessary space to keep @code{size} elements of type @code{type} in HDD/SSD (a file, not in RAM).
+For the type codes, see @ref{Library data types}.
+If @code{clear!=0}, then the allocated space will also be cleared.
+The allocation is done using C's @code{mmap} function.
+The name of the file containing the allocated space is an allocated string that will be put in @code{*mmapname}.
 
-When you are done with the dataset and don't need it anymore, don't use
-@code{free} (the dataset isn't in RAM). Just delete the file (and the
-allocated space for the filename) with the commands below:
+Note that the kernel doesn't allow an infinite number of memory mappings to files.
+So it is not recommended to use this function with every allocation.
+The best case scenario to use this function is for large arrays that are very large and can fill up the RAM.
+Keep the smaller arrays in RAM, which is faster and can have a (theoretically) unlimited number of allocations.
+
+When you are done with the dataset and don't need it anymore, don't use @code{free} (the dataset isn't in RAM).
+Just delete the file (and the allocated space for the filename) with the commands below, or simply use @code{gal_pointer_mmap_free}.
 
 @example
 remove(mmapname);
 free(mmapname);
 @end example
 @end deftypefun
+
+@deftypefun void gal_pointer_mmap_free (char @code{**mmapname}, int @code{quietmmap})
+``Free'' (actually delete) the memory-mapped file that is named @code{*mmapname}, then free the string.
+If @code{quietmmap} is non-zero, then a warning will be printed for the user to know that the given file has been deleted.
+@end deftypefun
+
 
 @node Library blank values, Library data container, Pointers, Gnuastro library
 @subsection Library blank values (@file{blank.h})
@@ -27154,47 +27174,29 @@ main(void)
 @node Library demo - multi-threaded operation, Library demo - reading and writing table columns, Library demo - inspecting neighbors, Library demo programs
 @subsection Library demo - multi-threaded operation
 
-The following simple program shows how to use Gnuastro to simplify spinning
-off threads and distributing different jobs between the threads. The
-relevant thread-related functions are defined in @ref{Gnuastro's thread
-related functions}. For easy linking/compilation of this program, along
-with a first run, see Gnuastro's @ref{BuildProgram}. Before running, also
-change the @code{filename} and @code{hdu} variable values to specify an
-existing FITS file and/or extension/HDU.
+The following simple program shows how to use Gnuastro to simplify spinning off threads and distributing different jobs between the threads.
+The relevant thread-related functions are defined in @ref{Gnuastro's thread related functions}.
+For easy linking/compilation of this program, along with a first run, see Gnuastro's @ref{BuildProgram}.
+Before running, also change the @code{filename} and @code{hdu} variable values to specify an existing FITS file and/or extension/HDU.
 
-This is a very simple program to open a FITS image, distribute its pixels
-between different threads and print the value of each pixel and the thread
-it was assigned to. The actual operation is very simple (and would not
-usually be done with threads in a real-life program). It is intentionally
-chosen to put more focus on the important steps in spinning of threads and
-how the worker function (which is called by each thread) can identify the
-job-IDs it should work on.
+This is a very simple program to open a FITS image, distribute its pixels between different threads and print the value of each pixel and the thread it was assigned to.
+The actual operation is very simple (and would not usually be done with threads in a real-life program).
+It is intentionally chosen to put more focus on the important steps in spinning of threads and how the worker function (which is called by each thread) can identify the job-IDs it should work on.
 
-For example, instead of an array of pixels, you can define an array of
-tiles or any other context-specific structures as separate targets. The
-important thing is that each action should have its own unique ID (counting
-from zero, as is done in an array in C). You can then follow the process
-below and use each thread to work on all the targets that are assigned to
-it. Recall that spinning-off threads is its self an expensive process and
-we don't want to spin-off one thread for each target (see the description
-of @code{gal_threads_dist_in_threads} in @ref{Gnuastro's thread related
-functions}.
+For example, instead of an array of pixels, you can define an array of tiles or any other context-specific structures as separate targets.
+The important thing is that each action should have its own unique ID (counting from zero, as is done in an array in C).
+You can then follow the process below and use each thread to work on all the targets that are assigned to it.
+Recall that spinning-off threads is its self an expensive process and we don't want to spin-off one thread for each target (see the description of @code{gal_threads_dist_in_threads} in @ref{Gnuastro's thread related functions}.
 
-There are many (more complicated, real-world) examples of using
-@code{gal_threads_spin_off} in Gnuastro's actual source code, you can see
-them by searching for the @code{gal_threads_spin_off} function from the top
-source (after unpacking the tarball) directory (for example with this
-command):
+There are many (more complicated, real-world) examples of using @code{gal_threads_spin_off} in Gnuastro's actual source code, you can see them by searching for the @code{gal_threads_spin_off} function from the top source (after unpacking the tarball) directory (for example with this command):
 
 @example
 $ grep -r gal_threads_spin_off ./
 @end example
 
 @noindent
-The code of this demonstration program is shown below. This program was
-also built and run when you ran @code{make check} during the building of
-Gnuastro (@code{tests/lib/multithread.c}, so it is already tested for your
-system and you can safely use it as a guide.
+The code of this demonstration program is shown below.
+This program was also built and run when you ran @code{make check} during the building of Gnuastro (@code{tests/lib/multithread.c}, so it is already tested for your system and you can safely use it as a guide.
 
 @example
 #include <stdio.h>
@@ -27262,12 +27264,16 @@ main(void)
   char *filename="input.fits", *hdu="1";
   size_t numthreads=gal_threads_number();
 
+  /* We are using * `-1' for `minmapsize' to ensure that the image is
+     read into * memory and `1' for `quietmmap' (which can also be
+     zero), see the "Memory management" section in the book. */
+  int quietmmap=1;
+  size_t minmapsize=-1;
 
-  /* Read the image into memory as a float32 data type. We are using
-   * `-1' for `minmapsize' to ensure that the image is read into
-   * memory and `1' for `quietmmap' (which can also be zero). */
+
+  /* Read the image into memory as a float32 data type. */
   p.image=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32,
-                                    -1, 1);
+                                    minmapsize, quietmmap);
 
 
   /* Print some basic information before the actual contents: */
@@ -27287,7 +27293,8 @@ main(void)
 
 
   /* Spin-off the threads and do the processing on each thread. */
-  gal_threads_spin_off(worker_on_thread, &p, p.image->size, numthreads);
+  gal_threads_spin_off(worker_on_thread, &p, p.image->size, numthreads,
+                       minmapsize, quietmmap);
 
 
   /* Clean up and return. */

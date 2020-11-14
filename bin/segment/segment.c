@@ -934,7 +934,8 @@ segment_detections(struct segmentparams *p)
 
           /* (Re-)do everything until this step. */
           gal_threads_spin_off(segment_on_threads, &clprm,
-                               p->numdetections, p->cp.numthreads);
+                               p->numdetections, p->cp.numthreads,
+                               p->cp.minmapsize, p->cp.quietmmap);
 
           /* Set the extension name. */
           switch(clprm.step)
@@ -1061,7 +1062,8 @@ segment_detections(struct segmentparams *p)
     {
       clprm.step=0;
       gal_threads_spin_off(segment_on_threads, &clprm, p->numdetections,
-                           p->cp.numthreads);
+                           p->cp.numthreads, p->cp.minmapsize,
+                           p->cp.quietmmap);
     }
 
 

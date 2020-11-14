@@ -90,12 +90,15 @@ int
 main(void)
 {
   struct params p;
+  int quietmmap=1;
+  size_t minmapsize=-1;
   char *filename="psf.fits", *hdu="1";
   size_t numthreads=gal_threads_number();
 
 
   /* Read the image into memory as a float32 data type. */
-  p.image=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32, -1, 1);
+  p.image=gal_fits_img_read_to_type(filename, hdu, GAL_TYPE_FLOAT32,
+                                    minmapsize, quietmmap);
 
 
   /* Print some basic information before the actual contents: */
@@ -114,7 +117,8 @@ main(void)
 
 
   /* Spin-off the threads and do the processing on each thread. */
-  gal_threads_spin_off(worker_on_thread, &p, p.image->size, numthreads);
+  gal_threads_spin_off(worker_on_thread, &p, p.image->size, numthreads,
+                       minmapsize, quietmmap);
 
 
   /* Clean up and return. */

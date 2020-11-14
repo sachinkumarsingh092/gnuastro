@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/threads.h>
+#include <gnuastro/pointer.h>
 
 #include <nproc.h>         /* from Gnulib, in Gnuastro's source */
 
@@ -184,18 +185,20 @@ gal_threads_number()
    images for each thread is 1. The results will be saved in a 2D
    array of 'outthrdcols' columns and each row will finish with a
    (size_t) -1, which is larger than any possible index!. */
-void
+char *
 gal_threads_dist_in_threads(size_t numactions, size_t numthreads,
+                            size_t minmapsize, int quietmmap,
                             size_t **outthrds, size_t *outthrdcols)
 {
   size_t *sp, *fp;
+  char *mmapname=NULL;
   size_t i, *thrds, thrdcols;
   *outthrdcols = thrdcols = numactions/numthreads+2;
 
-  errno=0;
-  thrds=*outthrds=malloc(numthreads*thrdcols*sizeof *thrds);
-  if(thrds==NULL)
-    error(EXIT_FAILURE, errno, "%s: allocating thrds", __func__);
+  /* Allocate the space to keep the identifiers. */
+  thrds=*outthrds=gal_pointer_allocate_ram_or_mmap(GAL_TYPE_SIZE_T,
+                              numthreads*thrdcols, 0, minmapsize, &mmapname,
+                              0, __func__, "thrds");
 
   /* Initialize all the elements to NONINDEX. */
   fp=(sp=thrds)+numthreads*thrdcols;
@@ -217,6 +220,9 @@ gal_threads_dist_in_threads(size_t numactions, size_t numthreads,
     }
   exit(0);
   */
+
+  /* Return the name of the possibly memory-mapped file. */
+  return mmapname;
 }
 
 
@@ -328,10 +334,12 @@ gal_threads_attr_barrier_init(pthread_attr_t *attr, pthread_barrier_t *b,
 */
 void
 gal_threads_spin_off(void *(*worker)(void *), void *caller_params,
-                     size_t numactions, size_t numthreads)
+                     size_t numactions, size_t numthreads,
+                     size_t minmapsize, int quietmmap)
 {
   int err;
   pthread_t t;          /* All thread ids saved in this, not used. */
+  char *mmapname=NULL;
   pthread_attr_t attr;
   pthread_barrier_t b;
   struct gal_threads_params *prm;
@@ -356,7 +364,8 @@ gal_threads_spin_off(void *(*worker)(void *), void *caller_params,
     }
 
   /* Distribute the actions into the threads: */
-  gal_threads_dist_in_threads(numactions, numthreads, &indexs, &thrdcols);
+  mmapname=gal_threads_dist_in_threads(numactions, numthreads, minmapsize,
+                                       quietmmap, &indexs, &thrdcols);
 
   /* Do the job: when only one thread is necessary, there is no need to
      spin off one thread, just call the workerfunction directly (spinning
@@ -402,7 +411,13 @@ gal_threads_spin_off(void *(*worker)(void *), void *caller_params,
       pthread_barrier_destroy(&b);
     }
 
+  /* If 'mmapname' is NULL, then 'indexs' is in RAM and we can safely
+     'free' it. However, when its not NULL, then the space for 'indexs' has
+     been memory-mapped (its not in RAM) so special treatment is necessary
+     to delete it through the proper function. */
+  if(mmapname) gal_pointer_mmap_free(&mmapname, quietmmap);
+  else         free(indexs);
+
   /* Clean up. */
   free(prm);
-  free(indexs);
 }

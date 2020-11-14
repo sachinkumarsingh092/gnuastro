@@ -373,7 +373,8 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
 
           /* Do the respective step. */
           gal_threads_spin_off(detection_fill_holes_open, &fho_prm,
-                               p->ltl.tottiles, p->cp.numthreads);
+                               p->ltl.tottiles, p->cp.numthreads,
+                               p->cp.minmapsize, p->cp.quietmmap);
 
           /* Reset the blank values (if they were changed). */
           if( p->blankasforeground==0 && gal_blank_present(p->input,0) )
@@ -424,7 +425,8 @@ detection_pseudo_find(struct noisechiselparams *p, gal_data_t *workbin,
     }
   else
     gal_threads_spin_off(detection_fill_holes_open, &fho_prm,
-                         p->ltl.tottiles, p->cp.numthreads);
+                         p->ltl.tottiles, p->cp.numthreads,
+                         p->cp.minmapsize, p->cp.quietmmap);
 
   /* Clean up. */
   free(fho_prm.copyspace);

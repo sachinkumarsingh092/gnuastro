@@ -520,6 +520,7 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
 {
   int err;
   pthread_t t;          /* All thread ids saved in this, not used. */
+  char *mmapname=NULL;
   pthread_attr_t attr;
   pthread_barrier_t b;
   size_t i, nb, *indexs, thrdcols;
@@ -539,7 +540,10 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
   /* ==================== */
   /* 1D FFT on each row. */
   /* ==================== */
-  gal_threads_dist_in_threads(multiple*p->ps0, nt, &indexs, &thrdcols);
+  mmapname=gal_threads_dist_in_threads(multiple*p->ps0, nt,
+                                       p->input->minmapsize,
+                                       p->cp.quietmmap,
+                                       &indexs, &thrdcols);
   if(nt==1)
     {
       fp[0].stride=1;
@@ -577,15 +581,21 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
       pthread_attr_destroy(&attr);
       pthread_barrier_destroy(&b);
     }
-  free(indexs);
+
+  /* Clean up. */
+  if(mmapname) gal_pointer_mmap_free(&mmapname, p->cp.quietmmap);
+  else         free(indexs);
 
 
 
   /* ====================== */
   /* 1D FFT on each column. */
   /* ====================== */
-  /* No comments, exact duplicate, except the p->ps1s! */
-  gal_threads_dist_in_threads(multiple*p->ps1, nt, &indexs, &thrdcols);
+  /* No comments, exact duplicate of above, except the p->ps1s! */
+  mmapname=gal_threads_dist_in_threads(multiple*p->ps1, nt,
+                                       p->input->minmapsize,
+                                       p->cp.quietmmap,
+                                       &indexs, &thrdcols);
   if(nt==1)
     {
       fp[0].stride=p->ps1;
@@ -614,7 +624,10 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
       pthread_attr_destroy(&attr);
       pthread_barrier_destroy(&b);
     }
-  free(indexs);
+
+  /* Clean up, note that 'indexs' may be memory-mapped. */
+  if(mmapname) gal_pointer_mmap_free(&mmapname, p->cp.quietmmap);
+  else         free(indexs);
 }
 
 

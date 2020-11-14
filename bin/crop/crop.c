@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/fits.h>
 #include <gnuastro/threads.h>
+#include <gnuastro/pointer.h>
 
 #include <gnuastro-internal/timing.h>
 #include <gnuastro-internal/checkset.h>
@@ -404,6 +405,7 @@ crop(struct cropparams *p)
   int err=0;
   char *tmp;
   pthread_t t; /* We don't use the thread id, so all are saved here. */
+  char *mmapname;
   pthread_attr_t attr;
   pthread_barrier_t b;
   struct onecropparams *crp;
@@ -428,8 +430,9 @@ crop(struct cropparams *p)
 
   /* Distribute the indexs into the threads (for clarity, this is needed
      even if we only have one object). */
-  gal_threads_dist_in_threads(p->catname ? p->numout : 1, nt,
-                              &indexs, &thrdcols);
+  mmapname=gal_threads_dist_in_threads(p->catname ? p->numout : 1, nt,
+                                       p->cp.minmapsize, p->cp.quietmmap,
+                                       &indexs, &thrdcols);
 
 
   /* Run the job, if there is only one thread, don't go through the
@@ -487,7 +490,8 @@ crop(struct cropparams *p)
     }
 
   /* Print the final verbose info, save log, and clean up: */
+  if(mmapname) gal_pointer_mmap_free(&mmapname, p->cp.quietmmap);
+  else         free(indexs);
   crop_verbose_final(p);
-  free(indexs);
   free(crp);
 }

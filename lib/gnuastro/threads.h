@@ -102,8 +102,9 @@ pthread_barrier_destroy(pthread_barrier_t *b);
 size_t
 gal_threads_number();
 
-void
+char *
 gal_threads_dist_in_threads(size_t numactions, size_t numthreads,
+                            size_t minmapsize, int quietmmap,
                             size_t **outthrds, size_t *outthrdcols);
 
 void
@@ -126,7 +127,8 @@ struct gal_threads_params
 
 void
 gal_threads_spin_off(void *(*worker)(void *), void *caller_params,
-                     size_t numactions, size_t numthreads);
+                     size_t numactions, size_t numthreads,
+                     size_t minmapsize, int quietmmap);
 
 
 __END_C_DECLS    /* From C++ preparations */

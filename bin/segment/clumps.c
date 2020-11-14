@@ -626,7 +626,8 @@ clumps_true_find_sn_thresh(struct segmentparams *p)
 
           /* Do this step. */
           gal_threads_spin_off(clumps_find_make_sn_table, &clprm,
-                               p->ltl.tottiles, p->cp.numthreads);
+                               p->ltl.tottiles, p->cp.numthreads,
+                               p->cp.minmapsize, p->cp.quietmmap);
 
           /* Set the extension name. */
           switch(clprm.step)
@@ -658,7 +659,8 @@ clumps_true_find_sn_thresh(struct segmentparams *p)
     {
       clprm.step=0;
       gal_threads_spin_off(clumps_find_make_sn_table, &clprm,
-                           p->ltl.tottiles, p->cp.numthreads);
+                           p->ltl.tottiles, p->cp.numthreads,
+                           p->cp.minmapsize, p->cp.quietmmap);
     }
 
 

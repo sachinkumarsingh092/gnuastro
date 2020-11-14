@@ -1206,7 +1206,6 @@ struct multioperandparams
     TYPE b, **a;                                                        \
     gal_data_t *tmp;                                                    \
     size_t i=0, tind;                                                   \
-                                                                        \
     /* Allocate space to keep the pointers to the arrays of each. */    \
     /* Input data structure. The operators will increment these */      \
     /* pointers while parsing them. */                                  \
@@ -1446,7 +1445,8 @@ arithmetic_multioperand(int operator, int flags, gal_data_t *list,
   p.dnum=dnum;
   p.operator=operator;
   p.hasblank=hasblank;
-  gal_threads_spin_off(multioperand_on_thread, &p, out->size, numthreads);
+  gal_threads_spin_off(multioperand_on_thread, &p, out->size, numthreads,
+                       list->minmapsize, list->quietmmap);
 
 
   /* Clean up and return. Note that the operation might have been done in

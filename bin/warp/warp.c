@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/polygon.h>
+#include <gnuastro/pointer.h>
 
 #include "main.h"
 #include "warp.h"
@@ -520,6 +521,7 @@ warp(struct warpparams *p)
 {
   int err;
   pthread_t t;          /* All thread ids saved in this, not used. */
+  char *mmapname;
   pthread_attr_t attr;
   pthread_barrier_t b;
   struct iwpparams *iwp;
@@ -540,7 +542,9 @@ warp(struct warpparams *p)
 
 
   /* Distribute the output pixels into the threads: */
-  gal_threads_dist_in_threads(p->output->size, nt, &indexs, &thrdcols);
+  mmapname=gal_threads_dist_in_threads(p->output->size, nt,
+                                       p->cp.minmapsize, p->cp.quietmmap,
+                                       &indexs, &thrdcols);
 
 
   /* Start the warp. */
@@ -586,8 +590,9 @@ warp(struct warpparams *p)
     printf(" Output: %s\n", p->cp.output);
 
 
-  /* Free the allocated spaces: */
+  /* Free the allocated spaces, note that 'indexs' may be memory-mapped. */
   free(iwp);
-  free(indexs);
   gal_data_free(p->output);
+  if(mmapname) gal_pointer_mmap_free(&mmapname, p->cp.quietmmap);
+  else         free(indexs);
 }
