@@ -116,7 +116,7 @@ wcsdistortion_get_tpvparams(struct wcsprm *wcs, double cd[2][2],
           if (strncmp(cp, "TPV.", 4) != 0) continue;
           cp += 4;
 
-          sscanf(cp, "%ld", &index);
+          sscanf(cp, "%zu", &index);
           pv1[index]=disseq->dp[i].value.f;
 
           /* For a check
@@ -134,7 +134,7 @@ wcsdistortion_get_tpvparams(struct wcsprm *wcs, double cd[2][2],
           if (strncmp(cp, "TPV.", 4) != 0) continue;
           cp += 4;
 
-          sscanf(cp, "%ld", &index);
+          sscanf(cp, "%zu", &index);
 
           pv2[index]=disseq->dp[i].value.f;
 
@@ -214,7 +214,7 @@ wcsdistortion_get_sipparams(struct wcsprm *wcs, double cd[2][2],
           if (strncmp(cp, "SIP.FWD.", 8) != 0) continue;
           cp += 8;
 
-          sscanf(cp, "%ld_%ld", &m, &n);
+          sscanf(cp, "%zu_%zu", &m, &n);
           a_coeff[m][n]=dispre->dp[i].value.f;
 
           /*For a check.
@@ -232,7 +232,7 @@ wcsdistortion_get_sipparams(struct wcsprm *wcs, double cd[2][2],
           if (strncmp(cp, "SIP.FWD.", 8) != 0) continue;
           cp += 8;
 
-          sscanf(cp, "%ld_%ld", &m, &n);
+          sscanf(cp, "%zu_%zu", &m, &n);
 
           b_coeff[m][n]=dispre->dp[i].value.f;
 
@@ -1446,7 +1446,13 @@ wcsdistortion_add_sipkeywords(struct wcsprm *wcs, size_t *fitsize,
   size_t ap_order=0, bp_order=0;
   size_t m, n, num=0, numkey=200;
   double ap_coeff[5][5], bp_coeff[5][5];
-  char *fullheader, fmt[50], sipkey[8], keyaxis[9], pcaxis[10];
+
+  /* The literal strings are a little longer than necessary because GCC
+     will complain/warn that size_t can be very long. Although it will
+     never happen that we need to write 10-decimal numbers in these, but to
+     have a clean build, we'll just set the literal space to be large
+     enough to avoid the warnings. */
+  char *fullheader, fmt[50], sipkey[50], keyaxis[50], pcaxis[50];
 
   /* Initialise the 2d matrices. */
   *nkeys = 0;
@@ -1532,7 +1538,7 @@ wcsdistortion_add_sipkeywords(struct wcsprm *wcs, size_t *fitsize,
         if(val != 0)
           {
             /* Make keywords */
-            sprintf(sipkey, "A_%ld_%ld", m, n);
+            sprintf(sipkey, "A_%zu_%zu", m, n);
             sprintf(fullheader+(FLEN_CARD-1)*num++, fmt, sipkey, val, "");
             a_order=wcsdistortion_max(a_order, wcsdistortion_max(m,n));
           }
@@ -1542,16 +1548,16 @@ wcsdistortion_add_sipkeywords(struct wcsprm *wcs, size_t *fitsize,
         if(val != 0)
           {
             /* Make keywords */
-            sprintf(sipkey, "B_%ld_%ld", m, n);
+            sprintf(sipkey, "B_%zu_%zu", m, n);
             sprintf(fullheader+(FLEN_CARD-1)*num++, fmt, sipkey, val, "");
             b_order=wcsdistortion_max(b_order, wcsdistortion_max(m,n));
           }
 
       }
 
-  sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20ld%50s", "A_ORDER",
+  sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20zu%50s", "A_ORDER",
           a_order, "");
-  sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20ld%50s", "B_ORDER",
+  sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20zu%50s", "B_ORDER",
           b_order, "");
 
   /* If reverse coefficients are required. */
@@ -1570,7 +1576,7 @@ wcsdistortion_add_sipkeywords(struct wcsprm *wcs, size_t *fitsize,
             if(val != 0)
               {
                 /* Make keywords */
-                sprintf(sipkey, "AP_%ld_%ld", m, n);
+                sprintf(sipkey, "AP_%zu_%zu", m, n);
                 sprintf(fullheader+(FLEN_CARD-1)*num++, fmt, sipkey,
                         val, "");
               }
@@ -1580,15 +1586,15 @@ wcsdistortion_add_sipkeywords(struct wcsprm *wcs, size_t *fitsize,
             if(val != 0)
               {
                 /* Make keywords */
-                sprintf(sipkey, "BP_%ld_%ld", m, n);
+                sprintf(sipkey, "BP_%zu_%zu", m, n);
                 sprintf(fullheader+(FLEN_CARD-1)*num++, fmt, sipkey,
                         val, "");
               }
           }
 
-      sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20ld%50s", "AP_ORDER",
+      sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20zu%50s", "AP_ORDER",
               ap_order, "");
-      sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20ld%50s", "BP_ORDER",
+      sprintf(fullheader+(FLEN_CARD-1)*num++, "%-8s= %20zu%50s", "BP_ORDER",
               bp_order, "");
 
     }
@@ -1618,7 +1624,13 @@ wcsdistortion_add_pvkeywords(struct wcsprm *wcs, double *pv1,
   uint8_t i, j, k=0;
   int size = wcs->naxis;
   size_t m, n, num=0, numkey=100;
-  char *fullheader, fmt[50], pvkey[8], keyaxis[9], pcaxis[10];
+
+  /* The literal strings are a little longer than necessary because GCC
+     will complain/warn that size_t can be very long. Although it will
+     never happen that we need to write 10-decimal numbers in these, but to
+     have a clean build, we'll just set the literal space to be large
+     enough to avoid the warnings. */
+  char *fullheader, fmt[50], pvkey[50], keyaxis[50], pcaxis[50];
 
   /* Initialize values. */
   *nkeys = 0;
@@ -1704,7 +1716,7 @@ wcsdistortion_add_pvkeywords(struct wcsprm *wcs, double *pv1,
             if(val != 0)
               {
                 /* Make keywords */
-                sprintf(pvkey, "PV%ld_%ld", m, n);
+                sprintf(pvkey, "PV%zu_%zu", m, n);
                 sprintf(fullheader+(FLEN_CARD-1)*num++, fmt, pvkey,
                         val, "");
               }
@@ -1717,7 +1729,7 @@ wcsdistortion_add_pvkeywords(struct wcsprm *wcs, double *pv1,
             if(val != 0)
               {
                 /* Make keywords */
-                sprintf(pvkey, "PV%ld_%ld", m, n);
+                sprintf(pvkey, "PV%zu_%zu", m, n);
                 sprintf(fullheader+(FLEN_CARD-1)*num++, fmt, pvkey,
                         val, "");
               }

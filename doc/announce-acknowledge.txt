@@ -3,6 +3,7 @@ Alphabetically ordered list to acknowledge in the next release.
 Martin Kuemmel
 Sebastian Luna Valero
 Samane Raji
+Francois Ochsenbein
 Joanna Sakowska
 Zahra Sharbaf
 Sachin Kumar Singh

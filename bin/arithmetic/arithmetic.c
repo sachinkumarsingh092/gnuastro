@@ -930,7 +930,7 @@ arithmetic_collapse(struct arithmeticparams *p, char *token, int operator)
           "is %ld", dim);
   if(dim > input->ndim)
     error(EXIT_FAILURE, 0, "input dataset to '%s' has %zu dimension(s), "
-          "but you have asked to collapse along dimension %zu", token,
+          "but you have asked to collapse along dimension %ld", token,
           input->ndim, dim);
 
 
