@@ -10255,6 +10255,9 @@ Based on the image's WCS, the area it covers is estimated and values to the @opt
 Hence this option cannot be used with @code{--center}, @code{--width} or @code{--radius}.
 Also, since it internally generates the query, it can't be used with @code{--query}.
 
+Note that if the image has WCS distortions and the reference point for the WCS is not within the image, the WCS will not be well-defined.
+Therefore the resulting catalog may not overlap, or correspond to a larger/small area in the sky.
+
 @item -C FLT,FLT
 @itemx --center=FLT,FLT
 The center to use for the automatically generated query (not compatible with @option{--query}).
