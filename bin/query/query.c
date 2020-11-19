@@ -46,25 +46,71 @@ query_check_download(struct queryparams *p)
   int status=0;
   char *logname;
   fitsfile *fptr;
+  gal_data_t *table;
+  unsigned long datasum;
 
   /* Open the FITS file and if the status value is still zero, it means
      everything worked properly. */
-  fits_open_file(&fptr, p->cp.output, READONLY, &status);
-  if(status==0) fits_close_file(fptr, &status);
+  fits_open_file(&fptr, p->downloadname, READONLY, &status);
+  if(status==0)
+    {
+      /* Close the FITS file pointer. */
+      fits_close_file(fptr, &status);
+
+      /* Read the table and write it into a clean output (in case the
+         downloaded table is compressed in any special FITS way). */
+      table=gal_table_read(p->downloadname, "1", NULL, NULL,
+                           GAL_TABLE_SEARCH_NAME, 1, p->cp.minmapsize,
+                           p->cp.quietmmap, NULL);
+      gal_table_write(table, NULL, NULL, p->cp.tableformat,
+                      p->cp.output ? p->cp.output : p->processedname,
+                      "QUERY", 0);
+
+      /* Delete the raw downloaded file. */
+      remove(p->downloadname);
+      free(p->downloadname);
+
+      /* If no output name was specified, calculate the 'datasum' of the
+         table and put that after the file name. */
+      if(p->cp.output==NULL)
+        {
+          /* Calculate the extension's datasum. */
+          datasum=gal_fits_hdu_datasum(p->processedname, "1");
+
+          /* Allocate the output name. */
+          if( asprintf(&p->cp.output, "%s-%lu.fits", p->databasestr, datasum)<0 )
+            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+
+          /* Make sure the desired output name doesn't exist. */
+          gal_checkset_writable_remove(p->cp.output, p->cp.keep,
+                                       p->cp.dontdelete);
+
+          /* Rename the processed name to the desired output. */
+          rename(p->processedname, p->cp.output);
+          free(p->processedname);
+        }
+    }
   else
     {
       /* Add a '.log' suffix to the output filename. */
-      len=strlen(p->cp.output);
+      len=strlen(p->downloadname);
       logname=gal_pointer_allocate(GAL_TYPE_STRING, len+10, 1,
                                    __func__, "logname");
-      sprintf(logname, "%s.log", p->cp.output);
+      sprintf(logname, "%s.log", p->downloadname);
 
       /* Rename the output file to the logname file and let the user
          know. */
-      rename(p->cp.output, logname);
+      rename(p->downloadname, logname);
       error(EXIT_FAILURE, 0, "the requested dataset could not be retrieved! "
             "For more, please see '%s'", logname);
     }
+
+  /* Add the query keywords to the first extension (if the output was a
+     FITS file). */
+  if( gal_fits_name_is_fits (p->cp.output) )
+    gal_fits_key_write_config(&p->cp.okeys, "Query settings",
+                              "QUERY-CONFIG", p->cp.output, "0");
+
 }
 
 

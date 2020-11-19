@@ -54,6 +54,11 @@ struct queryparams
   char                  *query;  /* Raw query string.                  */
   gal_list_str_t      *columns;  /* Columns to extract from database.  */
 
+  /* Internal variables. */
+  char            *databasestr;  /* Name of input database.            */
+  char           *downloadname;  /* Temporary output name.             */
+  char          *processedname;  /* Temporary output name.             */
+
   /* Output: */
   time_t               rawtime;  /* Starting time of the program.      */
 };

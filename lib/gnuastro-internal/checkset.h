@@ -98,6 +98,12 @@ gal_checkset_dir_part(char *filename);
 char *
 gal_checkset_not_dir_part(char *filename);
 
+char *
+gal_checkset_suffix_separate(char *name, char **suffix);
+
+char *
+gal_checkset_make_unique_suffix(char *reference, char *suffix);
+
 void
 gal_checkset_check_file(char *filename);
 

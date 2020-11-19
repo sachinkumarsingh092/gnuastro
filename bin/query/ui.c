@@ -124,7 +124,6 @@ ui_initialize_options(struct queryparams *p,
         case GAL_OPTIONS_KEY_IGNORECASE:
         case GAL_OPTIONS_KEY_NUMTHREADS:
         case GAL_OPTIONS_KEY_MINMAPSIZE:
-        case GAL_OPTIONS_KEY_TABLEFORMAT:
         case GAL_OPTIONS_KEY_STDINTIMEOUT:
         case GAL_OPTIONS_KEY_KEEPINPUTDIR:
           cp->coptions[i].flags=OPTION_HIDDEN;
@@ -183,52 +182,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
     }
 
   return 0;
-}
-
-
-
-
-
-/* Parse the database. */
-void *
-ui_parse_database(struct argp_option *option, char *arg,
-                  char *filename, size_t lineno, void *junk)
-{
-  char *str;
-  int database;
-
-  /* We want to print the stored values. */
-  if(lineno==-1)
-    {
-      /* Based on the value, write the database. */
-      database=*(int *)(option->value);
-      switch(database)
-        {
-        case QUERY_DATABASE_GAIA:
-          gal_checkset_allocate_copy("gaia", &str);
-          break;
-        default:
-          error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to "
-                "address the problem. The code %d isn't recognized for "
-                "'p->database'", __func__, PACKAGE_BUGREPORT, database);
-        }
-      return str;
-    }
-  else
-    {
-      /* Convert the given string into a code. */
-      if( !strcmp(arg, "gaia") ) database=QUERY_DATABASE_GAIA;
-      else
-        error(EXIT_FAILURE, 0, "'%s' is not a recognized database.\n\n"
-              "For the full list of recognized databases, please see the "
-              "documentation (with the command 'info astquery')", arg);
-
-      /* Write the database code into the option. */
-      *(int *)(option->value)=database;
-
-      /* Our job is done, return NULL. */
-      return NULL;
-    }
 }
 
 
@@ -300,11 +253,19 @@ ui_read_check_only_options(struct queryparams *p)
   gal_data_t *tmp;
 
   /* See if database has been specified. */
-  if(p->database==0)
+  if(p->databasestr==NULL)
     error(EXIT_FAILURE, 0, "no input dataset.\n\n"
           "Please use the '--database' ('-d') option to specify your "
           "desired database, see manual ('info gnuastro astquery' "
           "command) for the current databases");
+
+  /* Convert the given string into a code. */
+  if( !strcmp(p->databasestr, "gaia") ) p->database=QUERY_DATABASE_GAIA;
+  else
+    error(EXIT_FAILURE, 0, "'%s' is not a recognized database.\n\n"
+          "For the full list of recognized databases, please see the "
+          "documentation (with the command 'info astquery')", p->databasestr);
+
 
   /* Make sure that '--query' and '--center' are not called together. */
   if(p->query && (p->center || p->overlapwith) )
@@ -367,16 +328,20 @@ ui_read_check_only_options(struct queryparams *p)
                 "be negative");
     }
 
-  /* If an output name isn't given, set one. */
-  if(p->cp.output)
-    {
-      /* Make sure its a FITS table. */
-      if( gal_fits_name_is_fits(p->cp.output)==0 )
-        error(EXIT_FAILURE, 0, "'%s' is not a FITS file. Currently only "
-              "FITS file outputs are supported", p->cp.output);
-    }
-  else
-    p->cp.output=gal_checkset_automatic_output(&p->cp, "./query.fits", ".fits");
+  /* Make sure that the output name is in a writable location and that it
+     doesn't exist. If it exists, and the user hasn't called
+     '--dontdelete', then delete the existing file. */
+  gal_checkset_writable_remove(p->cp.output, p->cp.keep,
+                               p->cp.dontdelete);
+
+  /* Set the name for the downloaded and processed files. These are due to
+     an internal low-level processing that will be done on the raw
+     downloaded file. */
+  p->processedname=gal_checkset_make_unique_suffix(p->cp.output
+                                                   ? p->cp.output
+                                                   : "query.fits",
+                                                   ".fits");
+  p->downloadname=gal_checkset_make_unique_suffix(p->processedname, NULL);
 }
 
 
@@ -482,6 +447,10 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct queryparams *p)
      after the option checks so un-sane values are not printed in the
      output state. */
   gal_options_print_state(&p->cp);
+
+
+  /* Prepare all the options as FITS keywords to write in output later. */
+  gal_options_as_fits_keywords(&p->cp);
 
 
   /* Check that the options and arguments fit well with each other. Note

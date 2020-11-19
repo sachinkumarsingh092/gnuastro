@@ -649,6 +649,49 @@ gal_fits_hdu_num(char *filename)
 
 
 
+/* Calculate the datasum of the given HDU in the given file. */
+unsigned long
+gal_fits_hdu_datasum(char *filename, char *hdu)
+{
+  int status=0;
+  fitsfile *fptr;
+  unsigned long datasum;
+
+  /* Read the desired extension (necessary for reading the rest). */
+  fptr=gal_fits_hdu_open(filename, hdu, READONLY);
+
+  /* Calculate the datasum. */
+  datasum=gal_fits_hdu_datasum_ptr(fptr);
+
+  /* Close the file and return. */
+  fits_close_file(fptr, &status);
+  gal_fits_io_error(status, "closing file");
+  return datasum;
+}
+
+
+
+
+
+/* Calculate the FITS standard datasum for the opened FITS pointer. */
+unsigned long
+gal_fits_hdu_datasum_ptr(fitsfile *fptr)
+{
+  int status=0;
+  unsigned long datasum, hdusum;
+
+  /* Calculate the checksum and datasum of the opened HDU. */
+  fits_get_chksum(fptr, &datasum, &hdusum, &status);
+  gal_fits_io_error(status, "estimating datasum");
+
+  /* Return the datasum. */
+  return datasum;
+}
+
+
+
+
+
 /* Given the filename and HDU, this function will return the CFITSIO code
    for the type of data it contains (table, or image). The CFITSIO codes
    are:

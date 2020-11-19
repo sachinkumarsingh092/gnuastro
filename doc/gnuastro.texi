@@ -8511,7 +8511,7 @@ Calculate and print the given HDU's "datasum" to stdout.
 The given HDU is specified with the @option{--hdu} (or @option{-h}) option.
 This number is calculated by parsing all the bytes of the given HDU's data records (excluding keywords).
 This option ignores any possibly existing @code{DATASUM} keyword in the HDU.
-For more on the datasum feature of the FITS standard, see @ref{Keyword manipulation} (under the @code{checksum} component of @option{--write}).
+For more on @code{DATASUM} in the FITS standard, see @ref{Keyword manipulation} (under the @code{checksum} component of @option{--write}).
 
 You can use this option to confirm that the data in two different HDUs (possibly with different keywords) is identical.
 Its advantage over @option{--write=datasum} (which writes the @code{DATASUM} keyword into the given HDU) is that it doesn't require write permissions.
@@ -10184,12 +10184,18 @@ $ astquery --database=gaia --query="XXXX YYYY" --output=my-gaia.fits
 
 Query doesn't take any input argument, because the main goal is to retreive data from external sources.
 The main input to Query is the @option{--database} option which specifies which database should be contacted for submitting the query.
-The name of the downloaded output file can optionally be set with @option{--output}.
-If @option{--output} is not set, an automatically generated name will be used.
+The name of the downloaded output file can optionally be set with @option{--output} (see below for when @option{--output} is not specified).
+Like all Gnuastro programs, if the output is a FITS file, the zero-th/first HDU of the output will contain all the command-line options given to Query.
 
 There are two methods to query the database: 1) with @option{--query} you can directly give a raw query statement that is recognized by the database, 2) with the @option{--center} and @option{--radius}, the low-level query will constructed automatically for the particular database.
 The former is very low level and will require some knowledge of the database's query language, but of course, it is much more powerful.
 The latter is much more limited in terms of capabilities (the only constraint is the location of the objects compared to the given center), but doesn't require any knowledge of the database's query language.
+
+@cindex @code{DATASUM}: FITS keyword
+If @option{--output} is not set, the output name will be in the format of @file{STRING-NUMBER.fits}, where @file{STRING} is the name of the database, and @file{NUMBER} is the @code{DATASUM} of the downloaded table, which will be unique for a given table's data (For more on @code{DATASUM} in the FITS standard, see @ref{Keyword manipulation}, under the @code{checksum} component of @option{--write}).
+With this feature, a second run of @command{astquery} that isn't called with @option{--output}, and downloads the same final table data from the same database will have the same output name.
+However, a query (that is again not called with @option{--output}) which results in a different downloaded table (even differing by a single number) will have a different output name to avoid overriding a previously downloaded dataset.
+Generally, when calling Query more than once, it is recommended to set an output name for each call based on your project's context.
 
 @cartouche
 @noindent
@@ -22803,6 +22809,18 @@ extension will be returned.
 
 @deftypefun size_t gal_fits_hdu_num (char @code{*filename})
 Return the number of HDUs/extensions in @file{filename}.
+@end deftypefun
+
+@deftypefun {unsigned long} gal_fits_hdu_datasum (char @code{*filename}, char @code{*hdu})
+@cindex @code{DATASUM}: FITS keyword
+Return the @code{DATASUM} of the given HDU in the given FITS file.
+For more on @code{DATASUM} in the FITS standard, see @ref{Keyword manipulation} (under the @code{checksum} component of @option{--write}).
+@end deftypefun
+
+@deftypefun {unsigned long} gal_fits_hdu_datasum_ptr (char @code{*fptr})
+@cindex @code{DATASUM}: FITS keyword
+Return the @code{DATASUM} of the already opened HDU in @code{fptr}.
+For more on @code{DATASUM} in the FITS standard, see @ref{Keyword manipulation} (under the @code{checksum} component of @option{--write}).
 @end deftypefun
 
 @deftypefun int gal_fits_hdu_format (char @code{*filename}, char @code{*hdu})

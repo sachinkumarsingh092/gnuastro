@@ -154,6 +154,12 @@ gal_fits_open_to_write(char *filename);
 size_t
 gal_fits_hdu_num(char *filename);
 
+unsigned long
+gal_fits_hdu_datasum(char *filename, char *hdu);
+
+unsigned long
+gal_fits_hdu_datasum_ptr(fitsfile *fptr);
+
 int
 gal_fits_hdu_format(char *filename, char *hdu);
 

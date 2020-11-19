@@ -39,12 +39,11 @@ struct argp_option program_options[] =
       0,
       "Name of database (e.g., 'esa').",
       GAL_OPTIONS_GROUP_INPUT,
-      &p->database,
+      &p->databasestr,
       GAL_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET,
-      ui_parse_database
     },
     {
       "query",

@@ -292,6 +292,88 @@ gal_checkset_not_dir_part(char *filename)
 
 
 
+/* Make an allocated copy of the input string, then remove the suffix from
+   that string. */
+char *
+gal_checkset_suffix_separate(char *name, char **outsuffix)
+{
+  char *c, *out=NULL, *suffix=NULL;
+
+  /* Make a copy of the input. */
+  gal_checkset_allocate_copy(name, &out);
+
+  /* Parse the string from the end and stop when we hit a '.'. */
+  c=out+strlen(out)-1;
+  while(c!=out)
+    {
+      /* As soon as we hit the first '.' take a copy of the string after it
+         and put it in 'suffix'. */
+      if(*c=='.')
+        {
+          gal_checkset_allocate_copy(c, &suffix);
+          *c='\0';
+          break;
+        }
+      --c;
+    }
+
+  /* Put the 'suffix' in the output pointer and return the string with no
+     suffix. */
+  *outsuffix=suffix;
+  return out;
+}
+
+
+
+
+
+/* Given a reference filename, add a format of AAAAA-XXXXXX.CCCC where
+   'AAAAA' is the base name of the 'reference' argument, 'XXXXX' is a
+   random/unique sequence of characters, and 'YYYYY' is the string given to
+   'suffix'. If 'suffix' is NULL, the suffix of 'reference' will be used.*/
+char *
+gal_checkset_make_unique_suffix(char *reference, char *suffix)
+{
+  int tmpnamefile;
+  char *nosuff, *tmpname;
+  char *out=NULL, *insuffix;
+
+  /* Remove the suffix. */
+  nosuff=gal_checkset_suffix_separate(reference, &insuffix);
+
+  /* First generate the input to 'mkstemp' (the 'XXXXXX's will be replaced
+     with a unique set of strings with same number of characters). */
+  if( asprintf(&tmpname, "%s-XXXXXX", nosuff)<0 )
+    error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+
+  /* Generate the unique name with 'mkstemp', but it will actually open the
+     file (to make sure that the name is not used), so we need to close it
+     afterwards. */
+  tmpnamefile=mkstemp(tmpname);
+  errno=0;
+  if( close(tmpnamefile) != 0 )
+    error(EXIT_FAILURE, errno, "couldn't close temporary file");
+
+  /* Delete the temporarily created file. */
+  remove(tmpname);
+
+  /* Add the suffix. */
+  out = ( suffix
+          ? gal_checkset_malloc_cat(tmpname, suffix)
+          : ( insuffix
+              ? gal_checkset_malloc_cat(tmpname, insuffix)
+              : tmpname ) );
+
+  /* Clean up and return the output. */
+  if(tmpname!=out) free(tmpname);
+  if(insuffix) free(insuffix);
+  free(nosuff);
+  return out;
+}
+
+
+
+
 /* Check if a file exists and report if it doesn't. */
 void
 gal_checkset_check_file(char *filename)

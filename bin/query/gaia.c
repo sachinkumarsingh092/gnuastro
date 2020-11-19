@@ -174,7 +174,7 @@ gaia_query(struct queryparams *p)
   /* Build the calling command. */
   if( asprintf(&command, "curl -o%s --form LANG=ADQL --form FORMAT=fits "
                "--form REQUEST=doQuery --form QUERY=\"%s\" "
-               "https://gea.esac.esa.int/tap-server/tap/sync", p->cp.output,
+               "https://gea.esac.esa.int/tap-server/tap/sync", p->downloadname,
                querystr)<0 )
     error(EXIT_FAILURE, 0, "%s: asprintf allocation ('command')", __func__);
 
@@ -189,4 +189,7 @@ gaia_query(struct queryparams *p)
           p->cp.quiet==0 ? "printed above " : "",
           p->cp.quiet==0 ? "" : " (the command can be printed "
           "if you don't use the option '--quiet', or '-q')");
+
+  /* Clean up. */
+  free(command);
 }
