@@ -3614,6 +3614,12 @@ So the first line of your script should be `@code{#!/bin/bash}'@footnote{
 When the script is to be run by the same shell that is calling it (like this script), the shebang is optional.
 But it is still recommended, because it ensures that even if the user isn't using GNU Bash, the script will be run in GNU Bash: given the differences between various shells, writing truely portable shell scripts, that can be run by many shell programs/implementations, isn't easy (sometimes not possible!).}.
 
+It may happen (rarely) that GNU Bash is in another location on your system.
+In other cases, you may prefer to use a non-standard version of Bash installed in another location (that has higher priority in your @code{PATH}, see @ref{Installation directory}).
+In such cases, you can use the `@code{#!/usr/bin/env bash}' shebang instead.
+Through the @code{env} program, this shebang will look in your @code{PATH} and use the first @command{bash} it finds to run your script.
+But for simplicity in the rest of the tutorial, we'll continue with the `@code{#!/bin/bash}' shebang.
+
 Using your favorite text editor, make a new empty file, let's call it @file{my-first-script.sh}.
 Write the GNU Bash shebang (above) as its first line
 After the shebang, copy the series of commands we ran above.
