@@ -148,6 +148,7 @@ See the end of the file for license conditions.
   bug #59136: Makeprofiles with --replace is not thread-safe.
   bug #59155: Match cannot find the proper row when coordinates have NaN.
   bug #59371: MakeCatalog crash with clumps on non-contiguous object labels.
+  bug #59400: CosmicCalculator fails --printparams when redshift isn't given.
 
 
 

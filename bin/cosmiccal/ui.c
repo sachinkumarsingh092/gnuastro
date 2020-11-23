@@ -398,11 +398,14 @@ ui_read_check_only_options(struct cosmiccalparams *p)
     error(EXIT_FAILURE, 0, "'--listlines' and '--listlinesatz' can't be "
           "called together");
 
-  /* Make sure that atleast one of '--redshift', '--obsline', or velocity
-     are given for the running redshift. Except when '--listlines' is used
-     (that doesn't need any redshift). */
-  if(isnan(p->redshift) && isnan(p->velocity) && p->obsline==NULL
-     && p->listlines==0)
+  /* Make sure that atleast one of '--redshift', '--obsline', or
+     '--velocity' are given (different ways to set/estimate the
+     redshift). However, when '--listlines' and/or '--printparams' are
+     called (i.e., when they have a non-zero value) we don't need a
+     redshift all and the program can run without any of the three options
+     above. */
+  if(isnan(p->redshift) && p->obsline==NULL && isnan(p->velocity)
+     && p->listlines==0 && p->cp.printparams==0)
     error(EXIT_FAILURE, 0, "no redshift/velocity specified! Please use "
           "'--redshift', '--velocity' (in km/s), or '--obsline' to specify "
           "a redshift, run with '--help' for more");
