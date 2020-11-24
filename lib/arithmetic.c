@@ -1138,8 +1138,7 @@ struct multioperandparams
           o[j]=b;                                                       \
       }                                                                 \
                                                                         \
-    /* Clean up. */                                                     \
-    free(pixs);                                                         \
+    /* Clean up (note that 'pixs' is inside of 'cont'). */              \
     gal_data_free(cont);                                                \
   }
 
@@ -1195,8 +1194,7 @@ struct multioperandparams
           o[j]=b;                                                       \
       }                                                                 \
                                                                         \
-    /* Clean up. */                                                     \
-    free(pixs);                                                         \
+    /* Clean up (note that 'pixs' is inside of 'cont'). */              \
     gal_data_free(cont);                                                \
   }
 
