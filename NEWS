@@ -49,6 +49,11 @@ See the end of the file for license conditions.
      - 'makenew': new operator to create an empty (zero-valued) new dataset
        with given dimension and size (given as operands).
 
+  Crop:
+   --primaryimghdu: Write the final cropped image into the primary (or
+     0-th) extension of the output FITS file, so the output only has
+     one extension.
+
   Fits:
    - New '--skycoverage' option will report the area of the input image in
      RA/Dec, both in units of center/width, and box minimum/maximum

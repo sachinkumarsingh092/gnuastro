@@ -85,6 +85,7 @@ struct cropparams
   size_t               hendwcs;  /* Header keyword No. to end read WCS.   */
   int                     mode;  /* Image or WCS mode.                    */
   uint8_t       zeroisnotblank;  /* ==1: In float or double, keep 0.0.    */
+  uint8_t        primaryimghdu;  /* ==1: write in primary/0-th HDU.       */
   uint8_t              noblank;  /* ==1: no blank (out of image) pixels.  */
   char                 *suffix;  /* Ending of output file name.           */
   gal_data_t    *incheckcenter;  /* Value given to '--checkcenter'.       */

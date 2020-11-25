@@ -10845,6 +10845,10 @@ One case where this might be helpful is when besides the science images, you wan
 So in one run, you can set the input images to the science images and @option{--suffix=_s.fits}.
 In the next run you can set the weight images as input and @option{--suffix=_w.fits}.
 
+@item --primaryimghdu
+Write the output into the primary (0-th) HDU/extension of the output.
+By default, like all Gnuastro's default outputs, no data is written in the primary extension because the FITS standard suggests keeping that extension free of data and only for meta data.
+
 @item -b
 @itemx --noblank
 Pixels outside of the input image that are in the crop box will not be used.
@@ -10883,7 +10887,7 @@ on how many crops were requested, see @ref{Crop modes}:
 @itemize
 @item
 When a catalog is given, the value of the @option{--output} (see @ref{Common options}) will be read as the directory to store the output cropped images.
-Hence if it doesn't already exist, Crop will abort with an error of a ``No such file or directory'' error.
+Hence if it doesn't already exist, Crop will abort with an ``No such file or directory'' error.
 
 The crop file names will consist of two parts: a variable part (the row number of each target starting from 1) along with a fixed string which you can set with the @option{--suffix} option.
 Optionally, you may also use the @option{--namecol} option to define a column in the input catalog to use as the file name instead of numbers.
@@ -10892,6 +10896,10 @@ Optionally, you may also use the @option{--namecol} option to define a column in
 When only one crop is desired, the value to @option{--output} will be read as a file name.
 If no output is specified or if it is a directory, the output file name will follow the automatic output names of Gnuastro, see @ref{Automatic output}: The string given to @option{--suffix} will be replaced with the @file{.fits} suffix of the input.
 @end itemize
+
+By default, as suggested by the FITS standard and implemented in all Gnuastro programs, the first/primary extension of the output files will only contain meta data.
+The cropped images/cubes will be written into the 2nd HDU of their respective FITS file (which is actually counted as @code{1} because HDU counting starts from @code{0}).
+However, if you want the cropped data to be written into the primary (0-th) HDU, run Crop with the @option{--primaryimghdu} option.
 
 The header of each output cropped image will contain the names of the input image(s) it was cut from.
 If a name is longer than the 70 character space that the FITS standard allows for header keyword values, the name will be cut into several keywords from the nearest slash (@key{/}).

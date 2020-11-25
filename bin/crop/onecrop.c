@@ -554,8 +554,11 @@ onecrop_make_array(struct onecropparams *crp, long *fpixel_i,
      generally everything from 1). */
   if(fits_create_file(&ofp, outname, &status))
     gal_fits_io_error(status, "creating file");
-  fits_create_img(ofp, SHORT_IMG, 0, naxes, &status);
-  fits_close_file(ofp, &status);
+  if(crp->p->primaryimghdu==0)
+    {
+      fits_create_img(ofp, SHORT_IMG, 0, naxes, &status);
+      fits_close_file(ofp, &status);
+    }
 
 
   /* Create the output crop image. */

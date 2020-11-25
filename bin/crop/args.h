@@ -90,6 +90,19 @@ struct argp_option program_options[] =
 
     /* Output. */
     {
+      "primaryimghdu",
+      UI_KEY_PRIMARYIMGHDU,
+      0,
+      0,
+      "Write crop in primary/zero-th HDU of output.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->primaryimghdu,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
       "noblank",
       UI_KEY_NOBLANK,
       0,
