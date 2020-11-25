@@ -8647,24 +8647,6 @@ Also be careful for the world coordinate system keywords, if you modify or chang
 The keyword related options to the Fits program are fully described below.
 @table @option
 
-@item -a STR
-@itemx --asis=STR
-Write @option{STR} exactly into the FITS file header with no modifications.
-If it does not conform to the FITS standards, then it might cause trouble, so please be very careful with this option.
-If you want to define the keyword from scratch, it is best to use the @option{--write} option (see below) and let CFITSIO worry about the standards.
-The best way to use this option is when you want to add a keyword from one FITS file to another unchanged and untouched.
-Below is an example of such a case that can be very useful sometimes (on the command-line or in scripts):
-
-@example
-$ key=$(astfits firstimage.fits | grep KEYWORD)
-$ astfits --asis="$key" secondimage.fits
-@end example
-
-@cindex GNU Bash
-In particular note the double quotation signs (@key{"}) around the reference to the @command{key} shell variable (@command{$key}).
-FITS keywords usually have lots of space characters, if this variable is not quoted, the shell will only give the first word in the full keyword to this option, which will definitely be a non-standard FITS keyword and will make it hard to work on the file afterwords.
-See the ``Quoting'' section of the GNU Bash manual for more information if your keyword has the special characters @key{$}, @key{`}, or @key{\}.
-
 @item -d STR
 @itemx --delete=STR
 Delete one instance of the @option{STR} keyword from the FITS header.
@@ -8757,6 +8739,58 @@ $ astfits test.fits -h1 --write=/,"My keywords"   \
           --write=a1,7.89,"First keyword"         \
           --write=a2,0.12,"Second keyword"
 @end example
+
+@item -a STR
+@itemx --asis=STR
+Write the given @code{STR} @emph{exactly} as it is, into the given FITS file header with no modifications.
+If the contents of @code{STR} does not conform to the FITS standard for keywords, then it may (most probably: it will) corrupt your file and you may not be able to open it any more.
+So please be @strong{very careful} with this option.
+If you want to define the keyword from scratch, it is best to use the @option{--write} option (see below) and let CFITSIO worry about complying with the FITS standard.
+
+The best way to use this option is when you want to add a keyword from one FITS file to another, unchanged and untouched.
+Below is an example of such a case that can be very useful sometimes (on the command-line or in scripts):
+
+@example
+$ key=$(astfits firstimage.fits | grep KEYWORD)
+$ astfits --asis="$key" secondimage.fits
+@end example
+
+@cindex GNU Bash
+In particular note the double quotation signs (@key{"}) around the shell variable (@command{$key}).
+This is because FITS keyword strings usually have lots of space characters, if this variable is not quoted, the shell will only give the first word in the full keyword to this option, which will definitely be a non-standard FITS keyword and will make it hard to work on the file afterwords.
+See the ``Quoting'' section of the GNU Bash manual for more information if your keyword has the special characters @key{$}, @key{`}, or @key{\}.
+
+You can also use @option{--asis} to copy multiple keywords from one file to another.
+But the process will be a little more complicated. So we'll show the process as the simple shell script below.
+You can customize it in the first block of variable definitions:
+1) set the names of the keywords you want to copy: it can be as many keys as you want, just put a `@code{\|}' between them.
+2) The input FITS file (where keywords should be read from) and its HDU.
+3) The output FITS file (where keywords should be written to) and its HDU.
+4) Set a ``title'' for the newly added keywords in the output (so they are visually separate from the existing keywords in the output).
+
+@example
+#!/bin/bash
+
+# Customizations (input, output and key names).
+# NOTE: put a '\|' between each keyword name.
+keys="KEYa\|KEYb\|KEYc\|KEYd"
+ifits=original.fits;     ihdu=1
+ofits=to_write.fits;     ohdu=1
+title="Keys from $ifits (hdu $ihdu)"
+
+# Read keywords from input and write in output.
+oIFS=$IFS
+IFS=''
+c="astfits $ofits -h$ohdu --write=/,\"$title\""
+astfits $ifits -h$ihdu \
+        | grep $keys \
+        | (while read line; \
+             do c="$c --asis=\"$line\""; \
+           done; eval $c); \
+IFS=$oIFS
+@end example
+
+Since its not too long, you can also simply put the variable values of the first block into the second, and write it directly on the command line (if its just for one time).
 
 @item checksum
 @cindex CFITSIO

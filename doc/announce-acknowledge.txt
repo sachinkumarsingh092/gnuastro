@@ -1,11 +1,12 @@
 Alphabetically ordered list to acknowledge in the next release.
 
 Martin Kuemmel
+Javier Licandro
 Sebastian Luna Valero
 Samane Raji
-Francois Ochsenbein
 Alberto Madrigal
 Carlos Morales Socorro
+Francois Ochsenbein
 Joanna Sakowska
 Zahra Sharbaf
 Sachin Kumar Singh
