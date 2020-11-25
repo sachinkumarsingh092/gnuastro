@@ -7654,7 +7654,7 @@ If you are writing your own program, you can use the @code{gal_data_copy_to_new_
 @cindex Non-volatile memory
 @cindex Memory, non-volatile
 In this section we'll review how Gnuastro manages your input data in your system's memory.
-Knowing this can help you optimize your usage (in speed and memory consumption) when the data volume ls large and approaches, or exceeds, your available RAM (usually in various calls to multiple programs simultaneously).
+Knowing this can help you optimize your usage (in speed and memory consumption) when the data volume is large and approaches, or exceeds, your available RAM (usually in various calls to multiple programs simultaneously).
 But before diving into the details, let's have a short basic introduction to memory in general and in particular the types of memory most relevant to this discussion.
 
 Input datasets (that are later fed into programs for analysis) are commonly first stored in @emph{non-volatile memory}.
