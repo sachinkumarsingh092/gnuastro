@@ -1151,32 +1151,39 @@ detection(struct noisechiselparams *p)
   if(!p->cp.quiet) gettimeofday(&t1, NULL);
   if(p->detgrowquant!=1.0f)
     {
+      /* Grow the detections and report the number of expanded (if
+         necessary). */
       num_expanded=detection_quantile_expand(p, workbin);
       if(num_expanded!=GAL_BLANK_SIZE_T)
-        num_true_initial=num_expanded;
-    }
-
-
-  /* Update the user on the progress, if necessary. */
-  if(!p->cp.quiet && p->detgrowquant!=1.0f && num_expanded!=GAL_BLANK_SIZE_T )
-    {
-      /* If the user hasn't asked for a labeled image, then don't confuse
-         them with the number of detections, just let them know that growth
-         is complete. */
-      if(p->label)
         {
-          if( asprintf(&msg, "%zu detections after growth to %.3f "
-                       "quantile.", num_true_initial, p->detgrowquant)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
+          /* Set the number of expanded objects. */
+          num_true_initial=num_expanded;
+
+          /* If not in quiet-mode, let the user know how its going. */
+          if(!p->cp.quiet)
+            {
+              /* If the user hasn't asked for a labeled image, then don't
+                 confuse them with the number of detections, just let them
+                 know that growth is complete. */
+              if(p->label)
+                {
+                  if( asprintf(&msg, "%zu detections after growth to %.3f "
+                               "quantile.", num_true_initial,
+                               p->detgrowquant)<0 )
+                    error(EXIT_FAILURE, 0, "%s: asprintf allocation",
+                          __func__);
+                }
+              else
+                {
+                  if( asprintf(&msg, "Growth to %.3f quantile complete.",
+                               p->detgrowquant)<0 )
+                    error(EXIT_FAILURE, 0, "%s: asprintf allocation",
+                          __func__);
+                }
+              gal_timing_report(&t1, msg, 2);
+              free(msg);
+            }
         }
-      else
-        {
-          if( asprintf(&msg, "Growth to %.3f quantile complete.",
-                       p->detgrowquant)<0 )
-            error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
-        }
-      gal_timing_report(&t1, msg, 2);
-      free(msg);
     }
 
 
