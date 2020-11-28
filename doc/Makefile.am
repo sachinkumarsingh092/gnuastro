@@ -26,14 +26,20 @@
 ## Set the shell
 SHELL=/bin/sh
 
-BUILT_SOURCES = $(srcdir)/authors.texi
+
+# Built files that should be treated as sources for the main job.
+# img_representative: This is just one of the images that is used in the
+# book as a representative for all of them because they are all built with
+# one script.
+imgrepresentative = $(top_srcdir)/doc/gnuastro-figures/flatplane.txt
+BUILT_SOURCES = $(srcdir)/authors.texi $(imgrepresentative)
 
 
-## fdl.texi (The GNU Free documentation license in Texinfo format) is
-## bootstrapped from Gnulib. Therefore it is not in this
-## directory. However, it is needed by gnuastro.texi to build the
-## documentation. It is the job of AM_MAKEINFOFLAGS, to pass options to the
-## documentation build programs. BOOTSTRPDOC is defined in 'configure.ac'.
+## gpl-3.0.texi (which is just the GPL in Texinfo format) is bootstrapped
+## from Gnulib. Therefore it is not in this directory. However, it is
+## needed by gnuastro.texi to build the documentation. It is the job of
+## AM_MAKEINFOFLAGS, to pass options to the documentation build
+## programs. BOOTSTRPDOC is defined in 'configure.ac'.
 bootstrpdoc = $(top_srcdir)/bootstrapped/doc
 AM_MAKEINFOFLAGS = -I $(bootstrpdoc) -I $(srcdir)
 
@@ -47,8 +53,8 @@ TEXI2DVI = texi2dvi -I $(bootstrpdoc) -I $(srcdir)
 
 ## Commands to make the texinfo tools.
 info_TEXINFOS = gnuastro.texi
-gnuastro_TEXINFOS = $(bootstrpdoc)/fdl.texi $(bootstrpdoc)/gpl-3.0.texi \
-                    $(srcdir)/authors.texi formath.texi
+gnuastro_TEXINFOS = fdl.texi formath.texi $(srcdir)/authors.texi \
+                    $(bootstrpdoc)/gpl-3.0.texi
 
 
 ## Files not predefined by Automake, and not in dependencies that must
@@ -56,14 +62,20 @@ gnuastro_TEXINFOS = $(bootstrpdoc)/fdl.texi $(bootstrpdoc)/gpl-3.0.texi \
 EXTRA_DIST = genauthors README
 
 
-## We want to build the authors.texi file only when we are building in the
-## version controlled source. For the non version controlled souce,
-## deleting this file is like somehow deleting formath.texi, it will not be
-## rebuilt and result in an error.
+## We want to build 'imgrepresentative' and 'authors.texi' only when we are
+## building in the version controlled source (in other words: when
+## 'configure' has been re-built). For the non version controlled souce,
+## deleting these files is like somehow deleting formath.texi (a core
+## file), it will not be rebuilt and result in an error.
 $(srcdir)/authors.texi: $(top_srcdir)/configure
 	$(top_srcdir)/doc/genauthors $(top_srcdir)
 
-## Images:
+## Build the images of the book (with one chosen as representative to act
+## as a target in Make).
+$(imgrepresentative): $(top_srcdir)/configure
+	cd $(top_srcdir)/doc/plotsrc; make
+
+## Images and their directories.
 infognuastrodir=$(infodir)/gnuastro-figures/
 dist_infognuastro_DATA = $(top_srcdir)/doc/gnuastro-figures/*
 

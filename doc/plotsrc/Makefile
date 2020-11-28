@@ -30,21 +30,21 @@ all: all.pdf
 # Make all the plots and convert all the figures
 all.pdf: all.tex ./tex/*.tex ./conversions.sh
 
-# 	Make the tikz directory if it doesn't exist:
+#       Make the tikz directory if it doesn't exist:
 	mkdir -p tikz
 
-# 	Run the LaTeX script:
+#       Run the LaTeX script:
 	latex -shell-escape all.tex
 	dvipdf all.dvi
 	rm -f *.bcf *.xml *.aux *.auxlock *.log *.out *.dvi
 
-# 	Put all the EPS files in their appropriate place:
+#       Put all the EPS files in their appropriate place:
 	cp tikz/all-figure0.eps ../gnuastro-figures/iandtime.eps
 	cp tikz/all-figure1.eps ../gnuastro-figures/samplingfreq.eps
 	cp tikz/all-figure2.eps ../gnuastro-figures/flatplane.eps
 	cp tikz/all-figure3.eps ../gnuastro-figures/sphereandplane.eps
 
-#	Make all the conversions:
+#       Do all the conversions:
 	./conversions.sh ../gnuastro-figures/
 
 
