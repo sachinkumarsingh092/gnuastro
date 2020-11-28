@@ -24,13 +24,16 @@
 
 ## Necessary flags.
 ##
-##   $(top_srcdir)/bootstrapped/lib: only necessary for the libraries since
-##       the Gnulib functions will be statically linked to the Gnuastro
-##       library so linking to Gnuastro is enough to access them also.
+##   $(top_builddir)/bootstrapped/lib: Gnulib headers that are customized
+##   for the running system.
+##
+##   $(top_srcdir)/bootstrapped/lib: Gnulib headers that are generic (don't
+##   need any customization).
 ##
 ##   SYSCONFIG_DIR: only necessary in 'options.c' to get the system
 ##       installation directory.
-AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib            \
+AM_CPPFLAGS = -I\$(top_builddir)/bootstrapped/lib \
+              -I\$(top_srcdir)/bootstrapped/lib \
               -DSYSCONFIG_DIR=\"$(sysconfdir)\"
 
 

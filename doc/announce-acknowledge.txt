@@ -1,5 +1,7 @@
 Alphabetically ordered list to acknowledge in the next release.
 
+Paul Eggert
+Bruno Haible
 Martin Kuemmel
 Javier Licandro
 Sebastian Luna Valero

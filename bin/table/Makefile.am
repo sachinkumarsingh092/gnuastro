@@ -20,8 +20,10 @@
 
 
 ## Necessary pre-processer and linker flags.
-AM_LDFLAGS = -L\$(top_builddir)/lib
-AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib -I\$(top_srcdir)/lib
+AM_LDFLAGS  = -L\$(top_builddir)/lib
+AM_CPPFLAGS = -I\$(top_builddir)/bootstrapped/lib \
+              -I\$(top_srcdir)/bootstrapped/lib \
+              -I\$(top_srcdir)/lib
 
 if COND_NORPATH
   MAYBE_NORPATH = $(CONFIG_LDADD)
