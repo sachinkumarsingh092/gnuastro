@@ -72,7 +72,7 @@ $(srcdir)/authors.texi: $(top_srcdir)/configure
 
 ## Build the images of the book (with one chosen as representative to act
 ## as a target in Make).
-$(imgrepresentative): $(top_srcdir)/configure
+$(imgrepresentative):
 	cd $(top_srcdir)/doc/plotsrc; make
 
 ## Images and their directories.
