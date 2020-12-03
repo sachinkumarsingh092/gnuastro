@@ -493,6 +493,7 @@ Sky value
 
 NoiseChisel
 
+* NoiseChisel changes after publication::  Updates since published papers.
 * Invoking astnoisechisel::     Options and arguments for NoiseChisel.
 
 Invoking NoiseChisel
@@ -13928,27 +13929,37 @@ However, prior to interpolating over the failed tiles, another point should be c
 In some cases, the gradient over these wings can be on scales that is larger than the tiles.
 The mean-median distance test will pass on such tiles and will cause a strong peak in the interpolated tile grid, see @ref{Detecting large extended targets}.
 
-The tiles that exist over the wings of large galaxies or bright stars are outliers in the distribution of tiles that passed the mean-median quantile distance test.
+These tiles actually have signal in them and are outliers in the distribution of tiles that passed the mean-median quantile distance test.
 Therefore, the final step of ``quantifying signal in a tile'' is to look at this distribution and remove the outliers.
 @mymath{\sigma}-clipping is a good solution for removing a few outliers, but the problem with outliers of this kind is that there may be many such tiles (depending on the large/bright stars/galaxies in the image).
-Therefore a novel outlier rejection algorithm will be used.
+
+For each tile, we find the nearest @mymath{N_{ngb}} tiles that had a usable value (@mymath{N_{ngb}} is the value given to  @option{--interpnumngb}).
+We then sort them and find the difference between the largest and second-to-smallest elements (The minimum isn't used because the scatter can be large).
+Let's call this the tile's @emph{slope}.
+In effect it is a very crude estimate of the slope of the @mymath{N_{ngb}} tiles in the vicinity of that tile.
+All the tiles that are on a region of flat noise will have similar slope values, but if a few tiles fall on the wings of a bright star or galaxy, their slope will be significantly larger than the flat region tiles.
+We just have to find the smallest tile slope value that is an outlier compared to the rest and reject all tiles with a slope larger than that.
 
 @cindex Outliers
 @cindex Identifying outliers
-To identify the first outlier, we'll use the distribution of distances between sorted elements.
-If there are @mymath{N} successful tiles, for every tile, the distance between the adjacent @mymath{N/2} previous elements is found, giving a distribution containing @mymath{N/2-1} points.
-The @mymath{\sigma}-clipped median and standard deviation of this distribution is then found (@mymath{\sigma}-clipping is configured with @option{--outliersclip}).
-Finally, if the distance between the element and its previous element is more than @option{--outliersigma} multiples of the @mymath{\sigma}-clipped standard deviation added with the @mymath{\sigma}-clipped median, that element is considered an outlier and all tiles larger than that value are ignored.
+To identify the smallest outlier, we'll use the distribution of distances between sorted elements.
+Let's assume there are @mymath{N} successful tiles in the image.
+We sort them in increasing order based on their @emph{slope} (defined above).
+So the array of tile slopes can be written as @mymath{@{s[0], s[1], ..., s[N]@}}, where @mymath{s[0]<s[1]} and so on.
+We then start from element @mymath{M} and calculate the distances between all two adjacent values before it: @mymath{@{s[1]-s[0], s[2]-s[1], s[M-1]-s[M-2]@}}.
+
+The @mymath{\sigma}-clipped median and standard deviation of this distribution is then found (@mymath{\sigma}-clipping is configured with @option{--outliersclip} which takes two values, see @ref{Sigma clipping}).
+If the distance between the element and its previous element is more than @option{--outliersigma} multiples of the @mymath{\sigma}-clipped standard deviation added with the @mymath{\sigma}-clipped median, that element is considered an outlier and all tiles larger than that value are ignored.
 
 Formally, if we assume there are @mymath{N} elements.
 They are first sorted.
-Searching for the outlier starts on element @mymath{N/2} (integer division).
-Let's take @mymath{v_i} to be the @mymath{i}-th element of the sorted input (with no blank values) and @mymath{m} and @mymath{\sigma} as the @mymath{\sigma}-clipped median and standard deviation from the distances of the previous @mymath{N/2-1} elements (not including @mymath{v_i}).
+Searching for the outlier starts on element @mymath{N/3} (integer division).
+Let's take @mymath{v_i} to be the @mymath{i}-th element of the sorted input (with no blank values) and @mymath{m} and @mymath{\sigma} as the @mymath{\sigma}-clipped median and standard deviation from the distances of the previous @mymath{N/3-1} elements (not including @mymath{v_i}).
 If the value given to @option{--outliersigma} is displayed with @mymath{s}, the @mymath{i}-th element is considered as an outlier when the condition below is true.
 
 @dispmath{{(v_i-v_{i-1})-m\over \sigma}>s}
 
-Since @mymath{i} begins from the median, the outlier has to be larger than the median.
+Since @mymath{i} begins from the @mymath{N/3}-th element in the sorted array (a quantile of @mymath{1/3=0.33}), the outlier has to be larger than the @mymath{0.33} quantile value of the dataset.
 You can use the check images (for example @option{--checksky} in the Statistics program or @option{--checkqthresh}, @option{--checkdetsky} and @option{--checksky} options in NoiseChisel for any of its steps that uses this outlier rejection) to inspect the steps and see which tiles have been discarded as outliers prior to interpolation.
 
 
@@ -14523,9 +14534,9 @@ The file will have two extensions for each step (one for the Sky and one for the
 @cindex Segmentation
 Once instrumental signatures are removed from the raw data (image) in the initial reduction process (see @ref{Data manipulation}).
 You are naturally eager to start answering the scientific questions that motivated the data collection in the first place.
-However, the raw dataset/image is just an array of values/pixels, that is all! These raw values cannot directly be used to answer your scientific questions: for example ``how many galaxies are there in the image?''.
+However, the raw dataset/image is just an array of values/pixels, that is all! These raw values cannot directly be used to answer your scientific questions: for example ``how many galaxies are there in the image?'', ``What is their brightness?'' and etc.
 
-The first high-level step in the analysis of your dataset will thus be to classify, or label, the dataset elements (pixels) into two classes:
+The first high-level step your analysis will therefore be to classify, or label, the dataset elements (pixels) into two classes:
 1) Noise, where random effects are the major contributor to the value, and
 2) Signal, where non-random factors (for example light from a distant galaxy) are present.
 This classification of the elements in a dataset is formally known as @emph{detection}.
@@ -14548,7 +14559,7 @@ $ astarithmetic in.fits 100 gt 2 connected-components
 Since almost no astronomical target has such sharp edges, we need a more advanced detection methodology.
 NoiseChisel uses a new noise-based paradigm for detection of very extended and diffuse targets that are drowned deeply in the ocean of noise.
 It was initially introduced in @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} and improvements after the first four were published in @url{https://arxiv.org/abs/1909.11230, Akhlaghi [2019]}.
-Please take the time to go through these papers to most effectively use NoiseChisel.
+Please take the time to go through these papers to most effectively understand the need of NoiseChisel and how best to use it.
 
 The name of NoiseChisel is derived from the first thing it does after thresholding the dataset: to erode it.
 In mathematical morphology, erosion on pixels can be pictured as carving-off boundary pixels.
@@ -14577,8 +14588,8 @@ In this case, the output won't be a binary image any more, the signal will have 
 You can then directly feed NoiseChisel's output into MakeCatalog for measurements over the detections and the production of a catalog (see @ref{MakeCatalog}).
 
 Thanks to the published papers mentioned above, there is no need to provide a more complete introduction to NoiseChisel in this book.
-@c However, published papers cannot be updated any more, but the software has evolved/changed.
-@c The changes since publication are documented in @ref{NoiseChisel changes after publication}.
+However, published papers cannot be updated any more, but the software has evolved/changed.
+The changes since publication are documented in @ref{NoiseChisel changes after publication}.
 In @ref{Invoking astnoisechisel}, the details of running NoiseChisel and its options are discussed.
 
 As discussed above, detection is one of the most important steps for your scientific result.
@@ -14597,24 +14608,41 @@ Below, in @ref{Invoking astnoisechisel}, we will review NoiseChisel's input, det
 If you have used NoiseChisel within your research, please run it with @option{--cite} to list the papers you should cite and how to acknowledge its funding sources.
 
 @menu
+* NoiseChisel changes after publication::  Updates since published papers.
 * Invoking astnoisechisel::     Options and arguments for NoiseChisel.
 @end menu
 
-@c @node NoiseChisel changes after publication, Invoking astnoisechisel, NoiseChisel, NoiseChisel
-@c @subsection NoiseChisel changes after publication
+@node NoiseChisel changes after publication, Invoking astnoisechisel, NoiseChisel, NoiseChisel
+@subsection NoiseChisel changes after publication
 
-@c NoiseChisel was initially introduced in @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} and updates after the first four years were published in @url{https://arxiv.org/abs/1909.11230, Akhlaghi [2019]}.
-@c It is thus strongly recommended to read this paper for a good understanding of what it does and how each parameter influences the output.
-@c To help in understanding how it works, those papers have many figures showing every step on multiple mock and real examples.
+NoiseChisel was initially introduced in @url{https://arxiv.org/abs/1505.01664, Akhlaghi and Ichikawa [2015]} and updates after the first four years were published in @url{https://arxiv.org/abs/1909.11230, Akhlaghi [2019]}.
+It is thus strongly recommended to read this paper for a good understanding of what it does and how each parameter influences the output.
+To help in understanding how it works, those papers have many figures showing every step on multiple mock and real examples.
 
-@c However, the papers cannot be updated anymore, but NoiseChisel has evolved (and will continue to do so): better algorithms or steps have been found, thus options will be added or removed.
-@c This book is thus the final and definitive guide to NoiseChisel.
-@c The aim of this section is to make the transition from the paper to the installed version on your system, as smooth as possible with the list below.
-@c For a more detailed list of changes in previous Gnuastro releases/versions, please see the @file{NEWS} file@footnote{The @file{NEWS} file is present in the released Gnuastro tarball, see @ref{Release tarball}.}.
+However, the papers cannot be updated anymore, but NoiseChisel has evolved (and will continue to do so): better algorithms or steps have been found, thus options will be added or removed.
+This book is thus the final and definitive guide to NoiseChisel.
+The aim of this section is to make the transition from the papers above to the installed version on your system, as smooth as possible with the list below.
+For a more detailed list of changes in previous Gnuastro releases/versions, please see the @file{NEWS} file@footnote{The @file{NEWS} file is present in the released Gnuastro tarball, see @ref{Release tarball}.}.
+
+@itemize
+@item
+Outlier rejection is now also applied on the tiles with good Sky value (see below for more on the new outlier rejection algorithm).
+
+@item
+Improved outlier rejection for identifying tiles without any signal (improving thresholds and Sky estimation):
+Until version 0.14, outliers were defined globally by finding the first outlier-by-distance using the raw tile values in all the tiles within the image.
+But given its global nature, this method would fail to find the outliers in the vicinity of bright sources easily.
+Therefore the faint wings of galaxies/stars could be mistakenly identified as Sky and in the sky extension the footprint of larger objects became visible.
+
+It was possible to play with the parameters to correct this, but a better way was found and implemented in version 0.14: instead of finding outliers in the raw tile values, we now measure the @emph{slope} of the tile's nearby tiles and find outlier in the slopes.
+For more on the outlier-by-distance algorithm and the definition of @emph{slope}, see @ref{Quantifying signal in a tile}.
+In our tests, this gave a much improved estimate of the internal thresholds and final Sky values.
+@end itemize
 
 
 
-@node Invoking astnoisechisel,  , NoiseChisel, NoiseChisel
+
+@node Invoking astnoisechisel,  , NoiseChisel changes after publication, NoiseChisel
 @subsection Invoking NoiseChisel
 
 NoiseChisel will detect signal in noise producing a multi-extension dataset containing a binary detection map which is the same size as the input.
@@ -25763,13 +25791,16 @@ function will return @code{GAL_BLANK_SIZE_T}.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_statistics_quantile_function (gal_data_t @code{*input}, gal_data_t @code{*value}, int @code{inplace})
-Return a single-element (@code{double} or @code{float64}) dataset
-containing the quantile function of the non-blank values in @code{input} at
-@code{value}. In other words, this function will return the quantile of
-@code{value} in @code{input}. If the value is smaller than the input's
-smallest element, the returned value will be zero. If the value is larger
-than the input's largest element, then the returned value is 1. See
-@code{gal_statistics_median} for a description of @code{inplace}.
+
+Return a single-element dataset containing the quantile function of the non-blank values in @code{input} at @code{value} (a single-element dataset).
+The numerical data type is of the returned dataset is @code{float64} (or @code{double}).
+In other words, this function will return the quantile of @code{value} in @code{input}.
+@code{value} has to have the same type as @code{input}.
+See @code{gal_statistics_median} for a description of @code{inplace}.
+
+When all elements are blank, the returned value will be NaN.
+If the value is smaller than the input's smallest element, the returned value will be negative infinity.
+If the value is larger than the input's largest element, then the returned value will be positive infinity
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_statistics_unique (gal_data_t @code{*input}, int @code{inplace})

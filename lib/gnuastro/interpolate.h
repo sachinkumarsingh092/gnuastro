@@ -88,10 +88,10 @@ enum gal_interpolate_1D_types
 
 gal_data_t *
 gal_interpolate_neighbors(gal_data_t *input,
-                             struct gal_tile_two_layer_params *tl,
-                             uint8_t metric, size_t numneighbors,
-                             size_t numthreads, int onlyblank,
-                             int aslinkedlist, int function);
+                          struct gal_tile_two_layer_params *tl,
+                          uint8_t metric, size_t numneighbors,
+                          size_t numthreads, int onlyblank,
+                          int aslinkedlist, int function);
 
 gsl_spline *
 gal_interpolate_1d_make_gsl_spline(gal_data_t *X, gal_data_t *Y, int type_1d);

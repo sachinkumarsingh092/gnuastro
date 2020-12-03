@@ -33,6 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/threads.h>
 #include <gnuastro/pointer.h>
 #include <gnuastro/statistics.h>
+#include <gnuastro/permutation.h>
 #include <gnuastro/interpolate.h>
 
 #include <gnuastro-internal/timing.h>
@@ -460,9 +461,9 @@ qthresh_on_tile(void *in_prm)
               tarray=tile->array; tblock=tile->block;
               tile->array=gal_tile_block_relative_to_other(tile, p->conv);
               tile->block=p->conv;
-              usage->ndim=ndim;             /* Since usage was modified in */
-              usage->size=p->maxtcontig;    /* place, it needs to be       */
-              gal_data_copy_to_allocated(tile, usage);  /* re-initialized. */
+              usage->ndim=ndim;           /* Since usage was modified in */
+              usage->size=p->maxtcontig;  /* place, it needs to be       */
+              gal_data_copy_to_allocated(tile, usage);/* re-initialized. */
               tile->array=tarray; tile->block=tblock;
             }
 
@@ -609,10 +610,12 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
   /* Allocate space for the quantile threshold values. */
   qprm.erode_th=gal_data_alloc(NULL, p->input->type, p->input->ndim,
                                tl->numtiles, NULL, 0, cp->minmapsize,
-                               p->cp.quietmmap, NULL, p->input->unit, NULL);
+                               p->cp.quietmmap, NULL, p->input->unit,
+                               NULL);
   qprm.noerode_th=gal_data_alloc(NULL, p->input->type, p->input->ndim,
                                  tl->numtiles, NULL, 0, cp->minmapsize,
-                                 p->cp.quietmmap, NULL, p->input->unit, NULL);
+                                 p->cp.quietmmap, NULL, p->input->unit,
+                                 NULL);
   qprm.expand_th = ( p->detgrowquant!=1.0f
                      ? gal_data_alloc(NULL, p->input->type, p->input->ndim,
                                       tl->numtiles, NULL, 0, cp->minmapsize,
@@ -666,11 +669,12 @@ threshold_quantile_find_apply(struct noisechiselparams *p)
     }
 
 
-  /* Remove outliers if requested. */
-  if(p->outliersigma!=0.0)
-    gal_tileinternal_no_outlier(qprm.erode_th, qprm.noerode_th,
-                                qprm.expand_th, &p->cp.tl, p->outliersclip,
-                                p->outliersigma, p->qthreshname);
+  /* Remove the outliers. */
+  gal_tileinternal_no_outlier_local(qprm.erode_th, qprm.noerode_th,
+                                    qprm.expand_th, &cp->tl,
+                                    cp->interpmetric, cp->interpnumngb,
+                                    cp->numthreads, p->outliersclip,
+                                    p->outliersigma, p->qthreshname);
 
 
   /* Check if the number of acceptable tiles is more than the minimum

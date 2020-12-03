@@ -131,11 +131,24 @@ See the end of the file for license conditions.
      (which can dramatically slow down the program). Please see the newly
      added "Memory management" section of the book for a complete
      explanation of Gnuastro's new memory management strategy.
+   --interpnumngb: the default value has been increased to 15 (from 9). The
+     reason for this is that we now have a more robust outlier removal
+     algorithm (see description under "NoiseChisel & Statistics").
 
   Fits:
    - The '--pixelscale' option also prints the pixel area (for 2D inputs,
      or 2D slices of 3D inputs) and the voxel volume (for 3D inputs). Until
      now, it would only print the pixel scale along each dimension.
+
+  NoiseChisel & Statistics:
+   - New algorithm used to reject outlying tiles. In NoiseChisel this is
+     done when estimating the quantile threshold, the pseudo-detection
+     threshold and the final Sky value. In Statistics, its just the Sky
+     value. Unlike the previous method that used the global distribution of
+     tile values to identify outliers, the new algorithm uses a relative
+     measure. See the book for more. Since outliers are now rejected more
+     robustly, the default value of 'outliersigma' has been decreased to
+     '5' (previously it was 10).
 
   Table:
    - Column arithmetic operators 'degree-to-ra' and 'degree-to-dec' will

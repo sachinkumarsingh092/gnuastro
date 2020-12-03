@@ -48,9 +48,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /***************         (Dimension agnostic)         ****************/
 /*********************************************************************/
 /* These are bit-flags, so we're using hexadecimal notation. */
-#define INTERPOLATE_FLAGS_NO       0
-#define INTERPOLATE_FLAGS_CHECKED  0x1
-#define INTERPOLATE_FLAGS_BLANK    0x2
+#define INTERPOLATE_FLAGS_NO          0
+#define INTERPOLATE_FLAGS_NGB_CHECKED 0x1
+#define INTERPOLATE_FLAGS_BLANK       0x2
 
 
 
@@ -96,8 +96,8 @@ interpolate_neighbors_on_thread(void *in_prm)
   float dist, pdist;
   uint8_t *b, *bf, *bb;
   gal_list_void_t *tvll;
+  size_t ngb_counter, pind;
   gal_list_dosizet_t *lQ, *sQ;
-  size_t ngb_counter, pind, *dinc;
   size_t i, index, fullind, chstart=0, ndim=input->ndim;
   gal_data_t *tin, *tout, *tnear, *value=NULL, *nearest=NULL;
   size_t size = (correct_index ? tl->tottilesinch : input->size);
@@ -106,13 +106,21 @@ interpolate_neighbors_on_thread(void *in_prm)
                                       "icoord");
   size_t *ncoord=gal_pointer_allocate(GAL_TYPE_SIZE_T, ndim, 0, __func__,
                                       "ncoord");
-  uint8_t *fullflag=&prm->thread_flags[tprm->id*input->size], *flag=fullflag;
+  uint8_t *flag, *fullflag=&prm->thread_flags[tprm->id*input->size];
+
+  /* Based on the above. */
+  size_t *dinc=gal_dimension_increment(ndim, dsize);
 
 
-  /* Initializations. */
+  /* Initialize the flags array. We need two flags during this processing:
+     1) to see if there are blanks. 2) to see if a neighbor has been
+     checked. These are both binary (0 or 1). So to avoid wasting space, we
+     will use bits to store them. We start with only setting the blank flag
+     once for the whole thread. Then for each interpolated pixel, we reset
+     the neighbor-check flag. */
+  flag=fullflag;
   bb=prm->blanks->array;
   bf=(b=fullflag)+input->size;
-  dinc=gal_dimension_increment(ndim, dsize);
   do *b = *bb++ ? INTERPOLATE_FLAGS_BLANK : 0; while(++b<bf);
 
 
@@ -123,8 +131,9 @@ interpolate_neighbors_on_thread(void *in_prm)
     {
       nv=gal_pointer_increment(tvll->v, tprm->id*prm->numneighbors,
                                input->type);
-      gal_list_data_add_alloc(&nearest, nv, tin->type, 1, &prm->numneighbors,
-                              NULL, 0, -1, 1, NULL, NULL, NULL);
+      gal_list_data_add_alloc(&nearest, nv, tin->type, 1,
+                              &prm->numneighbors, NULL, 0, -1, 1,
+                              NULL, NULL, NULL);
       tin=tin->next;
     }
   gal_list_data_reverse(&nearest);
@@ -183,7 +192,7 @@ interpolate_neighbors_on_thread(void *in_prm)
       /* Reset all checked bits in the flags array to 0. */
       ngb_counter=0;
       bf=(b=flag)+size;
-      do *b &= ~(INTERPOLATE_FLAGS_CHECKED); while(++b<bf);
+      do *b &= ~(INTERPOLATE_FLAGS_NGB_CHECKED); while(++b<bf);
 
 
       /* Get the coordinates of this pixel (to be interpolated). */
@@ -233,7 +242,7 @@ interpolate_neighbors_on_thread(void *in_prm)
                 IMPORTANT: we must not check for blank values here,
                 otherwise we won't be able to parse over extended blank
                 regions. */
-             if( !(flag[nind] & INTERPOLATE_FLAGS_CHECKED) )
+             if( !(flag[nind] & INTERPOLATE_FLAGS_NGB_CHECKED) )
                {
                  /* Get the coordinates of this neighbor. */
                  gal_dimension_index_to_coord(nind, ndim, dsize, ncoord);
@@ -245,7 +254,7 @@ interpolate_neighbors_on_thread(void *in_prm)
                  gal_list_dosizet_add(&lQ, &sQ, nind, dist);
 
                  /* Flag this neighbor as checked. */
-                 flag[nind] |= INTERPOLATE_FLAGS_CHECKED;
+                 flag[nind] |= INTERPOLATE_FLAGS_NGB_CHECKED;
                }
            } );
 
@@ -256,7 +265,8 @@ interpolate_neighbors_on_thread(void *in_prm)
           if(sQ==NULL)
             error(EXIT_FAILURE, 0, "%s: only %zu neighbors found while "
                   "you had asked to use %zu neighbors for close neighbor "
-                  "interpolation", __func__, ngb_counter, prm->numneighbors);
+                  "interpolation", __func__, ngb_counter,
+                  prm->numneighbors);
         }
 
       /* Calculate the desired statistic, and write it in the output. */
@@ -348,10 +358,10 @@ interpolate_copy_input(gal_data_t *input, int aslinkedlist)
    'input[i]' corresponds to 'tiles[i]' in the tessellation. */
 gal_data_t *
 gal_interpolate_neighbors(gal_data_t *input,
-                             struct gal_tile_two_layer_params *tl,
-                             uint8_t metric, size_t numneighbors,
-                             size_t numthreads, int onlyblank,
-                             int aslinkedlist, int function)
+                          struct gal_tile_two_layer_params *tl,
+                          uint8_t metric, size_t numneighbors,
+                          size_t numthreads, int onlyblank,
+                          int aslinkedlist, int function)
 {
   gal_data_t *tin, *tout;
   struct interpolate_ngb_params prm;
@@ -361,9 +371,9 @@ gal_interpolate_neighbors(gal_data_t *input,
 
   /* If there are no blank values in the array, AND we should only fill
      blank values, then simply copy the input and abort. */
-  if( (input->flag | GAL_DATA_FLAG_BLANK_CH)     /* Zero bit is meaningful.*/
-      && !(input->flag | GAL_DATA_FLAG_HASBLANK) /* There are no blanks.   */
-      && onlyblank )                             /* Only interpolate blank.*/
+  if( (input->flag | GAL_DATA_FLAG_BLANK_CH)   /* Zero bit is meaningful.*/
+      && !(input->flag | GAL_DATA_FLAG_HASBLANK)/* There are no blanks.  */
+      && onlyblank )                           /* Only interpolate blank.*/
     return interpolate_copy_input(input, aslinkedlist);
 
 

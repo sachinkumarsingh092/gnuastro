@@ -197,12 +197,12 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
 
 
   /* Allocate space for the mean and standard deviation. */
-  p->sky=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->input->ndim, tl->numtiles,
-                        NULL, 0, cp->minmapsize, p->cp.quietmmap, NULL,
-                        p->input->unit, NULL);
-  p->std=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->input->ndim, tl->numtiles,
-                        NULL, 0, cp->minmapsize, p->cp.quietmmap, NULL,
-                        p->input->unit, NULL);
+  p->sky=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->input->ndim,
+                        tl->numtiles, NULL, 0, cp->minmapsize,
+                        p->cp.quietmmap, NULL, p->input->unit, NULL);
+  p->std=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, p->input->ndim,
+                        tl->numtiles, NULL, 0, cp->minmapsize,
+                        p->cp.quietmmap, NULL, p->input->unit, NULL);
 
 
   /* Find the Sky and its STD on proper tiles. */
@@ -249,6 +249,14 @@ sky_and_std(struct noisechiselparams *p, char *checkname)
      correct it in the S/N calculation. So, we'll calculate the correction
      factor here. */
   p->cpscorr = p->minstd>1 ? 1.0f : p->minstd;
+
+
+  /* Remove outlier tiles */
+  gal_tileinternal_no_outlier_local(p->sky, p->std, NULL, &p->cp.tl,
+                                    p->cp.interpmetric, p->cp.interpnumngb,
+                                    p->cp.numthreads, p->outliersclip,
+                                    p->outliersigma, checkname);
+
 
 
   /* Interpolate and smooth the derived values. */

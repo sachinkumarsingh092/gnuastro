@@ -430,7 +430,7 @@ gal_statistics_quantile(gal_data_t *input, double quantile, int inplace)
     r=a++;                                                              \
                                                                         \
     /* Increasing array: */                                             \
-    if( *a < *(a+1) )                                                   \
+    if( nbs->flag & GAL_DATA_FLAG_SORTED_I )                            \
       {                                                                 \
         if( v>=*r )                                                     \
           {                                                             \
@@ -455,17 +455,21 @@ gal_statistics_quantile(gal_data_t *input, double quantile, int inplace)
     if(parsed && a<af) index = a-r;                                     \
   }
 size_t
-gal_statistics_quantile_function_index(gal_data_t *input, gal_data_t *value,
-                                       int inplace)
+gal_statistics_quantile_function_index(gal_data_t *input,
+                                       gal_data_t *invalue, int inplace)
 {
   int parsed=0;
+  gal_data_t *value;
   size_t index=GAL_BLANK_SIZE_T;
   gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
 
-  /* A sanity check. */
-  if(nbs->type!=value->type)
-    error(EXIT_FAILURE, 0, "%s: the types of the input dataset and requested "
-          "value have to be the same", __func__);
+  /* Make sure the value has the same type. */
+  if(invalue->size>1)
+    error(EXIT_FAILURE, 0, "%s: the 'value' argument must only have "
+          "one element", __func__);
+  value = ( (nbs->type==invalue->type)
+            ? invalue
+            : gal_data_copy_to_new_type(invalue, nbs->type) );
 
   /* Only continue processing if we have non-blank elements. */
   if(nbs->size)
@@ -494,6 +498,7 @@ gal_statistics_quantile_function_index(gal_data_t *input, gal_data_t *value,
     }
 
   /* Clean up and return. */
+  if(value!=invalue) gal_data_free(value);
   if(nbs!=input) gal_data_free(nbs);
   return index;
 }
@@ -519,11 +524,19 @@ gal_statistics_quantile_function(gal_data_t *input, gal_data_t *value,
                                  int inplace)
 {
   double *d;
-  size_t dsize=1;
+  size_t ind, dsize=1;
   gal_data_t *nbs=gal_statistics_no_blank_sorted(input, inplace);
   gal_data_t *out=gal_data_alloc(NULL, GAL_TYPE_FLOAT64, 1, &dsize,
                                  NULL, 1, -1, 1, NULL, NULL, NULL);
-  size_t ind=gal_statistics_quantile_function_index(input, value, inplace);
+
+  /* Sanity checks. */
+  if(value->size>1)
+    error(EXIT_FAILURE, 0, "%s: the 'value' argument must only have "
+          "one element", __func__);
+
+  /* Calculate the index of the value. */
+  ind=gal_statistics_quantile_function_index(input, value, inplace);
+  //printf("ind: %zu (%zu)\n", ind, input->size);
 
   /* Only continue processing if there are non-blank values. */
   if(nbs->size)
@@ -2396,7 +2409,7 @@ gal_statistics_sigma_clip(gal_data_t *input, float multip, float param,
                  (float)(arr[i]-arr[i-1]), sarr[1], sarr[3],            \
                  (((double)(arr[i]-arr[i-1])) - sarr[1])/sarr[3]);      \
                                                                         \
-        /* Terminate the loop if the dist. is larger than requested. */ \
+        /* Terminate the loop if the dist is larger than requested. */  \
         /* This shows we have reached the first outlier's position. */  \
         if( (((double)(arr[i]-arr[i-1])) - sarr[1]) > sigma*sarr[3] )   \
           {                                                             \
