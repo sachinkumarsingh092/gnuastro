@@ -64,6 +64,73 @@ gal_wcs_to_cd(struct wcsprm *wcs);
 /*************************************************************
  ***********               Read WCS                ***********
  *************************************************************/
+/* It may happen that both the PC+CDELT and CD matrices are present in a
+   file. But in some cases, they may not result in the same rotation
+   matrix. So we need to let the user know about this problem with the FITS
+   file, and as a default behavior, we'll disable the PC matrix (which also
+   needs a CDELT matrix (that may not have been written). */
+static void
+wcs_read_correct_pc_cd(struct wcsprm *wcs)
+{
+  int removepc=0;
+  size_t i, j, naxis=wcs->naxis;
+  double *cdfrompc=gal_pointer_allocate(GAL_TYPE_FLOAT64, naxis*naxis, 0,
+                                        __func__, "cdfrompc");
+
+  /* A small sanity check. */
+  if(wcs->cdelt==NULL)
+    error(EXIT_FAILURE, 0, "%s: the WCS structure has no 'cdelt' array, "
+          "please contact us at %s to see what the problem is", __func__,
+          PACKAGE_BUGREPORT);
+
+  /* Multiply the PC matrix with the CDELT matrix. */
+  for(i=0;i<naxis;++i)
+    for(j=0;j<naxis;++j)
+      cdfrompc[i*naxis+j] = wcs->cdelt[i] * wcs->pc[i*naxis+j];
+
+  /* Make sure the file's CD matrix is the same as the CD matrix that is
+     derived from the PC+CDELT matrix above. We'll divide the difference by
+     the samller value and if the result is larger than 1e-6, then we'll
+     consider it different. */
+  for(i=0;i<naxis*naxis;++i)
+    if( fabs( wcs->cd[i] - cdfrompc[i] )
+        / ( fabs(wcs->cd[i]) < fabs(cdfrompc[i])
+            ? fabs(wcs->cd[i])
+            : fabs(cdfrompc[i]) )
+        > 1e-5 )
+      { removepc=1; break; }
+
+  /* If the two matrices are different, then print the warning and remove
+     the PC+CDELT matrices to only keep the CD matrix. */
+  if(removepc)
+    {
+      /* Let the user know that there is a problem in the file. */
+      error(EXIT_SUCCESS, 0, "the WCS structure has both the PC matrix "
+            "and CD matrix. However, the two don't match and there is "
+            "no way to know which one was intended by the creator of "
+            "this file. THIS PROGRAM WILL ASSUME THE CD MATRIX AND "
+            "CONTINUE. BUT THIS MAY BE WRONG! To avoid confusion and "
+            "wrong results, its best to only use one of them in your "
+            "FITS file. You can use Gnuastro's 'astfits' program to "
+            "remove any that you want (please run 'info astfits' for "
+            "more). For example if you want to delete the PC matrix "
+            "you can use this command: 'astfits file.fits --delete=PC1_1 "
+            "--delete=PC1_2 --delete=PC2_1 --delete=PC2_2'");
+
+      /* Set the PC matrix to be equal to the CD matrix, and set the CDELTs
+         to 1. */
+      for(i=0;i<naxis;++i) wcs->cdelt[i] = 1.0f;
+      for(i=0;i<naxis*naxis;++i) wcs->pc[i] = wcs->cd[i];
+    }
+
+  /* Clean up. */
+  free(cdfrompc);
+}
+
+
+
+
+
 /* Read the WCS information from the header. Unfortunately, WCS lib is
    not thread safe, so it needs a mutex. In case you are not using
    multiple threads, just pass a NULL pointer as the mutex.
@@ -248,15 +315,23 @@ gal_wcs_read_fitsptr(fitsfile *fptr, size_t hstartwcs, size_t hendwcs,
               wcs=NULL;
               *nwcs=0;
             }
+          /* A correctly useful WCS is present. */
           else
             {
-              /* A correctly useful WCS is present. When no PC matrix
-                 elements were present in the header, the default PC matrix
-                 (a unity matrix) is used. In this case WCSLIB doesn't set
-                 'altlin' (and gives it a value of 0). In Gnuastro, later on,
-                 we might need to know the type of the matrix used, so in
-                 such a case, we will set 'altlin' to 1. */
+              /* According to WCSLIB in discussing 'altlin': "If none of
+                 these bits are set the PCi_ja representation results, i.e.
+                 wcsprm::pc and wcsprm::cdelt will be used as given". In
+                 effect it will also set the PC matrix to unity. So we can
+                 safely set it to '1' here because some parts of Gnuastro
+                 will later look into this. */
               if(wcs->altlin==0) wcs->altlin=1;
+
+              /* If both the PC and CD matrix have been given, the first
+                 two bits of 'altlin' will be '1'. We need to make sure
+                 they are the same matrix, and let the user know if they
+                 aren't. */
+              if( (wcs->altlin & 1) && (wcs->altlin & 2) )
+                wcs_read_correct_pc_cd(wcs);
             }
         }
     }
@@ -366,8 +441,7 @@ gal_wcs_write_in_fitsptr(fitsfile *fptr, struct wcsprm *wcs)
   status=wcshdo(WCSHDO_safe, wcs, &nkeyrec, &wcsstr);
   if(status)
     error(0, 0, "%s: WARNING: WCSLIB error, no WCS in output.\n"
-          "wcshdu ERROR %d: %s", __func__, status,
-          wcs_errmsg[status]);
+          "wcshdu ERROR %d: %s", __func__, status, wcs_errmsg[status]);
   else
     gal_fits_key_write_wcsstr(fptr, wcsstr, nkeyrec);
   status=0;
@@ -382,7 +456,7 @@ gal_wcs_write_in_fitsptr(fitsfile *fptr, struct wcsprm *wcs)
       to convert the keyword names and delete the CDELT keywords. Note that
       zero-valued PC/CD elements may not be present, so we'll manually set
       'status' to zero and not let CFITSIO crash.*/
-  if(tpvdist)
+  if(wcs->altlin==2)
     {
       status=0; fits_modify_name(fptr, "PC1_1", "CD1_1", &status);
       status=0; fits_modify_name(fptr, "PC1_2", "CD1_2", &status);
@@ -1112,50 +1186,44 @@ gal_wcs_clean_errors(struct wcsprm *wcs)
 void
 gal_wcs_decompose_pc_cdelt(struct wcsprm *wcs)
 {
-  double *ps;
   size_t i, j;
+  double *ps, *warp;
 
   /* If there is on WCS, then don't do anything. */
   if(wcs==NULL) return;
 
-  /* The correction is only needed when the PC matrix is filled. Note that
-     internally, WCSLIB always uses the PC matrix, even when the input has
-     a CD matrix.*/
-  if(wcs->pc)
-    {
-      /* Get the pixel scale. */
-      ps=gal_wcs_pixel_scale(wcs);
-      if(ps==NULL) return;
+  /* Get the pixel scale and full warp matrix. */
+  warp=gal_wcs_warp_matrix(wcs);
+  ps=gal_wcs_pixel_scale(wcs);
+  if(ps==NULL) return;
 
-      /* The PC matrix and the CDELT elements might both contain scale
-         elements (during processing the scalings might be added only to PC
-         elements for example). So to be safe, we first multiply them into
-         one matrix. */
-      for(i=0;i<wcs->naxis;++i)
-        for(j=0;j<wcs->naxis;++j)
-          wcs->pc[i*wcs->naxis+j] *= wcs->cdelt[i];
+  /* For a check.
+  printf("pc: %g, %g\n", pc[0], pc[1]);
+  printf("warp: %g, %g, %g, %g\n", warp[0], warp[1],
+         warp[2], warp[3]);
+  */
 
-      /* Set the CDELTs. */
-      for(i=0; i<wcs->naxis; ++i)
-        wcs->cdelt[i] = ps[i];
+  /* Set the CDELTs. */
+  for(i=0; i<wcs->naxis; ++i)
+    wcs->cdelt[i] = ps[i];
 
-      /* Correct the PCi_js */
-      for(i=0;i<wcs->naxis;++i)
-        for(j=0;j<wcs->naxis;++j)
-          wcs->pc[i*wcs->naxis+j] /= ps[i];
+  /* Write the PC matrix. */
+  for(i=0;i<wcs->naxis;++i)
+    for(j=0;j<wcs->naxis;++j)
+      wcs->pc[i*wcs->naxis+j] = warp[i*wcs->naxis+j]/ps[i];
 
-      /* Clean up. */
-      free(ps);
+  /* According to the 'wcslib/wcs.h' header: "In particular, wcsset()
+     resets wcsprm::cdelt to unity if CDi_ja is present (and no
+     PCi_ja).". So apparently, when the input is a 'CDi_j', it might expect
+     the 'CDELTi' elements to be 1.0. But we have changed that here, so we
+     will correct the 'altlin' element of the WCS structure to make sure
+     that WCSLIB only looks into the 'PCi_j' and 'CDELTi' and makes no
+     assumptioins about 'CDELTi'. */
+  wcs->altlin=1;
 
-      /* According to the 'wcslib/wcs.h' header: "In particular, wcsset()
-         resets wcsprm::cdelt to unity if CDi_ja is present (and no
-         PCi_ja).". So apparently, when the input is a 'CDi_j', it might
-         expect the 'CDELTi' elements to be 1.0. But we have changed that
-         here, so we will correct the 'altlin' element of the WCS structure
-         to make sure that WCSLIB only looks into the 'PCi_j' and 'CDELTi'
-         and makes no assumptioins about 'CDELTi'. */
-      wcs->altlin=1;
-    }
+  /* Clean up. */
+  free(ps);
+  free(warp);
 }
 
 
