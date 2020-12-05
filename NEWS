@@ -175,6 +175,7 @@ See the end of the file for license conditions.
   bug #59371: MakeCatalog crash with clumps on non-contiguous object labels.
   bug #59400: CosmicCalculator fails --printparams when redshift isn't given.
   bug #59459: Unclear WCS when both PC and CD exist in input, but conflict.
+  bug #59625: MakeProfiles uses last --kernel, if it is called more than once.
 
 
 

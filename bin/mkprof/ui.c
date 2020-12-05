@@ -332,6 +332,10 @@ ui_parse_kernel(struct argp_option *option, char *arg,
     }
   else
     {
+      /* If the kernel has already been given, ignore it (the previously
+         read value has higher precedence). */
+      if( *(gal_data_t **)(option->value) ) return NULL;
+
       /* The first part of 'arg' (before the first comma) is not
          necessarily a number. So we need to separate the first part from
          the rest.*/
@@ -340,9 +344,18 @@ ui_parse_kernel(struct argp_option *option, char *arg,
       arg = (*c=='\0') ? NULL : c+1;  /* the 'point' profile doesn't need */
       *c='\0';                        /* any numbers.                     */
 
+      /* Make sure something exists after the name of the profile. */
+      if(arg==NULL)
+        error(EXIT_FAILURE, 0, "the kernel option value couldn't be "
+              "parsed in the expected format: one name (of a profile), "
+              "followed by some numbers defining that profile. See the "
+              "description of '--kernel' in the manual (with the 'info "
+              "astmkprof' command) for the meaning of the numbers");
 
       /* Read the parameters. */
       kernel=gal_options_parse_list_of_numbers(arg, filename, lineno);
+
+      /* Put the kernel dataset into the main program structure. */
       *(gal_data_t **)(option->value) = kernel;
 
 
