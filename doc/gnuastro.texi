@@ -10266,32 +10266,32 @@ $ astquery [OPTION...] ...
 One line examples:
 
 @example
-## Import all the columns of all entries in the Gaia DR2 catalog within
-## 20 arc-minutes of the given coordinate.
-$ astquery --database=gaia --dataset=dr2 --output=my-gaia.fits \
+## Import all the columns of all entries in the Gaia early DR3
+## catalog within 20 arc-minutes of the given coordinate.
+$ astquery --database=gaia --dataset=edr3 --output=my-gaia.fits \
            --center=113.8729761,31.9027152 --radius=20/60
 
 ## Similar to above, but return all objects within a square box of
 ## 30 arcminutes (can also be rectangular, see '--width').
-$ astquery --database=gaia --dataset=dr2 --output=my-gaia.fits \
+$ astquery --database=gaia --dataset=edr3 --output=my-gaia.fits \
            --center=113.8729761,31.9027152 --width=30/60
 
-## Similar to above, but for objects with magnitude range 10 to 15
-$ astquery --database=gaia --dataset=dr2 --output=my-gaia.fits \
+## Similar to above, but for objects with magnitude range 10 to 15,
+$ astquery --database=gaia --dataset=edr3 --output=my-gaia.fits \
            --center=113.8729761,31.9027152 --width=30/60 \
            --range=phot_g_mean_mag,10:15
 
 ## Similar to first example, but only import the ID, RA, Dec and G-band
 ## magnitude of the sources (not all the columns).
-$ astquery --database=gaia --dataset=dr2 --output=my-gaia.fits \
+$ astquery --database=gaia --dataset=edr3 --output=my-gaia.fits \
            --center=113.8729761,31.9027152 --radius=0.1 \
            --column=source_id,ra,dec,phot_g_mean_mag
 
 ## Find the ID, RA and Dec of all Gaia sources within an image.
-$ astquery --database=gaia --dataset=dr2 --overlapwith=image.fits
+$ astquery --database=gaia --dataset=edr3 --overlapwith=image.fits
            -csource_id,ra,dec
 
-## Use a custom query to extract entries in the Gaia DR2 catalog.
+## Use a custom query to extract entries in the Gaia early DR3 catalog.
 ## The 'XXXX YYYY' can be a query of any size on the command-line.
 $ astquery --database=gaia --query="XXXX YYYY" --output=my-gaia.fits
 @end example
@@ -10343,14 +10343,16 @@ The queries will generally contain space and other meta-characters, so we recomm
 @itemx --dataset=STR
 The dataset to query within the database for the automatically generated query (not compatible with @option{--query}).
 The reason for this is that many databases have different types of datasets, for example different data releases (DRs), or various high-level calculations on subsets of the database elements.
-For example when @option{--database=gaia}, you can set @option{--dataset=dr2} to only select objects within the second data release (DR2).
+For example when @option{--database=gaia}, you can set @option{--dataset=edr3} to only select objects within the early data release 3.
 
-You can either use the database's official name of the datasets, for example @code{gaiadr2.gaia_source} for the second data release of the Gaia database, or a simplified version that maps to it (@code{dr2}) for easy typing on the command-line.
+You can either use the database's official name of the datasets, for example @code{gaiaedr3.gaia_source} for the early data release 3 the Gaia database, or a simplified version that maps to it (@code{edr3}) for easy typing on the command-line.
 Below is a list of the simplified names for the databases that have them.
 
 @table @code
 @item gaia
 @itemize
+@item
+@code{edr3 --> gaiaedr3.gaia_source}
 @item
 @code{dr2 --> gaiadr2.gaia_source}
 @item
@@ -10411,9 +10413,9 @@ In case the database doesn't support a search radius of 0, or can't return a tab
 Here is an example on the Gaia DR2 catalog to show the full list of available columns:
 
 @example
-$ astquery --database=gaia --dataset=dr2 --center=0,0 \
-           --radius=0 --output=gaia-dr2-cols.fits
-$ asttable gaia-dr2-cols.fits --info
+$ astquery --database=gaia --dataset=edr3 --center=0,0 \
+           --radius=0 --output=gaia-edr3-cols.fits
+$ asttable gaia-edr3-cols.fits --info
 @end example
 @end table
 

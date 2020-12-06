@@ -61,7 +61,12 @@ gaia_sanitycheck(struct queryparams *p)
               "with the '--center' ('-C') option");
 
       /* Use simpler names for the commonly used datasets. */
-      if( !strcmp(p->datasetstr, "dr2") )
+      if( !strcmp(p->datasetstr, "edr3") )
+        {
+          free(p->datasetstr);
+          gal_checkset_allocate_copy("gaiaedr3.gaia_source", &p->datasetstr);
+        }
+      else if( !strcmp(p->datasetstr, "dr2") )
         {
           free(p->datasetstr);
           gal_checkset_allocate_copy("gaiadr2.gaia_source", &p->datasetstr);
@@ -113,8 +118,16 @@ gaia_query(struct queryparams *p)
 
       /* If the user wanted an overlap with an image, then calculate it. */
       if(p->overlapwith)
-        gal_wcs_coverage(p->overlapwith, p->cp.hdu, &ndim, &ocenter,
-                         &owidth, &omin, &omax);
+        {
+          /* Calculate the Sky coverage of the overlap dataset. */
+          gal_wcs_coverage(p->overlapwith, p->cp.hdu, &ndim, &ocenter,
+                           &owidth, &omin, &omax);
+
+          /* Make sure a WCS existed in the file. */
+          if(owidth==NULL)
+            error(EXIT_FAILURE, 0, "%s (hdu %s): contains no WCS to "
+                  "derive the sky coverage", p->overlapwith, p->cp.hdu);
+        }
 
       /* For easy reading. */
       center = p->overlapwith ? ocenter : p->center->array;
