@@ -1376,7 +1376,7 @@ gal_fits_key_list_add_end(gal_fits_list_key_t **list, uint8_t type,
     }
   else                 /* List is empty */
     {
-      newnode->next=*list;
+      newnode->next=NULL;
       *list=newnode;
     }
 }

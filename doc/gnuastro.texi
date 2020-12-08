@@ -25488,18 +25488,21 @@ Below you can see the simple tree for 2D points from Wikipedia.
 The input point coordinates are represented as two input @code{gal_data_t}s (@code{X} and @code{Y}, where @code{X->next=Y} and @code{Y->next=NULL}).
 If you had three dimensional points, you could define an extra @code{gal_data_t} such that @code{Y->next=Z} and @code{Z->next=NULL}.
 The output is always a list of two @code{gal_data_t}s, where the first one contains the index of the left sub-tree in the input, and the second one, the index of the right subtree.
-The index of the root node (@code{2} in the case below) is also returned as a single number.
+The index of the root node (@code{0} in the case below@footnote{This example input table is the same as the example in Wikipedia (as of December 2020).
+However, on the Wikipedia output, the root node is (7,2), not (5,4).
+The difference is primarily because there are 6 rows and the median element of an even number of elements can vary by integer calculation strategies.
+Here we use 0-based indexes for finding median and round to the smaller integer.}) is also returned as a single number.
 
 @example
-INDEX         INPUT              OUTPUT                 K-D Tree
-(as guide)    X --> Y        LEFT --> RIGHT           (visualized)
-----------    -------        --------------        ------------------
-0             5     4        1        4                   (7,2)
-1             2     3        BLANK    BLANK               /   \
-2             7     2        0        3               (5,4)    \
-3             9     6        5        BLANK           /   \    (9,6)
-4             4     7        BLANK    BLANK       (2,3) (4,7)  /
-5             8     1        BLANK    BLANK                   (8,1)
+INDEX         INPUT              OUTPUT              K-D Tree
+(as guide)    X --> Y        LEFT --> RIGHT        (visualized)
+----------    -------        --------------     ------------------
+0             5     4        1        2               (5,4)
+1             2     3        BLANK    4               /   \
+2             7     2        5        3           (2,3)    \
+3             9     6        BLANK    BLANK           \    (7,2)
+4             4     7        BLANK    BLANK         (4,7)  /   \
+5             8     1        BLANK    BLANK               (8,1) (9,6)
 @end example
 
 This format is therefore scalable to any number of dimensions: the number of dimensions are determined from the number of nodes in the input list of @code{gal_data_t}s (for example, using @code{gal_list_data_number}).
@@ -25514,6 +25517,20 @@ The first dataset contains the indexes of left and right nodes of the subtrees f
 The index of the root node is written into the memory that @code{root} points to.
 @code{coords_raw} is the list of the input points (one @code{gal_data_t} per dimension, see above).
 
+For example, assume you have the simple set of points below (from the visualized example at the start of this section) in a plain-text file called @file{coordinates.txt}:
+
+@example
+$ cat coordinates.txt
+5     4
+2     3
+7     2
+9     6
+4     7
+8     1
+@end example
+
+With the program below, you can calculate the kd-tree, and write it in a FITS file (while keeping the root index as a FITS keyword inside of it).
+
 @example
 #include <stdio.h>
 #include <gnuastro/table.h>
@@ -25522,10 +25539,16 @@ The index of the root node is written into the memory that @code{root} points to
 int
 main (void)
 @{
-  size_t root;
   gal_data_t *input, *kdtree;
-  char kdtreefile[]="kd-tree.txt";    /* Inputs and outputs can */
-  char inputfile[]="coordinates.txt"; /* also be FITS tables.   */
+  char kdtreefile[]="kd-tree.fits";
+  char inputfile[]="coordinates.txt";
+
+  /* To write the root within the saved file. */
+  size_t root;
+  char *unit="index";
+  char *keyname="KDTROOT";
+  gal_fits_list_key_t *keylist=NULL;
+  char *comment="k-d tree root index (counting from 0).";
 
   /* Read the input table. Note: this assumes the table only
    * contains your input point coordinates (one column for each
@@ -25533,17 +25556,19 @@ main (void)
    * for each point, you can specify which columns to read by
    * name or number, see the documentation of 'gal_table_read'. */
   input=gal_table_read(inputfile, "1", NULL, NULL,
-                       GAL_TABLE_SEARCH_NAME, 0, -1, 0, NULL);
+		       GAL_TABLE_SEARCH_NAME, 0, -1, 0, NULL);
 
   /* Construct a k-d tree. The index of root is stored in `root` */
   kdtree=gal_kdtree_create(input, &root);
 
-  /* Write output to a file. */
-  gal_table_write(kdtree, NULL, NULL, GAL_TABLE_FORMAT_BFITS,
-                  kdtreefile, "kdtree", 0);
-
-  /* Report k-d tree root. */
-  printf("Root row of '%s': %zu\n", kdtreefile, root);
+  /* Write the k-d tree to a file and write root index and input
+   * name as FITS keywords ('gal_table_write' frees 'keylist').*/
+  gal_fits_key_list_title_add(&keylist, "k-d tree parameters", 0);
+  gal_fits_key_write_filename("KDTIN", inputfile, &keylist, 0);
+  gal_fits_key_list_add_end(&keylist, GAL_TYPE_SIZE_T, keyname, 0,
+			    &root, 0, comment, 0, unit, 0);
+  gal_table_write(kdtree, &keylist, NULL, GAL_TABLE_FORMAT_BFITS,
+		  kdtreefile, "kdtree", 0);
 
   /* Clean up and return. */
   gal_list_data_free(input);
@@ -25551,15 +25576,26 @@ main (void)
   return EXIT_SUCCESS;
 @}
 @end example
+
+You can inspect the saved k-d tree FITS table with Gnuastro's @ref{Table} (first command below), and you can see the keywords containing the root index with @ref{Fits} (second command below):
+
+@example
+asttable kd-tree.fits
+astfits kd-tree.fits -h1
+@end example
+
 @end deftypefun
 
 @deftypefun size_t gal_kdtree_nearest_neighbour (gal_data_t @code{*coords_raw}, gal_data_t @code{*kdtree}, size_t @code{root}, double @code{*point}, double @code{*least_dist})
 Returns the index of the nearest input point to the query point (@code{point}, assumed to be an array with same number of elements as @code{gal_data_t}s in @code{coords_raw}).
 The distance between the query point and its nearest neighbor is stored in the space that @code{least_dist} points to.
-This search is efficient due to the constantly checking for the presence of possible best points in other branches.
+This search is efficient due to the constant checking for the presence of possible best points in other branches.
 If it isn't possible for the other branch to have a better nearest neighbor, that branch is not searched.
 
-For example the function below reads the input, and the k-d tree file created in the example of @code{gal_kdtree_create} (so you won't have to re-create the k-d tree every time) and finds the input point that is closest to a given query point.
+As an example, let's use the k-d tree that was created in the example of @code{gal_kdtree_create} (above) and find the nearest row to a given coordinate (@code{point}).
+This will be a very common scenario, especially in large and multi-dimensional datasets where the k-d tree creation can take long and you don't want to re-create the k-d tree every time.
+In the @code{gal_kdtree_create} example output, we also wrote the k-d tree root index as a FITS keyword (@code{KDTROOT}), so after loading the two table data (input coordinates and k-d tree), we'll read the root from the FITS keyword.
+This is a very simple example, but the scalability is clear: for example it is trivial to parallelize (see @ref{Library demo - multi-threaded operation}).
 
 @example
 #include <stdio.h>
@@ -25569,31 +25605,54 @@ For example the function below reads the input, and the k-d tree file created in
 int
 main (void)
 @{
-  double least_dist;
-  size_t root=KDTREE_ROOT;
-  gal_data_t *input, *kdtree;
-  char kdtreefile[]="kd-tree.txt";    /* Inputs and outputs can */
-  char inputfile[]="coordinates.txt"; /* also be FITS tables.   */
+  /* INPUT: desired point. */
+  double point[2]=@{8.9,5.9@};
 
-  double point[2]=@{9,8@};              /* assuming a 2-d tree.   */
-  size_t nearest_index;
+  /* Same as example in description of 'gal_kdtree_create'. */
+  gal_data_t *input, *kdtree;
+  char kdtreefile[]="kd-tree.fits";
+  char inputfile[]="coordinates.txt";
+
+  /* Processing variables of this function. */
+  char kdtreehdu[]="1";
+  double *in_x, *in_y, least_dist;
+  size_t root, nkeys=1, nearest_index;
+  gal_data_t *rkey, *keysll=gal_data_array_calloc(nkeys);
 
   /* Read the input coordinates, see comments in example of
    * 'gal_kdtree_create' for more. */
   input=gal_table_read(inputfile, "1", NULL, NULL,
                        GAL_TABLE_SEARCH_NAME, 0, -1, 0, NULL);
 
-  /* Read the k-d tree (created before). */
+  /* Read the k-d tree contents (created before). */
   kdtree=gal_table_read(kdtreefile, "1", NULL, NULL,
                         GAL_TABLE_SEARCH_NAME, 0, -1, 0, NULL);
+
+  /* Read the k-d tree root index from the header keyword.
+   * See example in description of 'gal_fits_key_read_from_ptr'.*/
+  keysll[0].name="KDTROOT";
+  keysll[0].type=GAL_TYPE_SIZE_T;
+  gal_fits_key_read(kdtreefile, kdtreehdu, keysll, 0, 0);
+  keysll[0].name=NULL; /* Since we didn't allocate it. */
+  rkey=gal_data_copy_to_new_type(&keysll[0], GAL_TYPE_SIZE_T);
+  root=((size_t *)(rkey->array))[0];
 
   /* Find the nearest neighbour of the point. */
   nearest_index=gal_kdtree_nearest_neighbour(input, kdtree, root,
                                              point, &least_dist);
 
+  /* Print the results. */
+  in_x=input->array;
+  in_y=input->next->array;
+  printf("(%g, %g): nearest is (%g, %g), with a distance of %g\n",
+         point[0], point[1], in_x[nearest_index],
+         in_y[nearest_index], least_dist);
+
   /* Clean up and return. */
+  gal_data_free(rkey);
   gal_list_data_free(input);
   gal_list_data_free(kdtree);
+  gal_data_array_free(keysll, nkeys, 1);
   return EXIT_SUCCESS;
 @}
 @end example
