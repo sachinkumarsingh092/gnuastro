@@ -653,7 +653,6 @@ gal_binary_connected_adjacency_matrix(gal_data_t *adjacency,
         ++curlab;
       }
 
-
   /* For a check.
   printf("=== Old labels --> new labels ===\n");
   for(i=1;i<num;++i) printf("%zu: %u\n", i, newlabs[i]);
@@ -664,6 +663,84 @@ gal_binary_connected_adjacency_matrix(gal_data_t *adjacency,
   return newlabs_d;
 }
 
+
+
+
+
+/* List-based adjacency matrix: when the number of points to find adjacent
+   elements is large, the array-based adjacency solution of
+   'gal_binary_connected_adjacency_matrix' will consume far too much memory
+   (since it is a square). In those cases, we need to work based on
+   lists.
+
+   The input is an array of 'size_t' list pointers. Each one points to the
+   labels that are touching it.
+
+                     indexs        b       d
+                                   ^       ^
+                     indexs        a   b   c   a
+                                   ^   ^   ^   ^
+                     listarr:    | * | * | * | * |
+*/
+gal_data_t *
+gal_binary_connected_adjacency_list(gal_list_sizet_t **listarr,
+                                    size_t number, size_t minmapsize,
+                                    int quietmmap, size_t *numconnected)
+{
+  size_t i, p;
+  gal_list_sizet_t *tmp;
+  gal_data_t *newlabs_d;
+  gal_list_sizet_t *Q=NULL;
+  int32_t *newlabs, curlab=1;
+
+  /* Allocate (and clear) the output datastructure. */
+  newlabs_d=gal_data_alloc(NULL, GAL_TYPE_INT32, 1, &number, NULL, 1,
+                           minmapsize, quietmmap, NULL, NULL, NULL);
+  newlabs=newlabs_d->array;
+
+  /* Go over the input matrix and apply the same principle as we used to
+     identify connected components in an image: through a queue, find those
+     elements that are connected. */
+  for(i=1;i<number;++i)
+    if(newlabs[i]==0)
+      {
+        /* Add this old label to the list that must be corrected. */
+        gal_list_sizet_add(&Q, i);
+
+        /* Continue while the list has elements. */
+        while(Q!=NULL)
+          {
+            /* Pop the top old-label from the list. */
+            p=gal_list_sizet_pop(&Q);
+
+            /* If it has already been labeled then ignore it. */
+            if( newlabs[p]!=curlab )
+              {
+                /* Give it the new label. */
+                newlabs[p]=curlab;
+
+                /* Go over the adjacency list for this touching object and
+                   see if there are any not-yet-labeled objects that are
+                   touching it. */
+                for(tmp=listarr[p]; tmp!=NULL; tmp=tmp->next)
+                  if( newlabs[tmp->v]==0 )
+                    gal_list_sizet_add(&Q, tmp->v);
+              }
+          }
+
+        /* Increment the current label. */
+        ++curlab;
+      }
+
+  /* For a check.
+  printf("=== Old labels --> new labels ===\n");
+  for(i=1;i<number;++i) printf("%zu: %u\n", i, newlabs[i]);
+  */
+
+  /* Return the output. */
+  *numconnected = curlab-1;
+  return newlabs_d;
+}
 
 
 

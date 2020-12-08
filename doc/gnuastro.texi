@@ -26415,22 +26415,16 @@ Note that the indexs will only be calculated on the pixels with a value of 1 and
 @deftypefun {gal_data_t *} gal_binary_connected_adjacency_matrix (gal_data_t @code{*adjacency}, size_t @code{*numconnected})
 @cindex Adjacency matrix
 @cindex Matrix, adjacency
-Find the number of connected labels and new labels based on an adjacency
-matrix, which must be a square binary array (type
-@code{GAL_TYPE_UINT8}). The returned dataset is a list of new labels for
-each old label. In other words, this function will find the objects that
-are connected (possibly through a third object) and in the output array,
-the respective elements for all input labels is going to have the same
-value. The total number of connected labels is put into the space that
-@code{numconnected} points to.
+Find the number of connected labels and new labels based on an adjacency matrix, which must be a square binary array (type @code{GAL_TYPE_UINT8}).
+The returned dataset is a list of new labels for each old label.
+In other words, this function will find the objects that are connected (possibly through a third object) and in the output array, the respective elements for all input labels is going to have the same value.
+The total number of connected labels is put into the space that @code{numconnected} points to.
 
-An adjacency matrix defines connection between two labels. For example,
-let's assume we have 5 labels and we know that labels 1 and 5 are connected
-to label 3, but are not connected with each other. Also, labels 2 and 4 are
-not touching any other label. So in total we have 3 final labels: one
-combined object (merged from labels 1, 3, and 5) and the initial labels 2
-and 4. The input adjacency matrix would look like this (note the extra row
-and column for a label 0 which is ignored):
+An adjacency matrix defines connection between two labels.
+For example, let's assume we have 5 labels and we know that labels 1 and 5 are connected to label 3, but are not connected with each other.
+Also, labels 2 and 4 are not touching any other label.
+So in total we have 3 final labels: one combined object (merged from labels 1, 3, and 5) and the initial labels 2 and 4.
+The input adjacency matrix would look like this (note the extra row and column for a label 0 which is ignored):
 
 @example
             INPUT                             OUTPUT
@@ -26445,8 +26439,36 @@ in_lab 4 -->   0  0  0  0  0  0   |   | 0 | 1 | 2 | 1 | 3 | 1 |
 in_lab 5 -->   0  0  0  1  0  0   |
 @end example
 
-Although the adjacency matrix as used here is symmetric, currently this
-function assumes that it is filled on both sides of the diagonal.
+Although the adjacency matrix as used here is symmetric, currently this function assumes that it is filled on both sides of the diagonal.
+@end deftypefun
+
+@deftypefun {gal_data_t *} gal_binary_connected_adjacency_list (gal_list_sizet_t @code{**listarr}, size_t @code{number}, size_t @code{minmapsize}, int @code{quietmmap}, size_t @code{*numconnected})
+@cindex RAM
+Find the number of connected labels and new labels based on an adjacency list.
+The output of this function is identical to that of @code{gal_binary_connected_adjacency_matrix}.
+But the major difference is that it uses a list of connected labels to each label instead of a square adjacency matrix.
+This is done because when the number of labels becomes very large (for example on the scale of 100,000), the adjacency matrix can consume more than 10GB of RAM!
+
+The input list has the following format: it is an array of pointers to @code{gal_list_sizet_t *} (or @code{gal_list_sizet_t **}).
+The array has @code{number} elements and each @code{listarr[i]} is a linked list of @code{gal_list_sizet_t *}.
+As a demonstration, the input of the same example in @code{gal_binary_connected_adjacency_matrix} would look like below and the output of this function will be identical to there.
+
+@example
+listarr[0] = NULL
+listarr[1] = 3
+listarr[2] = NULL
+listarr[3] = 1 -> 5
+listarr[4] = NULL
+listarr[5] = 3
+@end example
+
+From this example, it is already clear that this method will consume far less memory.
+But because it needs to parse lists (and not easily jump between array elements), it can be slower.
+But in scenarios where there are too many objects (that may exceed the whole system's RAM+SWAP), this option is a good alternative and the drop in processing speed is worth getting the job done.
+
+Similar to @code{gal_binary_connected_adjacency_matrix}, this function will write the final number of connected labels in @code{numconnected}.
+But since it takes no @code{gal_data_t *} argument (where it can inherit the @code{minmapsize} and @code{quietmmap} parameters), it also needs these as input.
+For more on @code{minmapsize} and @code{quietmmap}, see @ref{Memory management}.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_binary_holes_label (gal_data_t @code{*input}, int @code{connectivity}, size_t @code{*numholes})

@@ -215,7 +215,7 @@ segment_relab_noseg(struct clumps_thread_params *cltprm)
    a*numobjs+b or b*numobjs+a and get the answer. Since the number of
    objects in a given region will not be too high, this is efficient. */
 static void
-segment_relab_to_objects(struct clumps_thread_params *cltprm)
+segment_relab_to_objects_array(struct clumps_thread_params *cltprm)
 {
   size_t amwidth=cltprm->numtrueclumps+1;
   struct segmentparams *p=cltprm->clprm->p;
@@ -231,11 +231,12 @@ segment_relab_to_objects(struct clumps_thread_params *cltprm)
   gal_data_t *adjacency_d=gal_data_alloc(NULL, GAL_TYPE_UINT8, 2, mdsize,
                                          NULL, 1, p->cp.minmapsize,
                                          p->cp.quietmmap, NULL, NULL, NULL);
+
   float *imgss=p->input->array;
+  int32_t *olabel=p->olabel->array;
   double var=cltprm->std*cltprm->std;
   uint8_t *adjacency=adjacency_d->array;
   size_t nngb=gal_dimension_num_neighbors(ndim);
-  int32_t *clumptoobj, *olabel=p->olabel->array;
   size_t *dinc=gal_dimension_increment(ndim, dsize);
   size_t *s, *sf, i, j, ii, rpnum, *nums=nums_d->array;
   double ave, rpsum, c=sqrt(1/p->cpscorr), *sums=sums_d->array;
@@ -249,130 +250,398 @@ segment_relab_to_objects(struct clumps_thread_params *cltprm)
      matrix. Note that at this point, the rivers are also part of the
      "diffuse" regions. So we don't need to go over all the indexs of this
      object, only its diffuse indexs. */
+  sf=(s=cltprm->diffuseindexs->array)+cltprm->diffuseindexs->size;
+  do
+    /* We only want to work on pixels that have already been identified as
+       touching more than one label: river pixels. */
+    if( olabel[ *s ]==GAL_LABEL_RIVER )
+      {
+        /* Initialize the values. */
+        i=ii=0;
+        rpnum=1;              /* River-pixel number of points used. */
+        rpsum=imgss[*s];      /* River-pixel sum of values used.    */
+        memset(ngblabs, 0, nngb*sizeof *ngblabs);
+
+        /* Check all the fully-connected neighbors of this pixel and
+           see if it touches a label or not */
+        GAL_DIMENSION_NEIGHBOR_OP(*s, ndim, dsize, ndim, dinc, {
+            if( olabel[nind] > 0 )
+              {
+                /* Add this neighbor's value and increment the number. */
+                if( !isnan(imgss[nind]) ) { ++rpnum; rpsum+=imgss[nind]; }
+
+                /* Go over the already found neighbors and see if this
+                   grown clump has already been considered or not. */
+                for(i=0;i<ii;++i) if(ngblabs[i]==olabel[nind]) break;
+
+                /* This is the first time we are getting to this
+                   neighbor: */
+                if(i==ii) ngblabs[ ii++ ] = olabel[nind];
+              }
+          } );
+
+        /* For a check:
+        if(ii>0)
+          {
+            printf("%zu, %zu:\n", *s%dsize[1]+1, *s/dsize[1]+1);
+            for(i=0;i<ii;++i) printf("\t%u\n", ngblabs[i]);
+          }
+        */
+
+        /* If more than one neighboring label was found, fill in the
+           'sums' and 'nums' adjacency matrixs with the values for this
+           pixel. Recall that ii is the number of neighboring labels to
+           this river pixel. */
+        if(ii>i)
+          for(i=0;i<ii;++i)
+            for(j=0;j<ii;++j)
+              if(i!=j)
+                {
+                  /* For safety, we will fill both sides of the
+                     diagonal. */
+                  ++nums[ ngblabs[i] * amwidth + ngblabs[j] ];
+                  ++nums[ ngblabs[j] * amwidth + ngblabs[i] ];
+                  sums[ ngblabs[i] * amwidth + ngblabs[j] ] +=
+                    rpsum/rpnum;
+                  sums[ ngblabs[j] * amwidth + ngblabs[i] ] +=
+                    rpsum/rpnum;
+                }
+      }
+  while(++s<sf);
+
+  /* We now have the average values and number of all rivers between
+     the grown clumps. We now want to finalize their connection (given
+     the user's criteria). */
+  for(i=1;i<amwidth;++i)
+    for(j=1;j<i;++j)
+      {
+        ii = i * amwidth + j;
+        if(nums[ii]>p->minriverlength)       /* There is a connection. */
+          {
+            /* For easy reading. */
+            ave=sums[ii]/nums[ii];
+
+            /* In case the average is negative (only possible if 'sums'
+               is negative), don't change the adjacency: it is already
+               initialized to zero. Note that even an area of 1 is
+               acceptable, and we put no area criteria here, because
+               the fact that a river exists between two clumps is
+               important. */
+            if( ave>0.0f && ( c * ave / sqrt(ave+var) ) > p->objbordersn )
+              {
+                adjacency[ii]=1;   /* We want to set both sides of the */
+                adjacency[ j * amwidth + i ] = 1; /* Symmetric matrix. */
+              }
+          }
+      }
+
+  /* For a check:
+  if(cltprm->id==XXX)
+    {
+      printf("=====================\n");
+      printf("%zu:\n--------\n", cltprm->id);
+      for(i=1;i<amwidth;++i)
+        {
+          printf(" %zu...\n", i);
+          for(j=1;j<amwidth;++j)
+            {
+              ii=i*amwidth+j;
+              if(nums[ii])
+                {
+                  ave=sums[ii]/nums[ii];
+                  printf("    ...%zu: N:%-4zu S:%-10.2f S/N: %-10.2f "
+                         "--> %u\n", j, nums[ii], sums[ii],
+                         c*ave/sqrt(ave+var), adjacency[ii]);
+                }
+            }
+          printf("\n");
+        }
+    }
+  */
+
+  /* Calculate the new labels for each grown clump. */
+  cltprm->clumptoobj = gal_binary_connected_adjacency_matrix(adjacency_d,
+                                                     &cltprm->numobjects);
+
+  /* Clean up and return. */
+  free(dinc);
+  free(ngblabs);
+  gal_data_free(nums_d);
+  gal_data_free(sums_d);
+  gal_data_free(adjacency_d);
+}
+
+
+
+
+
+/* For a large number of clumps, 'segment_relab_to_objects_array' will
+   consume too much memory and can completely fill the memory. So we need
+   to use a list-based adjacency solution. */
+typedef struct segment_relab_list_t
+{
+  size_t num;
+  double sum;
+  size_t ngbid;
+  struct segment_relab_list_t *next;
+} segment_relab_list_t;
+
+
+
+
+
+static void
+segment_relab_list_add(struct segment_relab_list_t **list, size_t ngbid,
+                       double value)
+{
+  int done=0;
+  struct segment_relab_list_t *tmp=NULL;
+
+  /* Check if the desired index has already been found or not. Note that if
+     'list' is empty, then it will never enter the loop.*/
+  for(tmp=*list; tmp!=NULL; tmp=tmp->next)
+    if( tmp->ngbid == ngbid )
+      {
+        tmp->sum += value;
+        ++tmp->num;
+        done=1;
+        break;
+      }
+
+  /* Either the list was empty, or the desired index didn't exist in it. So
+     we need to allocate a new node and add it to the list. */
+  if(done==0)
+    {
+      /* Allocate a new node. */
+      errno=0;
+      tmp=malloc(sizeof *tmp);
+      if(tmp==NULL)
+        error(EXIT_FAILURE, errno, "%s: couldn't allocate %zu bytes "
+              "for 'tmp'", __func__, sizeof tmp);
+
+      /* Fill in the node. */
+      tmp->num=1;
+      tmp->sum=value;
+      tmp->ngbid=ngbid;
+
+      /* Put the node at the top of the list. */
+      tmp->next = *list ? *list : NULL;
+      *list=tmp;
+    }
+}
+
+
+
+
+
+static void
+segment_relab_to_objects_list(struct clumps_thread_params *cltprm)
+{
+  size_t amwidth=cltprm->numtrueclumps+1;
+  struct segmentparams *p=cltprm->clprm->p;
+  size_t ndim=p->input->ndim, *dsize=p->input->dsize;
+
+  int addadj;
+  float *imgss=p->input->array;
+  size_t *s, *sf, i, j, ii, rpnum;
+  int32_t *olabel=p->olabel->array;
+  double var=cltprm->std*cltprm->std;
+  gal_list_sizet_t **adjacency, *atmp;
+  segment_relab_list_t **rlist, *rtmp;
+  double ave, rpsum, c=sqrt(1/p->cpscorr);
+  size_t nngb=gal_dimension_num_neighbors(ndim);
+  size_t *dinc=gal_dimension_increment(ndim, dsize);
+  int32_t *ngblabs=gal_pointer_allocate(GAL_TYPE_UINT32, nngb, 0, __func__,
+                                         "ngblabs");
+
+  /* Allocate the two lists to keep the number and sum, as well as the
+     final adjacency matrix. */
+  errno=0;
+  rlist=calloc(amwidth, sizeof *rlist);
+  if(rlist==NULL)
+    error(EXIT_FAILURE, errno, "%s: couldn't allocate %zu bytes for 'rlist'",
+          __func__, amwidth * (sizeof *rlist));
+  errno=0;
+  adjacency=calloc(amwidth, sizeof *adjacency);
+  if(adjacency==NULL)
+    error(EXIT_FAILURE, errno, "%s: couldn't allocate %zu bytes for 'adjacency'",
+          __func__, amwidth * (sizeof *adjacency));
+
+  /* Go over all the still-unlabeled pixels (if they exist) and see which
+     labels they touch. In the process, get the average value of the
+     river-pixel values and put them in the respective adjacency
+     matrix. Note that at this point, the rivers are also part of the
+     "diffuse" regions. So we don't need to go over all the indexs of this
+     object, only its diffuse indexs. */
+  sf=(s=cltprm->diffuseindexs->array)+cltprm->diffuseindexs->size;
+  do
+    /* We only want to work on pixels that have already been identified as
+       touching more than one label: river pixels. */
+    if( olabel[ *s ]==GAL_LABEL_RIVER )
+      {
+        /* Initialize the values. */
+        i=ii=0;
+        rpnum=1;              /* River-pixel number of points used. */
+        rpsum=imgss[*s];      /* River-pixel sum of values used.    */
+        memset(ngblabs, 0, nngb*sizeof *ngblabs);
+
+        /* Check all the fully-connected neighbors of this pixel and
+           see if it touches a label or not */
+        GAL_DIMENSION_NEIGHBOR_OP(*s, ndim, dsize, ndim, dinc, {
+            if( olabel[nind] > 0 )
+              {
+                /* Add this neighbor's value and increment the number. */
+                if( !isnan(imgss[nind]) ) { ++rpnum; rpsum+=imgss[nind]; }
+
+                /* Go over the already found neighbors and see if this
+                   grown clump has already been considered or not. */
+                for(i=0;i<ii;++i) if(ngblabs[i]==olabel[nind]) break;
+
+                /* This is the first time we are getting to this
+                   neighbor: */
+                if(i==ii) ngblabs[ ii++ ] = olabel[nind];
+              }
+          } );
+
+        /* For a check:
+        if(ii>0)
+          {
+            printf("%zu, %zu:\n", *s%dsize[1]+1, *s/dsize[1]+1);
+            for(i=0;i<ii;++i) printf("\t%u\n", ngblabs[i]);
+          }
+        */
+
+        /* If more than one neighboring label was found, fill in the
+           'sums' and 'nums' adjacency matrixs with the values for this
+           pixel. Recall that ii is the number of neighboring labels to
+           this river pixel. */
+        if(ii>i)
+          for(i=0;i<ii;++i)
+            for(j=0;j<ii;++j)
+              if(i!=j)
+                {
+                  /* For safety and ease of processing, we will fill
+                     both sides of the diagonal. */
+                  segment_relab_list_add(&rlist[ ngblabs[i] ], ngblabs[j],
+                                         rpsum/rpnum);
+                  segment_relab_list_add(&rlist[ ngblabs[j] ], ngblabs[i],
+                                         rpsum/rpnum);
+                }
+      }
+  while(++s<sf);
+
+  /* We now have the average values and number of all rivers between
+     the grown clumps. We now want to finalize their connection (given
+     the user's criteria). */
+  for(i=1; i<amwidth; ++i)
+    for(rtmp=rlist[i]; rtmp!=NULL; rtmp=rtmp->next)
+      {
+        if(rtmp->num > p->minriverlength)  /* There is a connection. */
+          {
+            /* For easy reading. */
+            ave = rtmp->sum / rtmp->num;
+
+            /* In case the average is negative (only possible if 'sums'
+               is negative), don't change the adjacency: it is already
+               initialized to zero. Note that even an area of 1 is
+               acceptable, and we put no area criteria here, because
+               the fact that a river exists between two clumps is
+               important. */
+            if( ave>0.0f && ( c * ave / sqrt(ave+var) ) > p->objbordersn )
+              {
+                addadj=1;
+                for(atmp=adjacency[i]; atmp!=NULL; atmp=atmp->next)
+                  if(atmp->v==rtmp->ngbid)
+                    { addadj=0; break; }
+                if(addadj)
+                  {
+                    gal_list_sizet_add(&adjacency[i], rtmp->ngbid);
+                    gal_list_sizet_add(&adjacency[rtmp->ngbid], i);
+                  }
+              }
+          }
+      }
+
+  /* For a check:
+  if(cltprm->id==2)
+    {
+      printf("=====================\n");
+      printf("%zu:\n--------\n", cltprm->id);
+      for(i=1; i<amwidth; ++i)
+        {
+          printf(" %zu...\n", i);
+          for(rtmp=rlist[i]; rtmp!=NULL; rtmp=rtmp->next)
+            {
+              if(rtmp->num)
+                {
+                  ave=rtmp->sum/rtmp->num;
+                  printf("    ...%zu: N:%-4zu S:%-10.2f S/N: %-10.2f\n",
+                         rtmp->ngbid, rtmp->num, rtmp->sum,
+                         c*ave/sqrt(ave+var));
+                }
+            }
+          printf("FINAL: ");
+          for(atmp=adjacency[i]; atmp!=NULL; atmp=atmp->next)
+            printf("%zu ", atmp->v);
+          printf("\n\n");
+        }
+      exit(0);
+    }
+  */
+
+  /* Calculate the new labels for each grown clump. */
+  cltprm->clumptoobj=gal_binary_connected_adjacency_list(adjacency,
+                                               amwidth, p->cp.minmapsize,
+                                               p->cp.quietmmap,
+                                               &cltprm->numobjects);
+
+  /* Clean up. */
+  for(i=1; i<amwidth; ++i)
+    while(rlist[i]!=NULL)
+      { rtmp=rlist[i]->next; free(rlist[i]); rlist[i]=rtmp; }
+  for(i=1; i<amwidth; ++i) gal_list_sizet_free(adjacency[i]);
+  free(adjacency);
+  free(ngblabs);
+  free(rlist);
+  free(dinc);
+}
+
+
+
+
+
+/* Relabel objects. */
+static void
+segment_relab_to_objects(struct clumps_thread_params *cltprm)
+{
+  struct segmentparams *p=cltprm->clprm->p;
+
+  size_t *s, *sf;
+  size_t i, amwidth=cltprm->numtrueclumps+1;
+  int32_t *clumptoobj, *olabel=p->olabel->array;
+
+  /* Find the final object IDs if there is any list of diffuse pixels. It
+     can happen that we don't have a list of diffuse pixels when the user
+     sets a very high 'gthresh' threshold and wants to make sure that each
+     clump is a separate object. So we need to define the number of objects
+     and 'clumptoobj' manually.*/
   if(cltprm->diffuseindexs->size)
     {
-      sf=(s=cltprm->diffuseindexs->array)+cltprm->diffuseindexs->size;
-      do
-        /* We only want to work on pixels that have already been identified
-           as touching more than one label: river pixels. */
-        if( olabel[ *s ]==GAL_LABEL_RIVER )
-          {
-            /* Initialize the values. */
-            i=ii=0;
-            rpnum=1;              /* River-pixel number of points used. */
-            rpsum=imgss[*s];      /* River-pixel sum of values used.    */
-            memset(ngblabs, 0, nngb*sizeof *ngblabs);
-
-            /* Check all the fully-connected neighbors of this pixel and
-               see if it touches a label or not */
-            GAL_DIMENSION_NEIGHBOR_OP(*s, ndim, dsize, ndim, dinc, {
-                if( olabel[nind] > 0 )
-                  {
-                    /* Add this neighbor's value and increment the number. */
-                    if( !isnan(imgss[nind]) ) { ++rpnum; rpsum+=imgss[nind]; }
-
-                    /* Go over the already found neighbors and see if this
-                       grown clump has already been considered or not. */
-                    for(i=0;i<ii;++i) if(ngblabs[i]==olabel[nind]) break;
-
-                    /* This is the first time we are getting to this
-                       neighbor: */
-                    if(i==ii) ngblabs[ ii++ ] = olabel[nind];
-                  }
-              } );
-
-            /* For a check:
-            if(ii>0)
-              {
-                printf("%zu, %zu:\n", *s%dsize[1]+1, *s/dsize[1]+1);
-                for(i=0;i<ii;++i) printf("\t%u\n", ngblabs[i]);
-              }
-            */
-
-            /* If more than one neighboring label was found, fill in the
-               'sums' and 'nums' adjacency matrixs with the values for this
-               pixel. Recall that ii is the number of neighboring labels to
-               this river pixel. */
-            if(ii>i)
-              for(i=0;i<ii;++i)
-                for(j=0;j<ii;++j)
-                  if(i!=j)
-                    {
-                      /* For safety, we will fill both sides of the
-                         diagonal. */
-                      ++nums[ ngblabs[i] * amwidth + ngblabs[j] ];
-                      ++nums[ ngblabs[j] * amwidth + ngblabs[i] ];
-                      sums[ ngblabs[i] * amwidth + ngblabs[j] ] +=
-                        rpsum/rpnum;
-                      sums[ ngblabs[j] * amwidth + ngblabs[i] ] +=
-                        rpsum/rpnum;
-                    }
-          }
-      while(++s<sf);
-
-
-      /* We now have the average values and number of all rivers between
-         the grown clumps. We now want to finalize their connection (given
-         the user's criteria). */
-      for(i=1;i<amwidth;++i)
-        for(j=1;j<i;++j)
-          {
-            ii = i * amwidth + j;
-            if(nums[ii]>p->minriverlength)       /* There is a connection. */
-              {
-                /* For easy reading. */
-                ave=sums[ii]/nums[ii];
-
-                /* In case the average is negative (only possible if 'sums'
-                   is negative), don't change the adjacency: it is already
-                   initialized to zero. Note that even an area of 1 is
-                   acceptable, and we put no area criteria here, because
-                   the fact that a river exists between two clumps is
-                   important. */
-                if( ave>0.0f && ( c * ave / sqrt(ave+var) ) > p->objbordersn )
-                  {
-                    adjacency[ii]=1;   /* We want to set both sides of the */
-                    adjacency[ j * amwidth + i ] = 1; /* Symmetric matrix. */
-                  }
-              }
-          }
-
-
-      /* For a check:
-      if(cltprm->id==XXX)
-        {
-          printf("=====================\n");
-          printf("%zu:\n--------\n", cltprm->id);
-          for(i=1;i<amwidth;++i)
-            {
-              printf(" %zu...\n", i);
-              for(j=1;j<amwidth;++j)
-                {
-                  ii=i*amwidth+j;
-                  if(nums[ii])
-                    {
-                      ave=sums[ii]/nums[ii];
-                      printf("    ...%zu: N:%-4zu S:%-10.2f S/N: %-10.2f "
-                             "--> %u\n", j, nums[ii], sums[ii],
-                             c*ave/sqrt(ave+var), adjacency[ii]);
-                    }
-                }
-              printf("\n");
-            }
-        }
-      */
-
-
-      /* Calculate the new labels for each grown clump. */
-      cltprm->clumptoobj = gal_binary_connected_adjacency_matrix(adjacency_d,
-                                                         &cltprm->numobjects);
+      /* See if we should use a matrix-based adjacent finding (good for
+         small numbers) or a list-based method (necessary for large
+         numbers). Here we'll set the limit to 1000, because of this: the
+         adjacency array will be 1e6 pixels in three types (size_t, double
+         and uint8_t), so it will consume (8+8+1)*1e6 bytes which is 17
+         megabytes and reasonable. But the same argument for a 10000 limit
+         would be 17*e8 bytes or 1.7GB which is not reasonable. Note that
+         cases with +600000 have also been encountered (wide images of
+         dense fields near the Milky way disk). */
+      if( amwidth>1000 )
+        segment_relab_to_objects_list(cltprm);
+      else
+        segment_relab_to_objects_array(cltprm);
       clumptoobj = cltprm->clumptoobj->array;
     }
-
-  /* There was no list of diffuse pixels, this happens when the user sets a
-     very high 'gthresh' threshold and wants to make sure that each clump
-     is a separate object. So we need to define the number of objects and
-     'clumptoobj' manually. */
   else
     {
       /* Allocate the 'clumptoobj' array. */
@@ -388,7 +657,6 @@ segment_relab_to_objects(struct clumps_thread_params *cltprm)
       cltprm->numobjects = cltprm->numtrueclumps;
     }
 
-
   /* For a check
   if(cltprm->id==XXXX)
     {
@@ -400,22 +668,14 @@ segment_relab_to_objects(struct clumps_thread_params *cltprm)
     }
   */
 
-
   /* Correct all the labels. */
   sf=(s=cltprm->indexs->array)+cltprm->indexs->size;
   do
     if( olabel[*s] > 0 )
       olabel[*s] = clumptoobj[ olabel[*s] ];
   while(++s<sf);
-
-
-  /* Clean up and return. */
-  free(dinc);
-  free(ngblabs);
-  gal_data_free(nums_d);
-  gal_data_free(sums_d);
-  gal_data_free(adjacency_d);
 }
+
 
 
 
@@ -678,7 +938,10 @@ segment_on_threads(void *in_prm)
 
               /* Identify the objects in this detection using the grown
                  clumps and correct the grown clump labels into new object
-                 labels. */
+                 labels. When the number of clumps are large the
+                 array-based adjacency finding will consume too much
+                 memory. So we should switch to a list-based adjacency
+                 process instead. */
               segment_relab_to_objects(&cltprm);
               if(clprm->step==4)
                 {

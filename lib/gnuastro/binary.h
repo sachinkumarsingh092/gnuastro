@@ -96,6 +96,10 @@ gal_data_t *
 gal_binary_connected_adjacency_matrix(gal_data_t *adjacency,
                                       size_t *numnewlabs);
 
+gal_data_t *
+gal_binary_connected_adjacency_list(gal_list_sizet_t **listarr,
+                                    size_t number, size_t minmapsize,
+                                    int quietmmap, size_t *numconnected);
 
 /*********************************************************************/
 /*****************            Fill holes          ********************/

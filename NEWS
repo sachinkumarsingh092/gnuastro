@@ -107,6 +107,8 @@ See the end of the file for license conditions.
 
   Library:
    - GAL_ARITHMETIC_OP_MAKENEW: new 'makenew' operator.
+   - gal_binary_connected_adjacency_list: finding connected components
+     without a square adjacency matrix (which can consume major RAM).
    - gal_blank_flag_remove: Remove all flagged elements in a dataset.
    - gal_blank_remove_rows: remove all rows that have at least one blank.
    - gal_fits_hdu_datasum: calculate DATASUM of given HDU in given FITS file.
@@ -176,6 +178,7 @@ See the end of the file for license conditions.
   bug #59400: CosmicCalculator fails --printparams when redshift isn't given.
   bug #59459: Unclear WCS when both PC and CD exist in input, but conflict.
   bug #59625: MakeProfiles uses last --kernel, if it is called more than once.
+  bug #59700: Segment's excessive RAM usage when many clumps over a detection.
 
 
 
