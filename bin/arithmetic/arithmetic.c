@@ -840,8 +840,8 @@ arithmetic_interpolate_region(struct arithmeticparams *p,
 static void
 arithmetic_interpolate(struct arithmeticparams *p, int operator, char *token)
 {
-  int num_int, interpop;
   gal_data_t *interpolated;
+  int num_int, interpop=GAL_ARITHMETIC_OP_INVALID;
 
   /* First pop the number of nearby neighbors.*/
   gal_data_t *num = operands_pop(p, token);

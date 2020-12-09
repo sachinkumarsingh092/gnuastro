@@ -456,9 +456,9 @@ static void
 arithmetic_distance(struct tableparams *p, gal_data_t **stack, int operator)
 {
   size_t i, j;
-  char *colname, *colcomment;
   double *o, *a1, *a2, *b1, *b2;
   gal_data_t *a, *b, *tmp, *out;
+  char *colname=NULL, *colcomment=NULL;
   double (*distance_func)(double, double, double, double);
 
   /* Pop the columns for point 'b'.*/

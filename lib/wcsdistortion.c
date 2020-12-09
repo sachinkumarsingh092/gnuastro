@@ -88,7 +88,6 @@ wcsdistortion_get_tpvparams(struct wcsprm *wcs, double cd[2][2],
   disseq=wcs->lin.disseq;
   keyp=disseq->dp;
 
-
   /* Fill the 2-times allocated CD array (cd[][]). Note that the required
     CD matix is extracted using the `gal_wcs_wrap_matrix` as a single
     allocated array (temp_cd[]), that is then used to fill cd[][]. */
@@ -110,8 +109,7 @@ wcsdistortion_get_tpvparams(struct wcsprm *wcs, double cd[2][2],
       /* For axis1. */
       if (keyp->j == 1)
         {
-          /* Ignore any missing keyvalues. */
-          if ( keyp->field == NULL ) continue;
+          if ( keyp->field[0] == '\0' ) continue;
           cp = strchr(keyp->field, '.') + 1;
           if (strncmp(cp, "TPV.", 4) != 0) continue;
           cp += 4;
@@ -127,9 +125,7 @@ wcsdistortion_get_tpvparams(struct wcsprm *wcs, double cd[2][2],
       /* For axis2. */
       else if (keyp->j == 2)
         {
-          /* Ignore any missing keyvalues. */
-          if ( keyp->field == NULL ) continue;
-
+          if ( keyp->field[0] == '\0' ) continue;
           cp = strchr(keyp->field, '.') + 1;
           if (strncmp(cp, "TPV.", 4) != 0) continue;
           cp += 4;
@@ -207,9 +203,7 @@ wcsdistortion_get_sipparams(struct wcsprm *wcs, double cd[2][2],
       /* For axis1. */
       if (keyp->j == 1)
         {
-          /* Ignore any missing keyvalues. */
-          if ( keyp->field == NULL ) continue;
-
+          if ( keyp->field[0] == '\0' ) continue;
           cp = strchr(keyp->field, '.') + 1;
           if (strncmp(cp, "SIP.FWD.", 8) != 0) continue;
           cp += 8;
@@ -225,9 +219,7 @@ wcsdistortion_get_sipparams(struct wcsprm *wcs, double cd[2][2],
       /* For axis2. */
       else if (keyp->j == 2)
         {
-          /* Ignore any missing keyvalues. */
-          if ( keyp->field == NULL ) continue;
-
+          if ( keyp->field[0] == '\0' ) continue;
           cp = strchr(keyp->field, '.') + 1;
           if (strncmp(cp, "SIP.FWD.", 8) != 0) continue;
           cp += 8;
