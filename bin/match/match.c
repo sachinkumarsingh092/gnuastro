@@ -349,6 +349,29 @@ match_catalog_write_one(struct matchparams *p, gal_data_t *a, gal_data_t *b,
 
 
 
+/* Wrapper over the k-d tree library to return an output in the same format
+   as 'gal_match_coordinates'. If this funciton  */
+static gal_data_t *
+match_catalog_kdtree(struct matchparams *p)
+{
+  /* The input coordinates are already available in 'p->cols1' (which is
+     already stored as double).
+
+     Also, the 'p->kdtreemode' contains the k-d tree operation mode (mode
+     codes are defined as an 'enum' in 'main.h'): you can use a
+     'switch'. If the mode isn't 'MATCH_KDTREE_BUILD', you also have the
+     second input (to match against) in 'p->cols2' (again, already stored
+     as 'double'). */
+
+  /* Remove this after it works. */
+  printf("%s: ... read to go ;-) ...\n", __func__);
+  exit(0);
+}
+
+
+
+
+
 static void
 match_catalog(struct matchparams *p)
 {
@@ -358,9 +381,16 @@ match_catalog(struct matchparams *p)
   size_t nummatched, *acolmatch=NULL, *bcolmatch=NULL;
 
   /* Find the matching coordinates. We are doing the processing in
-     place, */
-  mcols=gal_match_coordinates(p->cols1, p->cols2, p->aperture->array, 0, 1,
-                              p->cp.minmapsize, p->cp.quietmmap, &nummatched);
+     place. */
+  if(p->kdtreemode!=MATCH_KDTREE_DISABLE)
+    mcols=match_catalog_kdtree(p);
+
+  /* Incase it was decided not to use a k-d tree at all (in 'automatic'
+     mode), then we need to use the classic mode.*/
+  if(mcols==NULL)
+    mcols=gal_match_coordinates(p->cols1, p->cols2, p->aperture->array,
+                                0, 1, p->cp.minmapsize, p->cp.quietmmap,
+                                &nummatched);
 
   /* If the output is to be taken from the input columns (it isn't just the
      log), then do the job. */

@@ -42,6 +42,15 @@ enum match_modes
   MATCH_MODE_CATALOG,
 };
 
+enum kdtree_modes
+{
+  MATCH_KDTREE_INVALID,           /* ==0 by default. */
+  MATCH_KDTREE_BUILD,
+  MATCH_KDTREE_INTERNAL,
+  MATCH_KDTREE_AUTO,
+  MATCH_KDTREE_DISABLE,
+  MATCH_KDTREE_FILE,
+};
 
 
 
@@ -58,6 +67,7 @@ struct matchparams
   gal_data_t           *coord;  /* Array of manual coordinate values.   */
   gal_data_t         *outcols;  /* Array of second input column names.  */
   gal_data_t        *aperture;  /* Acceptable matching aperture.        */
+  char                *kdtree;  /* The mode to use k-d tree mode.       */
   uint8_t         logasoutput;  /* Don't rearrange inputs, out is log.  */
   uint8_t          notmatched;  /* Output is rows that don't match.     */
 
@@ -73,6 +83,7 @@ struct matchparams
   char              *out1name;  /* Name of first matched output.        */
   char              *out2name;  /* Name of second matched output.       */
   gal_list_str_t  *stdinlines;  /* Lines given by Standard input.       */
+  int              kdtreemode;  /* The k-d tree mode.                   */
 
   /* Output: */
   time_t              rawtime;  /* Starting time of the program.        */

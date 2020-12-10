@@ -156,6 +156,19 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET,
       gal_options_parse_csv_float64
     },
+    {
+      "kdtree",
+      UI_KEY_KDTREE,
+      "STR",
+      0,
+      "build, internal, automatic, none, FILE.",
+      UI_GROUP_CATALOGMATCH,
+      &p->kdtree,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+    },
 
 
 
