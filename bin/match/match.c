@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/match.h>
 #include <gnuastro/table.h>
+#include <gnuastro/kdtree.h>
 #include <gnuastro/pointer.h>
 #include <gnuastro/permutation.h>
 
@@ -349,8 +350,48 @@ match_catalog_write_one(struct matchparams *p, gal_data_t *a, gal_data_t *b,
 
 
 
+static gal_data_t *
+match_catalog_kdtree_build(struct matchparams *p, char *kdtreefile)
+{
+  size_t root;
+  gal_data_t *input, *kdtree;
+  // gal_list_str_t *cols = p->ccol1->array;
+  gal_fits_list_key_t *keylist=NULL;
+
+  /* Meta-data in the output fits file. */
+  char *unit = "index";
+  char *keyname = "KDTROOT";
+  char *inputfile = p->input1name;
+  char *comment = "k-d tree root index (counting from 0).";
+
+  /* Read the input table. */
+  input = gal_table_read(inputfile, "1", NULL, NULL,
+                          GAL_TABLE_SEARCH_NAME, 0, -1, 0, NULL);
+
+  /* Construct a k-d tree. The index of root is stored in 'root'. */
+  kdtree = gal_kdtree_create(input, &root);
+
+  /* Write the k-d tree to a file and write root index and input name
+     as FITS keywords ('gal_table_write' frees 'keylist'). */
+  gal_fits_key_list_title_add(&keylist, "k-d tree parameters", 0);
+  gal_fits_key_write_filename("KDTIN", inputfile, &keylist, 0);
+  gal_fits_key_list_add_end(&keylist, GAL_TYPE_SIZE_T, keyname, 0,
+                            &root, 0, comment, 0, unit, 0);
+  gal_table_write(kdtree, &keylist, NULL, GAL_TABLE_FORMAT_BFITS,
+                  kdtreefile, "kdtree", 0);
+
+  /* Clean up and return. */
+  gal_list_data_free(input);
+  return kdtree;
+}
+
+
+
+
+
+
 /* Wrapper over the k-d tree library to return an output in the same format
-   as 'gal_match_coordinates'. If this funciton  */
+   as 'gal_match_coordinates'. */
 static gal_data_t *
 match_catalog_kdtree(struct matchparams *p)
 {
@@ -362,10 +403,37 @@ match_catalog_kdtree(struct matchparams *p)
      'switch'. If the mode isn't 'MATCH_KDTREE_BUILD', you also have the
      second input (to match against) in 'p->cols2' (again, already stored
      as 'double'). */
+  int mode = 0;
+  char *kdtreefile = p->cp.output;
+  gal_data_t *kdtree=NULL;
 
-  /* Remove this after it works. */
-  printf("%s: ... read to go ;-) ...\n", __func__);
-  exit(0);
+  /* Check the mode of operation for the kd-tree. */
+  if(strcmp(p->kdtree, "build") == 0)
+    mode = MATCH_KDTREE_BUILD;
+  else if(strcmp(p->kdtree, "internal") == 0)
+    mode = MATCH_KDTREE_INTERNAL;
+  else if(strcmp(p->kdtree, "automatic") == 0)
+    mode = MATCH_KDTREE_AUTO;
+  else if(strcmp(p->kdtree, "none") == 0)
+    mode = MATCH_KDTREE_DISABLE;
+  else
+    mode = MATCH_KDTREE_FILE;
+
+  /* Operate according to the required mode. */
+  switch(mode)
+    {
+      case MATCH_KDTREE_BUILD:
+        kdtree = match_catalog_kdtree_build(p, kdtreefile);
+        break;
+      case MATCH_KDTREE_INTERNAL:
+        break;
+      // Similar for other cases
+
+      default:
+        break;
+    }
+
+  return kdtree;
 }
 
 
@@ -380,13 +448,13 @@ match_catalog(struct matchparams *p)
   gal_data_t *a=NULL, *b=NULL;
   size_t nummatched, *acolmatch=NULL, *bcolmatch=NULL;
 
-  /* Find the matching coordinates. We are doing the processing in
-     place. */
+  /* If we want to use kd-tree for matching. */
   if(p->kdtreemode!=MATCH_KDTREE_DISABLE)
     mcols=match_catalog_kdtree(p);
 
-  /* Incase it was decided not to use a k-d tree at all (in 'automatic'
-     mode), then we need to use the classic mode.*/
+  /* Find the matching coordinates. We are doing the processing in
+     place. Incase it was decided not to use a k-d tree at all
+     (in 'automatic' mode), then we need to use the classic mode. */
   if(mcols==NULL)
     mcols=gal_match_coordinates(p->cols1, p->cols2, p->aperture->array,
                                 0, 1, p->cp.minmapsize, p->cp.quietmmap,
