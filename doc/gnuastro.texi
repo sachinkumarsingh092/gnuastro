@@ -2263,7 +2263,7 @@ $ echo $n $r
 ## Use the number of pixels (first number passed to AWK) and
 ## length of each pixel's edge (second number passed to AWK)
 ## to estimate the area of the field in arc-minutes squared.
-$ echo $n $r | awk '@{print $1 * ($2^2) * 3600@}'
+$ echo $n $r | awk '@{print $1 * ($2*60)^2@}'
 @end example
 
 The output of the last command (area of this field) is 4.03817 (or approximately 4.04) arc-minutes squared.
@@ -2339,7 +2339,7 @@ For example the loop below will calculate and print the tangential coverage of t
 @example
 $ for z in $(seq 0.1 0.1 5); do                                  \
     k=$(astcosmiccal -z$z --arcsectandist);                      \
-    echo $z $k $area | awk '@{print $1, ($2*60)^2 * $3 / 1e6@}';   \
+    echo $z $k $a | awk '@{print $1, ($2*60)^2 * $3 / 1e6@}';   \
   done
 @end example
 
@@ -3181,7 +3181,7 @@ $ asttable two-in-one.fits -i
 @end example
 
 Looking at the two metadata outputs (called with @option{-i}), you may have noticed that both tables have the same number of rows.
-But what might have attracted your attention more, is that @file{both-mags.fits} has double the number of columns (as expected, after all, you merged both tables into one file).
+But what might have attracted your attention more, is that @file{two-in-one.fits} has double the number of columns (as expected, after all, you merged both tables into one file).
 In fact you can concatenate any number of other tables in one command, for example:
 
 @example
@@ -3283,7 +3283,7 @@ To add metadata, you can use @option{--colmetadata} like before:
 @example
 $ asttable three-in-one-3.fits -ocolor-cat.fits -c1,2,RA,DEC \
          --column='arith MAG-F105W MAG-F160W -' \
-         --colmetadata=ARITH_1,F125W-F160W,log,"Magnitude difference"
+         --colmetadata=ARITH_1,F105W-F160W,log,"Magnitude difference"
 @end example
 
 We are now ready to make our final table.
@@ -3445,23 +3445,24 @@ With @option{--aperture} you specify the acceptable error (radius in 2D), in the
 $ astmatch cat/xdf-f160w.fits           cat/xdf-f105w.fits         \
            --hdu=CLUMPS                 --hdu2=CLUMPS              \
            --ccol1=RA,DEC               --ccol2=RA,DEC             \
-           --aperture=0.5/3600 --log                               \
+           --aperture=0.5/3600                                     \
            --output=matched.fits
 $ astfits matched.fits
 @end example
 
 From the second command, you see that the output has two extensions and that both have the same number of rows.
-The rows in each extension correspond with the rows in the other.
+The rows in each extension are the matched rows of the respective input table: those in the first HDU come from the first input and those in the second HDU come from the second.
+However, their order may be different from the input tables because the rows match: the first row in the first HDU matches with the first row in the second HDU, and etc.
 You can also see which objects didn't match with the @option{--notmatched}, like below.
-Note how each extension now has a different number of rows.
+Note how each extension of  now has a different number of rows.
 
 @example
 $ astmatch cat/xdf-f160w.fits           cat/xdf-f105w.fits         \
            --hdu=CLUMPS                 --hdu2=CLUMPS              \
            --ccol1=RA,DEC               --ccol2=RA,DEC             \
-           --aperture=0.5/3600 --log                               \
-           --output=matched.fits        --notmatched
-$ astfits matched.fits
+           --aperture=0.5/3600                                     \
+           --output=not-matched.fits    --notmatched
+$ astfits not-matched.fits
 @end example
 
 The @option{--outcols} of Match is a very convenient feature: you can use it to specify which columns from the two catalogs you want in the output (merge two input catalogs into one).
@@ -3473,7 +3474,7 @@ Also, if the first character is followed by @code{_all}, then all the columns fr
 $ astmatch cat/xdf-f160w.fits           cat/xdf-f105w.fits         \
            --hdu=CLUMPS                 --hdu2=CLUMPS              \
            --ccol1=RA,DEC               --ccol2=RA,DEC             \
-           --aperture=0.35/3600 --log                              \
+           --aperture=0.35/3600                                    \
            --outcols=a_all,bMAGNITUDE,bSN                          \
            --output=matched.fits
 $ astfits matched.fits
