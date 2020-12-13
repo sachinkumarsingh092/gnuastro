@@ -33,7 +33,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/box.h>
 #include <gnuastro/list.h>
 #include <gnuastro/blank.h>
+#include <gnuastro/kdtree.h>
 #include <gnuastro/pointer.h>
+#include <gnuastro/threads.h>
 #include <gnuastro/permutation.h>
 
 
@@ -893,7 +895,7 @@ gal_match_coordinates_output(gal_data_t *A, gal_data_t *B, size_t *A_perm,
    changes the inputs' order), the output permutation will correspond to
    original inputs.
 
-   The output is a list of 'gal_data_t' with the following columns:
+   The output is a list of 'gal_data_t's with the following columns:
 
        Node 1: First catalog index (counting from zero).
        Node 2: Second catalog index (counting from zero).
@@ -955,4 +957,136 @@ gal_match_coordinates(gal_data_t *coord1, gal_data_t *coord2,
   /* Set 'nummatched' and return output. */
   *nummatched = out ?  out->next->next->size : 0;
   return out;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/********************************************************************/
+/*************             k-d tree matching            *************/
+/********************************************************************/
+struct match_kdtree_params
+{
+  size_t               ndim;  /* The number of dimensions.            */
+  gal_data_t        *coord1;  /* 1st coordinate list of 'gal_data_t's */
+  gal_data_t        *coord2;  /* 2nd coordinate list of 'gal_data_t's */
+  size_t           *c2match;  /* Matched IDs for the second coords.   */
+  double          *aperture;  /* Acceptable aperture for match.       */
+  size_t        kdtree_root;  /* Index (counting from 0) of root.     */
+  gal_data_t *coord1_kdtree;  /* k-d tree of first coordinate.        */
+};
+
+
+
+
+/* Main k-d tree matching function. */
+static void *
+match_kdtree_worker(void *in_prm)
+{
+  /* Low-level definitions to be done first. */
+  struct gal_threads_params *tprm=(struct gal_threads_params *)in_prm;
+  struct match_kdtree_params *p=(struct match_kdtree_params *)tprm->params;
+
+  /* High level definitions. */
+  gal_data_t *ccol;
+  double *point, least_dist;
+  size_t i, j, index, mindex;
+
+  /* Allocate space for all the matching points (based on the number of
+     dimensions). */
+  gal_pointer_allocate(GAL_TYPE_FLOAT64, p->ndim, 0, __func__, "point");
+
+  /* Go over all the actions (pixels in this case) that were assigned to
+     this thread. */
+  for(i=0; tprm->indexs[i] != GAL_BLANK_SIZE_T; ++i)
+    {
+      /* Fill the 'point' for this thread. */
+      j=0;
+      index = tprm->indexs[i];
+      for(ccol=p->coord2; ccol!=NULL; ccol=ccol->next)
+        point[ j++ ] = ((double *)(ccol->array))[index];
+
+      /* Find the index of the nearest neighbor to this item. */
+      mindex=gal_kdtree_nearest_neighbour(p->coord1, p->coord1_kdtree,
+                                          p->kdtree_root, point, &least_dist);
+
+      /* Make sure the matched point is within the given aperture.
+         ###############################
+         The '1' check should be fixed to see if the matched point is
+         within the requested aperture (note that the aperture can be
+         elliptical!).
+         ############################### */
+      mindex= 1 ? mindex : GAL_BLANK_SIZE_T;
+
+      /* Put the matched index into the final array for this index. */
+      p->c2match[index]=mindex;
+    }
+
+  /* Wait for all the other threads to finish, then return. */
+  if(tprm->b) pthread_barrier_wait(tprm->b);
+  return NULL;
+}
+
+
+
+
+
+gal_data_t *
+gal_match_kdtree(gal_data_t *coord1, gal_data_t *coord2,
+                 gal_data_t *coord1_kdtree, size_t kdtree_root,
+                 double *aperture, size_t numthreads, size_t minmapsize,
+                 int quietmmap)
+{
+  gal_data_t *c2match;
+  struct match_kdtree_params p;
+
+  /* Basic sanity checks. */
+  p.ndim=gal_list_data_number(coord1);
+  if( (   p.ndim != gal_list_data_number(coord2))
+      || (p.ndim != gal_list_data_number(coord1_kdtree)) )
+    error(EXIT_FAILURE, 0, "%s: the 'coord1', 'coord2' and 'coord1_kdtree' "
+          "arguments should have the same number of nodes/columns (elements "
+          "in a simply linked list). But they each respectively have %zu, "
+          "%zu and %zu nodes/columns", __func__, p.ndim,
+          gal_list_data_number(coord2), gal_list_data_number(coord1_kdtree));
+  if( coord1->type!=GAL_TYPE_FLOAT64 )
+    error(EXIT_FAILURE, 0, "%s: the type of 'coord1' should be 'double', "
+          "but it is '%s'", __func__, gal_type_name(coord1->type, 1));
+  if( coord2->type!=GAL_TYPE_FLOAT64 )
+    error(EXIT_FAILURE, 0, "%s: the type of 'coord2' should be 'double', "
+          "but it is '%s'", __func__, gal_type_name(coord2->type, 1));
+  if( coord1_kdtree->type!=GAL_TYPE_UINT32 )
+    error(EXIT_FAILURE, 0, "%s: the type of 'coord1_kdtree' should be "
+          "'uint32', but it is '%s'", __func__,
+          gal_type_name(coord1_kdtree->type, 1));
+
+  /* Allocate the space to keep results. */
+  c2match=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &coord2->size, NULL, 0,
+                         minmapsize, quietmmap, NULL, NULL, NULL);
+
+  /* Set the threading parameters and spin-off the threads. */
+  p.coord1=coord1;
+  p.coord2=coord2;
+  p.aperture=aperture;
+  p.c2match=c2match->array;
+  p.kdtree_root=kdtree_root;
+  p.coord1_kdtree=coord1_kdtree;
+  gal_threads_spin_off(match_kdtree_worker, &p, coord2->size, numthreads,
+                       minmapsize, quietmmap);
 }

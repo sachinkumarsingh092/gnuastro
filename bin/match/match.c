@@ -350,41 +350,48 @@ match_catalog_write_one(struct matchparams *p, gal_data_t *a, gal_data_t *b,
 
 
 
-static gal_data_t *
-match_catalog_kdtree_build(struct matchparams *p, char *kdtreefile)
+static void
+match_catalog_kdtree_build(struct matchparams *p)
 {
   size_t root;
-  gal_data_t *input, *kdtree;
-  // gal_list_str_t *cols = p->ccol1->array;
+  gal_data_t *kdtree;
   gal_fits_list_key_t *keylist=NULL;
 
   /* Meta-data in the output fits file. */
   char *unit = "index";
   char *keyname = "KDTROOT";
-  char *inputfile = p->input1name;
   char *comment = "k-d tree root index (counting from 0).";
 
-  /* Read the input table. */
-  input = gal_table_read(inputfile, "1", NULL, NULL,
-                          GAL_TABLE_SEARCH_NAME, 0, -1, 0, NULL);
-
-  /* Construct a k-d tree. The index of root is stored in 'root'. */
-  kdtree = gal_kdtree_create(input, &root);
+  /* Construct a k-d tree from 'p->cols1': the index of root is stored in
+     'root'. */
+  kdtree = gal_kdtree_create(p->cols1, &root);
 
   /* Write the k-d tree to a file and write root index and input name
      as FITS keywords ('gal_table_write' frees 'keylist'). */
   gal_fits_key_list_title_add(&keylist, "k-d tree parameters", 0);
-  gal_fits_key_write_filename("KDTIN", inputfile, &keylist, 0);
+  gal_fits_key_write_filename("KDTIN", p->input1name, &keylist, 0);
   gal_fits_key_list_add_end(&keylist, GAL_TYPE_SIZE_T, keyname, 0,
                             &root, 0, comment, 0, unit, 0);
   gal_table_write(kdtree, &keylist, NULL, GAL_TABLE_FORMAT_BFITS,
-                  kdtreefile, "kdtree", 0);
+                  p->out1name, "kdtree", 0);
 
-  /* Clean up and return. */
-  gal_list_data_free(input);
-  return kdtree;
+  /* Let the user know that the k-d tree has been built. */
+  if(!p->cp.quiet)
+    fprintf(stdout, "Output (k-d tree): %s\n", p->out1name);
 }
 
+
+
+
+
+/* See if a k-d tree should be used (MATCH_KDTREE_INTERNAL) or classical
+   matching (MATCH_KDTREE_DISABLE). */
+static int
+match_catalog_kdtree_auto(struct matchparams *p)
+{
+  error(EXIT_FAILURE, 0, "%s: not yet implemented!", __func__);
+  return MATCH_KDTREE_INVALID;
+}
 
 
 
@@ -395,45 +402,33 @@ match_catalog_kdtree_build(struct matchparams *p, char *kdtreefile)
 static gal_data_t *
 match_catalog_kdtree(struct matchparams *p)
 {
-  /* The input coordinates are already available in 'p->cols1' (which is
-     already stored as double).
+  gal_data_t *out=NULL;
 
-     Also, the 'p->kdtreemode' contains the k-d tree operation mode (mode
-     codes are defined as an 'enum' in 'main.h'): you can use a
-     'switch'. If the mode isn't 'MATCH_KDTREE_BUILD', you also have the
-     second input (to match against) in 'p->cols2' (again, already stored
-     as 'double'). */
-  int mode = 0;
-  char *kdtreefile = p->cp.output;
-  gal_data_t *kdtree=NULL;
-
-  /* Check the mode of operation for the kd-tree. */
-  if(strcmp(p->kdtree, "build") == 0)
-    mode = MATCH_KDTREE_BUILD;
-  else if(strcmp(p->kdtree, "internal") == 0)
-    mode = MATCH_KDTREE_INTERNAL;
-  else if(strcmp(p->kdtree, "automatic") == 0)
-    mode = MATCH_KDTREE_AUTO;
-  else if(strcmp(p->kdtree, "none") == 0)
-    mode = MATCH_KDTREE_DISABLE;
-  else
-    mode = MATCH_KDTREE_FILE;
+  /* If we are in automatic mode, we should look at the data (number of
+     rows/columns) and system (number of threads) to decide if the mode
+     should be set to 'MATCH_KDTREE_INTERNAL' or 'MATCH_KDTREE_DISABLE'. */
+  if(p->kdtreemode==MATCH_KDTREE_AUTO)
+    p->kdtreemode=match_catalog_kdtree_auto(p);
 
   /* Operate according to the required mode. */
-  switch(mode)
+  switch(p->kdtreemode)
     {
-      case MATCH_KDTREE_BUILD:
-        kdtree = match_catalog_kdtree_build(p, kdtreefile);
-        break;
-      case MATCH_KDTREE_INTERNAL:
-        break;
-      // Similar for other cases
+    /* Build a k-d tree and don't continue. */
+    case MATCH_KDTREE_BUILD:
+      match_catalog_kdtree_build(p);
+      break;
 
-      default:
-        break;
+    /* Do the k-d tree matching. */
+    case MATCH_KDTREE_INTERNAL:
+      error(EXIT_FAILURE, 0, "%s: internal kd tree usage not "
+            "yet implemented", __func__);
+      break;
+
+    /* No 'default' necessary because the modes include disabling. */
     }
 
-  return kdtree;
+  /* Return the final match. */
+  return out;
 }
 
 
@@ -450,7 +445,14 @@ match_catalog(struct matchparams *p)
 
   /* If we want to use kd-tree for matching. */
   if(p->kdtreemode!=MATCH_KDTREE_DISABLE)
-    mcols=match_catalog_kdtree(p);
+    {
+      /* The main processing function. */
+      mcols=match_catalog_kdtree(p);
+
+      /* If the user just asked to build a k-d tree, no futher processing
+         is necessary. */
+      if(p->kdtreemode==MATCH_KDTREE_BUILD) return;
+    }
 
   /* Find the matching coordinates. We are doing the processing in
      place. Incase it was decided not to use a k-d tree at all

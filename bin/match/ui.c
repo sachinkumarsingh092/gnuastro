@@ -235,6 +235,15 @@ ui_read_check_only_options(struct matchparams *p)
           "automatically if a k-d tree should be used or not), 'disable' "
           "(to not use a k-d tree at all), a FITS file name (the file to "
           "read a created k-d tree from)", p->kdtree);
+
+  /* Make sure that the k-d tree build mode is not called with
+     '--outcols'. */
+  if( p->kdtreemode==MATCH_KDTREE_BUILD && (p->outcols || p->coord) )
+    error(EXIT_FAILURE, 0, "the '--kdtree=build' option is incompatible "
+          "with the '--outcols' or '--coord' options (because in the k-d "
+          "tree building mode doesn't involve actual matching. It will "
+          "only build k-d tree and write it to a file so it can be used "
+          "in future matches)");
 }
 
 
@@ -649,7 +658,7 @@ ui_set_columns_sanity_check_read_aperture(struct matchparams *p)
               "dimensions is deduced from the number of values given to "
               "'--ccol1' (or '--coord') and '--ccol2'", ccol1n);
       }
-  else
+  else if ( p->kdtreemode != MATCH_KDTREE_BUILD )
     error(EXIT_FAILURE, 0, "no matching aperture specified. Please use "
           "the '--aperture' option to define the acceptable aperture for "
           "matching the coordinates (in the same units as each "
@@ -871,6 +880,7 @@ static void
 ui_preparations_out_name(struct matchparams *p)
 {
   /* To temporarily keep the original value. */
+  char *suffix;
   uint8_t keepinputdir_orig;
   char *refname = p->input1name ? p->input1name : p->input2name;
 
@@ -899,14 +909,19 @@ ui_preparations_out_name(struct matchparams *p)
     }
   else
     {
-      if(p->outcols || p->coord)
+      if(p->outcols || p->coord || p->kdtreemode==MATCH_KDTREE_BUILD)
         {
           if(p->cp.output)
             gal_checkset_allocate_copy(p->cp.output, &p->out1name);
           else
-            p->out1name = gal_checkset_automatic_output(&p->cp,
-                 refname, ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
-                                  ? "_matched.txt" : "_matched.fits") );
+            {
+              suffix = ( p->kdtreemode==MATCH_KDTREE_BUILD
+                         ? "_kdtree.fits"
+                         : ( p->cp.tableformat==GAL_TABLE_FORMAT_TXT
+                             ? "_matched.txt" : "_matched.fits") );
+              p->out1name = gal_checkset_automatic_output(&p->cp,
+                                                          refname, suffix);
+            }
           gal_checkset_writable_remove(p->out1name, 0, p->cp.dontdelete);
         }
       else
