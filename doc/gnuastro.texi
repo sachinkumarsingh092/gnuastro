@@ -2223,7 +2223,42 @@ This is especially convenient when you just want to make a small change to your 
 Press the ``up'' key on your keyboard (possibly multiple times) to see your previous command(s) and modify them accordingly.
 @end cartouche
 
+@cartouche
+@noindent
+@cindex Locale
+@cindex @code{LANG}
+@cindex @code{LC_ALL}
+@cindex Decimal separator
+@strong{Your locale doesn't use `.' as decimal separator:} the input/output of some core operating system tools like @command{awk} or @command{seq} depend on the @url{https://en.wikipedia.org/wiki/Locale_(computer_software), system locale}.
+For example in Spanish and some other languages the decimal separator (symbol used to separate the integer and fractional part of a number), is a comma.
+Therefore in systems that have Spanish as their default Locale, @command{seq} will print half of unity as `@code{0,5}' (instead of `@code{0.5}').
+This can cause problems for parsing the printed numbers in other programs.
+You can check your current locale with the @code{locale} command.
+You can test your default decimal separator with this command:
+
 @example
+seq 0.5 1
+@end example
+
+To avoid these kinds of locale-specific problems (for example another program not being able to read `@code{0,5}' as half of unity), you can change the locale by setting the @code{LANG} environment variable (or the lower-level/generic @code{LC_ALL}).
+You can do it only for a single command (the first one below), or all commands within the running session (the second command below):
+
+@example
+## Change the locale to the standard, only for this 'seq' command.
+$ LANG=C seq 0.5 1
+
+## Change the locale to the standard, for all commands after it.
+$ export LANG=C
+@end example
+
+If you want to change it generally for all future sessions, you can put the second command in your shell's startup file.
+For more on startup files, please see @ref{Installation directory}.
+@end cartouche
+
+@example
+## If your system language uses ',' (not '.') as decimal separator.
+$ export LANG=C
+
 ## See the general statistics of non-blank pixel values.
 $ aststatistics flat-ir/xdf-f160w.fits
 
@@ -2288,6 +2323,9 @@ In particular, you need the tangential distance covered by 1 arc-second as raw o
 Combined with the field's area that was measured before, we can calculate the tangential distance in Mega Parsecs squared (@mymath{Mpc^2}).
 
 @example
+## If your system language uses ',' (not '.') as decimal separator.
+$ export LANG=C
+
 ## Print general cosmological properties at redshift 2 (for example).
 $ astcosmiccal -z2
 
@@ -2337,6 +2375,10 @@ You can use it instead of typing all the different redshifts in this example.
 For example the loop below will calculate and print the tangential coverage of this field across a larger range of redshifts (0.1 to 5) and with finer increments of 0.1.
 
 @example
+## If your system language uses ',' (not '.') as decimal separator.
+$ export LANG=C
+
+## The loop over the redshifts
 $ for z in $(seq 0.1 0.1 5); do                                  \
     k=$(astcosmiccal -z$z --arcsectandist);                      \
     echo $z $k $a | awk '@{print $1, ($2*60)^2 * $3 / 1e6@}';   \

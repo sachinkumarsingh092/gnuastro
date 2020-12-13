@@ -1,6 +1,7 @@
 Alphabetically ordered list to acknowledge in the next release.
 
 Paul Eggert
+Andrés García-Serra Romero
 Bruno Haible
 Martin Kuemmel
 Javier Licandro
