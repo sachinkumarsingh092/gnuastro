@@ -65,8 +65,9 @@ See the end of the file for license conditions.
    --maximum: maximum value of labeled regions pixels (clump/object).
    --areaarcsec2: area of labeled region (clump/object) in arcsec^2.
    --surfacebrightness: the surface brightness of the labeled region.
-   --fwhmobs: observed FWHM in pixels, along the major axis.
+   --fwhm: observed FWHM in pixels (non-parametric), along the major axis.
    --halfmaxarea: number of pixels with a value larger than half the maximum.
+   --halfmaxradius: radius of region that is larger than half the maximum.
    --halfmaxsum: sum of pixels with a value larger than half the maximum.
    --halfmaxsb: surf. brightness within half of the maximum.
    --fracmax: fractions to use in '--fracmaxarea1' or '--fracmaxarea2'.
@@ -78,7 +79,7 @@ See the end of the file for license conditions.
    --fracmaxradius2: radius derived from '--fracmaxarea2'.
    --halfsumsb: Surface brightness within area reported by '--halfsumarea'.
    --halfsumarea: area containing half of the summed object or clump values.
-   --halfradiusobs: radius derived from '--halfsumarea', underestimates r_e.
+   --halfsumradius: radius derived from '--halfsumarea', underestimates r_e.
    --areaminv: the number of pixels that are equal to the minimum value.
    --areamaxv: the number of pixels that are equal to the maximum value.
    - New columns to return the position of pixel with minimum or maximum

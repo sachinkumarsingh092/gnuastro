@@ -334,7 +334,7 @@ columns_sanity_check(struct mkcatalogparams *p)
           case UI_KEY_GEOSEMIMAJOR:
           case UI_KEY_GEOSEMIMINOR:
           case UI_KEY_GEOAXISRATIO:
-          case UI_KEY_HALFRADIUSOBS:
+          case UI_KEY_HALFSUMRADIUS:
           case UI_KEY_FRACMAXRADIUS1:
           case UI_KEY_FRACMAXRADIUS2:
           case UI_KEY_GEOPOSITIONANGLE:
@@ -1835,8 +1835,9 @@ columns_define_alloc(struct mkcatalogparams *p)
             oiflag[ OCOL_FRACMAX2NUM ] = ciflag[ CCOL_FRACMAX2NUM ] = 1;
           break;
 
-        case UI_KEY_FWHMOBS:
-        case UI_KEY_HALFRADIUSOBS:
+        case UI_KEY_FWHM:
+        case UI_KEY_HALFMAXRADIUS:
+        case UI_KEY_HALFSUMRADIUS:
         case UI_KEY_FRACMAXRADIUS1:
         case UI_KEY_FRACMAXRADIUS2:
           unit           = "pixels";
@@ -1861,15 +1862,20 @@ columns_define_alloc(struct mkcatalogparams *p)
           oiflag[ OCOL_GXY        ] = ciflag[ CCOL_GXY        ] = 1;
           switch(colcode->v)
             {
-            case UI_KEY_FWHMOBS:
-              name="FWHM_OBS";
+            case UI_KEY_FWHM:
+              name="FWHM";
               oiflag[ OCOL_HALFMAXNUM  ] = ciflag[ CCOL_HALFMAXNUM  ] = 1;
               ocomment = "Full width at half maximum (accounting for ellipticity).";
               break;
-            case UI_KEY_HALFRADIUSOBS:
-              name="HALF_RADIUS_OBS";
+            case UI_KEY_HALFMAXRADIUS:
+              name="HALF_MAX_RADIUS";
+              oiflag[ OCOL_HALFMAXNUM  ] = ciflag[ CCOL_HALFMAXNUM  ] = 1;
+              ocomment = "Radius at half of maximum (accounting for ellipticity).";
+              break;
+            case UI_KEY_HALFSUMRADIUS:
+              name="HALF_SUM_RADIUS";
               oiflag[ OCOL_HALFSUMNUM  ] = ciflag[ CCOL_HALFSUMNUM  ] = 1;
-              ocomment = "Radius derived from area of half of total sum.";
+              ocomment = "Radius at half of total sum (accounting for ellipticity).";
               break;
             case UI_KEY_FRACMAXRADIUS1:
               name="FRAC_MAX_RADIUS_1";
@@ -2643,8 +2649,9 @@ columns_fill(struct mkcatalog_passparams *pp)
                                             oi[OCOL_HALFSUMNUM] );
           break;
 
-        case UI_KEY_FWHMOBS:
-        case UI_KEY_HALFRADIUSOBS:
+        case UI_KEY_FWHM:
+        case UI_KEY_HALFMAXRADIUS:
+        case UI_KEY_HALFSUMRADIUS:
         case UI_KEY_FRACMAXRADIUS1:
         case UI_KEY_FRACMAXRADIUS2:
           /* First derive the axis ratio (as 'tmp'), then set the index to
@@ -2653,13 +2660,14 @@ columns_fill(struct mkcatalog_passparams *pp)
                   / columns_second_order(pp, oi, UI_KEY_SEMIMAJOR, 0) );
           switch(key)
             {
-            case UI_KEY_FWHMOBS:        tmpind=OCOL_HALFMAXNUM;  break;
-            case UI_KEY_HALFRADIUSOBS:  tmpind=OCOL_HALFSUMNUM;  break;
+            case UI_KEY_FWHM:           tmpind=OCOL_HALFMAXNUM;  break;
+            case UI_KEY_HALFMAXRADIUS:  tmpind=OCOL_HALFMAXNUM;  break;
+            case UI_KEY_HALFSUMRADIUS:  tmpind=OCOL_HALFSUMNUM;  break;
             case UI_KEY_FRACMAXRADIUS1: tmpind=OCOL_FRACMAX1NUM; break;
             case UI_KEY_FRACMAXRADIUS2: tmpind=OCOL_FRACMAX2NUM; break;
             }
           tmp = sqrt( oi[tmpind]/(tmp*M_PI) );
-          if(key==UI_KEY_FWHMOBS)
+          if(key==UI_KEY_FWHM)
             ((float *)colarr)[oind] = tmp<1e-6 ? NAN : (tmp*2);
           else
             ((float *)colarr)[oind] = tmp<1e-6 ? NAN : tmp;
@@ -2995,21 +3003,23 @@ columns_fill(struct mkcatalog_passparams *pp)
                                               ci[CCOL_HALFSUMNUM] );
             break;
 
-          case UI_KEY_FWHMOBS:
-          case UI_KEY_HALFRADIUSOBS:
+          case UI_KEY_FWHM:
+          case UI_KEY_HALFMAXRADIUS:
+          case UI_KEY_HALFSUMRADIUS:
           case UI_KEY_FRACMAXRADIUS1:
           case UI_KEY_FRACMAXRADIUS2:
             tmp = ( columns_second_order(  pp, ci, UI_KEY_SEMIMINOR, 1)
                     / columns_second_order(pp, ci, UI_KEY_SEMIMAJOR, 1) );
             switch(key)
               {
-              case UI_KEY_FWHMOBS:        tmpind=CCOL_HALFMAXNUM;  break;
-              case UI_KEY_HALFRADIUSOBS:  tmpind=CCOL_HALFSUMNUM;  break;
+              case UI_KEY_FWHM:           tmpind=CCOL_HALFMAXNUM;  break;
+              case UI_KEY_HALFMAXRADIUS:  tmpind=CCOL_HALFMAXNUM;  break;
+              case UI_KEY_HALFSUMRADIUS:  tmpind=CCOL_HALFSUMNUM;  break;
               case UI_KEY_FRACMAXRADIUS1: tmpind=CCOL_FRACMAX1NUM; break;
               case UI_KEY_FRACMAXRADIUS2: tmpind=CCOL_FRACMAX2NUM; break;
               }
             tmp = sqrt( ci[tmpind]/(tmp*M_PI) );
-            if(key==UI_KEY_FWHMOBS)
+            if(key==UI_KEY_FWHM)
               ((float *)colarr)[cind] = tmp<1e-6 ? NAN : (tmp*2);
             else
               ((float *)colarr)[cind] = tmp<1e-6 ? NAN : tmp;

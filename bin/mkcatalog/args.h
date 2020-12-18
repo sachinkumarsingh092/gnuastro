@@ -1687,8 +1687,8 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
-      "fwhmobs",
-      UI_KEY_FWHMOBS,
+      "fwhm",
+      UI_KEY_FWHM,
       0,
       0,
       "Full width at half max (non-parametric).",
@@ -1706,6 +1706,20 @@ struct argp_option program_options[] =
       0,
       0,
       "No. pixels valued above half the max.",
+      UI_GROUP_COLUMNS_MORPHOLOGY,
+      0,
+      GAL_TYPE_INVALID,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET,
+      ui_column_codes_ll
+    },
+    {
+      "halfmaxradius",
+      UI_KEY_HALFMAXRADIUS,
+      0,
+      0,
+      "Radius at half the maximum (non-parametric).",
       UI_GROUP_COLUMNS_MORPHOLOGY,
       0,
       GAL_TYPE_INVALID,
@@ -1771,8 +1785,8 @@ struct argp_option program_options[] =
       ui_column_codes_ll
     },
     {
-      "halfradiusobs",
-      UI_KEY_HALFRADIUSOBS,
+      "halfsumradius",
+      UI_KEY_HALFSUMRADIUS,
       0,
       0,
       "Radius calculated from --halfsumarea.",

@@ -16773,7 +16773,7 @@ For clumps, the average river flux is subtracted from the sky subtracted median.
 The maximum value of pixels within the object or clump.
 When the label (object or clump) is larger than three pixels, the maximum is actually derived by the mean of the brightest three pixels, not the largest pixel value of the same label.
 This is because noise fluctuations can be very strong in the extreme values of the objects/clumps due to Poisson noise (which gets stronger as the mean gets higher).
-Simply using the maximum pixel value will create a strong scatter in results that depend on the maximum (for example the @option{--fwhmobs} option also uses this value internally).
+Simply using the maximum pixel value will create a strong scatter in results that depend on the maximum (for example the @option{--fwhm} option also uses this value internally).
 
 @item --sigclip-number
 The number of elements/pixels in the dataset after sigma-clipping the object or clump.
@@ -16897,12 +16897,12 @@ first two dimensions. This is only available for 3-dimensional
 datasets. When working with Integral Field Unit (IFU) datasets, this
 projection onto the first two dimensions would be a narrow-band image.
 
-@item --fwhmobs
+@item --fwhm
 @cindex FWHM
 The full width at half maximum (in units of pixels, along the semi-major axis) of the labeled region (object or clump).
 The maximum value is estimated from the mean of the top-three pixels with the highest values, see the description under @option{--maximum}.
 The number of pixels that have half the value of that maximum are then found (value in the @option{--halfmaxarea} column) and a radius is estimated from the area.
-See the description under @option{--halfradiusobs} for more on converting area to radius along major axis.
+See the description under @option{--halfsumradius} for more on converting area to radius along major axis.
 
 Because of its non-parametric nature, this column is most reliable on clumps and should only be used in objects with great causion.
 This is because objects can have more than one clump (peak with true signal) and multiple peaks are not treated separately in objects, so the result of this column will be biased.
@@ -16914,12 +16914,16 @@ For example if a labeled region's maximum is less than 2 times the sky standard 
 For a more reliable value, this fraction should be around 4 (so half the maximum is 2@mymath{\sigma}).
 
 @item --halfmaxarea
-The number of pixels containing half the maximum flux within the labeled region.
-This option is used to estimate @option{--fwhmobs}, so please read the notes there for the cavaeats and necessary precautions.
+The number of pixels with values larger than half the maximum flux within the labeled region.
+This option is used to estimate @option{--fwhm}, so please read the notes there for the cavaeats and necessary precautions.
+
+@item --halfmaxradius
+The radius of region containing half the maximum flux within the labeled region.
+This is just half the value reported by @option{--fwhm}.
 
 @item --halfmaxsum
 The sum of the pixel values containing half the maximum flux within the labeled region (or those that are counted in @option{--halfmaxarea}).
-This option uses the pixels within @option{--fwhmobs}, so please read the notes there for the cavaeats and necessary precautions.
+This option uses the pixels within @option{--fwhm}, so please read the notes there for the cavaeats and necessary precautions.
 
 @item --halfmaxsb
 The surface brightness (in units of mag/arcsec@mymath{^2}) within the region that contains half the maximum value of the labeled region.
@@ -16939,7 +16943,7 @@ For more on the definition of the surface brightness, see @ref{Brightness flux m
 This column just plugs in the values of half the value of the @option{--brightness} column and the @option{--halfsumarea} column, into the surface brightness equation.
 Therefore please see the description in @option{--halfsumarea} to understand the systematics of this column and potential biases.
 
-@item --halfradiusobs
+@item --halfsumradius
 Radius (in units of pixels) derived from the area that contains half the total sum of the label's pixels (value reported by @option{--halfsumarea}).
 If the area is @mymath{A_h} and the axis ratio is @mymath{q}, then the value returned in this column is @mymath{\sqrt{A_h/({\pi}q)}}.
 This option is a good measure of the concentration of the @emph{observed} (after PSF convolution and noisy) object or clump,
@@ -16979,7 +16983,7 @@ Hence, added with these two columns, you can sample three parts of the profile's
 Radius (in units of pixels) derived from the area that contains the given fractions of the maximum valued pixel(s) of the label's pixels (value reported by @option{--fracmaxarea1} or @option{--fracmaxarea2}).
 For the maximum value, see the description of @option{--maximum} column below.
 The fractions are given through the @option{--fracmax} option (that can take two values) and is described in @ref{MakeCatalog inputs and basic settings}.
-Recall that in @option{--fwhmobs}, the fraction is fixed to 0.5.
+Recall that in @option{--fwhm}, the fraction is fixed to 0.5.
 Hence, added with these two columns, you can sample three parts of the profile's radius.
 
 @item --clumpsarea
