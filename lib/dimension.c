@@ -285,6 +285,60 @@ gal_dimension_dist_radial(size_t *a, size_t *b, size_t ndim)
 
 
 
+/* Elliptical distance of a point from a given center. */
+#define DEGREESTORADIANS   M_PI/180.0
+float
+gal_dimension_dist_elliptical(double *center, double *pa_deg, double *q,
+                              size_t ndim, double *point)
+{
+  double Xr, Yr, Zr;        /* Rotated x, y, z. */
+  double q1=q[0], q2;
+  double c1=cos( pa_deg[0] * DEGREESTORADIANS ), c2, c3;
+  double s1= sin( pa_deg[0] * DEGREESTORADIANS ), s2, s3;
+  double x=center[0]-point[0], y=center[1]-point[1], z;
+
+  /* Find the distance depending on the dimension. */
+  switch(ndim)
+    {
+    case 2:
+      /* The parenthesis aren't necessary, but help in readability and
+         avoiding human induced bugs. */
+      Xr = x * ( c1       )     +   y * ( s1 );
+      Yr = x * ( -1.0f*s1 )     +   y * ( c1 );
+      return sqrt( Xr*Xr + Yr*Yr/q1/q1 );
+      break;
+
+    case 3:
+      /* Define the necessary parameters. */
+      q2=q[1];
+      z=center[2]-point[2];
+      c2 = cos( pa_deg[1] * DEGREESTORADIANS );
+      s2 = sin( pa_deg[1] * DEGREESTORADIANS );
+      c3 = cos( pa_deg[2] * DEGREESTORADIANS );
+      s3 = sin( pa_deg[2] * DEGREESTORADIANS );
+
+      /* Calculate the distance. */
+      Xr = x*(  c3*c1   - s3*c2*s1 ) + y*( c3*s1   + s3*c2*c1) + z*( s3*s2 );
+      Yr = x*( -1*s3*c1 - c3*c2*s1 ) + y*(-1*s3*s1 + c3*c2*c1) + z*( c3*s2 );
+      Zr = x*(  s1*s2              ) + y*(-1*s2*c1           ) + z*( c2    );
+      return sqrt( Xr*Xr + Yr*Yr/q1/q1 + Zr*Zr/q2/q2 );
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "%s: currently only 2 and 3 dimensional "
+            "distances are supported, you have asked for an %zu-dimensional "
+            "dataset", __func__, ndim);
+
+    }
+
+  /* Control should never reach here. */
+  error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to address the "
+        "problem. Control should not reach the end of this function",
+        __func__, PACKAGE_BUGREPORT);
+  return NAN;
+}
+
+
 
 
 

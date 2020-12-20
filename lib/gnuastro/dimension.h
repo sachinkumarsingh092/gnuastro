@@ -95,6 +95,10 @@ gal_dimension_dist_manhattan(size_t *a, size_t *b, size_t ndim);
 float
 gal_dimension_dist_radial(size_t *a, size_t *b, size_t ndim);
 
+float
+gal_dimension_dist_elliptical(double *center, double *pa_deg, double *q,
+                              size_t ndim, double *point);
+
 
 
 /************************************************************************/

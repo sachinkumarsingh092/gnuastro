@@ -112,6 +112,7 @@ See the end of the file for license conditions.
      without a square adjacency matrix (which can consume major RAM).
    - gal_blank_flag_remove: Remove all flagged elements in a dataset.
    - gal_blank_remove_rows: remove all rows that have at least one blank.
+   - gal_dimension_dist_elliptical: Elliptical dist. of a point from center.
    - gal_fits_hdu_datasum: calculate DATASUM of given HDU in given FITS file.
    - gal_fits_hdu_datasum_ptr: calculate DATASUM of opened FITS file pointer.
    - gal_pointer_allocate_ram_or_mmap: allocate space either in RAM or as a

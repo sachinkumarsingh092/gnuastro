@@ -17551,6 +17551,8 @@ Everything else after that (when the pixel index and its radial profile have ent
 
 
 
+
+
 @node PSF, Stars, Defining an ellipse and ellipsoid, Modeling basics
 @subsubsection Point spread function
 
@@ -21628,6 +21630,8 @@ already be allocated before calling this function.
 @end deftypefun
 
 @deftypefun size_t gal_dimension_dist_manhattan (size_t @code{*a}, size_t @code{*b}, size_t @code{ndim})
+@cindex Manhattan distance
+@cindex Distance, Manhattan
 Return the manhattan distance (see
 @url{https://en.wikipedia.org/wiki/Taxicab_geometry, Wikipedia}) between
 the two coordinates @code{a} and @code{b} (each an array of @code{ndim}
@@ -21637,6 +21641,22 @@ elements).
 @deftypefun float gal_dimension_dist_radial (size_t @code{*a}, size_t @code{*b}, size_t @code{ndim})
 Return the radial distance between the two coordinates @code{a} and
 @code{b} (each an array of @code{ndim} elements).
+@end deftypefun
+
+@deftypefun float gal_dimension_dist_elliptical (double @code{*center}, double @code{*pa_deg}, double @code{*q}, size_t @code{ndim}, double @code{*point})
+@cindex Ellipse
+@cindex Ellipoid
+@cindex Axis ratio
+@cindex Position angle
+@cindex Elliptical distance
+@cindex Ellipsoidal distance
+@cindex Distance, elliptical/ellipsoidal
+Return the elliptical/ellipsoidal distance of the single point @code{point} (containing @code{ndim} values: coordinates of the point in each dimension) from an ellipse that is defined by @code{center}, @code{pa_deg} and @code{q}.
+@code{center} is the coordinates of the ellipse center (also with @code{ndim} elements). @code{pa} is the position-angle in degrees (the angle of the semi-major axis from the first dimension in a 2D ellipse) and @code{q} is the axis ratio.
+
+In a 2D ellipse, @code{pa} and @code{q} are a single-element array.
+However, in a 3D ellipsoid, @code{pa} must have three elements, and @code{q} must have 2 elements.
+For more see @ref{Defining an ellipse and ellipsoid}.
 @end deftypefun
 
 @deftypefun {gal_data_t *} gal_dimension_collapse_sum (gal_data_t @code{*in}, size_t @code{c_dim}, gal_data_t @code{*weight})
