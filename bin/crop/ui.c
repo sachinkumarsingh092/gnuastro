@@ -554,7 +554,7 @@ ui_set_img_sizes(struct cropparams *p)
         {
           /* Convert the width in units of the input's WCS into pixels. */
           pwidth = warray[i]/p->pixscale[i];
-          if(pwidth<3 || pwidth>50000)
+          if(pwidth<1 || pwidth>50000)
             error(EXIT_FAILURE, 0, "value %g (requested width along "
                   "dimension %zu) translates to %.0f pixels on this "
                   "dataset. This is probably not what you wanted. Note "
