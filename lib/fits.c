@@ -722,6 +722,30 @@ gal_fits_hdu_format(char *filename, char *hdu)
 
 
 
+/* Return 1 if the HDU appears to be a HEALpix grid. */
+int
+gal_fits_hdu_is_healpix(fitsfile *fptr)
+{
+  long value;
+  int hdutype, status=0;
+
+  /* An ASCII table can't be a healpix table. */
+  if (fits_get_hdu_type(fptr, &hdutype, &status) )
+    gal_fits_io_error(status, NULL);
+  if(hdutype==ASCII_TBL) return 0;
+
+  /* If all these keywords are present, then 'status' will be 0
+     afterwards. */
+  fits_read_key_lng(fptr, "NSIDE",    &value, 0x0, &status);
+  fits_read_key_lng(fptr, "FIRSTPIX", &value, 0x0, &status);
+  fits_read_key_lng(fptr, "LASTPIX",  &value, 0x0, &status);
+  return !status;
+}
+
+
+
+
+
 /* Open a given HDU and return the FITS pointer. 'iomode' determines how
    the FITS file will be opened: only to read or to read and write. You
    should use the macros given by the CFITSIO header:
@@ -837,8 +861,21 @@ gal_fits_hdu_open_format(char *filename, char *hdu, int img0_tab1)
   else
     {
       if(hdutype!=IMAGE_HDU)
-        error(EXIT_FAILURE, 0, "%s (hdu: %s): not an image",
-              filename, hdu);
+        {
+          /* Let the user know. */
+          if( gal_fits_hdu_is_healpix(fptr) )
+            error(EXIT_FAILURE, 0, "%s (hdu: %s): appears to be a HEALPix table "
+                  "(which is a 2D dataset on a spherical surface: stored as "
+                  "a 1D table). You can use the 'HPXcvt' command-line utility "
+                  "to convert it to a 2D image that can easily be used by "
+                  "other programs. 'HPXcvt' is built and installed as part of "
+                  "WCSLIB (which is a mandatory dependency of Gnuastro, so "
+                  "you should already have it), run 'man HPXcvt' for more",
+                  filename, hdu);
+          else
+            error(EXIT_FAILURE, 0, "%s (hdu: %s): not an image",
+                  filename, hdu);
+        }
     }
 
   /* Clean up and return. */

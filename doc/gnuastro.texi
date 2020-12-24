@@ -8512,8 +8512,10 @@ $ astfits --write=MYKEY1,20.00,"An example keyword" --write=MYKEY2,fd
 @end example
 
 @cindex HDU
+@cindex HEALPix
 When no action is requested (and only a file name is given), Fits will print a list of information about the extension(s) in the file.
 This information includes the HDU number, HDU name (@code{EXTNAME} keyword), type of data (see @ref{Numeric data types}, and the number of data elements it contains (size along each dimension for images and table rows and columns).
+Optionally, a comment column is printed for special situations (like a 2D HEALPix grid that is usually stored as a 1D dataset/table).
 You can use this to get a general idea of the contents of the FITS file and what HDU to use for further processing, either with the Fits program or any other Gnuastro program.
 
 Here is one example of information about a FITS file with four extensions: the first extension has no data, it is a purely meta-data HDU (commonly used to keep meta-data about the whole file, or grouping of extensions, see @ref{Fits}).
@@ -23051,7 +23053,7 @@ Return the @code{DATASUM} of the given HDU in the given FITS file.
 For more on @code{DATASUM} in the FITS standard, see @ref{Keyword manipulation} (under the @code{checksum} component of @option{--write}).
 @end deftypefun
 
-@deftypefun {unsigned long} gal_fits_hdu_datasum_ptr (char @code{*fptr})
+@deftypefun {unsigned long} gal_fits_hdu_datasum_ptr (fitsfile @code{*fptr})
 @cindex @code{DATASUM}: FITS keyword
 Return the @code{DATASUM} of the already opened HDU in @code{fptr}.
 For more on @code{DATASUM} in the FITS standard, see @ref{Keyword manipulation} (under the @code{checksum} component of @option{--write}).
@@ -23060,6 +23062,12 @@ For more on @code{DATASUM} in the FITS standard, see @ref{Keyword manipulation} 
 @deftypefun int gal_fits_hdu_format (char @code{*filename}, char @code{*hdu})
 Return the format of the HDU as one of CFITSIO's recognized macros:
 @code{IMAGE_HDU}, @code{ASCII_TBL}, or @code{BINARY_TBL}.
+@end deftypefun
+
+@deftypefun int gal_fits_hdu_is_healpix (fitsfile @code{*fptr})
+@cindex HEALPix
+Return @code{1} if the dataset may be a HEALpix grid and @code{0} otherwise.
+Technically, it is considered to be a HEALPix if the HDU isn't an ASCII table, and has the @code{NSIDE}, @code{FIRSTPIX} and @code{LASTPIX}.
 @end deftypefun
 
 @deftypefun {fitsfile *} gal_fits_hdu_open (char @code{*filename}, char @code{*hdu}, int @code{iomode})

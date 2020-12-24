@@ -163,6 +163,9 @@ gal_fits_hdu_datasum_ptr(fitsfile *fptr);
 int
 gal_fits_hdu_format(char *filename, char *hdu);
 
+int
+gal_fits_hdu_is_healpix(fitsfile *fptr);
+
 fitsfile *
 gal_fits_hdu_open(char *filename, char *hdu, int iomode);
 

@@ -312,13 +312,26 @@ operands_add(struct arithmeticparams *p, char *filename, gal_data_t *data)
               readwcs = (p->wcsfile && !strcmp(p->wcsfile,"none")) ? 0 : 1;
               if(readwcs && p->refdata.wcs==NULL)
                 {
-                  dsize=gal_fits_img_info_dim(filename, newnode->hdu, &ndim);
+                  /* If the HDU is an image, read its size. */
+                  dsize = ( gal_fits_hdu_format(filename, newnode->hdu)==IMAGE_HDU
+                            ? gal_fits_img_info_dim(filename, newnode->hdu, &ndim)
+                            : NULL);
+
+                  /* Read the WCS. */
                   p->refdata.wcs=gal_wcs_read(filename, newnode->hdu, 0, 0,
                                               &p->refdata.nwcs);
-                  ndim=gal_dimension_remove_extra(ndim, dsize, p->refdata.wcs);
+
+                  /* Remove extra (length of 1) dimensions (if we had an
+                     image HDU). */
+                  if(dsize)
+                    {
+                      ndim=gal_dimension_remove_extra(ndim, dsize, p->refdata.wcs);
+                      free(dsize);
+                    }
+
+                  /* Let the user know that the WCS is read. */
                   if(p->refdata.wcs && !p->cp.quiet)
                     printf(" - WCS: %s (hdu %s).\n", filename, newnode->hdu);
-                  free(dsize);
                 }
             }
           else newnode->hdu=NULL;

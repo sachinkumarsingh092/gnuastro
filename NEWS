@@ -38,6 +38,9 @@ See the end of the file for license conditions.
      arithmetic:
          echo "113.64812416667 31.88732" \
               | asttable -c'arith $1 degree-to-ra $2 degree-to-dec'
+   - If input is a HEALpix grid (1D table column that represents the 2D
+     spherical representation of datasets), the programs will print a
+     warning, suggesting to use the 'HPXcvt' utility of WCSLIB.
 
   Arithmetic:
    - New operators:
@@ -113,6 +116,7 @@ See the end of the file for license conditions.
    - gal_blank_flag_remove: Remove all flagged elements in a dataset.
    - gal_blank_remove_rows: remove all rows that have at least one blank.
    - gal_dimension_dist_elliptical: Elliptical dist. of a point from center.
+   - gal_fits_hdu_is_healpix: Return 1 if HDU is a HEALpix grid.
    - gal_fits_hdu_datasum: calculate DATASUM of given HDU in given FITS file.
    - gal_fits_hdu_datasum_ptr: calculate DATASUM of opened FITS file pointer.
    - gal_pointer_allocate_ram_or_mmap: allocate space either in RAM or as a
@@ -143,6 +147,10 @@ See the end of the file for license conditions.
    - The '--pixelscale' option also prints the pixel area (for 2D inputs,
      or 2D slices of 3D inputs) and the voxel volume (for 3D inputs). Until
      now, it would only print the pixel scale along each dimension.
+   - When printing FITS file HDU information (no options given), a new
+     "Comments" column may be printed for each HDU in the end of the line.
+     It will be printed if special situations are found (for example a 2D
+     HEALPix grid, that is usually stored as a 1D array/column).
 
   NoiseChisel & Statistics:
    - New algorithm used to reject outlying tiles. In NoiseChisel this is

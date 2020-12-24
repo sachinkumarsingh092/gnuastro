@@ -88,11 +88,11 @@ fits_print_extension_info(struct fitsparams *p)
 {
   uint16_t *ui16;
   fitsfile *fptr;
-  int hasblankname=0;
-  gal_data_t *cols=NULL, *tmp;
-  char **tstra, **estra, **sstra;
   size_t i, numext, *dsize, ndim;
+  int hascomments=0, hasblankname=0;
+  char **tstra, **estra, **sstra, **cmstra;
   int j, nc, numhdu, hdutype, status=0, type;
+  gal_data_t *tmp, *cols=NULL, *sizecol, *commentscol;
   char *msg, *tstr=NULL, sstr[1000], extname[FLEN_VALUE];
 
 
@@ -113,6 +113,8 @@ fits_print_extension_info(struct fitsparams *p)
   /* Allocate all the columns (in reverse order, since this is a simple
      linked list). */
   gal_list_data_add_alloc(&cols, NULL, GAL_TYPE_STRING, 1, &numext, NULL, 1,
+                          -1, 1, "HDU_COMMENT", "note", "Possible comment");
+  gal_list_data_add_alloc(&cols, NULL, GAL_TYPE_STRING, 1, &numext, NULL, 1,
                           -1, 1, "HDU_SIZE", "name", "Size of image or table "
                           "number of rows and columns.");
   gal_list_data_add_alloc(&cols, NULL, GAL_TYPE_STRING, 1, &numext, NULL, 1,
@@ -130,7 +132,12 @@ fits_print_extension_info(struct fitsparams *p)
   ui16  = cols->array;
   estra = cols->next->array;
   tstra = cols->next->next->array;
-  sstra = cols->next->next->next->array;
+
+  sizecol = cols->next->next->next;
+  sstra = sizecol->array;
+
+  commentscol = cols->next->next->next->next;
+  cmstra = commentscol->array;
 
   cols->next->disp_width=15;
   cols->next->next->disp_width=15;
@@ -182,6 +189,16 @@ fits_print_extension_info(struct fitsparams *p)
       status=0;
 
 
+      /* Check if its a healpix grid. */
+      if( gal_fits_hdu_is_healpix(fptr) )
+        {
+          hascomments=1;
+          gal_checkset_allocate_copy("HEALpix", cmstra+i);
+        }
+      else
+        gal_checkset_allocate_copy(GAL_BLANK_STRING, cmstra+i);
+
+
       /* Write the size into a string. 'sprintf' returns the number of
          written characters (excluding the '\0'). So for each dimension's
          size that is written, we add to 'nc' (the number of
@@ -229,6 +246,12 @@ fits_print_extension_info(struct fitsparams *p)
   /* Close the file. */
   fits_close_file(fptr, &status);
 
+  /* If there weren't any comments, don't print the comment column. */
+  if(hascomments==0)
+    {
+      sizecol->next=NULL;
+      gal_data_free(commentscol);
+    }
 
   /* Print the results. */
   if(!p->cp.quiet)
@@ -244,6 +267,9 @@ fits_print_extension_info(struct fitsparams *p)
       printf(" Column 3: Image data type or 'table' format (ASCII or "
              "binary).\n");
       printf(" Column 4: Size of data in HDU.\n");
+      if(hascomments)
+        printf(" Column 5: Comments about the HDU (e.g., if its HEALpix, or "
+               "etc).\n");
       printf("-----\n");
     }
   gal_table_write(cols, NULL, NULL, GAL_TABLE_FORMAT_TXT, NULL, NULL, 0);
