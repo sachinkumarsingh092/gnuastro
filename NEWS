@@ -143,6 +143,14 @@ See the end of the file for license conditions.
      reason for this is that we now have a more robust outlier removal
      algorithm (see description under "NoiseChisel & Statistics").
 
+  Crop:
+   - When cropping a single image in WCS mode, there is no longer any
+     limitation on the WCS. Until now for all WCS mode crops, it was
+     necessary for the WCS to be aligned to the celestial coordinates. But
+     from this version, this is only necessary when cropping from many
+     files (and stitching them together where necessary). For WCS-mode
+     crops of a single image, any WCS that is recognized by WCSLIB is fine.
+
   Fits:
    - The '--pixelscale' option also prints the pixel area (for 2D inputs,
      or 2D slices of 3D inputs) and the voxel volume (for 3D inputs). Until

@@ -758,7 +758,7 @@ ui_read_cols(struct cropparams *p)
                   gal_fits_name_save_as_string(p->catname, p->cathdu),
                   colname);
 
-          /* Free the unnecessary sturcture information. The correct-type
+          /* Free the unnecessary structure information. The correct-type
              ('corrtype') data structure's array is necessary for later
              steps, so its pointer has been copied in the main program's
              structure. Hence, we should set the structure's pointer to
@@ -786,7 +786,6 @@ ui_prepare_center(struct cropparams *p)
   if( p->centercoords==NULL )
     error(EXIT_FAILURE, 0, "%s: %zu bytes for 'p->centercoords'",
           __func__, ndim*sizeof *p->centercoords);
-
 
   /* Set the integer widths of the crop(s) when defined by center. */
   ui_set_img_sizes(p);
@@ -848,15 +847,145 @@ ui_make_log(struct cropparams *p)
 
 
 
+/* When there is a single image, to avoid complications in the WCS checks,
+   simply convert all the values to pixels and switch to image mode. */
+void
+ui_preparations_to_img_mode(struct cropparams *p)
+{
+  size_t i;
+  int nwcs;
+  double *darr, *pixscale;
+  struct wcsprm *wcs=gal_wcs_read(p->inputs->v, p->cp.hdu, p->hstartwcs,
+                                  p->hendwcs, &nwcs);
+
+  /* Make sure a WCS actually exists. */
+  if(wcs==NULL)
+    error(EXIT_FAILURE, 0, "%s (hdu %s): the WCS structure is not "
+          "recognized or isn't present. Hence the WCS mode cannot be "
+          "used as input coordinates. You can try with pixel coordinates "
+          "using '--mode=img'", p->inputs->v, p->cp.hdu);
+
+  /* If the coordinates are in galactic mode, inform the user. */
+  if( !p->cp.quiet
+      && (strcmp(wcs->lngtyp, "RA") || strcmp(wcs->lattyp,"DEC")) )
+    error(EXIT_SUCCESS, 0, "%s (hdu %s): uses the Galactic "
+          "coordinate system for its WCS. If your given point(s) "
+          "are in the Equatorial coordinate system (RA, Dec), you "
+          "will get wrong results. You can suppress this warning "
+          "with '--quiet'", p->inputs->v, p->cp.hdu);
+
+  /* Convert the given coordinates. */
+  if(p->center || p->catname)
+    {
+      /* Check the requested width and convert it to pixels. */
+      darr=p->width->array;
+      if(wcs->naxis<p->width->size)
+        error(EXIT_FAILURE, 0, "%s (hdu %s): its WCS has %d dimensions "
+              "but %zu dimensions given to '--width'", p->inputs->v,
+              p->cp.hdu, wcs->naxis, p->width->size);
+      pixscale=gal_wcs_pixel_scale(wcs);
+      for(i=0;i<p->width->size;++i) darr[i] /= pixscale[i];
+      free(pixscale);
+    }
+
+  /* Switch the mode and return. */
+  p->mode=IMGCROP_MODE_IMG;
+  wcsfree(wcs);
+}
+
+
+
+
+
+static void
+ui_preparations_to_img_mode_values(struct cropparams *p)
+{
+  struct wcsprm *wcs=p->imgs[0].wcs;
+
+  int i, status, *stat=NULL;
+  gal_data_t *tmp, *coords=NULL;
+  size_t ndim=wcs->naxis, plysize=p->nvertices;
+  double *phi=NULL, *theta=NULL, *pixcrd=NULL, *imgcrd=NULL;
+
+  /* When central coordinates (either from '--center' or '--catalog' are
+     given). */
+  if(p->centercoords)
+    {
+      /* Put the coordinate arrays in a list (note that they are in reverse
+         mode). */
+      for(i=ndim-1;i>=0;--i)
+        gal_list_data_add_alloc(&coords, p->centercoords[i],
+                                GAL_TYPE_FLOAT64, 1, &p->numout, NULL,
+                                0, p->cp.minmapsize, p->cp.quietmmap,
+                                NULL, NULL, NULL);
+
+      /* Convert the world coordinates to image coordinates. */
+      gal_wcs_world_to_img(coords, wcs, 1);
+
+      /* Clean up: we want the 'array' elements, so we'll set them to
+         NULL first, then clean up the list. */
+      for(tmp=coords;tmp!=NULL;tmp=tmp->next) tmp->array=NULL;
+      gal_list_data_free(coords);
+    }
+  else if (p->wpolygon)
+    {
+      /* Allocate the necessary arrays, directly calling WCSLIB is easier
+         in this case, because the polygon array for all the points is a
+         single array, not many columns. */
+      phi    = gal_pointer_allocate(GAL_TYPE_FLOAT64, plysize, 0,
+                                    __func__, "phi");
+      stat   = gal_pointer_allocate(GAL_TYPE_INT32, plysize, 1,
+                                    __func__, "stat");
+      theta  = gal_pointer_allocate(GAL_TYPE_FLOAT64, plysize, 0,
+                                    __func__, "theta");
+      imgcrd = gal_pointer_allocate(GAL_TYPE_FLOAT64, ndim*plysize, 0,
+                                    __func__, "imgcrd");
+      pixcrd = gal_pointer_allocate(GAL_TYPE_FLOAT64, ndim*plysize, 0,
+                                    __func__, "pixcrd");
+
+      /* Do the conversion. */
+      status=wcss2p(wcs, plysize, ndim, p->wpolygon, phi, theta, imgcrd,
+                    pixcrd, stat);
+      if(status)
+        error(EXIT_FAILURE, 0, "%s: wcss2p ERROR %d: %s", __func__, status,
+              wcs_errmsg[status]);
+
+      /* Replace the arrays. */
+      p->ipolygon=pixcrd;
+      free(p->wpolygon);
+      p->wpolygon=NULL;
+
+      /* Clean up. */
+      free(phi);
+      free(stat);
+      free(theta);
+      free(imgcrd);
+    }
+  else
+    error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix the "
+          "the problem. the centercoords and wpolygon are both NULL",
+          __func__, PACKAGE_BUGREPORT);
+}
+
+
 
 void
 ui_preparations(struct cropparams *p)
 {
   fitsfile *tmpfits;
+  int internalimgmode=0;
   struct inputimgs *img;
   int status, firsttype=0;
   size_t input_counter, firstndim=0;
 
+
+  /* If there is only one dataset, convert the given coordinates to pixels
+     and switch to image mode. */
+  if(p->numin==1 && p->mode==IMGCROP_MODE_WCS)
+    {
+      internalimgmode=1;
+      ui_preparations_to_img_mode(p);
+    }
 
   /* For polygon and section, there should be no center checking. */
   if(p->polygon || p->section)
@@ -878,7 +1007,7 @@ ui_preparations(struct cropparams *p)
           __func__, p->numin*sizeof *p->imgs);
 
 
-  /* Fill in the WCS information of each image. */
+  /* Do basic checks of all input images. */
   input_counter=p->numin;
   while(p->inputs)
     {
@@ -901,10 +1030,11 @@ ui_preparations(struct cropparams *p)
         }
       else
         if(p->mode==IMGCROP_MODE_WCS)
-          error(EXIT_FAILURE, 0, "the WCS structure of %s (hdu: %s) "
-                "image is not recognized. So WCS mode cannot be used "
-                "as input coordinates. You can try with pixel coordinates "
-                "with '--mode=img'", img->name, p->cp.hdu);
+          error(EXIT_FAILURE, 0, "%s (hdu %s): the WCS structure is "
+                "not recognized or isn't present. Hence the WCS mode "
+                "cannot be used as input coordinates. You can try with "
+                "pixel coordinates using '--mode=img'", img->name,
+                p->cp.hdu);
       fits_close_file(tmpfits, &status);
       gal_fits_io_error(status, NULL);
 
@@ -970,6 +1100,12 @@ ui_preparations(struct cropparams *p)
   /* 'ui_read_cols' set the number of output crops when a catalog was
      given, in all other cases, we only have one output. */
   if(p->catname==NULL) p->numout=1;
+
+
+  /* If there was only one input file and the WCS-mode was internally
+     changed to image-mode, then convert the coordinates too. */
+  if(internalimgmode)
+    ui_preparations_to_img_mode_values(p);
 
 
   /* Prepare the log file if the user has asked for it. */
