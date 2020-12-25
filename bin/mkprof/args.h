@@ -390,7 +390,7 @@ struct argp_option program_options[] =
       "STR/INT",
       0,
       "sersic (1), moffat (2), gaussian (3), point (4), "
-      "flat (5), circumference (6), distance (7),"
+      "flat (5), circumference (6), distance (7), "
       "radial-table (8)",
       UI_GROUP_CATALOG,
       &p->fcol,
