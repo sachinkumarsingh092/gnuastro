@@ -1197,7 +1197,7 @@ ui_subtract_sky(struct mkcatalogparams *p)
           tile=&tl->tiles[tid];
 
           /* Subtract the Sky value from the input image. */
-          GAL_TILE_PARSE_OPERATE(tile, NULL, 0, 0, {*i-=skyarr[tid];});
+          GAL_TILE_PARSE_OPERATE(tile, p->values, 1, 0, {*o-=skyarr[tid];});
         }
     }
 

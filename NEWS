@@ -197,6 +197,8 @@ See the end of the file for license conditions.
   bug #59459: Unclear WCS when both PC and CD exist in input, but conflict.
   bug #59625: MakeProfiles uses last --kernel, if it is called more than once.
   bug #59700: Segment's excessive RAM usage when many clumps over a detection.
+  bug #59765: MakeCatalog crash when to-be-subtracted Sky is a single-element
+              per tile tessellation (e.g., NoiseChisel's '--oneelempertile').
 
 
 
