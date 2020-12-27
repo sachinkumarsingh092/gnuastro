@@ -1386,15 +1386,15 @@ parse_order_based(struct mkcatalog_passparams *pp)
                          p->cp.minmapsize, p->cp.quietmmap, NULL, NULL,
                          NULL);
 
-  /* Allocate space for the clump values. */
+  /* Clump preparations. */
   if(p->clumps)
     {
+      /* Allocate the necessary space. */
       errno=0;
       clumpsvals=malloc(pp->clumpsinobj * sizeof *clumpsvals);
       if(clumpsvals==NULL)
         error(EXIT_FAILURE, errno, "%s: couldn't allocate 'clumpsvals' for "
               "%zu clumps", __func__, pp->clumpsinobj);
-
 
       /* Allocate the array necessary to keep the values of each clump. */
       ccounter=gal_pointer_allocate(GAL_TYPE_SIZE_T, pp->clumpsinobj, 1,
@@ -1402,9 +1402,13 @@ parse_order_based(struct mkcatalog_passparams *pp)
       for(i=0;i<pp->clumpsinobj;++i)
         {
           tmpsize=pp->ci[ i * CCOL_NUMCOLS + CCOL_NUM ];
-          clumpsvals[i]=gal_data_alloc(NULL, p->values->type, 1, &tmpsize,
-                                       NULL, 0, p->cp.minmapsize,
-                                       p->cp.quietmmap, NULL, NULL, NULL);
+          clumpsvals[i] = ( tmpsize
+                            ? gal_data_alloc(NULL, p->values->type, 1,
+                                             &tmpsize, NULL, 0,
+                                             p->cp.minmapsize,
+                                             p->cp.quietmmap,
+                                             NULL, NULL, NULL)
+                            : NULL );
         }
     }
 
@@ -1432,7 +1436,7 @@ parse_order_based(struct mkcatalog_passparams *pp)
                       gal_type_sizeof(p->values->type) );
 
               /* We are also on a clump. */
-              if(p->clumps && *C>0)
+              if(p->clumps && *C>0 && clumpsvals[*C-1]!=NULL)
                 memcpy( gal_pointer_increment(clumpsvals[*C-1]->array,
                                               ccounter[*C-1]++,
                                               p->values->type), V,
@@ -1503,39 +1507,51 @@ parse_order_based(struct mkcatalog_passparams *pp)
           /* Set the main row to fill. */
           ci=&pp->ci[ i * CCOL_NUMCOLS ];
 
-          /* Do the necessary calculation. */
+          /* Median. */
           if(p->ciflag[ CCOL_MEDIAN ])
             {
-              result=gal_statistics_median(clumpsvals[i], 1);
-              result=gal_data_copy_to_new_type_free(result, GAL_TYPE_FLOAT64);
-              ci[ CCOL_MEDIAN ] = ( *((double *)(result->array))
-                                    - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]) );
-              gal_data_free(result);
+              if(clumpsvals[i])
+                {
+                  result=gal_statistics_median(clumpsvals[i], 1);
+                  result=gal_data_copy_to_new_type_free(result, GAL_TYPE_FLOAT64);
+                  ci[ CCOL_MEDIAN ] = ( *((double *)(result->array))
+                                        - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]) );
+                  gal_data_free(result);
+                }
+              else ci[ CCOL_MEDIAN ] = NAN;
             }
+
+          /* Sigma-clipping measurements. */
           if(p->ciflag[ CCOL_SIGCLIPNUM ]
              || p->ciflag[ CCOL_SIGCLIPSTD ]
              || p->ciflag[ CCOL_SIGCLIPMEAN ]
              || p->ciflag[ CCOL_SIGCLIPMEDIAN ])
             {
-              /* Calculate the sigma-clipped results and write them in any
-                 requested column. */
-              result=gal_statistics_sigma_clip(clumpsvals[i], p->sigmaclip[0],
-                                               p->sigmaclip[1], 1, 1);
-              sigcliparr=result->array;
-              if(p->ciflag[ CCOL_SIGCLIPNUM ])
-                ci[CCOL_SIGCLIPNUM]=sigcliparr[0];
-              if(p->ciflag[ CCOL_SIGCLIPSTD ])
-                ci[CCOL_SIGCLIPSTD]=( sigcliparr[3]
-                                      - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]));
-              if(p->ciflag[ CCOL_SIGCLIPMEAN ])
-                ci[CCOL_SIGCLIPMEAN]=( sigcliparr[2]
-                                       - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]));
-              if(p->ciflag[ CCOL_SIGCLIPMEDIAN ])
-                ci[CCOL_SIGCLIPMEDIAN]=( sigcliparr[1]
-                                         - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]));
-
-              /* Clean up the sigma-clipped values. */
-              gal_data_free(result);
+              if(clumpsvals[i])
+                {
+                  result=gal_statistics_sigma_clip(clumpsvals[i], p->sigmaclip[0],
+                                                   p->sigmaclip[1], 1, 1);
+                  sigcliparr=result->array;
+                  if(p->ciflag[ CCOL_SIGCLIPNUM ])
+                    ci[CCOL_SIGCLIPNUM]=sigcliparr[0];
+                  if(p->ciflag[ CCOL_SIGCLIPSTD ])
+                    ci[CCOL_SIGCLIPSTD]=( sigcliparr[3]
+                                          - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]));
+                  if(p->ciflag[ CCOL_SIGCLIPMEAN ])
+                    ci[CCOL_SIGCLIPMEAN]=( sigcliparr[2]
+                                           - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]));
+                  if(p->ciflag[ CCOL_SIGCLIPMEDIAN ])
+                    ci[CCOL_SIGCLIPMEDIAN]=( sigcliparr[1]
+                                             - (ci[ CCOL_RIV_SUM ]/ci[ CCOL_RIV_NUM ]));
+                  gal_data_free(result);
+                }
+              else
+                {
+                  if(p->ciflag[ CCOL_SIGCLIPNUM    ]) ci[ CCOL_SIGCLIPNUM  ]=NAN;
+                  if(p->ciflag[ CCOL_SIGCLIPSTD    ]) ci[ CCOL_SIGCLIPSTD  ]=NAN;
+                  if(p->ciflag[ CCOL_SIGCLIPMEAN   ]) ci[ CCOL_SIGCLIPMEAN ]=NAN;
+                  if(p->ciflag[ CCOL_SIGCLIPMEDIAN ]) ci[CCOL_SIGCLIPMEDIAN]=NAN;
+                }
             }
 
           /* Estimate half of the total sum. */
@@ -1547,7 +1563,21 @@ parse_order_based(struct mkcatalog_passparams *pp)
               || p->ciflag[ CCOL_FRACMAX1SUM ]
               || p->ciflag[ CCOL_FRACMAX2NUM ]
               || p->ciflag[ CCOL_FRACMAX2SUM ] )
-            parse_area_of_frac_sum(pp, clumpsvals[i], ci, 0);
+            {
+              if(clumpsvals[i])
+                parse_area_of_frac_sum(pp, clumpsvals[i], ci, 0);
+              else
+                {
+                  if( p->ciflag[ CCOL_MAXIMUM     ]) ci[ CCOL_MAXIMUM     ]=NAN;
+                  if( p->ciflag[ CCOL_HALFMAXNUM  ]) ci[ CCOL_HALFMAXNUM  ]=NAN;
+                  if( p->ciflag[ CCOL_HALFMAXSUM  ]) ci[ CCOL_HALFMAXSUM  ]=NAN;
+                  if( p->ciflag[ CCOL_HALFSUMNUM  ]) ci[ CCOL_HALFSUMNUM  ]=NAN;
+                  if( p->ciflag[ CCOL_FRACMAX1NUM ]) ci[ CCOL_FRACMAX1NUM ]=NAN;
+                  if( p->ciflag[ CCOL_FRACMAX1SUM ]) ci[ CCOL_FRACMAX1SUM ]=NAN;
+                  if( p->ciflag[ CCOL_FRACMAX2NUM ]) ci[ CCOL_FRACMAX2NUM ]=NAN;
+                  if( p->ciflag[ CCOL_FRACMAX2SUM ]) ci[ CCOL_FRACMAX2SUM ]=NAN;
+                }
+            }
 
           /* Clean up this clump's values. */
           gal_data_free(clumpsvals[i]);

@@ -1207,10 +1207,6 @@ ui_subtract_sky(struct mkcatalogparams *p)
     error(EXIT_FAILURE, 0, "%s: a bug! Please contact us at %s to fix "
           "the problem. For some reason, the size doesn't match", __func__,
           PACKAGE_BUGREPORT);
-
-  /* Inform the user that this operation is done (if necessary). */
-  if(!p->cp.quiet)
-    printf("  - Sky subtracted from input values.\n");
 }
 
 
@@ -1909,16 +1905,20 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkcatalogparams *p)
       if(p->subtractsky || p->sky)
         {
           if(p->sky->size==1)
-            printf("  - Sky: %g\n", *((float *)(p->sky->array)) );
+            printf("  - Sky: %g (single value for all pixels)\n",
+                   *((float *)(p->sky->array)) );
           else
             printf("  - Sky: %s (hdu: %s)\n", p->usedskyfile, p->skyhdu);
+          if(p->subtractsky)
+            printf("    - Sky has been subtracted from values internally.\n");
         }
 
       if(p->std)
         {
           tmp = p->variance ? "VAR" : "STD";
           if(p->std->size==1)
-            printf("  - Sky %s: %g\n", tmp, *((float *)(p->std->array)) );
+            printf("  - Sky %s: %g (single value for all pixels)\n", tmp,
+                   *((float *)(p->std->array)) );
           else
             printf("  - Sky %s: %s (hdu: %s)\n", tmp, p->usedstdfile,
                    p->stdhdu);

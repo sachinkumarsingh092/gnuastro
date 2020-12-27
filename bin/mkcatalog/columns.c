@@ -724,7 +724,7 @@ columns_define_alloc(struct mkcatalogparams *p)
         case UI_KEY_MINVX:
           name           = "MIN_V_X";
           unit           = "pixel";
-          ocomment       = "Minimum value's X pixel position.";
+          ocomment       = "Minimum value X pixel position.";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT32;
           ctype          = GAL_TYPE_FLOAT32;
@@ -738,7 +738,7 @@ columns_define_alloc(struct mkcatalogparams *p)
         case UI_KEY_MAXVX:
           name           = "MAX_V_X";
           unit           = "pixel";
-          ocomment       = "Maximum value's X pixel position.";
+          ocomment       = "Maximum value X pixel position.";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT32;
           ctype          = GAL_TYPE_FLOAT32;
@@ -752,7 +752,7 @@ columns_define_alloc(struct mkcatalogparams *p)
         case UI_KEY_MINVY:
           name           = "MIN_V_Y";
           unit           = "pixel";
-          ocomment       = "Minimum value's Y pixel position.";
+          ocomment       = "Minimum value Y pixel position.";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT32;
           ctype          = GAL_TYPE_FLOAT32;
@@ -766,7 +766,7 @@ columns_define_alloc(struct mkcatalogparams *p)
         case UI_KEY_MAXVY:
           name           = "MAX_V_Y";
           unit           = "pixel";
-          ocomment       = "Maximum value's Y pixel position.";
+          ocomment       = "Maximum value Y pixel position.";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT32;
           ctype          = GAL_TYPE_FLOAT32;
@@ -780,7 +780,7 @@ columns_define_alloc(struct mkcatalogparams *p)
         case UI_KEY_MINVZ:
           name           = "MIN_V_Z";
           unit           = "pixel";
-          ocomment       = "Minimum value's Z pixel position.";
+          ocomment       = "Minimum value Z pixel position.";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT32;
           ctype          = GAL_TYPE_FLOAT32;
@@ -794,7 +794,7 @@ columns_define_alloc(struct mkcatalogparams *p)
         case UI_KEY_MAXVZ:
           name           = "MAX_V_Z";
           unit           = "pixel";
-          ocomment       = "Maximum value's Z pixel position.";
+          ocomment       = "Maximum value Z pixel position.";
           ccomment       = ocomment;
           otype          = GAL_TYPE_FLOAT32;
           ctype          = GAL_TYPE_FLOAT32;

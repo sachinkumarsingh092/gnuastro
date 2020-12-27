@@ -142,7 +142,6 @@ mkcatalog_single_object(void *in_prm)
   else
     pp.up_vals=NULL;
 
-
   /* Fill the desired columns for all the objects given to this thread. */
   for(i=0; tprm->indexs[i]!=GAL_BLANK_SIZE_T; ++i)
     {
