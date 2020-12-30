@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/tile.h>
 #include <gnuastro/blank.h>
@@ -586,37 +587,55 @@ ascii_plots(struct statisticsparams *p)
 /*******************************************************************/
 /*******    Histogram and cumulative frequency tables    ***********/
 /*******************************************************************/
-void
-write_output_table(struct statisticsparams *p, gal_data_t *table,
-                   char *suf, char *contents)
+static char *
+statistics_output_name(struct statisticsparams *p, char *suf, int *isfits)
 {
-  char *output;
   int use_auto_output=0;
-  char *fix, *suffix=NULL, *tmp;
-  gal_list_str_t *comments=NULL;
-
+  char *out, *fix, *suffix=NULL;
 
   /* Automatic output should be used when no output name was specified or
      we have more than one output file. */
   use_auto_output = p->cp.output ? (p->numoutfiles>1 ? 1 : 0) : 1;
 
-
   /* Set the 'fix' and 'suffix' strings. Note that 'fix' is necessary in
      every case, even when no automatic output is to be used. Since it is
      used to determine the format of the output. */
-  fix = ( p->cp.output
-          ? gal_fits_name_is_fits(p->cp.output) ? "fits" : "txt"
-          : "txt" );
+  fix = ( *isfits
+          ? "fits"
+          : ( p->cp.output
+              ? gal_fits_name_is_fits(p->cp.output) ? "fits" : "txt"
+              : "txt" ) );
   if(use_auto_output)
     if( asprintf(&suffix, "%s.%s", suf, fix)<0 )
       error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
 
-
   /* Make the output name. */
-  output = ( use_auto_output
-             ? gal_checkset_automatic_output(&p->cp, p->inputname, suffix)
-             : p->cp.output );
+  out = ( use_auto_output
+          ? gal_checkset_automatic_output(&p->cp, p->inputname, suffix)
+          : p->cp.output );
 
+  /* See if it is a FITS file. */
+  *isfits=strcmp(fix, "fits")==0;
+
+  /* Clean up and return. */
+  if(suffix) free(suffix);
+  return out;
+}
+
+
+
+
+
+void
+write_output_table(struct statisticsparams *p, gal_data_t *table,
+                   char *suf, char *contents)
+{
+  int isfits=0;
+  char *tmp, *output;
+  gal_list_str_t *comments=NULL;
+
+  /* Set the output. */
+  output=statistics_output_name(p, suf, &isfits);
 
   /* Write the comments, NOTE: we are writing the first two in reverse of
      the order we want them. They will later be freed as part of the list's
@@ -628,7 +647,7 @@ write_output_table(struct statisticsparams *p, gal_data_t *table,
     error(EXIT_FAILURE, 0, "%s: asprintf allocation", __func__);
   gal_list_str_add(&comments, tmp, 0);
 
-  if(strcmp(fix, "fits"))  /* The intro info will be in FITS files anyway.*/
+  if(!isfits)  /* The intro info will be in FITS files anyway.*/
     gal_table_comments_add_intro(&comments, PROGRAM_STRING, &p->rawtime);
 
 
@@ -639,7 +658,7 @@ write_output_table(struct statisticsparams *p, gal_data_t *table,
 
 
   /* Write the configuration information if we have a FITS output. */
-  if(!strcmp(fix, "fits"))
+  if(isfits)
     {
       gal_fits_key_write_filename("input", p->inputname, &p->cp.okeys, 1);
       gal_fits_key_write_config(&p->cp.okeys, "Statistics configuration",
@@ -653,7 +672,6 @@ write_output_table(struct statisticsparams *p, gal_data_t *table,
 
 
   /* Clean up. */
-  if(suffix) free(suffix);
   gal_list_str_free(comments, 1);
   if(output!=p->cp.output) free(output);
 }
@@ -728,26 +746,74 @@ save_hist_and_or_cfp(struct statisticsparams *p)
 static void
 histogram_2d(struct statisticsparams *p)
 {
-  char *suf, *contents;
-  gal_data_t *hist2d, *bins;
+  int isfits=1;
+  int32_t *imgarr;
+  double *d1, *d2;
+  uint32_t *histarr;
   gal_data_t *range1, *range2;
+  gal_data_t *img, *hist2d, *bins;
+  size_t i, j, dsize[2], nb1=p->numbins, nb2=p->numbins2;
+  char *output, suf[]="-hist2d", contents[]="2D Histogram";
+
+  /* WCS-related arrays. */
+  char *cunit[2], *ctype[2];
+  double crpix[2], crval[2], cdelt[2], pc[4]={1,0,0,1};
 
   /* Set the bins for each dimension */
   range1=set_bin_range_params(p, 1);
   range2=set_bin_range_params(p, 2);
-  bins=gal_statistics_regular_bins(p->input, range1, p->numbins,
+  bins=gal_statistics_regular_bins(p->input, range1, nb1,
                                    p->onebinstart);
   bins->next=gal_statistics_regular_bins(p->input->next, range2,
-                                         p->numbins2,
-                                         p->onebinstart2);
+                                         nb2, p->onebinstart2);
 
   /* Build the 2D histogram. */
   hist2d=gal_statistics_histogram2d(p->input, bins);
 
-  /* Write the output. */
-  suf="-hist2d";
-  contents="2D Histogram";
-  write_output_table(p, hist2d, suf, contents);
+  /* Write the histogram into a 2D FITS image. Note that in the FITS image
+     standard, the first axis is the fastest array (unlike the default
+     format we have adopted for the tables). */
+  if(!strcmp(p->histogram2d,"image"))
+    {
+      /* Allocate the 2D image array. */
+      dsize[0]=nb1;
+      dsize[1]=nb2;
+      histarr=hist2d->next->next->array;
+      img=gal_data_alloc(NULL, GAL_TYPE_INT32, 2, dsize, NULL, 0,
+                         p->cp.minmapsize, p->cp.quietmmap,
+                         NULL, NULL, NULL);
+
+      /* Fill the array values. */
+      imgarr=img->array;
+      for(i=0;i<nb1;++i)
+        for(j=0;j<nb2;++j)
+          imgarr[i*nb2+j]=histarr[j*nb1+i];
+
+      /* Set the WCS. */
+      d1=bins->array;
+      d2=bins->next->array;
+      crpix[0] = 1;                   crpix[1] = 1;
+      crval[0] = d1[0];               crval[1] = d2[0];
+      cdelt[0] = d1[1]-d1[0];         cdelt[1] = d2[1]-d2[0];
+      cunit[0] = p->input->unit;      cunit[1] = p->input->next->unit;
+      ctype[0] = p->input->name       ? p->input->name : "X";
+      ctype[1] = p->input->next->name ? p->input->next->name : "Y";
+      img->wcs=gal_wcs_create(crpix, crval, cdelt, pc, cunit, ctype, 2);
+
+      /* Write the output. */
+      output=statistics_output_name(p, suf, &isfits);
+      gal_fits_img_write(img, output, NULL, PROGRAM_STRING);
+      gal_fits_key_write_filename("input", p->inputname, &p->cp.okeys, 1);
+      gal_fits_key_write_config(&p->cp.okeys, "Statistics configuration",
+                                "STATISTICS-CONFIG", output, "0");
+
+      /* Clean up and let the user know that the histogram is built. */
+      gal_data_free(img);
+      if(!p->cp.quiet) printf("%s created.\n", output);
+    }
+  /* Write 2D histogram as a table. */
+  else
+    write_output_table(p, hist2d, suf, contents);
 
   /* Clean up. */
   gal_list_data_free(hist2d);

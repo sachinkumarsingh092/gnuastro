@@ -26,6 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <gnuastro/txt.h>
 #include <gnuastro/wcs.h>
@@ -503,11 +504,16 @@ ui_read_check_only_options(struct statisticsparams *p)
     error(EXIT_FAILURE, 0, "'--numbins' isn't set. When the histogram or "
           "cumulative frequency plots are requested, the number of bins "
           "('--numbins') is necessary");
-  if( p->histogram2d && p->numbins2==0 )
-    error(EXIT_FAILURE, 0, "'--numbins2' isn't set. When a 2D histogram "
-          "is requested, the number of bins in the second dimension "
-          "('--numbins2') is also necessary");
-
+  if( p->histogram2d )
+    {
+      if( p->numbins2==0 )
+        error(EXIT_FAILURE, 0, "'--numbins2' isn't set. When a 2D histogram "
+              "is requested, the number of bins in the second dimension "
+              "('--numbins2') is also necessary");
+      if( strcmp(p->histogram2d,"table") && strcmp(p->histogram2d,"image") )
+        error(EXIT_FAILURE, 0, "the value to '--histogram2d' can either be "
+              "'table' or 'image'");
+    }
 
   /* If an ascii plot is requested, check if the ascii number of bins and
      height are given. */

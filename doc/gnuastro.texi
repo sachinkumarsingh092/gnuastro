@@ -491,6 +491,11 @@ Statistics
 * Sky value::                   Definition and derivation of the Sky value.
 * Invoking aststatistics::      Arguments and options to Statistics.
 
+2D Histograms
+
+* 2D histogram as a table::     Format and usage in table format.
+* 2D histogram as an image::    Format and usage in image format
+
 Sky value
 
 * Sky value definition::        Definition of the Sky/reference value.
@@ -13696,19 +13701,44 @@ But when the range is determined from the actual dataset (none of these options 
 
 @node 2D Histograms, Sigma clipping, Histogram and Cumulative Frequency Plot, Statistics
 @subsection 2D Histograms
-
+@cindex 2D histogram
+@cindex Histogram, 2D
 In @ref{Histogram and Cumulative Frequency Plot} the concept of histograms were introduced on a single dataset.
-However, especially when doing high-level science on tables, the distribution in a 2D space may be of interest (for example a color-magnitude diagram).
-But the number of points may be too large for a simple scatter plot to show the concentration of the points: they will all fall over each other and just make a large connected region that will hide potentially interesting behaviors.
+But they are only useful for viewing the distribution of a single variable (column in a table).
+In many contexts, the distribution of two variables in relation to each other may be of interest.
+For example the color-magnitude diagrams in astronomy, where the horizontal axis is the luminosity or magnitude of an object, and the vertical axis is the color.
+Scatter plots are useful to see these relations between the objects of interest when the number of the objects is small.
+
+As the density of points in the scatter plot increases, the points will fall over each other and just make a large connected region hide potentially interesting behaviors/correlations in the densest regions.
 This is where 2D histograms can become very useful.
-The desired 2D region is broken up into 2D bins (boxes) and the number of points falling within each box is returned.
-Added with a color-bar, you can now clearly see the distribution.
+A 2D histogram is composed of 2D bins (boxes or pixels), just as a 1D histogram consists of 1D bins (lines).
+The number of points falling within each box/pixel will then be the value of that box.
+Added with a color-bar, you can now clearly see the distribution independent of the density of points (for example you can even visualize it in log-scale if you want).
 
 Gnuastro's Statistics program has the @option{--histogram2d} option for this task.
-Its output will be three columns that have the centers of every box in both dimensions.
-The first column is the central box coordinates in the first dimension, the second has values along the second dimension and the third has the number of input points that fall within each box.
-You can specify the number of bins along each dimension through the @option{--numbins} (for first input column) an @option{--numbins2} (for second input column).
-The output file from this command can then be given to any plotting tool to visualize the distribution.
+It takes a single argument (either @code{table} or @code{image}) that specifies the format of the output 2D histogram.
+The two formats will be reviewed separately in the sub-sections below.
+But let's start with the generalities that are common to both (related to the input, not the output).
+
+You can specify the two columns to be shown using the @option{--column} (or @option{-c}) option.
+So if you want to plot the color-magnitude diagram from a table with the @code{MAG-R} column on the horizontal and @code{COLOR-G-R} on the vertical column, you can use @option{--column=MAG-r,COLOR-G-r}.
+The number of bins along each dimension can be set with @option{--numbins} (for first input column) and @option{--numbins2} (for second input column).
+
+Without specifying any range, the full range of values will be used in each dimension.
+If you only want to focus on a certain interval of the values in the columns in any dimension you can use the @option{--greaterequal} and @option{--lessthan} options to limit the values along the first/horizontal dimension and @option{--greaterequal2} and @option{--lessthan2} options for the second/vertical dimension.
+
+@menu
+* 2D histogram as a table::     Format and usage in table format.
+* 2D histogram as an image::    Format and usage in image format
+@end menu
+
+@node 2D histogram as a table, 2D histogram as an image, 2D Histograms, 2D Histograms
+@subsubsection 2D histogram as a table
+
+When called with the @option{--histogram=table} option, Statistics will output a table file with three columns that have the information of every box as a column.
+If you asked for @option{--numbins=N} and @option{--numbins2=M}, all three columns will have @mymath{M\times N} rows (one row for every box/pixel of the 2D histogram).
+The first and second columns are the position of the box along the first and second dimensions.
+The third column has the number of input points that fall within that box/pixel.
 
 For example, you can make high-quality plots within your paper (using the same @LaTeX{} engine, thus blending very nicely with your text) using @url{https://ctan.org/pkg/pgfplots, PGFPlots}.
 Below you can see one such minimal example, using your favorite text editor, save it into a file, make the two small corrections in it, then run the commands shown at the top.
@@ -13778,6 +13808,121 @@ The second one (@code{FILE.txt}) should be replaced with the name of the file ge
 
 \end@{document@}
 @end example
+
+@node 2D histogram as an image,  , 2D histogram as a table, 2D Histograms
+@subsubsection 2D histogram as an image
+
+When called with the @option{--histogram=image} option, Statistics will output a FITS file with an image/array extension.
+If you asked for @option{--numbins=N} and @option{--numbins2=M} the image will have a size of @mymath{N\times M} pixels (one pixel per 2D bin).
+Also, the FITS image will have a linear WCS that is scaled to the 2D bin size along each dimension.
+So when you hover your mouse over any part of the image with a FITS viewer (for example SAO DS9), besides the number of points in each pixel, you can directly also see ``coordinates'' of the pixels along the two axes.
+You can also use the optimized and fast FITS viewer features for many aspects of inspecting the distributions (which we won't go into futher here).
+
+@cindex Color-magnitude diagram
+@cindex Diagaram, Color-magnitude
+For example let's assume you want to derive the color-magnitude diagram (CMD) of the @url{http://uvudf.ipac.caltech.edu, UVUDF survey}.
+You can run the first command below to download the table with magnitudes of objects in many filters and run the second command to see general column metadata after it is downloaded.
+
+@example
+$ wget http://asd.gsfc.nasa.gov/UVUDF/uvudf_rafelski_2015.fits.gz
+$ asttable uvudf_rafelski_2015.fits.gz -i
+@end example
+
+Let's assume you want to find the color to be between the @code{F775W} and @code{F105W} filters (roughly corresponding to the g and r filters in ground-based imaging).
+Because the original table doesn't have a color columns, you can use the @ref{Column arithmetic} feature of the Table program for deriving a new table with the @code{F775W} magnitude in one column and the difference between the @code{F606W} and @code{F775W} on the other column.
+With the second command, you can see the actual values if you like.
+
+@example
+$ asttable uvudf_rafelski_2015.fits.gz -cMAG_F775W \
+           -c'arith MAG_F606W MAG_F775W -' \
+           --colmetadata=ARITH_1,F606W-F775W,"AB mag" -ocmd.fits
+$ asttable cmd.fits
+@end example
+
+@noindent
+You can construct your 2D histogram image as a FITS file with this command (assuming you want @code{F775W} magnitudes between 20 and 30, colors between -1 and 3 and 100 bins in each dimension).
+
+@example
+aststatistics cmd.fits -cF775W,F606W-F775W --histogram2d=image \
+              --numbins=100  --greaterequal=22    --lessthan=30 \
+              --numbins2=100 --greaterequal2=-0.5 --lessthan2=3 \
+              --manualbinrange --output=cmd-2d-hist.fits
+@end example
+
+@noindent
+If you have SAO DS9, you can now open this FITS file as a normal FITS image, for example with the command below.
+Try hovering/zooming over the pixels: not only will you see the number of objects in the UVUDF catalog that fall in each bin, but you also see the @code{F775W} magnitude and color of that pixel also.
+
+@example
+$ ds9 cmd-2d-hist.fits -cmap sls -zoom to fit
+@end example
+
+@noindent
+With the first command below, you can activate the grid feature of DS9 to actually see the coordinate grid, as well as values on each line.
+With the second command, DS9 will even read the labels of the axises and use them to generate an almost publication-ready plot.
+
+@example
+$ ds9 cmd-2d-hist.fits -cmap sls -zoom to fit -grid yes
+$ ds9 cmd-2d-hist.fits -cmap sls -zoom to fit -grid yes \
+      -grid type publication
+@end example
+
+If you are happy with the grid and coloring and etc, you can also save this as a JPEG image to use in your documents with these extra DS9 options (DS9 will quit as soon as it builds the JPEG image):
+
+@example
+$ ds9 cmd-2d-hist.fits -cmap sls -zoom 4 -grid yes \
+      -grid type publication -saveimage cmd-2d.jpeg -quit
+@end example
+
+@cindex PGFPlots (@LaTeX{} package)
+While this is good for a fast report in the weekly meeting, for your paper, you want to show something with higher quality.
+For that, you can use the @LaTeX{} PGFPlots to add axises in the same font as your text, sharp grids and many other elegant/powerful features.
+But to load the 2D histogram into PGFPlots first you need to convert the FITS image into a more standard format, for example PDF.
+We'll use Gnuastro's @ref{ConvertType} for this, and use the @code{sls-inverse} color map (which will set the color white for pixles without a value):
+
+@example
+$ astconvertt cmd-2d-hist.fits --colormap=sls-inverse \
+              --borderwidth=0 -ocmd-2d-hist.pdf
+@end example
+
+@noindent
+Below you can see a minimally working example of how to add axis numbers, labels and a grid to the PDF generated above.
+Notice the @code{xmin}, @code{xmax}, @code{ymin}, @code{ymax} values and how they are the same as the range specified above.
+
+@example
+\documentclass@{article@}
+\usepackage@{pgfplots@}
+\dimendef\prevdepth=0
+\begin@{document@}
+
+You can write all you want here...
+
+\begin@{tikzpicture@}
+  \begin@{axis@}[
+      enlargelimits=false,
+      grid,
+      axis on top,
+      width=\linewidth,
+      height=\linewidth,
+      xlabel=@{Magnitude (F775W)@},
+      ylabel=@{Color (F606W-F775W)@}]
+
+    \addplot graphics[xmin=22, xmax=30, ymin=-0.5, ymax=3]
+             @{cmd-2d-hist.pdf@};
+  \end@{axis@}
+\end@{tikzpicture@}
+\end@{document@}
+@end example
+
+@noindent
+Copy and paste the code above into a plain-text file called @file{cmd-report.tex} and run this command to build your PDF (assuming you have LaTeX and PGFPlots).
+
+@example
+$ pdflatex cmd-report.tex
+@end example
+
+The improved quality, blending in with the text, vector-graphics resolution and other features make this plot pleasing to the eye, and let your readers focus on the main point of your scientific argument.
+
 
 @node  Sigma clipping, Sky value, 2D Histograms, Statistics
 @subsection Sigma clipping
@@ -24024,31 +24169,29 @@ the returned structure with WCSLIB's @code{wcsvfree} keyword:
 status = wcsvfree(&nwcs,&wcs);
 @end example
 
-If you don't want to search the full FITS header for WCS-related FITS
-keywords (for example due to conflicting keywords), but only a specific
-range of the header keywords you can use the @code{hstartwcs} and
-@code{hendwcs} arguments to specify the keyword number range (counting from
-zero). If @code{hendwcs} is larger than @code{hstartwcs}, then only
-keywords in the given range will be checked. Hence, to ignore this feature
-(and search the full FITS header), give both these arguments the same
-value.
+If you don't want to search the full FITS header for WCS-related FITS keywords (for example due to conflicting keywords), but only a specific range of the header keywords you can use the @code{hstartwcs} and @code{hendwcs} arguments to specify the keyword number range (counting from zero).
+If @code{hendwcs} is larger than @code{hstartwcs}, then only keywords in the given range will be checked.
+Hence, to ignore this feature (and search the full FITS header), give both these arguments the same value.
 
-If the WCS information couldn't be read from the FITS file, this function
-will return a @code{NULL} pointer and put a zero in @code{nwcs}. A WCSLIB
-error message will also be printed in @code{stderr} if there was an error.
+If the WCS information couldn't be read from the FITS file, this function will return a @code{NULL} pointer and put a zero in @code{nwcs}.
+A WCSLIB error message will also be printed in @code{stderr} if there was an error.
 
-This function is just a wrapper over WCSLIB's @code{wcspih} function which
-is not thread-safe. Therefore, be sure to not call this function
-simultaneously (over multiple threads).
+This function is just a wrapper over WCSLIB's @code{wcspih} function which is not thread-safe.
+Therefore, be sure to not call this function simultaneously (over multiple threads).
 @end deftypefun
 
 @deftypefun {struct wcsprm *} gal_wcs_read (char @code{*filename}, char @code{*hdu}, size_t @code{hstartwcs}, size_t @code{hendwcs}, int @code{*nwcs})
-[@strong{Not thread-safe}] Return the WCSLIB structure that is read from
-the HDU/extension @code{hdu} of the file @code{filename}. Also put the
-number of coordinate representations found into the space that @code{nwcs}
-points to. Please see @code{gal_wcs_read_fitsptr} for more.
+[@strong{Not thread-safe}] Return the WCSLIB structure that is read from the HDU/extension @code{hdu} of the file @code{filename}.
+Also put the number of coordinate representations found into the space that @code{nwcs} points to.
+Please see @code{gal_wcs_read_fitsptr} for more.
 @end deftypefun
 
+@deftypefun {struct wcsprm *} gal_wcs_create (double @code{*crpix}, double @code{*crval}, double @code{*cdelt}, double @code{*pc}, char @code{**cunit}, char @code{**ctype}, size_t @code{ndim})
+Given all the most common standard components of the WCS standard, construct a @code{struct wcsprm}, initialize and set it for future processing.
+See the FITS WCS standard for more on these keywords.
+All the arrays must have @code{ndim} elements with them except for @code{pc} which should have @code{ndim*ndim} elements (a square matrix).
+Also, @code{cunit} and @code{ctype} are arrays of strings.
+@end deftypefun
 
 @deftypefun {char *} gal_wcs_dimension_name (struct wcsprm @code{*wcs}, size_t @code{dimension})
 Return an allocated string array (that should be freed later) containing the first part of the @code{CTYPEi} FITS keyword (which contains the dimension name in the FITS standard).
@@ -26154,39 +26297,43 @@ shifted to accommodate this request.
 
 
 @deftypefun {gal_data_t *} gal_statistics_histogram (gal_data_t @code{*input}, gal_data_t @code{*bins}, int @code{normalize}, int @code{maxone})
-Make a histogram of all the elements in the given dataset with bin values
-that are defined in the @code{inbins} structure (see
-@code{gal_statistics_regular_bins}, they currently have to be equally
-spaced). @code{inbins} is not mandatory, if you pass a @code{NULL} pointer,
-the bins structure will be built within this function based on the
-@code{numbins} input. As a result, when you have already defined the bins,
-@code{numbins} is not used.
+@cindex Histogram
+Make a histogram of all the elements in the given dataset with bin values that are defined in the @code{inbins} structure (see @code{gal_statistics_regular_bins}, they currently have to be equally spaced).
+@code{inbins} is not mandatory, if you pass a @code{NULL} pointer, the bins structure will be built within this function based on the @code{numbins} input.
+As a result, when you have already defined the bins, @code{numbins} is not used.
 
-Let's write the center of the @mymath{i}th element of the bin array as
-@mymath{b_i}, and the fixed half-bin width as @mymath{h}. Then element
-@mymath{j} of the input array (@mymath{in_j}) will be counted in
-@mymath{b_i} if @mymath{(b_i-h) \le in_j < (b_i+h)}. However, if
-@mymath{in_j} is somewhere in the last bin, the condition changes to
-@mymath{(b_i-h) \le in_j \le (b_i+h)}.
+Let's write the center of the @mymath{i}th element of the bin array as @mymath{b_i}, and the fixed half-bin width as @mymath{h}.
+Then element @mymath{j} of the input array (@mymath{in_j}) will be counted in @mymath{b_i} if @mymath{(b_i-h) \le in_j < (b_i+h)}.
+However, if @mymath{in_j} is somewhere in the last bin, the condition changes to @mymath{(b_i-h) \le in_j \le (b_i+h)}.
+
+If @code{normalize!=0}, the histogram will be ``normalized'' such that the sum of the counts column will be one. In other words, all the counts in every bin will be divided by the total number of counts. If @code{maxone!=0}, the histogram's maximum count will be 1. In other words, the counts in every bin will be divided by the value of the maximum.
 @end deftypefun
 
+@deftypefun {gal_data_t *} gal_statistics_histogram2d (gal_data_t @code{*input}, gal_data_t @code{*bins})
+@cindex Histogram, 2D
+@cindex 2D histogram
+This function is very similar to @code{gal_statistics_histogram}, but will build a 2D histogram (count how many of the elements of @code{input} have a within a 2D box.
+The bins comprising the first dimension of the 2D box are defined by @code{bins}.
+The bins of the second dimension are defined by @code{bins->next} (@code{bins} is a @ref{List of gal_data_t}).
+Both the @code{bin} and @code{bin->next} can be created with @code{gal_statistics_regular_bins}.
+
+This function returns a list of @code{gal_data_t} with three nodes/columns, so you can directly write them into a table (see @ref{Table input output}).
+Assuming @code{bins} has @mymath{N1} bins and @code{bins->next} has @mymath{N2} bins, each node/column of the returned output is a 1D array with @mymath{N1\times N2} elements.
+The first and second columns are the center of the 2D bin along the first and second dimensions and have a @code{double} data type.
+The third column is the 2D histogram (the number of input elements that have a value within that 2D bin) and has a @code{uint32} data type (see @ref{Numeric data types}).
+@end deftypefun
 
 @deftypefun {gal_data_t *} gal_statistics_cfp (gal_data_t @code{*input}, gal_data_t @code{*bins}, int @code{normalize})
 Make a cumulative frequency plot (CFP) of all the elements in @code{input}
 with bin values that are defined in the @code{bins} structure (see
 @code{gal_statistics_regular_bins}).
 
-The CFP is built from the histogram: in each bin, the value is the sum of
-all previous bins in the histogram. Thus, if you have already calculated
-the histogram before calling this function, you can pass it onto this
-function as the data structure in @code{bins->next} (see @code{List of
-gal_data_t}). If @code{bin->next!=NULL}, then it is assumed to be the
-histogram. If it is @code{NULL}, then the histogram will be calculated
-internally and freed after the job is finished.
+The CFP is built from the histogram: in each bin, the value is the sum of all previous bins in the histogram.
+Thus, if you have already calculated the histogram before calling this function, you can pass it onto this function as the data structure in @code{bins->next} (see @code{List of gal_data_t}).
+If @code{bin->next!=NULL}, then it is assumed to be the histogram.
+If it is @code{NULL}, then the histogram will be calculated internally and freed after the job is finished.
 
-When a histogram is given and it is normalized, the CFP will also be
-normalized (even if the normalized flag is not set here): note that a
-normalized CFP's maximum value is 1.
+When a histogram is given and it is normalized, the CFP will also be normalized (even if the normalized flag is not set here): note that a normalized CFP's maximum value is 1.
 @end deftypefun
 
 

@@ -376,6 +376,54 @@ gal_wcs_read(char *filename, char *hdu, size_t hstartwcs,
 
 
 
+struct wcsprm *
+gal_wcs_create(double *crpix, double *crval, double *cdelt,
+               double *pc, char **cunit, char **ctype, size_t ndim)
+{
+  size_t i;
+  int status;
+  struct wcsprm *wcs;
+  double equinox=2000.0f;
+
+  /* Allocate the memory necessary for the wcsprm structure. */
+  errno=0;
+  wcs=malloc(sizeof *wcs);
+  if(wcs==NULL)
+    error(EXIT_FAILURE, errno, "%zu for wcs in preparewcs", sizeof *wcs);
+
+  /* Initialize the structure (allocate all its internal arrays). */
+  wcs->flag=-1;
+  if( (status=wcsini(1, ndim, wcs)) )
+    error(EXIT_FAILURE, 0, "wcsini error %d: %s",
+          status, wcs_errmsg[status]);
+
+  /* Fill in all the important WCS structure parameters. */
+  wcs->altlin  = 0x1;
+  wcs->equinox = equinox;
+  for(i=0;i<ndim;++i)
+    {
+      wcs->crpix[i] = crpix[i];
+      wcs->crval[i] = crval[i];
+      wcs->cdelt[i] = cdelt[i];
+      strcpy(wcs->cunit[i], cunit[i]);
+      strcpy(wcs->ctype[i], ctype[i]);
+    }
+  for(i=0;i<ndim*ndim;++i) wcs->pc[i]=pc[i];
+
+  /* Set up the wcs structure with the constants defined above. */
+  status=wcsset(wcs);
+  if(status)
+    error(EXIT_FAILURE, 0, "wcsset error %d: %s", status,
+          wcs_errmsg[status]);
+
+  /* Return the output WCS. */
+  return wcs;
+}
+
+
+
+
+
 /* Extract the dimension name from CTYPE. */
 char *
 gal_wcs_dimension_name(struct wcsprm *wcs, size_t dimension)

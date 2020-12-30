@@ -100,6 +100,8 @@ struct argp_option program_options[] =
 
 
 
+
+
     /* Tessellation */
     {
       "interpolate",
@@ -426,13 +428,13 @@ struct argp_option program_options[] =
     {
       "histogram2d",
       UI_KEY_HISTOGRAM2D,
+      "STR",
       0,
-      0,
-      "Save the 2D histogram in output.",
+      "2D histogram (as 'table' or 'image').",
       UI_GROUP_PARTICULAR_STAT,
       &p->histogram2d,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },

@@ -101,6 +101,15 @@ See the end of the file for license conditions.
      value to use for that radial interval. See the description of
      '--customtable' for more.
 
+  Statistics:
+   - 2D histograms can now be built as a FITS image with a linear WCS that
+     contains axis values and box size. This allows using the power of FITS
+     viewers for plotting/inspecting distributions of two columns in a
+     table relative to each other (for example color-magnitude plots). You
+     can also convert these 2D histogram images to PDF or JPEG with
+     Gnuastro's ConvertType to directly use in your papers/reports (see the
+     newly added "2D histogram as an image" section of the book for more).
+
   Table:
    - New '--noblank' option will remove all rows in output table that have
      at least one blank value in the specified columns. For example if
@@ -122,6 +131,7 @@ See the end of the file for license conditions.
    - gal_pointer_allocate_ram_or_mmap: allocate space either in RAM or as a
      memory-mapped file.
    - gal_pointer_mmap_free: "free" (actually delete) the memory-mapped file.
+   - gal_wcs_create: create WCSLIB-compatible WCS from raw values.
    - gal_wcs_coverage: Return the sky coverage of given image HDU.
    - gal_wcs_dimension_name: return the name of the requested WCS dim.
 
@@ -169,6 +179,11 @@ See the end of the file for license conditions.
      measure. See the book for more. Since outliers are now rejected more
      robustly, the default value of 'outliersigma' has been decreased to
      '5' (previously it was 10).
+
+  Statistics:
+   - The '--histogram2d' now takes a string argument: either 'image' or
+     'table'. For the old behavior please use '--histogram2d=table'. See
+     the new features above for the 'image' mode.
 
   Table:
    - Column arithmetic operators 'degree-to-ra' and 'degree-to-dec' will

@@ -1911,9 +1911,10 @@ gal_statistics_histogram(gal_data_t *input, gal_data_t *bins, int normalize,
 gal_data_t *
 gal_statistics_histogram2d(gal_data_t *input, gal_data_t *bins)
 {
+  uint32_t *h;
   double *o1, *o2;
   gal_data_t *tmp, *out;
-  size_t i, j, *h, bsizea, bsizeb, outsize;
+  size_t i, j, bsizea, bsizeb, outsize;
   double *da, *db, binwidtha, binwidthb, mina, minb, maxa, maxb;
 
   /* Basic sanity checks */
@@ -1954,7 +1955,7 @@ gal_statistics_histogram2d(gal_data_t *input, gal_data_t *bins)
                      "bin_dim2", input->next->unit,
                      "Bin centers along second axis.");
   out->next=tmp;
-  tmp=gal_data_alloc(NULL, GAL_TYPE_SIZE_T, 1, &outsize,
+  tmp=gal_data_alloc(NULL, GAL_TYPE_UINT32, 1, &outsize,
                      NULL, 1, input->minmapsize, input->quietmmap,
                      "hist_number", "counts",
                      "Number of data points within each 2D-bin (box).");

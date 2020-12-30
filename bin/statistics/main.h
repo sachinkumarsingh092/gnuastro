@@ -72,7 +72,7 @@ struct statisticsparams
   uint8_t        asciihist;  /* Print an ASCII histogram.                */
   uint8_t         asciicfp;  /* Print an ASCII cumulative frequency plot.*/
   uint8_t        histogram;  /* Save histogram in output.                */
-  uint8_t      histogram2d;  /* Save 2D-histogram in output.             */
+  char        *histogram2d;  /* Save 2D-histogram as image or table.     */
   uint8_t       cumulative;  /* Save cumulative distibution in output.   */
   double            mirror;  /* Mirror value for hist and CFP.           */
   uint8_t              sky;  /* Find the Sky value over the image.       */
