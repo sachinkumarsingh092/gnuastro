@@ -12,7 +12,7 @@ For the other formats, everything is normal, except the display math
 equations that don't have any proper solution, so I have just put a $$
 $$ around the math.
 
-Copyright (C) 2015-2020 Free Software Foundation, Inc.
+Copyright (C) 2015-2021, Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

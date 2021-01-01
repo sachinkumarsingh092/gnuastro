@@ -5,7 +5,7 @@ TEMPLATE is part of GNU Astronomy Utilities (Gnuastro) package.
 Original author:
      Mohammad akhlaghi <mohammad@akhlaghi.org>
 Contributing author(s):
-Copyright (C) 2016-2020, Free Software Foundation, Inc.
+Copyright (C) 2016-2021, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
