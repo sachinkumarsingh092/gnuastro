@@ -13816,7 +13816,7 @@ When called with the @option{--histogram=image} option, Statistics will output a
 If you asked for @option{--numbins=N} and @option{--numbins2=M} the image will have a size of @mymath{N\times M} pixels (one pixel per 2D bin).
 Also, the FITS image will have a linear WCS that is scaled to the 2D bin size along each dimension.
 So when you hover your mouse over any part of the image with a FITS viewer (for example SAO DS9), besides the number of points in each pixel, you can directly also see ``coordinates'' of the pixels along the two axes.
-You can also use the optimized and fast FITS viewer features for many aspects of inspecting the distributions (which we won't go into futher here).
+You can also use the optimized and fast FITS viewer features for many aspects of visually inspecting the distributions (which we won't go into futher here).
 
 @cindex Color-magnitude diagram
 @cindex Diagaram, Color-magnitude
@@ -13828,8 +13828,9 @@ $ wget http://asd.gsfc.nasa.gov/UVUDF/uvudf_rafelski_2015.fits.gz
 $ asttable uvudf_rafelski_2015.fits.gz -i
 @end example
 
-Let's assume you want to find the color to be between the @code{F775W} and @code{F105W} filters (roughly corresponding to the g and r filters in ground-based imaging).
-Because the original table doesn't have a color columns, you can use the @ref{Column arithmetic} feature of the Table program for deriving a new table with the @code{F775W} magnitude in one column and the difference between the @code{F606W} and @code{F775W} on the other column.
+Let's assume you want to find the color to be between the @code{F606W} and @code{F775W} filters (roughly corresponding to the g and r filters in ground-based imaging).
+However, the original table doesn't have color columns (there would be too many combinations!).
+Therefore you can use the @ref{Column arithmetic} feature of Gnuastro's Table program for deriving a new table with the @code{F775W} magnitude in one column and the difference between the @code{F606W} and @code{F775W} on the other column.
 With the second command, you can see the actual values if you like.
 
 @example
@@ -13840,12 +13841,13 @@ $ asttable cmd.fits
 @end example
 
 @noindent
-You can construct your 2D histogram image as a FITS file with this command (assuming you want @code{F775W} magnitudes between 20 and 30, colors between -1 and 3 and 100 bins in each dimension).
+You can now construct your 2D histogram as a @mymath{100\times100} pixel FITS image with this command (assuming you want @code{F775W} magnitudes between 22 and 30, colors between -1 and 3 and 100 bins in each dimension).
+Note that without the @option{--manualbinrange} option the range of each axis will be determined by the values within the columns (which may be larger or smaller than your desired large).
 
 @example
-aststatistics cmd.fits -cF775W,F606W-F775W --histogram2d=image \
-              --numbins=100  --greaterequal=22    --lessthan=30 \
-              --numbins2=100 --greaterequal2=-0.5 --lessthan2=3 \
+aststatistics cmd.fits -cMAG_F775W,F606W-F775W --histogram2d=image \
+              --numbins=100  --greaterequal=22  --lessthan=30 \
+              --numbins2=100 --greaterequal2=-1 --lessthan2=3 \
               --manualbinrange --output=cmd-2d-hist.fits
 @end example
 
@@ -13867,7 +13869,7 @@ $ ds9 cmd-2d-hist.fits -cmap sls -zoom to fit -grid yes \
       -grid type publication
 @end example
 
-If you are happy with the grid and coloring and etc, you can also save this as a JPEG image to use in your documents with these extra DS9 options (DS9 will quit as soon as it builds the JPEG image):
+If you are happy with the grid and coloring and etc, you can also use ds9 to save this as a JPEG image to directly use in your documents/slides with these extra DS9 options (DS9 will write the image to @file{cmd-2d.jpeg} and quit immediately afterwards):
 
 @example
 $ ds9 cmd-2d-hist.fits -cmap sls -zoom 4 -grid yes \
@@ -13875,10 +13877,11 @@ $ ds9 cmd-2d-hist.fits -cmap sls -zoom 4 -grid yes \
 @end example
 
 @cindex PGFPlots (@LaTeX{} package)
-While this is good for a fast report in the weekly meeting, for your paper, you want to show something with higher quality.
-For that, you can use the @LaTeX{} PGFPlots to add axises in the same font as your text, sharp grids and many other elegant/powerful features.
+This is good for a fast progress update.
+But for your paper or more official report, you want to show something with higher quality.
+For that, you can use the PGFPlots package in @LaTeX{} to add axises in the same font as your text, sharp grids and many other elegant/powerful features (like over-plotting interesting points, lines and etc).
 But to load the 2D histogram into PGFPlots first you need to convert the FITS image into a more standard format, for example PDF.
-We'll use Gnuastro's @ref{ConvertType} for this, and use the @code{sls-inverse} color map (which will set the color white for pixles without a value):
+We'll use Gnuastro's @ref{ConvertType} for this, and use the @code{sls-inverse} color map (which will map the pixles with a value of zero to white):
 
 @example
 $ astconvertt cmd-2d-hist.fits --colormap=sls-inverse \
@@ -13887,6 +13890,7 @@ $ astconvertt cmd-2d-hist.fits --colormap=sls-inverse \
 
 @noindent
 Below you can see a minimally working example of how to add axis numbers, labels and a grid to the PDF generated above.
+Copy and paste the @LaTeX{} code below into a plain-text file called @file{cmd-report.tex}
 Notice the @code{xmin}, @code{xmax}, @code{ymin}, @code{ymax} values and how they are the same as the range specified above.
 
 @example
@@ -13907,7 +13911,7 @@ You can write all you want here...
       xlabel=@{Magnitude (F775W)@},
       ylabel=@{Color (F606W-F775W)@}]
 
-    \addplot graphics[xmin=22, xmax=30, ymin=-0.5, ymax=3]
+    \addplot graphics[xmin=22, xmax=30, ymin=-1, ymax=3]
              @{cmd-2d-hist.pdf@};
   \end@{axis@}
 \end@{tikzpicture@}
@@ -13915,14 +13919,14 @@ You can write all you want here...
 @end example
 
 @noindent
-Copy and paste the code above into a plain-text file called @file{cmd-report.tex} and run this command to build your PDF (assuming you have LaTeX and PGFPlots).
+Run this command to build your PDF (assuming you have @LaTeX{} and PGFPlots).
 
 @example
 $ pdflatex cmd-report.tex
 @end example
 
 The improved quality, blending in with the text, vector-graphics resolution and other features make this plot pleasing to the eye, and let your readers focus on the main point of your scientific argument.
-
+PGFPlots can also built the PDF of the plot separately from the rest of the paper/report, see @ref{2D histogram as a table} for the necessary changes in the preamble.
 
 @node  Sigma clipping, Sky value, 2D Histograms, Statistics
 @subsection Sigma clipping
