@@ -71,7 +71,7 @@
 # space characters in them, quote the full value
 numjobs=8
 builddir=build
-outdir=
+outdir="/home/sachin/gnuastro_dev/during-dev-out"
 
 
 
@@ -82,9 +82,9 @@ outdir=
 # script, and once for the utility. In such cases it might be easier to
 # just add the argument/option to the final script that runs the utility
 # rather than these variables.
-utilname=
-arguments=
-options=
+utilname=match
+arguments="../during-dev-out/kdtree-input.fits ../during-dev-out/match-query.fits"
+options="--ccol1=1,2 --ccol2=1,2 --aperture=1 --kdtree=internal"
 
 
 
@@ -182,7 +182,7 @@ if make -j$numjobs -C "$builddir"; then
     echo " lastconfig 1"  >> .gnuastro/gnuastro.conf
 
     # Run the built utility with the given arguments and options.
-    "$utility" $arguments $options $extraopts
+    valgrind "$utility" $arguments $options $extraopts
 
     # Clean up.
     rm -rf .gnuastro

@@ -1005,7 +1005,7 @@ match_kdtree_worker(void *in_prm)
 
   /* High level definitions. */
   gal_data_t *ccol;
-  double *point, least_dist;
+  double *point=NULL, least_dist;
   size_t i, j, index, mindex;
 
   /* Allocate space for all the matching points (based on the number of
@@ -1019,8 +1019,12 @@ match_kdtree_worker(void *in_prm)
       /* Fill the 'point' for this thread. */
       j=0;
       index = tprm->indexs[i];
+      printf("%s: index = %zu point = %g ccol = %g\n", __func__, index, point[0], ((double *)(p->coord2->array))[index]);
       for(ccol=p->coord2; ccol!=NULL; ccol=ccol->next)
+        {
         point[ j++ ] = ((double *)(ccol->array))[index];
+          printf("%s: point: %g\n", __func__, point[j]);
+        }
 
       /* Find the index of the nearest neighbor to this item. */
       mindex=gal_kdtree_nearest_neighbour(p->coord1, p->coord1_kdtree,
@@ -1087,6 +1091,14 @@ gal_match_kdtree(gal_data_t *coord1, gal_data_t *coord2,
   p.c2match=c2match->array;
   p.kdtree_root=kdtree_root;
   p.coord1_kdtree=coord1_kdtree;
+  
+  /** NUMBER OF ARGUMENTS IS INCORRECT BUT COMPILER FINDS IT TO BE FINE **/
   gal_threads_spin_off(match_kdtree_worker, &p, coord2->size, numthreads,
                        minmapsize, quietmmap);
+
+  for (int i = 0; i < coord2->size; ++i)
+    printf("%s: size of c2match = %zu", __func__, p.c2match[i]);
+
+  exit(0);
+  return c2match;
 }

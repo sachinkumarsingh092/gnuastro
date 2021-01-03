@@ -32,6 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/table.h>
 #include <gnuastro/kdtree.h>
 #include <gnuastro/pointer.h>
+#include <gnuastro/threads.h>
 #include <gnuastro/permutation.h>
 
 #include <gnuastro-internal/checkset.h>
@@ -402,7 +403,10 @@ match_catalog_kdtree_auto(struct matchparams *p)
 static gal_data_t *
 match_catalog_kdtree(struct matchparams *p)
 {
+  size_t root;
   gal_data_t *out=NULL;
+  gal_data_t *kdtree=NULL;
+  size_t numthreads = gal_threads_number();
 
   /* If we are in automatic mode, we should look at the data (number of
      rows/columns) and system (number of threads) to decide if the mode
@@ -420,8 +424,11 @@ match_catalog_kdtree(struct matchparams *p)
 
     /* Do the k-d tree matching. */
     case MATCH_KDTREE_INTERNAL:
-      error(EXIT_FAILURE, 0, "%s: internal kd tree usage not "
-            "yet implemented", __func__);
+      kdtree = gal_kdtree_create(p->cols1, &root);
+      out = gal_match_kdtree(p->cols1, p->cols2, kdtree, root,
+                             p->aperture->array, numthreads,
+                             p->cp.minmapsize, p->cp.quietmmap);
+      gal_list_data_free(kdtree);
       break;
 
     /* No 'default' necessary because the modes include disabling. */
