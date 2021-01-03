@@ -81,10 +81,10 @@ gaia_sanitycheck(struct queryparams *p)
           free(p->datasetstr);
           gal_checkset_allocate_copy("public.hipparcos", &p->datasetstr);
         }
-      else if( !strcmp(p->datasetstr, "tyco2") )
+      else if( !strcmp(p->datasetstr, "tycho2") )
         {
           free(p->datasetstr);
-          gal_checkset_allocate_copy("public.tyco2", &p->datasetstr);
+          gal_checkset_allocate_copy("public.tycho2", &p->datasetstr);
         }
     }
 }

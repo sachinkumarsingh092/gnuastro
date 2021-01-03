@@ -10408,7 +10408,7 @@ Below is a list of the simplified names for the databases that have them.
 @item
 @code{dr2 --> gaiadr1.gaia_source}
 @item
-@code{tyco2 --> public.tyco2}
+@code{tycho2 --> public.tycho2}
 @item
 @code{hipparcos --> public.hipparcos}
 @end itemize
