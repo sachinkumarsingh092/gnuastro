@@ -71,7 +71,7 @@
 # space characters in them, quote the full value
 numjobs=8
 builddir=build
-outdir="/home/sachin/gnuastro_dev/during-dev-out"
+outdir='/home/sachin/gnuastro_dev/gnuastro/during-dev-test-data/outputs'
 
 
 
@@ -83,7 +83,7 @@ outdir="/home/sachin/gnuastro_dev/during-dev-out"
 # just add the argument/option to the final script that runs the utility
 # rather than these variables.
 utilname=match
-arguments="../during-dev-out/kdtree-input.fits ../during-dev-out/match-query.fits"
+arguments='/home/sachin/gnuastro_dev/gnuastro/during-dev-test-data/kdtree-input.fits /home/sachin/gnuastro_dev/gnuastro/during-dev-test-data/match-query.fits'
 options="--ccol1=1,2 --ccol2=1,2 --aperture=1 --kdtree=internal"
 
 
