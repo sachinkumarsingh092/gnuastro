@@ -670,6 +670,7 @@ ui_out_of_range_to_blank(struct statisticsparams *p)
       break;
     case 2:
       cond = gal_arithmetic(GAL_ARITHMETIC_OP_OR, 1, flagsor, cond_l, cond_g);
+      gal_data_free(cond_g);
       break;
     }
 
@@ -780,6 +781,9 @@ ui_read_columns_in_one(gal_list_str_t *incolumns)
       /* Add each array element to the final list of columns. */
       for(i=0;i<strs->size;++i)
         gal_list_str_add(&final, strarr[i], 1);
+
+      /* Clean up. */
+      gal_data_free(strs);
     }
 
   /* Reverse the list to be in the same order. */
@@ -1014,8 +1018,8 @@ ui_preparations(struct statisticsparams *p)
             {
               gal_checkset_writable_remove(tl->tilecheckname, 0,
                                            cp->dontdelete);
-              gal_table_write(check, NULL, NULL, cp->tableformat, tl->tilecheckname,
-                              "TABLE", 0);
+              gal_table_write(check, NULL, NULL, cp->tableformat,
+                              tl->tilecheckname, "TABLE", 0);
             }
           gal_data_free(check);
         }
@@ -1049,6 +1053,9 @@ ui_preparations(struct statisticsparams *p)
 
           p->input->next->flag &= ~GAL_DATA_FLAG_HASBLANK ;
           p->input->next->flag |= GAL_DATA_FLAG_BLANK_CH ;
+
+          gal_data_free(flag1);
+          gal_data_free(flag2);
         }
       else
         gal_blank_remove(p->input);
@@ -1188,8 +1195,8 @@ ui_free_report(struct statisticsparams *p)
   /* Free the allocated arrays: */
   free(p->cp.hdu);
   free(p->cp.output);
-  gal_data_free(p->input);
   gal_data_free(p->reference);
+  gal_list_data_free(p->input);
   gal_list_f64_free(p->tp_args);
   gal_list_i32_free(p->singlevalue);
   gal_tile_full_free_contents(&p->cp.tl);

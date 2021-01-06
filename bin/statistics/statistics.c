@@ -515,8 +515,8 @@ set_bin_range_params(struct statisticsparams *p, size_t dim)
   if(p->manualbinrange)
     {
       /* Allocate the range data structure. */
-      range=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &rsize, NULL, 0, -1, 1,
-                           NULL, NULL, NULL);
+      range=gal_data_alloc(NULL, GAL_TYPE_FLOAT32, 1, &rsize, NULL,
+                           0, -1, 1, NULL, NULL, NULL);
       switch(dim)
         {
         case 1:
@@ -562,6 +562,7 @@ ascii_plots(struct statisticsparams *p)
   /* Clean up.*/
   gal_data_free(bins);
   gal_data_free(hist);
+  gal_data_free(range);
   if(p->asciicfp) gal_data_free(cfp);
 }
 
@@ -816,6 +817,9 @@ histogram_2d(struct statisticsparams *p)
     write_output_table(p, hist2d, suf, contents);
 
   /* Clean up. */
+  gal_data_free(range1);
+  gal_data_free(range2);
+  gal_list_data_free(bins);
   gal_list_data_free(hist2d);
 }
 

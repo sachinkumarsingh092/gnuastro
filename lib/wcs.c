@@ -405,8 +405,8 @@ gal_wcs_create(double *crpix, double *crval, double *cdelt,
       wcs->crpix[i] = crpix[i];
       wcs->crval[i] = crval[i];
       wcs->cdelt[i] = cdelt[i];
-      strcpy(wcs->cunit[i], cunit[i]);
-      strcpy(wcs->ctype[i], ctype[i]);
+      if(cunit[i]) strcpy(wcs->cunit[i], cunit[i]);
+      if(ctype[i]) strcpy(wcs->ctype[i], ctype[i]);
     }
   for(i=0;i<ndim*ndim;++i) wcs->pc[i]=pc[i];
 
@@ -491,7 +491,10 @@ gal_wcs_write_in_fitsptr(fitsfile *fptr, struct wcsprm *wcs)
     error(0, 0, "%s: WARNING: WCSLIB error, no WCS in output.\n"
           "wcshdu ERROR %d: %s", __func__, status, wcs_errmsg[status]);
   else
-    gal_fits_key_write_wcsstr(fptr, wcsstr, nkeyrec);
+    {
+      gal_fits_key_write_wcsstr(fptr, wcsstr, nkeyrec);
+      free(wcsstr);
+    }
   status=0;
 
    /* WCSLIB is going to write PC+CDELT keywords in any case. But when we
