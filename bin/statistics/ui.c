@@ -1051,11 +1051,9 @@ ui_preparations(struct statisticsparams *p)
           gal_blank_remove(p->input);
           gal_blank_remove(p->input->next);
 
+          gal_data_free(flag);
           p->input->next->flag &= ~GAL_DATA_FLAG_HASBLANK ;
           p->input->next->flag |= GAL_DATA_FLAG_BLANK_CH ;
-
-          gal_data_free(flag1);
-          gal_data_free(flag2);
         }
       else
         gal_blank_remove(p->input);
