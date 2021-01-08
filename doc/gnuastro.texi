@@ -25940,87 +25940,78 @@ Apply the inverse of @code{permutation} on the @code{input} dataset (can
 have any type), see above for the definition of permutation.
 @end deftypefun
 
+
+
+
+
 @node Matching, Statistical operations, Permutations, Gnuastro library
 @subsection Matching (@file{match.h})
 
-Matching is often necessary when the measurements have been done using
-different instruments, different software or different configurations of
-the same software. The functions in this part of Gnuastro's library will be
-growing to allow matching of images and finding a match between different
-catalogs (register them). Currently it only provides the  The high-level
-measurements are stored in tables with positions (commonly in RA and Dec
-with units of degrees).
+@cindex Matching
+@cindex Coordinate matching
+Matching is often necessary when two measurements of the same points have been done using different instruments (or hardware), different software or different configurations of the same software.
+In other words, you have two catalogs or tables and each has N columns containing the N-dimensional ``positional'' values of each point.
+Each can have other columns too, for example one can have brightness measurements in one filter, and another can have brightness measurements in another filter as well as morphology measurements or etc.
+
+The matching functions here will use the positional columns to find the permutation necessary to apply to both tables.
+This will enable you to match by the positions, then apply the permutation to the brightness or morphology columns in the example above.
+The input and output data formats of the functions below are the some and described below before the actual functions.
+Each function also has extra arguments due to the particular algorithm it uses for the matching.
+
+The two inputs of the functions (@code{coord1} and @code{coord2}) must be @ref{List of gal_data_t}.
+Each @code{gal_data_t} node in @code{coord1} or @code{coord2} should be a single dimensional dataset (column in a table) and all the nodes must have the same number of elements (rows).
+In other words, each column can be visualized as having the coordinates of each point in its respective dimension.
+The dimensions of the coordinates is determined by the number of @code{gal_data_t} nodes in the two input lists (which must be equal).
+The number of rows (or the number of elements in each @code{gal_data_t}) in the columns of @code{coord1} and @code{coord2} can be different.
+All these functions will all be satisfied if you use @code{gal_table_read} to read the two coordinate columns, see @ref{Table input output}.
+
+@cindex Permutation
+The functions below return a simply-linked list of three 1D datasets (see @ref{List of @code{gal_data_t}}), let's call the returned dataset @code{ret}.
+The first two (@code{ret} and @code{ret->next}) are permutaitons.
+In other words, the @code{array} elements of both have a type of @code{size_t}, see @ref{Permutations}.
+The third node (@code{ret->next->next}) is the calculated distance for that match and its array has a type of @code{double}.
+The number of matches will be put in the space pointed by the @code{nummatched} argument.
+If there wasn't any match, this function will return @code{NULL}.
+
+The two permutations can be applied to the rows of the two inputs: the first one (@code{ret}) should be applied to the rows of the table containing @code{coord1} and the second one (@code{ret->next}) to the table containing @code{coord2}.
+After applying the returned permutations to the inputs, the top @code{nummatched} elements of both will match with each other.
+The ordering of the rest of the elements is undefined (depends on the matching funciton used).
+The third node is the distances between the respective match (which may be elliptical distance, see discussion of ``aperture'' below).
+
+The functions will not simply return the nearest neighbor as a match.
+The nearest neighbor may be too far to be a meaningful.
+They will check the distance between the distance of the nearest neighbor of each point and only return a match for it it is within an acceptable N-dimensional distance (or ``aperture'').
+The matching aperture is defined by the @code{aperture} array that is an input argument to the functions.
+If several points of one catalog lie within this aperture of a point in the other, the  nearest is defined as the match.
+In a 2D situation (where the input lists have two nodes), for the most generic case, it must have three elements: the major axis length, axis ratio and position angle (see @ref{Defining an ellipse and ellipsoid}).
+If @code{aperture[1]==1}, the aperture will be a circle of radius @code{aperture[0]} and the third value won't be used.
+When the aperture is an ellipse, distances between the points are also calculated in the respective elliptical distances (@mymath{r_{el}} in @ref{Defining an ellipse and ellipsoid}).
+
+
+
 
 @deftypefun {gal_data_t *} gal_match_coordinates (gal_data_t @code{*coord1}, gal_data_t @code{*coord2}, double @code{*aperture}, int @code{sorted_by_first}, int @code{inplace}, size_t @code{minmapsize}, int @code{quietmmap}, size_t @code{*nummatched})
 
-Return the permutations that when applied, the first @code{nummatched} rows
-of both inputs match with each other (are the nearest within the given
-aperture). The two inputs (@code{coord1} and @code{coord2}) must be
-@ref{List of gal_data_t}. Each @code{gal_data_t} node in the list should be
-a single dimensional dataset (column in a table). The dimensions of the
-coordinates is determined by the number of @code{gal_data_t} nodes in the
-two input lists (which must be equal). Note that the number of rows (or the
-number of elements in each @code{gal_data_t}) in the columns of
-@code{coord1} and @code{coord2} can be different.
+Use a basic sort-based match to find the matching points of two input coordinates.
+See the descriptions above on the format of the inputs and outputs.
+To speed up the search, this function will sort the input coordinates by their first column (first axis).
+If @emph{both} are already sorted by their first column, you can avoid the sorting step by giving a non-zero value to @code{sorted_by_first}.
 
-The matching aperture is defined by the @code{aperture} array. If several
-points of one catalog lie within this aperture of a point in the other, the
-nearest is defined as the match. In a 2D situation (where the input lists
-have two nodes), for the most generic case, it must have three elements:
-the major axis length, axis ratio and position angle (see @ref{Defining an
-ellipse and ellipsoid}). If @code{aperture[1]==1}, the aperture will be a
-circle of radius @code{aperture[0]} and the third value won't be used. When
-the aperture is an ellipse, distances between the points are also
-calculated in the respective elliptical distances (@mymath{r_{el}} in
-@ref{Defining an ellipse and ellipsoid}).
-
-To speed up the search, this function will sort the input coordinates by
-their first column (first axis). If @emph{both} are already sorted by their
-first column, you can avoid the sorting step by giving a non-zero value to
-@code{sorted_by_first}.
-
-When sorting is necessary and @code{inplace} is non-zero, the actual input
-columns will be sorted. Otherwise, an internal copy of the inputs will be
-made, used (sorted) and later freed before returning. Therefore, when
-@code{inplace==0}, inputs will remain untouched, but this function will
-take more time and memory.
-
-If internal allocation is necessary and the space is larger than
-@code{minmapsize}, the space will be not allocated in the RAM, but in a
-file, see description of @option{--minmapsize} and @code{--quietmmap} in
-@ref{Processing options}.
-
-The number of matches will be put in the space pointed by
-@code{nummatched}. If there wasn't any match, this function will return
-@code{NULL}. If match(s) were found, a list with three @code{gal_data_t}
-nodes will be returned. The top two nodes in the list are the permutations
-that must be applied to the first and second inputs respectively. After
-applying the permutations, the top @code{nummatched} elements will match
-with each other. The third node is the distances between the respective
-match. Note that the three nodes of the list are all one-dimensional (a
-column) and can have different lengths.
+When sorting is necessary and @code{inplace} is non-zero, the actual input columns will be sorted.
+Otherwise, an internal copy of the inputs will be made, used (sorted) and later freed before returning.
+Therefore, when @code{inplace==0}, inputs will remain untouched, but this function will take more time and memory.
+If internal allocation is necessary and the space is larger than @code{minmapsize}, the space will be not allocated in the RAM, but in a file, see description of @option{--minmapsize} and @code{--quietmmap} in @ref{Processing options}.
 
 @cartouche
 @noindent
-@strong{Output permutations ignore internal sorting}: the output
-permutations will correspond to the initial inputs. Therefore, even when
-@code{inplace!=0} (and this function re-arranges the inputs), the output
-permutation will correspond to original (possibly non-sorted) inputs.
+@strong{Output permutations ignore internal sorting}: the output permutations will correspond to the initial inputs.
+Therefore, even when @code{inplace!=0} (and this function re-arranges the inputs in place), the output permutation will correspond to original (possibly non-sorted) inputs.
 
-The reason for this is that you rarely want the actual positional columns
-after the match. Usually, you also have other columns (measurements, for
-example magnitudes) for higher-level processing after the match (that
-correspond to the input order before sorting). Once you have the
-permutations, they can be applied to those other columns (see
-@ref{Permutations}) and the higher-level processing can continue.
+The reason for this is that you rarely want to permute the actual positional columns after the match.
+Usually, you also have other columns (for example the brightness, morphology and etc) and you want to find how they differ between the objects that match.
+Once you have the permutations, they can be applied to those other columns (see @ref{Permutations}) and the higher-level processing can continue.
+So if you don't need the coordinate columns for the rest of your analysis, it is better to set @code{inplace=1}.
 @end cartouche
-
-When you read the coordinates from a table using @code{gal_table_read} (see
-@ref{Table input output}), and only ask for the coordinate columns, the
-inputs to this function are the returned @code{gal_data_t *} from two
-different tables.
-
-
 @end deftypefun
 
 @node Statistical operations, Binary datasets, Matching, Gnuastro library
